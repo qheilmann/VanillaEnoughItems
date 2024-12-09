@@ -1,0 +1,8 @@
+{
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "pluginName": "VanillaEnoughItems",
+    "pluginNameShadowJar": "VanillaEnoughItems-ShadowJar",
+    "serverPluginPath": "../PaperServer/plugins/", // can be absolute path or relative from the workspace
+    "pluginVersion": "0.0.1",
+    "java.compile.nullAnalysis.mode": "automatic"
+}

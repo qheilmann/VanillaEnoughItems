@@ -1,0 +1,6 @@
+name: VanillaEnoughItems
+description: This is like NEI, JEI or REI but for a Minecraft server side only experience.
+main: me.qheilmann.vei.VanillaEnoughItems
+author: qheilmann
+api-version: 1.21
+version: 0.0.1
