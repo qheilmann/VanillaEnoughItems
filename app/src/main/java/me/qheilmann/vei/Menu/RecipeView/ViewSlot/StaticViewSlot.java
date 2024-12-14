@@ -9,6 +9,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import me.qheilmann.vei.VanillaEnoughItems;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Vector2i;
 
 /**
  * Represents a static slot in the view
@@ -18,13 +19,13 @@ public class StaticViewSlot extends ViewSlot {
     
     ItemStack item;
 
-    public StaticViewSlot(int x, int y, @NotNull ItemStack item) {
-        super(x, y);
+    public StaticViewSlot(Vector2i coord, @NotNull ItemStack item) {
+        super(coord);
         setItemStack(item);
     }
 
-    public StaticViewSlot(int x, int y, @NotNull RecipeSlotActions slotActions) {
-        super(x, y);
+    public StaticViewSlot(Vector2i coord, @NotNull RecipeSlotActions slotActions) {
+        super(coord);
         setItemStack(slotActions);
     }
 

@@ -3,6 +3,7 @@ package me.qheilmann.vei.Menu.RecipeView.ViewSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.RecipeChoice.MaterialChoice;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Vector2i;
 
 public class IngredientViewSlot extends ViewSlot {
     
@@ -10,8 +11,8 @@ public class IngredientViewSlot extends ViewSlot {
     private int maxIndex;
     private int cycleIndex = 0;
 
-    public IngredientViewSlot(int x, int y, @NotNull MaterialChoice materialChoice) {
-        super(x, y);
+    public IngredientViewSlot(Vector2i coord, @NotNull MaterialChoice materialChoice) {
+        super(coord);
         setMaterialChoice(materialChoice);
     }
 

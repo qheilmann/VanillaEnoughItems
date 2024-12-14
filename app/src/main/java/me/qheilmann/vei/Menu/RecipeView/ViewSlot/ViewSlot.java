@@ -13,9 +13,9 @@ public abstract class ViewSlot {
     abstract public void updateCycle(@NotNull Cycle cycle, int step);
     abstract public ItemStack getCurrentItemStack();
 
-    public ViewSlot(int x, int y) {
-        setX(x);
-        setY(y);
+    public ViewSlot(Vector2i coord) {
+        setX(coord.x);
+        setY(coord.y);
     }
 
     public Vector2i getCoord() {

@@ -100,6 +100,10 @@ public class ShapedRecipeView implements IRecipeView<ShapedRecipe> {
             return;
         }
         
+        reloadView();
+    }
+
+    private void reloadView() {
         clearRecipe();
 
         RecipeChoice[][] recipeMatrix = getRecipe3by3Matrix(shapedRecipe);
@@ -111,19 +115,19 @@ public class ShapedRecipeView implements IRecipeView<ShapedRecipe> {
                 if(recipeChoice == null) {
                     continue;
                 }
-                if (recipeChoice instanceof RecipeChoice.MaterialChoice) {
-                    recipeViewContainer.setViewSlot(new IngredientViewSlot(INPUTS_ORGIGIN_COORDS.x + x, INPUTS_ORGIGIN_COORDS.y + y, (RecipeChoice.MaterialChoice) recipeChoice));
+                if (recipeChoice instanceof RecipeChoice.MaterialChoice materialChoice) {
+                    recipeViewContainer.setViewSlot(new IngredientViewSlot(INPUTS_ORGIGIN_COORDS.add(x, y, new Vector2i()), materialChoice));
                 }
                 else {
                     ItemStack warningItem = new ItemStack(Material.BARRIER);
                     warningItem.editMeta(meta -> meta.displayName(Component.text("Warning: Conversion of the RecipeChoice type to " + recipeChoice.getClass().getName() + " is not supported", TextColor.color(255, 0, 0))));
-                    recipeViewContainer.setViewSlot(new StaticViewSlot(INPUTS_ORGIGIN_COORDS.x + x, INPUTS_ORGIGIN_COORDS.y + y, warningItem));
+                    recipeViewContainer.setViewSlot(new StaticViewSlot(INPUTS_ORGIGIN_COORDS.add(x, y, new Vector2i()), warningItem));
                 }
             }
         }
 
         // Result
-        recipeViewContainer.setViewSlot(new StaticViewSlot(OUTPUTS_COORDS.x, OUTPUTS_COORDS.y, shapedRecipe.getResult()));
+        recipeViewContainer.setViewSlot(new StaticViewSlot(OUTPUTS_COORDS, shapedRecipe.getResult()));
 
         hasRecipeChanged = false; // reset the flag
     }
@@ -176,10 +180,10 @@ public class ShapedRecipeView implements IRecipeView<ShapedRecipe> {
 
         for (int y = 0; y < 3; y++) {
             for (int x = 0; x < 3; x++) {
-                recipeViewContainer.setViewSlot(new StaticViewSlot(INPUTS_ORGIGIN_COORDS.x + x, INPUTS_ORGIGIN_COORDS.y + y, new ItemStack(Material.AIR)));
+                recipeViewContainer.setViewSlot(new StaticViewSlot(INPUTS_ORGIGIN_COORDS.add(x, y, new Vector2i()), new ItemStack(Material.AIR)));
             }
         }
 
-        recipeViewContainer.setViewSlot(new StaticViewSlot(OUTPUTS_COORDS.x, OUTPUTS_COORDS.y, new ItemStack(Material.AIR)));
+        recipeViewContainer.setViewSlot(new StaticViewSlot(OUTPUTS_COORDS, new ItemStack(Material.AIR)));
     }
 }
