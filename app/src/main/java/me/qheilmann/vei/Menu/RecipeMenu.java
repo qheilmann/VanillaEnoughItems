@@ -51,7 +51,49 @@ public class RecipeMenu implements InventoryHolder {
         item.setItemMeta(meta);
         inventory.setItem(4, item);
 
+        // Methode 1
+        String fireworkHeadComponent = "[minecraft:custom_name='{\"text\":\"Firework Star (cyan)\",\"color\":\"gold\",\"underlined\":true,\"bold\":true,\"italic\":false}',minecraft:lore=['{\"text\":\"Custom Head ID: 29795\",\"color\":\"gray\",\"italic\":false}','{\"text\":\"www.minecraft-heads.com\",\"color\":\"blue\",\"italic\":false}'],profile={id:[I;962553342,1524713861,-1319432986,842621010],properties:[{name:\"textures\",value:\"eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMjhmOTIzNTNmZDUyZDBlZWQ2NTdkOTk3ZWE4MTQ5YzgyNWQzNjZiMDI4YzE1MTRiZDllY2FhZjI0M2ZiN2JjNiJ9fX0=\"}]}]";
+
+        ItemStack item2 = new ItemStack(Material.PLAYER_HEAD);
+        // String componentsStr = item2.getItemMeta().getAsComponentString();
+        String itemKeyStr = item2.getType().getKey().toString();
+        String itemAsString = itemKeyStr + fireworkHeadComponent;
+        VanillaEnoughItems.LOGGER.info("Item as string: " + itemAsString);
+        ItemStack recreatedItemStack = Bukkit.getItemFactory().createItemStack(itemAsString);
+        inventory.setItem(5, recreatedItemStack);
+
+        // Methode 2
+        String fireworkHeadURI = "http://textures.minecraft.net/texture/964ad8da319e6eb37721e02c78864990b45fc0fea06ee52ed4c24ac197278cb7";
+        ItemStack head = createCustomHead(fireworkHeadURI);
+        inventory.setItem(6, head);
         return;
+    }
+
+    private static ItemStack createCustomHead(String URIString) {
+        URL url = null;
+
+
+        try {
+            url = new URI(URIString).toURL();
+        } catch (MalformedURLException | URISyntaxException e) {
+            e.printStackTrace();
+            ItemStack warningItem = new ItemStack(Material.BARRIER);
+            warningItem.editMeta(meta -> meta.displayName(
+                    Component.text("Warning: Conversion of the URI string to head failed (" + URIString + ")",
+                            TextColor.color(255, 0, 0))));
+            return warningItem;
+        }
+
+        UUID uuid = UUID.nameUUIDFromBytes(URIString.getBytes()); // Here we generate a UUID from the URI string, 
+        PlayerProfile profile = Bukkit.createProfile(uuid);
+        PlayerTextures playerTextures = profile.getTextures();
+        playerTextures.setSkin(url);
+        profile.setTextures(playerTextures);
+        ItemStack head = new ItemStack(Material.PLAYER_HEAD);
+        SkullMeta skullMeta = (SkullMeta) head.getItemMeta();
+        skullMeta.setPlayerProfile(profile);
+        head.setItemMeta(skullMeta);
+        return head;
     }
 
     private void updateRecipeViewPart() {

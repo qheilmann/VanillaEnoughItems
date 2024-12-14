@@ -55,14 +55,30 @@ public class VanillaEnoughItems extends JavaPlugin {
         // BrewingRecipe brewingRecipe = new BrewingRecipe(key, item);
         
 
-        // Check the recipe
+        // Check the recipe/methodes
+        var recipeIterator = getServer().recipeIterator();
+        var recipes = getServer().getRecipesFor(item);
         var myRecipe = getServer().getRecipe(key);
-        ShapedRecipe myShapedRecipe;
-        LOGGER.info(myRecipe.getClass().getName());
-        if (myRecipe instanceof ShapedRecipe)
+
+        LOGGER.info("My custom recipe:");
+        if (myRecipe instanceof ShapedRecipe myShapedRecipe)
         {
-            myShapedRecipe = (ShapedRecipe) myRecipe;
-            LOGGER.info("Recipe: " + myShapedRecipe.getChoiceMap());
+            LOGGER.info("Recipe: " + myShapedRecipe.getResult() + " " + myShapedRecipe.getClass().getName() + " " + myShapedRecipe.getChoiceMap());
+        }
+
+        LOGGER.info("Recipe for diamond sword:");
+        for (var recipeItem : recipes)
+        {
+            LOGGER.info("Recipe: " + recipeItem.getResult() + " " + recipeItem.getClass().getName() + " " + ((ShapedRecipe)recipeItem).getChoiceMap());
+        }
+
+        LOGGER.info("RecipeIterator:");
+        int maxIteration = 0;
+        while (recipeIterator.hasNext() && maxIteration < 30)
+        {
+            var recipeItem = recipeIterator.next();
+            LOGGER.info("Recipe: " + recipeItem.getResult() + " " + recipeItem.getClass().getName());
+            maxIteration++;
         }
     }
 }
