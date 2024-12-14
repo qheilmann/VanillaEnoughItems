@@ -8,6 +8,8 @@ import org.jetbrains.annotations.NotNull;
 
 public interface IRecipeView<T extends Recipe> {
     void setRecipe(@NotNull T recipe);
+    void clearRecipe();
+    void refreshView();
     RecipeViewContainer getRecipeContainer();
     @NotNull Collection<ItemStack> getResults();
     @NotNull Collection<ItemStack> getIngredients();

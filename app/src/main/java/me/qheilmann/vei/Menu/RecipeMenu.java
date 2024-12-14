@@ -61,22 +61,16 @@ public class RecipeMenu implements InventoryHolder {
     public static final Vector2i QUICK_LINK_COORDS = new Vector2i(0, 0);
     public static final Vector2i WORKBENCH_TYPE_SCROLL_LEFT_COORD = new Vector2i(1, 0);
     public static final Vector2i WORKBENCH_TYPE_SCROLL_RIGHT_COORD = new Vector2i(7, 0);
-    public static final Pair<Vector2i, Vector2i> WORKBENCH_ARRAY_COORDS = Pair.of(new Vector2i(2, 0),
-            new Vector2i(6, 0));
+    public static final Pair<Vector2i, Vector2i> WORKBENCH_ARRAY_COORDS = Pair.of(new Vector2i(2, 0), new Vector2i(6, 0));
     public static final Vector2i INFO_COORDS = new Vector2i(8, 0);
     public static final Vector2i WORKBENCH_VARIANT_SCROLL_UP = new Vector2i(0, 1);
     public static final Vector2i WORKBENCH_VARIANT_SCROLL_DOWN = new Vector2i(0, 5);
-    public static final Pair<Vector2i, Vector2i> WORKBENCH_VARIANT_ARRAY_COORDS = Pair.of(new Vector2i(0, 2),
-            new Vector2i(0, 4));
+    public static final Pair<Vector2i, Vector2i> WORKBENCH_VARIANT_ARRAY_COORDS = Pair.of(new Vector2i(0, 2), new Vector2i(0, 4));
     public static final Vector2i BOOKMARK_THIS_RECIPE_COORDS = new Vector2i(8, 2);
     public static final Vector2i BOOKMARK_LIST_COORDS = new Vector2i(8, 3);
     public static final Vector2i BOOKMARK_SERVER_LIST_COORDS = new Vector2i(8, 4);
     public static final Pair<Vector2i, Vector2i> RECIPE_VIEW_COORDS = Pair.of(new Vector2i(1, 1), new Vector2i(7, 5));
     public static final Vector2i EXIT_COORDS = new Vector2i(8, 5);
-
-    // Octothorpe / slash
-    // quartz
-    // https://minecraft-heads.com/custom-heads/tag/mathematical-symbol?page=4
 
     private Inventory inventory;
     private IRecipeView<Recipe> recipeView;
@@ -102,6 +96,7 @@ public class RecipeMenu implements InventoryHolder {
     }
 
     private void initInventory() {
+        // TODO not directly use CustomHeadFactory but an adapter between the CustomHeadFactory and the Inventory, like Button/Navigation
         inventory.setItem(menuCoordAsMenuIndex(QUICK_LINK_COORDS)                   , CustomHeadFactory.QUICK_LINK);
         inventory.setItem(menuCoordAsMenuIndex(WORKBENCH_TYPE_SCROLL_LEFT_COORD)    , CustomHeadFactory.WORKBENCH_TYPE_SCROLL_LEFT);
         inventory.setItem(menuCoordAsMenuIndex(WORKBENCH_TYPE_SCROLL_RIGHT_COORD)   , CustomHeadFactory.WORKBENCH_TYPE_SCROLL_RIGHT);
@@ -113,8 +108,6 @@ public class RecipeMenu implements InventoryHolder {
         inventory.setItem(menuCoordAsMenuIndex(EXIT_COORDS)                         , CustomHeadFactory.EXIT);
 
         inventory.setItem(menuCoordAsMenuIndex(BOOKMARK_THIS_RECIPE_COORDS)         , new ItemStack(Material.WHITE_CANDLE));
-
-        return;
     }
 
     private void updateRecipeViewPart() {

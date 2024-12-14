@@ -1,5 +1,6 @@
 package me.qheilmann.vei.Menu.RecipeView.ViewSlot;
 
+import org.apache.commons.lang3.Validate;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Range;
@@ -31,16 +32,12 @@ public abstract class ViewSlot {
     }
 
     public void setX(@Range(from = 0, to = 6) int x) {
-        if (x < 0 || x > 6) {
-            throw new IllegalArgumentException("x must be between 0 and 6");
-        }
+        Validate.inclusiveBetween(0, 6, x);
         this.x = x;
     }
 
     public void setY(@Range(from = 0, to = 4) int y) {
-        if (y < 0 || y > 4) {
-            throw new IllegalArgumentException("y must be between 0 and 4");
-        }
+        Validate.inclusiveBetween(0, 4, y);
         this.y = y;
     }
 

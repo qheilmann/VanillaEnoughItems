@@ -70,6 +70,27 @@ public class ShapedRecipeView implements IRecipeView<ShapedRecipe> {
     }
 
     @Override
+    public void clearRecipe() {
+
+        for (int y = 0; y < 3; y++) {
+            for (int x = 0; x < 3; x++) {
+                recipeViewContainer.setViewSlot(new StaticViewSlot(INPUTS_ORGIGIN_COORDS.add(x, y, new Vector2i()), new ItemStack(Material.AIR)));
+            }
+        }
+
+        recipeViewContainer.setViewSlot(new StaticViewSlot(OUTPUTS_COORDS, new ItemStack(Material.AIR)));
+    }
+
+    @Override
+    public void refreshView() {
+        if(!hasRecipeChanged) {
+            return;
+        }
+        
+        reloadView();
+    }
+
+    @Override
     public RecipeViewContainer getRecipeContainer() {
         refreshView();
         return recipeViewContainer;
@@ -87,27 +108,13 @@ public class ShapedRecipeView implements IRecipeView<ShapedRecipe> {
     }
 
     private void initInventory() {
-        // Workbench
+        recipeViewContainer.setViewSlot(new StaticViewSlot(NEXT_RECIPE_COORDS       , RecipeSlotActions.NEXT_RECIPE.getItemStack()));
+        recipeViewContainer.setViewSlot(new StaticViewSlot(PREVIOUS_RECIPE_COORDS   , RecipeSlotActions.PREVIOUS_RECIPE.getItemStack()));
+        recipeViewContainer.setViewSlot(new StaticViewSlot(BACK_RECIPE_COORDS       , RecipeSlotActions.BACK_RECIPE.getItemStack()));
+        recipeViewContainer.setViewSlot(new StaticViewSlot(FORWARD_RECIPE_COORDS    , RecipeSlotActions.FORWARD_RECIPE.getItemStack()));
+        recipeViewContainer.setViewSlot(new StaticViewSlot(MOVE_INGREDIENTS_COORDS  , RecipeSlotActions.MOVE_INGREDIENTS.getItemStack()));
+
         recipeViewContainer.setViewSlot(new StaticViewSlot(WORKBENCH_COORDS, new ItemStack(Material.CRAFTING_TABLE)));
-
-        // Next/Previous recipe
-        recipeViewContainer.setViewSlot(new StaticViewSlot(NEXT_RECIPE_COORDS, RecipeSlotActions.NEXT_RECIPE.getItemStack()));
-        recipeViewContainer.setViewSlot(new StaticViewSlot(PREVIOUS_RECIPE_COORDS, RecipeSlotActions.PREVIOUS_RECIPE.getItemStack()));
-
-        // Back/Forward recipe
-        recipeViewContainer.setViewSlot(new StaticViewSlot(BACK_RECIPE_COORDS, RecipeSlotActions.BACK_RECIPE.getItemStack()));
-        recipeViewContainer.setViewSlot(new StaticViewSlot(FORWARD_RECIPE_COORDS, RecipeSlotActions.FORWARD_RECIPE.getItemStack()));
-
-        // Move ingredients
-        recipeViewContainer.setViewSlot(new StaticViewSlot(MOVE_INGREDIENTS_COORDS, RecipeSlotActions.MOVE_INGREDIENTS.getItemStack()));
-    }
-
-    private void refreshView() {
-        if(!hasRecipeChanged) {
-            return;
-        }
-        
-        reloadView();
     }
 
     private void reloadView() {
@@ -138,8 +145,6 @@ public class ShapedRecipeView implements IRecipeView<ShapedRecipe> {
 
         hasRecipeChanged = false; // reset the flag
     }
-
-    // ShapedRecipe are not always 3x3, so we need to calculate the width and height of the recipe to correctly represent it in the GUI
 
     /**
      * Get the recipe crafting grid matrix from the shaped recipe
@@ -181,16 +186,5 @@ public class ShapedRecipeView implements IRecipeView<ShapedRecipe> {
         }
 
         return recipeMatrix;
-    }
-
-    private void clearRecipe() {
-
-        for (int y = 0; y < 3; y++) {
-            for (int x = 0; x < 3; x++) {
-                recipeViewContainer.setViewSlot(new StaticViewSlot(INPUTS_ORGIGIN_COORDS.add(x, y, new Vector2i()), new ItemStack(Material.AIR)));
-            }
-        }
-
-        recipeViewContainer.setViewSlot(new StaticViewSlot(OUTPUTS_COORDS, new ItemStack(Material.AIR)));
     }
 }
