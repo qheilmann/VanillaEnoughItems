@@ -5,6 +5,7 @@ import java.util.HashMap;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Vector2i;
 import me.qheilmann.vei.Menu.RecipeView.ViewSlot.ViewSlot;
+import me.qheilmann.vei.Menu.RecipeView.ViewSlot.ViewSlot.Cycle;
 
 public class RecipeViewContainer {
     private HashMap<Vector2i, ViewSlot> viewSlots;
@@ -20,6 +21,12 @@ public class RecipeViewContainer {
     public void updateCycle() {
         for (ViewSlot viewSlot : viewSlots.values()) {
             viewSlot.updateCycle();
+        }
+    }
+
+    public void updateCycle(Cycle cycle, int step) {
+        for (ViewSlot viewSlot : viewSlots.values()) {
+            viewSlot.updateCycle(cycle, step);
         }
     }
 

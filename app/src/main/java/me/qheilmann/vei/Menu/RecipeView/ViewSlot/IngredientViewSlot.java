@@ -31,24 +31,20 @@ public class IngredientViewSlot extends ViewSlot {
 
     @Override
     public void updateCycle() {
-        updateCycle(Cycle.FORWARD, 1);
+        updateCycle(Cycle.POSITION, 1);
     }
 
     @Override
     public void updateCycle(@NotNull Cycle cycle, int step) {
         switch (cycle) {
-            case FORWARD:
-                cycleIndex = (cycleIndex + step) % (maxIndex + 1);
+            case POSITION:
+                cycleIndex = Math.floorMod(cycleIndex + step, maxIndex + 1);
                 break;
-            case BACKWARD:
-                cycleIndex = (cycleIndex - step) % (maxIndex + 1);
-                if (cycleIndex < 0) {
-                    cycleIndex += (maxIndex + 1);
-                }
+            case ORIGIN:
+                cycleIndex = Math.floorMod(step, maxIndex + 1);
                 break;
-            case CYCLE_INDEX:
-                cycleIndex = step % (maxIndex + 1);
-                break;
+            default:
+                throw new IllegalArgumentException("Unknown "+ Cycle.class.getName() +" type: " + cycle);
         }
     }
 }

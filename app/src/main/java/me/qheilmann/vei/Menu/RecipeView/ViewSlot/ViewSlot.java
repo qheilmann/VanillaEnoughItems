@@ -45,8 +45,7 @@ public abstract class ViewSlot {
     }
 
     public enum Cycle {
-        FORWARD,
-        BACKWARD,
-        CYCLE_INDEX
+        POSITION,
+        ORIGIN
     }
 }
