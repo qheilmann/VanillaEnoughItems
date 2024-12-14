@@ -1,31 +1,90 @@
 package me.qheilmann.vei.Menu;
 
 import net.kyori.adventure.text.Component;
-
 import org.apache.commons.lang3.Validate;
+import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.Material;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Vector2i;
 
 import me.qheilmann.vei.Menu.RecipeView.IRecipeView;
 import me.qheilmann.vei.Menu.RecipeView.RecipeViewFactory;
+import me.qheilmann.vei.Service.CustomHeadFactory;
 
+/**
+ * <h1>RecipeMenu</h1>
+ * This class is used to display the recipe menu (9x6) in a GUI.
+ * <p>
+ * GUI representation(with ShapedRecipeView):
+ * 
+ * <pre>
+ *  
+ *-> x 0  1  2  3  4  5  6  7  8
+ * y +---------------------------+
+ * 0 | #  <  t  t  t        >  i |
+ * 1 | ^  1           2          |
+ * 2 | a     g  g  g           b |
+ * 3 | a     g  g  g  w  o     l |
+ * 4 |       g  g  g     +     s |
+ * 5 | v     3     4           e |
+ *   +---------------------------+
+ * </pre>
+ * <ul>
+ * <li>#: quick link to crafting</li>
+ * <li><, >: workbench type scroll</li>
+ * <li>t: workbench type</li>
+ * <li>^, v: workbench variant scroll</li>
+ * <li>i: info</li>
+ * <li>a: workbench variant</li>
+ * <li>b: bookmark this recipe</li>
+ * <li>l: bookmark list</li>
+ * <li>s: bookmark server list</li>
+ * <li>e: exit</li>
+ * </ul>
+ * Recipeview example (ShapedRecipeView):
+ * <ul>
+ * <li>g: inputs (crafting grid)</li>
+ * <li>o: outputs</li>
+ * <li>w: workbench</li>
+ * <li>1, 2: next/previous recipe</li>
+ * <li>3, 4: back/forward recipe</li>
+ * <li>+: move ingredients</li>
+ * </ul>
+ */
 public class RecipeMenu implements InventoryHolder {
-    
-    public Inventory inventory;
-    
-    private IRecipeView<Recipe> recipeView; // IRecipeView<? extends Recipe>
+
+    public static final Vector2i QUICK_LINK_COORDS = new Vector2i(0, 0);
+    public static final Vector2i WORKBENCH_TYPE_SCROLL_LEFT_COORD = new Vector2i(1, 0);
+    public static final Vector2i WORKBENCH_TYPE_SCROLL_RIGHT_COORD = new Vector2i(7, 0);
+    public static final Pair<Vector2i, Vector2i> WORKBENCH_ARRAY_COORDS = Pair.of(new Vector2i(2, 0),
+            new Vector2i(6, 0));
+    public static final Vector2i INFO_COORDS = new Vector2i(8, 0);
+    public static final Vector2i WORKBENCH_VARIANT_SCROLL_UP = new Vector2i(0, 1);
+    public static final Vector2i WORKBENCH_VARIANT_SCROLL_DOWN = new Vector2i(0, 5);
+    public static final Pair<Vector2i, Vector2i> WORKBENCH_VARIANT_ARRAY_COORDS = Pair.of(new Vector2i(0, 2),
+            new Vector2i(0, 4));
+    public static final Vector2i BOOKMARK_THIS_RECIPE_COORDS = new Vector2i(8, 2);
+    public static final Vector2i BOOKMARK_LIST_COORDS = new Vector2i(8, 3);
+    public static final Vector2i BOOKMARK_SERVER_LIST_COORDS = new Vector2i(8, 4);
+    public static final Pair<Vector2i, Vector2i> RECIPE_VIEW_COORDS = Pair.of(new Vector2i(1, 1), new Vector2i(7, 5));
+    public static final Vector2i EXIT_COORDS = new Vector2i(8, 5);
+
+    // Octothorpe / slash
+    // quartz
+    // https://minecraft-heads.com/custom-heads/tag/mathematical-symbol?page=4
+
+    private Inventory inventory;
+    private IRecipeView<Recipe> recipeView;
     private JavaPlugin plugin;
-    
+
     public RecipeMenu(JavaPlugin plugin, Recipe recipe) {
         this.plugin = plugin;
-        this.inventory = this.plugin.getServer().createInventory(this,54, Component.text("Recipe"));
+        this.inventory = this.plugin.getServer().createInventory(this, 54, Component.text("Recipe"));
         initInventory();
         setRecipe(recipe);
     }
@@ -43,57 +102,19 @@ public class RecipeMenu implements InventoryHolder {
     }
 
     private void initInventory() {
-        // TODO: Implement this method
+        inventory.setItem(menuCoordAsMenuIndex(QUICK_LINK_COORDS)                   , CustomHeadFactory.QUICK_LINK);
+        inventory.setItem(menuCoordAsMenuIndex(WORKBENCH_TYPE_SCROLL_LEFT_COORD)    , CustomHeadFactory.WORKBENCH_TYPE_SCROLL_LEFT);
+        inventory.setItem(menuCoordAsMenuIndex(WORKBENCH_TYPE_SCROLL_RIGHT_COORD)   , CustomHeadFactory.WORKBENCH_TYPE_SCROLL_RIGHT);
+        inventory.setItem(menuCoordAsMenuIndex(INFO_COORDS)                         , CustomHeadFactory.INFO);
+        inventory.setItem(menuCoordAsMenuIndex(WORKBENCH_VARIANT_SCROLL_UP)         , CustomHeadFactory.WORKBENCH_VARIANT_SCROLL_UP);
+        inventory.setItem(menuCoordAsMenuIndex(WORKBENCH_VARIANT_SCROLL_DOWN)       , CustomHeadFactory.WORKBENCH_VARIANT_SCROLL_DOWN);
+        inventory.setItem(menuCoordAsMenuIndex(BOOKMARK_LIST_COORDS)                , CustomHeadFactory.BOOKMARK_LIST);
+        inventory.setItem(menuCoordAsMenuIndex(BOOKMARK_SERVER_LIST_COORDS)         , CustomHeadFactory.BOOKMARK_SERVER_LIST);
+        inventory.setItem(menuCoordAsMenuIndex(EXIT_COORDS)                         , CustomHeadFactory.EXIT);
 
-        ItemStack item = new ItemStack(Material.DIAMOND);
-        ItemMeta meta = item.getItemMeta();
-        meta.displayName(Component.text("Special Item"));
-        item.setItemMeta(meta);
-        inventory.setItem(4, item);
+        inventory.setItem(menuCoordAsMenuIndex(BOOKMARK_THIS_RECIPE_COORDS)         , new ItemStack(Material.WHITE_CANDLE));
 
-        // Methode 1
-        String fireworkHeadComponent = "[minecraft:custom_name='{\"text\":\"Firework Star (cyan)\",\"color\":\"gold\",\"underlined\":true,\"bold\":true,\"italic\":false}',minecraft:lore=['{\"text\":\"Custom Head ID: 29795\",\"color\":\"gray\",\"italic\":false}','{\"text\":\"www.minecraft-heads.com\",\"color\":\"blue\",\"italic\":false}'],profile={id:[I;962553342,1524713861,-1319432986,842621010],properties:[{name:\"textures\",value:\"eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMjhmOTIzNTNmZDUyZDBlZWQ2NTdkOTk3ZWE4MTQ5YzgyNWQzNjZiMDI4YzE1MTRiZDllY2FhZjI0M2ZiN2JjNiJ9fX0=\"}]}]";
-
-        ItemStack item2 = new ItemStack(Material.PLAYER_HEAD);
-        // String componentsStr = item2.getItemMeta().getAsComponentString();
-        String itemKeyStr = item2.getType().getKey().toString();
-        String itemAsString = itemKeyStr + fireworkHeadComponent;
-        VanillaEnoughItems.LOGGER.info("Item as string: " + itemAsString);
-        ItemStack recreatedItemStack = Bukkit.getItemFactory().createItemStack(itemAsString);
-        inventory.setItem(5, recreatedItemStack);
-
-        // Methode 2
-        String fireworkHeadURI = "http://textures.minecraft.net/texture/964ad8da319e6eb37721e02c78864990b45fc0fea06ee52ed4c24ac197278cb7";
-        ItemStack head = createCustomHead(fireworkHeadURI);
-        inventory.setItem(6, head);
         return;
-    }
-
-    private static ItemStack createCustomHead(String URIString) {
-        URL url = null;
-
-
-        try {
-            url = new URI(URIString).toURL();
-        } catch (MalformedURLException | URISyntaxException e) {
-            e.printStackTrace();
-            ItemStack warningItem = new ItemStack(Material.BARRIER);
-            warningItem.editMeta(meta -> meta.displayName(
-                    Component.text("Warning: Conversion of the URI string to head failed (" + URIString + ")",
-                            TextColor.color(255, 0, 0))));
-            return warningItem;
-        }
-
-        UUID uuid = UUID.nameUUIDFromBytes(URIString.getBytes()); // Here we generate a UUID from the URI string, 
-        PlayerProfile profile = Bukkit.createProfile(uuid);
-        PlayerTextures playerTextures = profile.getTextures();
-        playerTextures.setSkin(url);
-        profile.setTextures(playerTextures);
-        ItemStack head = new ItemStack(Material.PLAYER_HEAD);
-        SkullMeta skullMeta = (SkullMeta) head.getItemMeta();
-        skullMeta.setPlayerProfile(profile);
-        head.setItemMeta(skullMeta);
-        return head;
     }
 
     private void updateRecipeViewPart() {

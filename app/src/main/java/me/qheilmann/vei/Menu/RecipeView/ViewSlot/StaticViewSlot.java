@@ -1,13 +1,13 @@
 package me.qheilmann.vei.Menu.RecipeView.ViewSlot;
 
-import org.bukkit.Material;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.SkullMeta;
-import org.bukkit.plugin.java.JavaPlugin;
+import java.util.List;
+import java.util.function.Function;
 
-import me.qheilmann.vei.VanillaEnoughItems;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import me.qheilmann.vei.Service.CustomHeadFactory;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Vector2i;
 
@@ -57,110 +57,82 @@ public class StaticViewSlot extends ViewSlot {
         /**
          * Button to go to the previous recipe in the history
          */
-        NAVIGATE_BACK{
-            @Override
-            public ItemStack getItemStack() {
-                return getNavigateBack();
-            }
-        },
+        BACK_RECIPE(CustomHeadFactory.BACK_RECIPE, RecipeSlotActions::buildBackButton),
 
         /**
          * Button to go to the next recipe in the history (undo the back action)
          */
-        NAVIGATE_FORWARD{
-            @Override
-            public ItemStack getItemStack() {
-                return getNavigateForward();
-            }
-        },
+        FORWARD_RECIPE(CustomHeadFactory.FORWARD_RECIPE, RecipeSlotActions::buildForwardButton),
 
         /**
          * Button to go to the previous variation of the same recipe on another page
          */
-        NAVIGATE_PREVIOUS{
-            @Override
-            public ItemStack getItemStack() {
-                return getNavigatePrevious();
-            }
-        },
+        PREVIOUS_RECIPE(CustomHeadFactory.PREVIOUS_RECIPE, RecipeSlotActions::buildPreviousButton),
 
         /**
          * Button to go to the next variation of the same recipe on another page
          */
-        NAVIGATE_NEXT{
-            @Override
-            public ItemStack getItemStack() {
-                return getNavigateNext();
-            }
-        },
+        NEXT_RECIPE(CustomHeadFactory.NEXT_RECIPE, RecipeSlotActions::buildNextButton),
 
         /**
          * Button to move automatically the recipe to the workbench slots
          */
-        AUTO_PLACEMENT{
-            @Override
-            public ItemStack getItemStack() {
-                return getAutoPlacement();
-            }
-        };
+        MOVE_INGREDIENTS(CustomHeadFactory.MOVE_INGREDIENTS, RecipeSlotActions::buildMoveIngredientsButton);
+
+        private final ItemStack itemStack;
+
+        RecipeSlotActions(ItemStack itemStack, Function<ItemStack, ItemStack> setupItemStack) {
+            this.itemStack = setupItemStack.apply(itemStack);
+        }
 
         public ItemStack getItemStack() {
-            throw new IllegalArgumentException("Unknown type: " + this);
-        }
-
-        private static ItemStack getNavigateBack() {
-            ItemStack itemStack = new ItemStack(Material.PLAYER_HEAD);
-            JavaPlugin plugin = JavaPlugin.getPlugin(VanillaEnoughItems.class);
-            SkullMeta meta = (SkullMeta) itemStack.getItemMeta();
-            OfflinePlayer player = plugin.getServer().getOfflinePlayer("quoinquoin");
-            meta.displayName(Component.text("Navigate Back"));
-            meta.setOwningPlayer(player);
-            itemStack.setItemMeta(meta);
             return itemStack;
         }
 
-        private static ItemStack getNavigateForward() {
-            ItemStack itemStack = new ItemStack(Material.PLAYER_HEAD);
-            JavaPlugin plugin = JavaPlugin.getPlugin(VanillaEnoughItems.class);
-            SkullMeta meta = (SkullMeta) itemStack.getItemMeta();
-            OfflinePlayer player = plugin.getServer().getOfflinePlayer("quoinquoin");
-            meta.displayName(Component.text("Navigate Forward"));
-            meta.setOwningPlayer(player);
-            itemStack.setItemMeta(meta);
-            return itemStack;
+
+        private static ItemStack buildBackButton(ItemStack itemStack) {
+            ItemStack newItemStack = itemStack.clone();
+            ItemMeta meta = newItemStack.getItemMeta();
+            meta.displayName(Component.text("Navigate Back", NamedTextColor.WHITE));
+            meta.lore(List.of(Component.text("Go back to the preceding recipe in the history", NamedTextColor.DARK_GRAY)));
+            newItemStack.setItemMeta(meta);
+            return newItemStack;
         }
 
-        private static ItemStack getNavigatePrevious() {
-            ItemStack itemStack = new ItemStack(Material.PLAYER_HEAD);
-            JavaPlugin plugin = JavaPlugin.getPlugin(VanillaEnoughItems.class);
-            SkullMeta meta = (SkullMeta) itemStack.getItemMeta();
-            OfflinePlayer player = plugin.getServer().getOfflinePlayer("quoinquoin");
-            meta.displayName(Component.text("Navigate Previous"));
-            meta.setOwningPlayer(player);
-            itemStack.setItemMeta(meta);
-            return itemStack;
+        private static ItemStack buildForwardButton(ItemStack itemStack) {
+            ItemStack newItemStack = itemStack.clone();
+            ItemMeta meta = newItemStack.getItemMeta();
+            meta.displayName(Component.text("Navigate Forward", NamedTextColor.WHITE));
+            meta.lore(List.of(Component.text("Return to following recipe in history", NamedTextColor.DARK_GRAY)));
+            newItemStack.setItemMeta(meta);
+            return newItemStack;
         }
 
-        private static ItemStack getNavigateNext() {
-            ItemStack itemStack = new ItemStack(Material.PLAYER_HEAD);
-            JavaPlugin plugin = JavaPlugin.getPlugin(VanillaEnoughItems.class);
-            SkullMeta meta = (SkullMeta) itemStack.getItemMeta();
-            OfflinePlayer player = plugin.getServer().getOfflinePlayer("quoinquoin");
-            meta.displayName(Component.text("Navigate Next"));
-            meta.setOwningPlayer(player);
-            itemStack.setItemMeta(meta);
-            return itemStack;
+        private static ItemStack buildPreviousButton(ItemStack itemStack) {
+            ItemStack newItemStack = itemStack.clone();
+            ItemMeta meta = newItemStack.getItemMeta();
+            meta.displayName(Component.text("Previous Recipe", NamedTextColor.WHITE));
+            meta.lore(List.of(Component.text("Go to the previous variation of the same recipe", NamedTextColor.DARK_GRAY)));
+            newItemStack.setItemMeta(meta);
+            return newItemStack;
         }
 
-        private static ItemStack getAutoPlacement() {
-            ItemStack itemStack = new ItemStack(Material.PLAYER_HEAD);
-            JavaPlugin plugin = JavaPlugin.getPlugin(VanillaEnoughItems.class);
-            SkullMeta meta = (SkullMeta) itemStack.getItemMeta();
-            OfflinePlayer player = plugin.getServer().getOfflinePlayer("quoinquoin");
-            meta.displayName(Component.text("Auto Placement"));
-            meta.setOwningPlayer(player);
-            itemStack.setItemMeta(meta);
-            return itemStack;
+        private static ItemStack buildNextButton(ItemStack itemStack) {
+            ItemStack newItemStack = itemStack.clone();
+            ItemMeta meta = newItemStack.getItemMeta();
+            meta.displayName(Component.text("Next Recipe", NamedTextColor.WHITE));
+            meta.lore(List.of(Component.text("Go to the next variation of the same recipe", NamedTextColor.DARK_GRAY)));
+            newItemStack.setItemMeta(meta);
+            return newItemStack;
+        }
+
+        private static ItemStack buildMoveIngredientsButton(ItemStack itemStack) {
+            ItemStack newItemStack = itemStack.clone();
+            ItemMeta meta = newItemStack.getItemMeta();
+            meta.displayName(Component.text("Move Ingredients", NamedTextColor.WHITE));
+            meta.lore(List.of(Component.text("Automatically place the recipe on the workbench", NamedTextColor.DARK_GRAY)));
+            newItemStack.setItemMeta(meta);
+            return newItemStack;
         }
     }
 }

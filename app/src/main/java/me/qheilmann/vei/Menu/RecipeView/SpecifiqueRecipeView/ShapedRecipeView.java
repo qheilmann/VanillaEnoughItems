@@ -10,11 +10,11 @@ import org.bukkit.inventory.ShapedRecipe;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Vector2i;
 
-import me.qheilmann.vei.VanillaEnoughItems;
 import me.qheilmann.vei.Menu.RecipeView.IRecipeView;
 import me.qheilmann.vei.Menu.RecipeView.RecipeViewContainer;
 import me.qheilmann.vei.Menu.RecipeView.ViewSlot.IngredientViewSlot;
 import me.qheilmann.vei.Menu.RecipeView.ViewSlot.StaticViewSlot;
+import me.qheilmann.vei.Menu.RecipeView.ViewSlot.StaticViewSlot.RecipeSlotActions;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 
@@ -34,7 +34,7 @@ import net.kyori.adventure.text.format.TextColor;
  *   +---------------------+
  * </pre>
  * <ul>
- * <li>i: inputs</li>
+ * <li>i: inputs (crafting grid)</li>
  * <li>o: outputs</li>
  * <li>w: workbench</li>
  * <li><, >: next/previous recipe</li>
@@ -87,12 +87,19 @@ public class ShapedRecipeView implements IRecipeView<ShapedRecipe> {
     }
 
     private void initInventory() {
-        // TODO: add all the static slots
-        for (int y = 0; y < 5; y++) {
-            for (int x = 0; x < 7; x++) {
-                recipeViewContainer.setViewSlot(new StaticViewSlot(x, y, new ItemStack(Material.GRAY_STAINED_GLASS_PANE)));
-            }
-        }
+        // Workbench
+        recipeViewContainer.setViewSlot(new StaticViewSlot(WORKBENCH_COORDS, new ItemStack(Material.CRAFTING_TABLE)));
+
+        // Next/Previous recipe
+        recipeViewContainer.setViewSlot(new StaticViewSlot(NEXT_RECIPE_COORDS, RecipeSlotActions.NEXT_RECIPE.getItemStack()));
+        recipeViewContainer.setViewSlot(new StaticViewSlot(PREVIOUS_RECIPE_COORDS, RecipeSlotActions.PREVIOUS_RECIPE.getItemStack()));
+
+        // Back/Forward recipe
+        recipeViewContainer.setViewSlot(new StaticViewSlot(BACK_RECIPE_COORDS, RecipeSlotActions.BACK_RECIPE.getItemStack()));
+        recipeViewContainer.setViewSlot(new StaticViewSlot(FORWARD_RECIPE_COORDS, RecipeSlotActions.FORWARD_RECIPE.getItemStack()));
+
+        // Move ingredients
+        recipeViewContainer.setViewSlot(new StaticViewSlot(MOVE_INGREDIENTS_COORDS, RecipeSlotActions.MOVE_INGREDIENTS.getItemStack()));
     }
 
     private void refreshView() {
