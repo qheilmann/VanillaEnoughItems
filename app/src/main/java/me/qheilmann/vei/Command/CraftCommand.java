@@ -13,7 +13,7 @@ import me.qheilmann.vei.API.RecipeInterface;
 
 public class CraftCommand implements ICommand{
     public static final String NAME = "craft";
-    public static final String[] ALIASES = {"c", "rei"};
+    public static final String[] ALIASES = {"c", "vei"};
     public static final String SHORT_DESCRIPTION = "Show item recipe";
     public static final String LONG_DESCRIPTION = "Open a GUI showing the recipe of an item, it can be crafting, smelting, brewing, etc.";
     public static final CommandPermission PERMISSION = CommandPermission.NONE;

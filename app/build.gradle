@@ -42,7 +42,7 @@ tasks.named('test') {
 
 def pluginName = "VanillaEnoughItems"
 def pluginNameShadowJar = "VanillaEnoughItems-ShadowJar"
-def pluginVersion = "0.0.1"
+def pluginVersion = "0.0.2"
 
 jar {
     archiveBaseName.set(pluginName)

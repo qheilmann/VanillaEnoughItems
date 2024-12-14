@@ -51,6 +51,10 @@ public class VanillaEnoughItems extends JavaPlugin {
 
         getServer().addRecipe(recipe, true);
 
+        // BrewingStandFuelEvent
+        // BrewingRecipe brewingRecipe = new BrewingRecipe(key, item);
+        
+
         // Check the recipe
         var myRecipe = getServer().getRecipe(key);
         ShapedRecipe myShapedRecipe;

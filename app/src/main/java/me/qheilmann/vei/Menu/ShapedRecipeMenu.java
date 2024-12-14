@@ -1,16 +1,19 @@
-package me.qheilmann.vei.Inventory;
+package me.qheilmann.vei.Menu;
 
+import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.inventory.ShapedRecipe;
+import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.plugin.java.JavaPlugin;
-
 import net.kyori.adventure.text.Component;
 
-public class RecipeInventory implements InventoryHolder {
+// TODO: This class is a temporary implementation of the ShapedRecipe for testing purposes
+public class ShapedRecipeMenu implements InventoryHolder {
     
     public Inventory inventory;
     public ShapedRecipe currentShapedRecipe;
@@ -18,12 +21,12 @@ public class RecipeInventory implements InventoryHolder {
     private JavaPlugin plugin;
     private boolean hasRecipeChanged = false;
     
-    public RecipeInventory(JavaPlugin plugin) {
+    public ShapedRecipeMenu(JavaPlugin plugin) {
         this.plugin = plugin;
         this.inventory = this.plugin.getServer().createInventory(this, InventoryType.DISPENSER, Component.text("Recipe"));
     }
 
-    public RecipeInventory setRecipe(ShapedRecipe shapedRecipe) {
+    public ShapedRecipeMenu setRecipe(ShapedRecipe shapedRecipe) {
         if(shapedRecipe == null) {
             throw new IllegalArgumentException("Recipe cannot be null");
         }
@@ -66,14 +69,14 @@ public class RecipeInventory implements InventoryHolder {
                     recipeIndex++;
                     continue;
                 }
-                ItemStack item = recipeChoice.getItemStack(); // TODO: temporary implementation, need to handle several elements and scroll through them
+                @SuppressWarnings("deprecation")
+                ItemStack item = recipeChoice.getItemStack();
                 inventory.setItem(craftingIndex, item);
                 craftingIndex++;
                 recipeIndex++;
             }
             craftingIndex += 3 - recipeWidth; // got to the next crafting row
         }
-
         hasRecipeChanged = false;
     }
 
@@ -84,6 +87,15 @@ public class RecipeInventory implements InventoryHolder {
     @Override
     public Inventory getInventory() {
         populateInventory();
+
+
+        ItemStack playerHead = new ItemStack(Material.PLAYER_HEAD);
+        SkullMeta meta = (SkullMeta) playerHead.getItemMeta();
+        OfflinePlayer a = plugin.getServer().getOfflinePlayer("MHF_ArrowLeft");
+        meta.setOwningPlayer(a);
+        playerHead.setItemMeta(meta);
+
+        inventory.setItem(0, playerHead);
         return inventory;
     }
 }
