@@ -11,6 +11,21 @@
     ],
     "tasks": [
         {
+            "label": "BuildCopyShadowLess",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "buildShadowLess",
+                "copyFileShadowLess"
+            ],
+            "group": {
+                "isDefault": true
+            },
+            "problemMatcher": [],
+            "presentation": {
+                "close": true
+            }
+        },
+        {
             "label": "BuildCopy",
             "dependsOrder": "sequence",
             "dependsOn": [
@@ -26,22 +41,7 @@
             }
         },
         {
-            "label": "BuildCopyShadowJar",
-            "dependsOrder": "sequence",
-            "dependsOn": [
-                "buildShadowJar",
-                "copyFileShadowJar"
-            ],
-            "group": {
-                "isDefault": true
-            },
-            "problemMatcher": [],
-            "presentation": {
-                "close": true
-            }
-        },
-        {
-            "label": "build",
+            "label": "buildShadowLess",
             "type": "shell",
             "command": ".\\gradlew build",
             "group": "none",
@@ -50,7 +50,7 @@
             }
         },
         {
-            "label": "buildShadowJar",
+            "label": "build",
             "type": "shell",
             "command": ".\\gradlew shadowJar",
             "group": "none",
@@ -59,19 +59,20 @@
             }
         },
         {
-            "label": "copyFile",
+            "label": "copyFileShadowLess",
             "type": "shell",
             "group": "none",
-            "command": "cp ${workspaceFolder}/app/build/libs/${config:pluginName}-${config:pluginVersion}.jar ${config:serverPluginPath}",
+            
+            "command": "cp ${workspaceFolder}/app/build/libs/${config:pluginNameShadowLess}-${config:pluginVersion}.jar ${config:serverPluginFolderPath}",
             "presentation": {
                 "close": true
             }
         },
         {
-            "label": "copyFileShadowJar",
+            "label": "copyFile",
             "type": "shell",
             "group": "none",
-            "command": "cp ${workspaceFolder}/app/build/libs/${config:pluginNameShadowJar}-${config:pluginVersion}.jar ${config:serverPluginPath}",
+            "command": "cp ${workspaceFolder}/app/build/libs/${config:pluginName}-${config:pluginVersion}.jar ${config:serverPluginFolderPath}",
             "presentation": {
                 "close": true
             }

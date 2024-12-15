@@ -1,4 +1,3 @@
-
 plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     id 'application'
@@ -40,20 +39,50 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
-def pluginName = "VanillaEnoughItems"
-def pluginNameShadowJar = "VanillaEnoughItems-ShadowJar"
-def pluginVersion = "0.0.2"
-
 jar {
-    archiveBaseName.set(pluginName)
+    dependsOn "syncAll"
+    archiveBaseName.set(pluginNameShadowLess)
     archiveVersion.set(pluginVersion)
     archiveClassifier.set('')
 }
 
 shadowJar {
-    archiveBaseName.set(pluginNameShadowJar)
+    dependsOn "syncAll"
+    archiveBaseName.set(pluginName)
     archiveVersion.set(pluginVersion)
     archiveClassifier.set('')
     relocate("dev.jorel.commandapi", "me.qheilmann.VanillaEnoughItems.commandapi")
+}
+
+def syncWarningComment = " This will be updated by the Gradle task; modify in the gradle.properties file if changes are needed."
+
+task syncAll {
+    dependsOn "syncPaperPluginYml", "syncVSCodeSettingsJson"
+}
+
+task syncPaperPluginYml {
+    doLast {
+        def paperPluginFile = file('src/main/resources/paper-plugin.yml')
+        def content = paperPluginFile.text
+        content = content.replaceAll(/api-version: .* # \(a2cf\) .*/, 
+                                     "api-version: ${paperApiVersionShort} # (a2cf) ${syncWarningComment}")
+        content = content.replaceAll(/version: .* # \(9cb5\) .*/,
+                                     "version: ${pluginVersion} # (9cb5) ${syncWarningComment}")
+        paperPluginFile.text = content
+    }
+}
+
+task syncVSCodeSettingsJson {
+    doLast {
+        def settingsFile = file('../.vscode/settings.json')
+        def content = settingsFile.text
+        content = content.replaceAll(/"pluginNameShadowLess": ".*", \/\/ \(ea92\) .*/, 
+                                    "\"pluginNameShadowLess\": \"${pluginNameShadowLess}\", // (ea92) ${syncWarningComment}")
+        content = content.replaceAll(/"pluginName": ".*", \/\/ \(bbda\) .*/, 
+                                    "\"pluginName\": \"${pluginName}\", // (bbda) ${syncWarningComment}")
+        content = content.replaceAll(/"pluginVersion": ".*", \/\/ \(0dca\) .*/, 
+                                    "\"pluginVersion\": \"${pluginVersion}\", // (0dca) ${syncWarningComment}")
+        settingsFile.text = content
+    }
 }
 

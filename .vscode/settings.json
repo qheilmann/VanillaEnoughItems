@@ -1,8 +1,13 @@
 {
+    // User settings
+    "serverPluginFolderPath": "../PaperServer/plugins/", // can be absolute path or relative from the workspace
+
+    // Auto-synchronized settings
+    "pluginNameShadowLess": "VanillaEnoughItems-ShadowLess", // (ea92)  This will be updated by the Gradle task; modify in the gradle.properties file if changes are needed.
+    "pluginName": "VanillaEnoughItems", // (bbda)  This will be updated by the Gradle task; modify in the gradle.properties file if changes are needed.
+    "pluginVersion": "0.0.3", // (0dca)  This will be updated by the Gradle task; modify in the gradle.properties file if changes are needed.
+
+    // Config
     "java.configuration.updateBuildConfiguration": "automatic",
-    "pluginName": "VanillaEnoughItems",
-    "pluginNameShadowJar": "VanillaEnoughItems-ShadowJar",
-    "serverPluginPath": "../PaperServer/plugins/", // can be absolute path or relative from the workspace
-    "pluginVersion": "0.0.2",
-    "java.compile.nullAnalysis.mode": "automatic"
+    "java.compile.nullAnalysis.mode": "automatic",
 }
