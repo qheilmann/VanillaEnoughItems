@@ -7,9 +7,14 @@ plugins {
 repositories {
     // Use Maven Central for resolving dependencies.
     mavenCentral()
-    // maven { url 'https://papermc.io/repo/repository/maven-public/' } // old
-    maven { url 'https://repo.papermc.io/repository/maven-public/' }
-    maven { url 'https://repo.codemc.org/repository/maven-public/' }
+    maven {
+        name = 'papermc'
+        url = uri('https://repo.papermc.io/repository/maven-public/')
+    }
+    maven {
+        name = 'codemc'
+        url = uri('https://repo.codemc.org/repository/maven-public/')
+    }
 }
 
 dependencies {
