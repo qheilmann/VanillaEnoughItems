@@ -14,6 +14,7 @@
             "label": "BuildCopyShadowLess",
             "dependsOrder": "sequence",
             "dependsOn": [
+                "syncAllFiles",
                 "buildShadowLess",
                 "copyFileShadowLess"
             ],
@@ -29,6 +30,7 @@
             "label": "BuildCopy",
             "dependsOrder": "sequence",
             "dependsOn": [
+                "syncAllFiles",
                 "build",
                 "copyFile"
             ],
@@ -36,6 +38,15 @@
                 "isDefault": true
             },
             "problemMatcher": [],
+            "presentation": {
+                "close": true
+            }
+        },
+        {
+            "label": "syncAllFiles",
+            "type": "shell",
+            "command": ".\\gradlew syncAll",
+            "group": "none",
             "presentation": {
                 "close": true
             }

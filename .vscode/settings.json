@@ -5,7 +5,7 @@
     // Auto-synchronized settings
     "pluginNameShadowLess": "VanillaEnoughItems-ShadowLess", // (ea92)  This will be updated by the Gradle task; modify in the gradle.properties file if changes are needed.
     "pluginName": "VanillaEnoughItems", // (bbda)  This will be updated by the Gradle task; modify in the gradle.properties file if changes are needed.
-    "pluginVersion": "0.0.3", // (0dca)  This will be updated by the Gradle task; modify in the gradle.properties file if changes are needed.
+    "pluginVersion": "0.0.4", // (0dca)  This will be updated by the Gradle task; modify in the gradle.properties file if changes are needed.
 
     // Config
     "java.configuration.updateBuildConfiguration": "automatic",
