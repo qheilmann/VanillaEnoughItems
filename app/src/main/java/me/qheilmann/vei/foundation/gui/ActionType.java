@@ -20,7 +20,7 @@ public enum ActionType {
         UNBOOKMARK_THIS_RECIPE(Component.text("Unbookmark this recipe"), List.of(Component.text("Remove this recipe from your bookmark")), "unbookmark_this_recipe"),
         BOOKMARK_LIST(Component.text("Bookmark list"), List.of(Component.text("See your bookmarked recipes")), "bookmark_list"),
         BOOKMARK_SERVER_LIST(Component.text("Bookmark server list"), List.of(Component.text("See the server bookmarked recipes")), "bookmark_server_list"),
-        EXIT(Component.text("Exit"), List.of(Component.text("Exit the recipe menu")), "EXIT");
+        EXIT(Component.text("Exit"), List.of(Component.text("Exit the recipe menu")), "exit");
 
         private final Component displayName;
         private final List<? extends Component> lores;
