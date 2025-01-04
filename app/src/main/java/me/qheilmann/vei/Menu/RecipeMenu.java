@@ -3,10 +3,8 @@ package me.qheilmann.vei.Menu;
 import net.kyori.adventure.text.Component;
 import org.apache.commons.lang3.Validate;
 import org.apache.commons.lang3.tuple.Pair;
-import org.bukkit.Material;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
@@ -14,9 +12,8 @@ import org.joml.Vector2i;
 
 import me.qheilmann.vei.Menu.RecipeView.IRecipeView;
 import me.qheilmann.vei.Menu.RecipeView.RecipeViewFactory;
-import me.qheilmann.vei.Service.CustomHeadFactory;
 import me.qheilmann.vei.foundation.gui.ActionType;
-import me.qheilmann.vei.foundation.gui.AllActiontem;
+import me.qheilmann.vei.foundation.gui.GuiItemService;
 import me.qheilmann.vei.foundation.gui.VeiStyle;
 
 /**
@@ -77,10 +74,13 @@ public class RecipeMenu implements InventoryHolder {
 
     private Inventory inventory;
     private IRecipeView<Recipe> recipeView;
-    private JavaPlugin plugin;
+    private final JavaPlugin plugin;
+    private final GuiItemService guiItemService;
+    // TODO remove setRecipe from constructor and add a setter with a isInitialized boolean
 
-    public RecipeMenu(JavaPlugin plugin, Recipe recipe) {
+    public RecipeMenu(JavaPlugin plugin, GuiItemService guiItemService, Recipe recipe) {
         this.plugin = plugin;
+        this.guiItemService = guiItemService;
         this.inventory = this.plugin.getServer().createInventory(this, 54, Component.text("Recipe"));
         initInventory();
         setRecipe(recipe);
@@ -101,16 +101,17 @@ public class RecipeMenu implements InventoryHolder {
     private void initInventory() {
         VeiStyle style = VeiStyle.LIGHT;
 
-        inventory.setItem(menuCoordAsMenuIndex(QUICK_LINK_COORDS)                   , new AllActiontem(ActionType.QUICK_LINK, style).getActionItem());
-        inventory.setItem(menuCoordAsMenuIndex(WORKBENCH_TYPE_SCROLL_LEFT_COORD)    , new AllActiontem(ActionType.WORKBENCH_TYPE_SCROLL_LEFT, style).getActionItem());
-        inventory.setItem(menuCoordAsMenuIndex(WORKBENCH_TYPE_SCROLL_RIGHT_COORD)   , new AllActiontem(ActionType.WORKBENCH_TYPE_SCROLL_RIGHT, style).getActionItem());
-        inventory.setItem(menuCoordAsMenuIndex(INFO_COORDS)                         , new AllActiontem(ActionType.INFO, style).getActionItem());
-        inventory.setItem(menuCoordAsMenuIndex(WORKBENCH_VARIANT_SCROLL_UP)         , new AllActiontem(ActionType.WORKBENCH_VARIANT_SCROLL_UP, style).getActionItem());
-        inventory.setItem(menuCoordAsMenuIndex(WORKBENCH_VARIANT_SCROLL_DOWN)       , new AllActiontem(ActionType.WORKBENCH_VARIANT_SCROLL_DOWN, style).getActionItem());
-        inventory.setItem(menuCoordAsMenuIndex(BOOKMARK_LIST_COORDS)                , new AllActiontem(ActionType.BOOKMARK_LIST, style).getActionItem());
-        inventory.setItem(menuCoordAsMenuIndex(BOOKMARK_SERVER_LIST_COORDS)         , new AllActiontem(ActionType.BOOKMARK_SERVER_LIST, style).getActionItem());
-        inventory.setItem(menuCoordAsMenuIndex(EXIT_COORDS)                         , new AllActiontem(ActionType.EXIT, style).getActionItem());
-        inventory.setItem(menuCoordAsMenuIndex(BOOKMARK_THIS_RECIPE_COORDS)         , new AllActiontem(ActionType.BOOKMARK_THIS_RECIPE, style).getActionItem());
+        inventory.setItem(menuCoordAsMenuIndex(QUICK_LINK_COORDS)                   , guiItemService.CreateActionItem(ActionType.QUICK_LINK, style));
+        inventory.setItem(menuCoordAsMenuIndex(WORKBENCH_TYPE_SCROLL_LEFT_COORD)    , guiItemService.CreateActionItem(ActionType.WORKBENCH_TYPE_SCROLL_LEFT, style));
+        inventory.setItem(menuCoordAsMenuIndex(WORKBENCH_TYPE_SCROLL_RIGHT_COORD)   , guiItemService.CreateActionItem(ActionType.WORKBENCH_TYPE_SCROLL_RIGHT, style));
+        inventory.setItem(menuCoordAsMenuIndex(INFO_COORDS)                         , guiItemService.CreateActionItem(ActionType.INFO, style));
+        inventory.setItem(menuCoordAsMenuIndex(WORKBENCH_VARIANT_SCROLL_UP)         , guiItemService.CreateActionItem(ActionType.WORKBENCH_VARIANT_SCROLL_UP, style));
+        inventory.setItem(menuCoordAsMenuIndex(WORKBENCH_VARIANT_SCROLL_DOWN)       , guiItemService.CreateActionItem(ActionType.WORKBENCH_VARIANT_SCROLL_DOWN, style));
+        inventory.setItem(menuCoordAsMenuIndex(BOOKMARK_LIST_COORDS)                , guiItemService.CreateActionItem(ActionType.BOOKMARK_LIST, style));
+        inventory.setItem(menuCoordAsMenuIndex(BOOKMARK_SERVER_LIST_COORDS)         , guiItemService.CreateActionItem(ActionType.BOOKMARK_SERVER_LIST, style));
+        inventory.setItem(menuCoordAsMenuIndex(EXIT_COORDS)                         , guiItemService.CreateActionItem(ActionType.EXIT, style));
+        inventory.setItem(menuCoordAsMenuIndex(BOOKMARK_THIS_RECIPE_COORDS)         , guiItemService.CreateActionItem(ActionType.BOOKMARK_THIS_RECIPE, style));
+        inventory.setItem(menuCoordAsMenuIndex(new Vector2i(0,0)), guiItemService.CreateActionItem(ActionType.NOT, style));
     }
 
     private void updateRecipeViewPart() {
@@ -122,7 +123,7 @@ public class RecipeMenu implements InventoryHolder {
 
     private void updateCycle() {
         recipeView.getRecipeContainer().updateCycle();
-        updateRecipeViewPart(); // TODO doublon ici ?
+        updateRecipeViewPart(); // TODO ici on update dabord la recipeView le conteneur peux ensuite le menu avec le new conteuner
         return;
     }
 

@@ -10,13 +10,14 @@ import org.bukkit.inventory.ShapedRecipe;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Vector2i;
 
+import com.google.common.base.Preconditions;
+
 import me.qheilmann.vei.Menu.RecipeView.IRecipeView;
 import me.qheilmann.vei.Menu.RecipeView.RecipeViewContainer;
 import me.qheilmann.vei.Menu.RecipeView.ViewSlot.IngredientViewSlot;
 import me.qheilmann.vei.Menu.RecipeView.ViewSlot.StaticViewSlot;
-import me.qheilmann.vei.Menu.RecipeView.ViewSlot.StaticViewSlot.RecipeSlotActions;
 import me.qheilmann.vei.foundation.gui.ActionType;
-import me.qheilmann.vei.foundation.gui.AllActiontem;
+import me.qheilmann.vei.foundation.gui.GuiItemService;
 import me.qheilmann.vei.foundation.gui.VeiStyle;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
@@ -59,8 +60,13 @@ public class ShapedRecipeView implements IRecipeView<ShapedRecipe> {
     private RecipeViewContainer recipeViewContainer;
     private ShapedRecipe shapedRecipe;
     private boolean hasRecipeChanged = true;
+    private final GuiItemService guiItemService;
 
-    public ShapedRecipeView(@NotNull ShapedRecipe recipe) {
+    public ShapedRecipeView(@NotNull GuiItemService guiItemService, @NotNull ShapedRecipe recipe) {
+        Preconditions.checkNotNull(guiItemService, "GuiItemService cannot be null");
+        Preconditions.checkNotNull(recipe, "Recipe cannot be null");
+        
+        this.guiItemService = guiItemService;
         recipeViewContainer = new RecipeViewContainer();
         initInventory();
         setRecipe(recipe);
@@ -105,18 +111,17 @@ public class ShapedRecipeView implements IRecipeView<ShapedRecipe> {
     }
 
     @Override
-    public @NotNull Collection<ItemStack> getIngredients() {
-        // TODO implement this method
-        throw new UnsupportedOperationException("Unimplemented method 'getIngredients'");
+    public @NotNull Collection<RecipeChoice> getIngredients() {
+        return shapedRecipe.getChoiceMap().values();
     }
 
     private void initInventory() {
         VeiStyle style = VeiStyle.LIGHT;
-        recipeViewContainer.setViewSlot(new StaticViewSlot(NEXT_RECIPE_COORDS       , new AllActiontem(ActionType.NEXT_RECIPE, style).getActionItem()));
-        recipeViewContainer.setViewSlot(new StaticViewSlot(PREVIOUS_RECIPE_COORDS   , new AllActiontem(ActionType.PREVIOUS_RECIPE, style).getActionItem()));
-        recipeViewContainer.setViewSlot(new StaticViewSlot(BACK_RECIPE_COORDS       , new AllActiontem(ActionType.BACK_RECIPE, style).getActionItem()));
-        recipeViewContainer.setViewSlot(new StaticViewSlot(FORWARD_RECIPE_COORDS    , new AllActiontem(ActionType.FORWARD_RECIPE, style).getActionItem()));
-        recipeViewContainer.setViewSlot(new StaticViewSlot(MOVE_INGREDIENTS_COORDS  , new AllActiontem(ActionType.MOVE_INGREDIENTS, style).getActionItem()));
+        recipeViewContainer.setViewSlot(new StaticViewSlot(NEXT_RECIPE_COORDS       , guiItemService.CreateActionItem(ActionType.NEXT_RECIPE, style)));
+        recipeViewContainer.setViewSlot(new StaticViewSlot(PREVIOUS_RECIPE_COORDS   , guiItemService.CreateActionItem(ActionType.PREVIOUS_RECIPE, style)));
+        recipeViewContainer.setViewSlot(new StaticViewSlot(BACK_RECIPE_COORDS       , guiItemService.CreateActionItem(ActionType.BACK_RECIPE, style)));
+        recipeViewContainer.setViewSlot(new StaticViewSlot(FORWARD_RECIPE_COORDS    , guiItemService.CreateActionItem(ActionType.FORWARD_RECIPE, style)));
+        recipeViewContainer.setViewSlot(new StaticViewSlot(MOVE_INGREDIENTS_COORDS  , guiItemService.CreateActionItem(ActionType.MOVE_INGREDIENTS, style)));
 
         recipeViewContainer.setViewSlot(new StaticViewSlot(WORKBENCH_COORDS, new ItemStack(Material.CRAFTING_TABLE)));
     }

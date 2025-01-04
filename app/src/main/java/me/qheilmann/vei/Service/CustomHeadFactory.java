@@ -16,26 +16,43 @@ import com.destroystokyo.paper.profile.PlayerProfile;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 
+/**
+ * <h1>CustomHeadFactory</h1>
+ * This class is used to create custom heads from a URI string.
+ * The custom heads are retrieved from the textures.minecraft.net website.
+ * There is a lot static constant already available for use.
+ */
 public class CustomHeadFactory {
 
-    public static final ItemStack DEFAULT                       = CustomHeadFactory.createFromURI(CustomHeadURI.STEVE.getURI());
-    public static final ItemStack CRAFTING_TABLE_2x2            = CustomHeadFactory.createFromURI(CustomHeadURI.CRAFTING_TABLE.getURI());
+    public static final ItemStack STEVE                             = createFromURI(CustomHeadURI.STEVE);
+    public static final ItemStack CRAFTING_TABLE                    = createFromURI(CustomHeadURI.CRAFTING_TABLE);
 
-    public static final ItemStack WORKBENCH_TYPE_SCROLL_LEFT    = CustomHeadFactory.createFromURI(CustomHeadURI.QUARTZ_ARROW_LEFT.getURI());
-    public static final ItemStack WORKBENCH_TYPE_SCROLL_RIGHT   = CustomHeadFactory.createFromURI(CustomHeadURI.QUARTZ_ARROW_RIGHT.getURI());
-    public static final ItemStack WORKBENCH_VARIANT_SCROLL_UP   = CustomHeadFactory.createFromURI(CustomHeadURI.QUARTZ_ARROW_UP.getURI());
-    public static final ItemStack WORKBENCH_VARIANT_SCROLL_DOWN = CustomHeadFactory.createFromURI(CustomHeadURI.QUARTZ_ARROW_DOWN.getURI());
-    public static final ItemStack NEXT_RECIPE                   = CustomHeadFactory.createFromURI(CustomHeadURI.QUARTZ_FORWARD.getURI());
-    public static final ItemStack PREVIOUS_RECIPE               = CustomHeadFactory.createFromURI(CustomHeadURI.QUARTZ_BACKWORD.getURI());
-    public static final ItemStack BACK_RECIPE                   = CustomHeadFactory.createFromURI(CustomHeadURI.QUARTZ_BACKWARD_II.getURI());
-    public static final ItemStack FORWARD_RECIPE                = CustomHeadFactory.createFromURI(CustomHeadURI.QUARTZ_FORWARD_II.getURI());
-    public static final ItemStack MOVE_INGREDIENTS              = CustomHeadFactory.createFromURI(CustomHeadURI.QUARTZ_PLUS.getURI());
+    public static final ItemStack QUARTZ_ARROW_LEFT                 = createFromURI(CustomHeadURI.QUARTZ_ARROW_LEFT);
+    public static final ItemStack QUARTZ_ARROW_RIGHT                = createFromURI(CustomHeadURI.QUARTZ_ARROW_RIGHT);
+    public static final ItemStack QUARTZ_ARROW_UP                   = createFromURI(CustomHeadURI.QUARTZ_ARROW_UP);
+    public static final ItemStack QUARTZ_ARROW_DOWN                 = createFromURI(CustomHeadURI.QUARTZ_ARROW_DOWN);
+    public static final ItemStack QUARTZ_FORWARD                    = createFromURI(CustomHeadURI.QUARTZ_FORWARD);
+    public static final ItemStack QUARTZ_BACKWORD                   = createFromURI(CustomHeadURI.QUARTZ_BACKWORD);
+    public static final ItemStack QUARTZ_BACKWARD_II                = createFromURI(CustomHeadURI.QUARTZ_BACKWARD_II);
+    public static final ItemStack QUARTZ_FORWARD_II                 = createFromURI(CustomHeadURI.QUARTZ_FORWARD_II);
+    public static final ItemStack QUARTZ_PLUS                       = createFromURI(CustomHeadURI.QUARTZ_PLUS);
+    public static final ItemStack QUARTZ_SLASH                      = createFromURI(CustomHeadURI.QUARTZ_SLASH);
+    public static final ItemStack QUARTZ_REVERSE_EXCLAMATION_MARK   = createFromURI(CustomHeadURI.QUARTZ_REVERSE_EXCLAMATION_MARK);
+    public static final ItemStack QUARTZ_X                          = createFromURI(CustomHeadURI.QUARTZ_X);
 
-    public static final ItemStack QUICK_LINK                    = CustomHeadFactory.createFromURI(CustomHeadURI.QUARTZ_SLASH.getURI());
-    public static final ItemStack INFO                          = CustomHeadFactory.createFromURI(CustomHeadURI.QUARTZ_REVERSE_EXCLAMATION_MARK.getURI());
-    public static final ItemStack BOOKMARK_LIST                 = CustomHeadFactory.createFromURI(CustomHeadURI.FIREWORK_STAR_CYAN.getURI());
-    public static final ItemStack BOOKMARK_SERVER_LIST          = CustomHeadFactory.createFromURI(CustomHeadURI.FIREWORK_STAR_GREEN.getURI());
-    public static final ItemStack EXIT                          = CustomHeadFactory.createFromURI(CustomHeadURI.QUARTZ_X.getURI());
+    public static final ItemStack FIREWORK_STAR_CYAN                = createFromURI(CustomHeadURI.FIREWORK_STAR_CYAN);
+    public static final ItemStack FIREWORK_STAR_GREEN               = createFromURI(CustomHeadURI.FIREWORK_STAR_GREEN);
+
+    /**
+     * Create a custom head from a CustomHeadURI object
+     * Retrieve the head from the textures.minecraft.net
+     * 
+     * @param customHeadURI The CustomHeadURI object to create the head from
+     * @return The custom head
+     */
+    public static ItemStack createFromURI(CustomHeadURI customHeadURI) {
+        return createFromURI(customHeadURI.getURI());
+    }
 
     /**
      * Create a custom head from a URI string

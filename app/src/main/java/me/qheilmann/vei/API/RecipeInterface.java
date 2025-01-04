@@ -7,6 +7,7 @@ import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import me.qheilmann.vei.Menu.RecipeMenu;
+import me.qheilmann.vei.foundation.gui.GuiItemService;
 
 public class RecipeInterface {
 
@@ -14,7 +15,7 @@ public class RecipeInterface {
 
     public RecipeInterface(JavaPlugin plugin) {
         Recipe recipe = plugin.getServer().getRecipe(Material.EMERALD_BLOCK.getKey());
-        recipeInventory = new RecipeMenu(plugin, recipe);
+        recipeInventory = new RecipeMenu(plugin, new GuiItemService(), recipe);
     }
 
     public void openInterface(Player player, ShapedRecipe shapedRecipe) {
