@@ -4,6 +4,7 @@ import java.util.Collection;
 
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
+import org.bukkit.inventory.RecipeChoice;
 import org.jetbrains.annotations.NotNull;
 
 public interface IRecipeView<T extends Recipe> {
@@ -12,5 +13,5 @@ public interface IRecipeView<T extends Recipe> {
     void refreshView();
     RecipeViewContainer getRecipeContainer();
     @NotNull Collection<ItemStack> getResults();
-    @NotNull Collection<ItemStack> getIngredients();
+    @NotNull Collection<RecipeChoice> getIngredients();
 }
