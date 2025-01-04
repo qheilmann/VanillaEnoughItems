@@ -76,18 +76,20 @@ public class RecipeMenu implements InventoryHolder {
     private IRecipeView<Recipe> recipeView;
     private final JavaPlugin plugin;
     private final GuiItemService guiItemService;
-    // TODO remove setRecipe from constructor and add a setter with a isInitialized boolean
+    private boolean isReady = false;
 
-    public RecipeMenu(JavaPlugin plugin, GuiItemService guiItemService, Recipe recipe) {
+    public RecipeMenu(JavaPlugin plugin, GuiItemService guiItemService) {
         this.plugin = plugin;
         this.guiItemService = guiItemService;
         this.inventory = this.plugin.getServer().createInventory(this, 54, Component.text("Recipe"));
         initInventory();
-        setRecipe(recipe);
     }
 
     @Override
     public Inventory getInventory() {
+        if (!isReady) {
+            throw new IllegalStateException("RecipeMenu is not initialized, set a recipe first");
+        }
         updateCycle();
         return inventory;
     }
@@ -96,6 +98,7 @@ public class RecipeMenu implements InventoryHolder {
         recipeView = RecipeViewFactory.createRecipeView(recipe);
         recipeView.setRecipe(recipe);
         updateRecipeViewPart();
+        isReady = true;
     }
 
     private void initInventory() {
@@ -113,6 +116,10 @@ public class RecipeMenu implements InventoryHolder {
         inventory.setItem(menuCoordAsMenuIndex(BOOKMARK_THIS_RECIPE_COORDS)         , guiItemService.CreateActionItem(ActionType.BOOKMARK_THIS_RECIPE, style));
     }
 
+    /**
+     * Update the recipe view part of the inventory.
+     * This method is needed to update and retrieve items from the RecipeViewContainer inside the Menu inventory after a recipe change/update.
+     */
     private void updateRecipeViewPart() {
         for (var slot : recipeView.getRecipeContainer().getSlots()) {
             int index = menuCoordAsMenuIndex(viewCoordAsMenuCoord(slot.getCoord()));
@@ -122,7 +129,7 @@ public class RecipeMenu implements InventoryHolder {
 
     private void updateCycle() {
         recipeView.getRecipeContainer().updateCycle();
-        updateRecipeViewPart(); // TODO ici on update dabord la recipeView le conteneur peux ensuite le menu avec le new conteuner
+        updateRecipeViewPart();
         return;
     }
 
