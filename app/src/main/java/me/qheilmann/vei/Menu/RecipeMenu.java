@@ -111,7 +111,6 @@ public class RecipeMenu implements InventoryHolder {
         inventory.setItem(menuCoordAsMenuIndex(BOOKMARK_SERVER_LIST_COORDS)         , guiItemService.CreateActionItem(ActionType.BOOKMARK_SERVER_LIST, style));
         inventory.setItem(menuCoordAsMenuIndex(EXIT_COORDS)                         , guiItemService.CreateActionItem(ActionType.EXIT, style));
         inventory.setItem(menuCoordAsMenuIndex(BOOKMARK_THIS_RECIPE_COORDS)         , guiItemService.CreateActionItem(ActionType.BOOKMARK_THIS_RECIPE, style));
-        inventory.setItem(menuCoordAsMenuIndex(new Vector2i(0,0)), guiItemService.CreateActionItem(ActionType.NOT, style));
     }
 
     private void updateRecipeViewPart() {

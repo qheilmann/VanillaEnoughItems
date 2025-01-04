@@ -19,8 +19,6 @@ import me.qheilmann.vei.Menu.RecipeView.ViewSlot.StaticViewSlot;
 import me.qheilmann.vei.foundation.gui.ActionType;
 import me.qheilmann.vei.foundation.gui.GuiItemService;
 import me.qheilmann.vei.foundation.gui.VeiStyle;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextColor;
 
 /**
  * <h1>ShapedRecipeView</h1>
