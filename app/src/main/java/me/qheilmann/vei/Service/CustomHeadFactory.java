@@ -18,7 +18,7 @@ import net.kyori.adventure.text.format.TextColor;
 
 public class CustomHeadFactory {
 
-    public static final ItemStack DEFAULT                       = new ItemStack(Material.PLAYER_HEAD);
+    public static final ItemStack DEFAULT                       = CustomHeadFactory.createFromURI(CustomHeadURI.STEVE.getURI());
     public static final ItemStack CRAFTING_TABLE_2x2            = CustomHeadFactory.createFromURI(CustomHeadURI.CRAFTING_TABLE.getURI());
 
     public static final ItemStack WORKBENCH_TYPE_SCROLL_LEFT    = CustomHeadFactory.createFromURI(CustomHeadURI.QUARTZ_ARROW_LEFT.getURI());
@@ -58,7 +58,7 @@ public class CustomHeadFactory {
             return warningItem;
         }
 
-        // Here we generate an UUID from the URI string, this way we can an unique UUID for each head
+        // Here we generate an UUID from the URI string, this way we can have unique UUID for each head
         UUID uuid = UUID.nameUUIDFromBytes(URIString.getBytes());
         PlayerProfile profile = Bukkit.createProfile(uuid);
         PlayerTextures playerTextures = profile.getTextures();
@@ -75,6 +75,7 @@ public class CustomHeadFactory {
 
     public enum CustomHeadURI {
 
+        STEVE                           ("http://textures.minecraft.net/texture/75ad626181111e55ebfc906a8e7040c66b8efe94f7c07448d5710012d68436c" , 90513),
         QUARTZ_FORWARD                  ("http://textures.minecraft.net/texture/17b03b71d3f86220ef122f9831a726eb2b283319c7b62e7dcd2d64d9682"     , 11210),
         QUARTZ_FORWARD_II               ("http://textures.minecraft.net/texture/b54fabb1664b8b4d8db2889476c6feddbb4505eba42878c653a5d793f719b16" , 11211),
         QUARTZ_BACKWORD                 ("http://textures.minecraft.net/texture/48348aa77f9fb2b91eef662b5c81b5ca335ddee1b905f3a8b92095d0a1f141"  , 11212),

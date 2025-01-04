@@ -15,6 +15,9 @@ import me.qheilmann.vei.Menu.RecipeView.RecipeViewContainer;
 import me.qheilmann.vei.Menu.RecipeView.ViewSlot.IngredientViewSlot;
 import me.qheilmann.vei.Menu.RecipeView.ViewSlot.StaticViewSlot;
 import me.qheilmann.vei.Menu.RecipeView.ViewSlot.StaticViewSlot.RecipeSlotActions;
+import me.qheilmann.vei.foundation.gui.ActionType;
+import me.qheilmann.vei.foundation.gui.AllActiontem;
+import me.qheilmann.vei.foundation.gui.VeiStyle;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 
@@ -108,11 +111,12 @@ public class ShapedRecipeView implements IRecipeView<ShapedRecipe> {
     }
 
     private void initInventory() {
-        recipeViewContainer.setViewSlot(new StaticViewSlot(NEXT_RECIPE_COORDS       , RecipeSlotActions.NEXT_RECIPE.getItemStack()));
-        recipeViewContainer.setViewSlot(new StaticViewSlot(PREVIOUS_RECIPE_COORDS   , RecipeSlotActions.PREVIOUS_RECIPE.getItemStack()));
-        recipeViewContainer.setViewSlot(new StaticViewSlot(BACK_RECIPE_COORDS       , RecipeSlotActions.BACK_RECIPE.getItemStack()));
-        recipeViewContainer.setViewSlot(new StaticViewSlot(FORWARD_RECIPE_COORDS    , RecipeSlotActions.FORWARD_RECIPE.getItemStack()));
-        recipeViewContainer.setViewSlot(new StaticViewSlot(MOVE_INGREDIENTS_COORDS  , RecipeSlotActions.MOVE_INGREDIENTS.getItemStack()));
+        VeiStyle style = VeiStyle.LIGHT;
+        recipeViewContainer.setViewSlot(new StaticViewSlot(NEXT_RECIPE_COORDS       , new AllActiontem(ActionType.NEXT_RECIPE, style).getActionItem()));
+        recipeViewContainer.setViewSlot(new StaticViewSlot(PREVIOUS_RECIPE_COORDS   , new AllActiontem(ActionType.PREVIOUS_RECIPE, style).getActionItem()));
+        recipeViewContainer.setViewSlot(new StaticViewSlot(BACK_RECIPE_COORDS       , new AllActiontem(ActionType.BACK_RECIPE, style).getActionItem()));
+        recipeViewContainer.setViewSlot(new StaticViewSlot(FORWARD_RECIPE_COORDS    , new AllActiontem(ActionType.FORWARD_RECIPE, style).getActionItem()));
+        recipeViewContainer.setViewSlot(new StaticViewSlot(MOVE_INGREDIENTS_COORDS  , new AllActiontem(ActionType.MOVE_INGREDIENTS, style).getActionItem()));
 
         recipeViewContainer.setViewSlot(new StaticViewSlot(WORKBENCH_COORDS, new ItemStack(Material.CRAFTING_TABLE)));
     }
@@ -134,7 +138,7 @@ public class ShapedRecipeView implements IRecipeView<ShapedRecipe> {
                 }
                 else {
                     ItemStack warningItem = new ItemStack(Material.BARRIER);
-                    warningItem.editMeta(meta -> meta.displayName(Component.text("Warning: Conversion of the RecipeChoice type to " + recipeChoice.getClass().getName() + " is not supported", TextColor.color(255, 0, 0))));
+                    warningItem.editMeta(meta -> meta.displayName(Component.text("Warning: Conversion of the RecipeChoice type to " + recipeChoice.getClass().getName() + " is not supported", TextColor.color(255, 0, 0)))); // TODO add Gui Item Error (with args comment)
                     recipeViewContainer.setViewSlot(new StaticViewSlot(INPUTS_ORGIGIN_COORDS.add(x, y, new Vector2i()), warningItem));
                 }
             }

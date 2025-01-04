@@ -15,6 +15,9 @@ import org.joml.Vector2i;
 import me.qheilmann.vei.Menu.RecipeView.IRecipeView;
 import me.qheilmann.vei.Menu.RecipeView.RecipeViewFactory;
 import me.qheilmann.vei.Service.CustomHeadFactory;
+import me.qheilmann.vei.foundation.gui.ActionType;
+import me.qheilmann.vei.foundation.gui.AllActiontem;
+import me.qheilmann.vei.foundation.gui.VeiStyle;
 
 /**
  * <h1>RecipeMenu</h1>
@@ -96,18 +99,18 @@ public class RecipeMenu implements InventoryHolder {
     }
 
     private void initInventory() {
-        // TODO not directly use CustomHeadFactory but an adapter between the CustomHeadFactory and the Inventory, like Button/Navigation
-        inventory.setItem(menuCoordAsMenuIndex(QUICK_LINK_COORDS)                   , CustomHeadFactory.QUICK_LINK);
-        inventory.setItem(menuCoordAsMenuIndex(WORKBENCH_TYPE_SCROLL_LEFT_COORD)    , CustomHeadFactory.WORKBENCH_TYPE_SCROLL_LEFT);
-        inventory.setItem(menuCoordAsMenuIndex(WORKBENCH_TYPE_SCROLL_RIGHT_COORD)   , CustomHeadFactory.WORKBENCH_TYPE_SCROLL_RIGHT);
-        inventory.setItem(menuCoordAsMenuIndex(INFO_COORDS)                         , CustomHeadFactory.INFO);
-        inventory.setItem(menuCoordAsMenuIndex(WORKBENCH_VARIANT_SCROLL_UP)         , CustomHeadFactory.WORKBENCH_VARIANT_SCROLL_UP);
-        inventory.setItem(menuCoordAsMenuIndex(WORKBENCH_VARIANT_SCROLL_DOWN)       , CustomHeadFactory.WORKBENCH_VARIANT_SCROLL_DOWN);
-        inventory.setItem(menuCoordAsMenuIndex(BOOKMARK_LIST_COORDS)                , CustomHeadFactory.BOOKMARK_LIST);
-        inventory.setItem(menuCoordAsMenuIndex(BOOKMARK_SERVER_LIST_COORDS)         , CustomHeadFactory.BOOKMARK_SERVER_LIST);
-        inventory.setItem(menuCoordAsMenuIndex(EXIT_COORDS)                         , CustomHeadFactory.EXIT);
+        VeiStyle style = VeiStyle.LIGHT;
 
-        inventory.setItem(menuCoordAsMenuIndex(BOOKMARK_THIS_RECIPE_COORDS)         , new ItemStack(Material.WHITE_CANDLE));
+        inventory.setItem(menuCoordAsMenuIndex(QUICK_LINK_COORDS)                   , new AllActiontem(ActionType.QUICK_LINK, style).getActionItem());
+        inventory.setItem(menuCoordAsMenuIndex(WORKBENCH_TYPE_SCROLL_LEFT_COORD)    , new AllActiontem(ActionType.WORKBENCH_TYPE_SCROLL_LEFT, style).getActionItem());
+        inventory.setItem(menuCoordAsMenuIndex(WORKBENCH_TYPE_SCROLL_RIGHT_COORD)   , new AllActiontem(ActionType.WORKBENCH_TYPE_SCROLL_RIGHT, style).getActionItem());
+        inventory.setItem(menuCoordAsMenuIndex(INFO_COORDS)                         , new AllActiontem(ActionType.INFO, style).getActionItem());
+        inventory.setItem(menuCoordAsMenuIndex(WORKBENCH_VARIANT_SCROLL_UP)         , new AllActiontem(ActionType.WORKBENCH_VARIANT_SCROLL_UP, style).getActionItem());
+        inventory.setItem(menuCoordAsMenuIndex(WORKBENCH_VARIANT_SCROLL_DOWN)       , new AllActiontem(ActionType.WORKBENCH_VARIANT_SCROLL_DOWN, style).getActionItem());
+        inventory.setItem(menuCoordAsMenuIndex(BOOKMARK_LIST_COORDS)                , new AllActiontem(ActionType.BOOKMARK_LIST, style).getActionItem());
+        inventory.setItem(menuCoordAsMenuIndex(BOOKMARK_SERVER_LIST_COORDS)         , new AllActiontem(ActionType.BOOKMARK_SERVER_LIST, style).getActionItem());
+        inventory.setItem(menuCoordAsMenuIndex(EXIT_COORDS)                         , new AllActiontem(ActionType.EXIT, style).getActionItem());
+        inventory.setItem(menuCoordAsMenuIndex(BOOKMARK_THIS_RECIPE_COORDS)         , new AllActiontem(ActionType.BOOKMARK_THIS_RECIPE, style).getActionItem());
     }
 
     private void updateRecipeViewPart() {
@@ -119,7 +122,7 @@ public class RecipeMenu implements InventoryHolder {
 
     private void updateCycle() {
         recipeView.getRecipeContainer().updateCycle();
-        updateRecipeViewPart();
+        updateRecipeViewPart(); // TODO doublon ici ?
         return;
     }
 
