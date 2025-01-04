@@ -142,9 +142,7 @@ public class ShapedRecipeView implements IRecipeView<ShapedRecipe> {
                     recipeViewContainer.setViewSlot(new IngredientViewSlot(INPUTS_ORGIGIN_COORDS.add(x, y, new Vector2i()), materialChoice));
                 }
                 else {
-                    ItemStack warningItem = new ItemStack(Material.BARRIER);
-                    warningItem.editMeta(meta -> meta.displayName(Component.text("Warning: Conversion of the RecipeChoice type to " + recipeChoice.getClass().getName() + " is not supported", TextColor.color(255, 0, 0)))); // TODO add Gui Item Error (with args comment)
-                    recipeViewContainer.setViewSlot(new StaticViewSlot(INPUTS_ORGIGIN_COORDS.add(x, y, new Vector2i()), warningItem));
+                    guiItemService.CreateWarningItem("Conversion of the RecipeChoice type to %s is not supported".formatted(recipeChoice.getClass().getName()));
                 }
             }
         }
