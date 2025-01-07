@@ -11,6 +11,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPIBukkitConfig;
 import me.qheilmann.vei.Command.CraftCommand;
+import me.qheilmann.vei.Listener.InventoryClickListener;
+import me.qheilmann.vei.Listener.InventoryDragListener;
 
 public class VanillaEnoughItems extends JavaPlugin {
     
@@ -28,6 +30,8 @@ public class VanillaEnoughItems extends JavaPlugin {
     @Override
     public void onEnable() {
         CommandAPI.onEnable();
+        getServer().getPluginManager().registerEvents(new InventoryClickListener(), this);
+        getServer().getPluginManager().registerEvents(new InventoryDragListener(this), this);
 
         temporaryRecipe();
 
