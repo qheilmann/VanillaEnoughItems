@@ -118,6 +118,13 @@ public class RecipeMenu extends Menu {
             // TEMP
             String ref = item.getPersistentDataContainer().get(key, PersistentDataType.STRING);
             event.getWhoClicked().sendMessage("Action item clicked %s".formatted(ref));
+
+            if(ref == "info"){
+                ShapedRecipe craft = (ShapedRecipe)plugin.getServer().getRecipe(new NamespacedKey(VanillaEnoughItems.NAMESPACE, "warriorsword"));
+                BukkitScheduler scheduler = plugin.getServer().getScheduler();
+                scheduler.runTask(plugin, () -> new RecipeInterface(plugin).openInterface((Player)event.getWhoClicked(), craft)); // inside something like MenuManager ?
+                scheduler.runTask(plugin, () -> event.getWhoClicked().sendMessage("yolo"));
+            }
         }
     }
 

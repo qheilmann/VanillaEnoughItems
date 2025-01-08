@@ -46,7 +46,7 @@ public class VanillaEnoughItems extends JavaPlugin {
 
     // TEMP: Remove this method (temporary recipe)
     private void temporaryRecipe() {
-        NamespacedKey key = new NamespacedKey(this, "WarriorSword");
+        NamespacedKey key = new NamespacedKey(NAMESPACE, "warriorsword");
         ItemStack item = new ItemStack(Material.DIAMOND_SWORD);
 
         ShapedRecipe recipe = new ShapedRecipe(key, item);
