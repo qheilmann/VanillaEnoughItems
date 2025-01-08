@@ -44,7 +44,7 @@ public class VanillaEnoughItems extends JavaPlugin {
         LOGGER.info(NAME + " has been disabled!");
     }
 
-    // TODO: Remove this method (temporary recipe)
+    // TEMP: Remove this method (temporary recipe)
     private void temporaryRecipe() {
         NamespacedKey key = new NamespacedKey(this, "WarriorSword");
         ItemStack item = new ItemStack(Material.DIAMOND_SWORD);

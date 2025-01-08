@@ -1,14 +1,20 @@
 package me.qheilmann.vei.Menu;
 
 import net.kyori.adventure.text.Component;
+
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.Set;
+
 import org.apache.commons.lang3.Validate;
-import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Vector2i;
+
+import com.google.common.base.Preconditions;
 
 import me.qheilmann.vei.Menu.RecipeView.IRecipeView;
 import me.qheilmann.vei.Menu.RecipeView.RecipeViewFactory;
@@ -58,20 +64,6 @@ import me.qheilmann.vei.foundation.gui.VeiStyle;
  */
 public class RecipeMenu implements InventoryHolder {
 
-    public static final Vector2i QUICK_LINK_COORDS = new Vector2i(0, 0);
-    public static final Vector2i WORKBENCH_TYPE_SCROLL_LEFT_COORD = new Vector2i(1, 0);
-    public static final Vector2i WORKBENCH_TYPE_SCROLL_RIGHT_COORD = new Vector2i(7, 0);
-    public static final Pair<Vector2i, Vector2i> WORKBENCH_ARRAY_COORDS = Pair.of(new Vector2i(2, 0), new Vector2i(6, 0));
-    public static final Vector2i INFO_COORDS = new Vector2i(8, 0);
-    public static final Vector2i WORKBENCH_VARIANT_SCROLL_UP = new Vector2i(0, 1);
-    public static final Vector2i WORKBENCH_VARIANT_SCROLL_DOWN = new Vector2i(0, 5);
-    public static final Pair<Vector2i, Vector2i> WORKBENCH_VARIANT_ARRAY_COORDS = Pair.of(new Vector2i(0, 2), new Vector2i(0, 4));
-    public static final Vector2i BOOKMARK_THIS_RECIPE_COORDS = new Vector2i(8, 2);
-    public static final Vector2i BOOKMARK_LIST_COORDS = new Vector2i(8, 3);
-    public static final Vector2i BOOKMARK_SERVER_LIST_COORDS = new Vector2i(8, 4);
-    public static final Pair<Vector2i, Vector2i> RECIPE_VIEW_COORDS = Pair.of(new Vector2i(1, 1), new Vector2i(7, 5));
-    public static final Vector2i EXIT_COORDS = new Vector2i(8, 5);
-
     private Inventory inventory;
     private IRecipeView<Recipe> recipeView;
     private final JavaPlugin plugin;
@@ -104,16 +96,16 @@ public class RecipeMenu implements InventoryHolder {
     private void initInventory() {
         VeiStyle style = VeiStyle.LIGHT;
 
-        inventory.setItem(menuCoordAsMenuIndex(QUICK_LINK_COORDS)                   , guiItemService.CreateActionItem(ActionType.QUICK_LINK, style));
-        inventory.setItem(menuCoordAsMenuIndex(WORKBENCH_TYPE_SCROLL_LEFT_COORD)    , guiItemService.CreateActionItem(ActionType.WORKBENCH_TYPE_SCROLL_LEFT, style));
-        inventory.setItem(menuCoordAsMenuIndex(WORKBENCH_TYPE_SCROLL_RIGHT_COORD)   , guiItemService.CreateActionItem(ActionType.WORKBENCH_TYPE_SCROLL_RIGHT, style));
-        inventory.setItem(menuCoordAsMenuIndex(INFO_COORDS)                         , guiItemService.CreateActionItem(ActionType.INFO, style));
-        inventory.setItem(menuCoordAsMenuIndex(WORKBENCH_VARIANT_SCROLL_UP)         , guiItemService.CreateActionItem(ActionType.WORKBENCH_VARIANT_SCROLL_UP, style));
-        inventory.setItem(menuCoordAsMenuIndex(WORKBENCH_VARIANT_SCROLL_DOWN)       , guiItemService.CreateActionItem(ActionType.WORKBENCH_VARIANT_SCROLL_DOWN, style));
-        inventory.setItem(menuCoordAsMenuIndex(BOOKMARK_LIST_COORDS)                , guiItemService.CreateActionItem(ActionType.BOOKMARK_LIST, style));
-        inventory.setItem(menuCoordAsMenuIndex(BOOKMARK_SERVER_LIST_COORDS)         , guiItemService.CreateActionItem(ActionType.BOOKMARK_SERVER_LIST, style));
-        inventory.setItem(menuCoordAsMenuIndex(EXIT_COORDS)                         , guiItemService.CreateActionItem(ActionType.EXIT, style));
-        inventory.setItem(menuCoordAsMenuIndex(BOOKMARK_THIS_RECIPE_COORDS)         , guiItemService.CreateActionItem(ActionType.BOOKMARK_THIS_RECIPE, style));
+        inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.QUICK_LINK),                    guiItemService.CreateActionItem(ActionType.QUICK_LINK,                    style));
+        inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.WORKBENCH_TYPE_SCROLL_LEFT),    guiItemService.CreateActionItem(ActionType.WORKBENCH_TYPE_SCROLL_LEFT,    style));
+        inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.WORKBENCH_TYPE_SCROLL_RIGHT),   guiItemService.CreateActionItem(ActionType.WORKBENCH_TYPE_SCROLL_RIGHT,   style));
+        inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.INFO),                          guiItemService.CreateActionItem(ActionType.INFO,                          style));
+        inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.WORKBENCH_VARIANT_SCROLL_UP),   guiItemService.CreateActionItem(ActionType.WORKBENCH_VARIANT_SCROLL_UP,   style));
+        inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.WORKBENCH_VARIANT_SCROLL_DOWN), guiItemService.CreateActionItem(ActionType.WORKBENCH_VARIANT_SCROLL_DOWN, style));
+        inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.BOOKMARK_LIST),                 guiItemService.CreateActionItem(ActionType.BOOKMARK_LIST,                 style));
+        inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.BOOKMARK_SERVER_LIST),          guiItemService.CreateActionItem(ActionType.BOOKMARK_SERVER_LIST,          style));
+        inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.EXIT),                          guiItemService.CreateActionItem(ActionType.EXIT,                          style));
+        inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.BOOKMARK_THIS_RECIPE),          guiItemService.CreateActionItem(ActionType.BOOKMARK_THIS_RECIPE,          style));
     }
 
     /**
@@ -142,5 +134,67 @@ public class RecipeMenu implements InventoryHolder {
 
     static private int menuCoordAsMenuIndex(Vector2i coord) {
         return coord.x + coord.y * 9;
+    }
+
+    static private int menuCoordAsMenuIndex(SingleItemCoord coord) {
+        return menuCoordAsMenuIndex(coord.getCoord());
+    }
+
+    /**
+     * Define the coordinates of single items in the inventory.
+     */
+    public enum SingleItemCoord {
+        QUICK_LINK(0, 0),
+        WORKBENCH_TYPE_SCROLL_LEFT(1, 0),
+        WORKBENCH_TYPE_SCROLL_RIGHT(7, 0),
+        INFO(8, 0),
+        WORKBENCH_VARIANT_SCROLL_UP(0, 1),
+        WORKBENCH_VARIANT_SCROLL_DOWN(0, 5),
+        BOOKMARK_THIS_RECIPE(8, 2),
+        BOOKMARK_LIST(8, 3),
+        BOOKMARK_SERVER_LIST(8, 4),
+        EXIT(8, 5);
+
+        private final Vector2i coord;
+
+        SingleItemCoord(int x, int y) {
+            Preconditions.checkArgument(x >= 0 && x < 9, "x must be between 0 and 8, current value: %d", x);
+            Preconditions.checkArgument(y >= 0 && y < 6, "y must be between 0 and 5, current value: %d", y);
+
+            this.coord = new Vector2i(x, y);
+        }
+
+        public Vector2i getCoord() {
+            return coord;
+        }
+    }
+
+    /**
+     * Define the coordinates of ranges of items in the inventory.
+     */
+    public enum MultiItemCoord {
+        WORKBENCH_ARRAY(new Vector2i(2, 0), new Vector2i(6, 0)),
+        WORKBENCH_VARIANT_ARRAY(new Vector2i(0, 2), new Vector2i(0, 4)),
+        RECIPE_VIEW(new Vector2i(1, 1), new Vector2i(7, 5));
+
+        private final Set<Vector2i> coords;
+
+        MultiItemCoord(Vector2i coord1, Vector2i coord2) {
+            Preconditions.checkArgument(coord1.x <= coord2.x, "coord1 must be on the left side of coord2, current values: %s, %s", coord1, coord2);
+            Preconditions.checkArgument(coord1.y <= coord2.y, "coord1 must be on the top side of coord2, current values: %s, %s", coord1, coord2);
+
+            LinkedHashSet<Vector2i> set = new LinkedHashSet<>();
+            for (int x = coord1.x; x <= coord2.x; x++) {
+                for (int y = coord1.y; y <= coord2.y; y++) {
+                    set.add(new Vector2i(x, y));
+                }
+            }
+
+            coords = Collections.unmodifiableSet(set);
+        }
+
+        public Set<Vector2i> getCoords() {
+            return coords;
+        }
     }
 }
