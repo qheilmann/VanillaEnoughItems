@@ -1,16 +1,11 @@
 package me.qheilmann.vei.Listener;
 
-import org.bukkit.NamespacedKey;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType.SlotType;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.persistence.PersistentDataType;
 
-import me.qheilmann.vei.VanillaEnoughItems;
 import me.qheilmann.vei.Menu.RecipeMenu;
-import me.qheilmann.vei.foundation.gui.ActionType;
 
 public class InventoryClickListener implements Listener
 {
@@ -27,29 +22,11 @@ public class InventoryClickListener implements Listener
         }
 
         if(event.getInventory().getHolder() instanceof RecipeMenu menu) {
-            onRecipeMenuClick(event); // TEMP menu.onInventoryClick(event); // TODO implement onInventoryClick RecipeMenu
+            menu.onMenuClick(event);
             return;
         }
 
         return;
-    }
-
-    private void onRecipeMenuClick(InventoryClickEvent event)
-    {
-        event.setCancelled(true); // can be enhanced to cancel only if the click occurs inside the RecipeMenu AND does not modify the contents of the RecipeMenu (shift+click, ...)
-        
-        ItemStack item = event.getCurrentItem();
-        if(item == null || item.isEmpty()) {
-            return;
-        }
-        
-        // Only click on something inside Menu (not empty)
-        NamespacedKey key = new NamespacedKey(VanillaEnoughItems.NAMESPACE, ActionType.REFERENCE_KEY);
-        boolean isActionItem = item.getItemMeta().getPersistentDataContainer().has(key, PersistentDataType.STRING);
-
-        if(isActionItem) {
-            event.getWhoClicked().sendMessage("Action item clicked %s".formatted(item.getPersistentDataContainer().get(key, PersistentDataType.STRING)));
-        }
     }
 
     /*

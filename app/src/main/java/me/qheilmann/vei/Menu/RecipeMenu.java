@@ -7,15 +7,23 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.apache.commons.lang3.Validate;
+import org.bukkit.NamespacedKey;
+import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryHolder;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
+import org.bukkit.inventory.ShapedRecipe;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitScheduler;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Vector2i;
 
 import com.google.common.base.Preconditions;
 
+import me.qheilmann.vei.VanillaEnoughItems;
+import me.qheilmann.vei.API.RecipeInterface;
 import me.qheilmann.vei.Menu.RecipeView.IRecipeView;
 import me.qheilmann.vei.Menu.RecipeView.RecipeViewFactory;
 import me.qheilmann.vei.foundation.gui.ActionType;
@@ -62,11 +70,10 @@ import me.qheilmann.vei.foundation.gui.VeiStyle;
  * <li>+: move ingredients</li>
  * </ul>
  */
-public class RecipeMenu implements InventoryHolder {
+public class RecipeMenu extends Menu {
 
-    private Inventory inventory;
-    private IRecipeView<Recipe> recipeView;
     private final JavaPlugin plugin;
+    private IRecipeView<Recipe> recipeView;
     private final GuiItemService guiItemService;
     private boolean isReady = false;
 
@@ -91,6 +98,27 @@ public class RecipeMenu implements InventoryHolder {
         recipeView.setRecipe(recipe);
         updateRecipeViewPart();
         isReady = true;
+    }
+
+    @Override
+    public void onMenuClick(InventoryClickEvent event)
+    {
+        event.setCancelled(true); // can be enhanced to cancel only if the click occurs inside the RecipeMenu AND does not modify the contents of the RecipeMenu (shift+click, ...)
+        
+        ItemStack item = event.getCurrentItem();
+        if(item == null || item.isEmpty()) {
+            return;
+        }
+        
+        // Only click on something inside Menu (not empty)
+        NamespacedKey key = new NamespacedKey(VanillaEnoughItems.NAMESPACE, ActionType.REFERENCE_KEY);
+        boolean isActionItem = item.getItemMeta().getPersistentDataContainer().has(key, PersistentDataType.STRING);
+        
+        if(isActionItem) {
+            // TEMP
+            String ref = item.getPersistentDataContainer().get(key, PersistentDataType.STRING);
+            event.getWhoClicked().sendMessage("Action item clicked %s".formatted(ref));
+        }
     }
 
     private void initInventory() {
