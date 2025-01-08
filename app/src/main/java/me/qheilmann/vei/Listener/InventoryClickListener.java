@@ -8,7 +8,9 @@ import org.bukkit.event.inventory.InventoryType.SlotType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
 
+import me.qheilmann.vei.VanillaEnoughItems;
 import me.qheilmann.vei.Menu.RecipeMenu;
+import me.qheilmann.vei.foundation.gui.ActionType;
 
 public class InventoryClickListener implements Listener
 {
@@ -42,7 +44,7 @@ public class InventoryClickListener implements Listener
         }
         
         // Only click on something inside Menu (not empty)
-        NamespacedKey key = new NamespacedKey("vei", "recipe_action"); // TODO replace with the namespace key from a static (vei and recipe_action)
+        NamespacedKey key = new NamespacedKey(VanillaEnoughItems.NAMESPACE, ActionType.REFERENCE_KEY);
         boolean isActionItem = item.getItemMeta().getPersistentDataContainer().has(key, PersistentDataType.STRING);
 
         if(isActionItem) {

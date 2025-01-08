@@ -11,6 +11,7 @@ import org.jetbrains.annotations.NotNull;
 
 import com.google.common.base.Preconditions;
 
+import me.qheilmann.vei.VanillaEnoughItems;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 
@@ -31,7 +32,7 @@ public class GuiItemService
         
         actionItem.editMeta(meta -> meta.displayName(actionType.getDisplayName().color(style.getColor())));
         actionItem.editMeta(meta -> meta.lore(actionType.getLores().stream().map(lore -> lore.color(style.getSecondaryColor())).toList()));
-        NamespacedKey  key = new NamespacedKey ("vei", "recipe_action");
+        NamespacedKey  key = new NamespacedKey(VanillaEnoughItems.NAMESPACE, ActionType.REFERENCE_KEY);
         actionItem.editMeta(meta -> meta.getPersistentDataContainer().set(key, PersistentDataType.STRING, actionType.getReference()));
         
         if(isActionItemUndefined){

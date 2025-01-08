@@ -22,6 +22,8 @@ public enum ActionType {
         BOOKMARK_SERVER_LIST(Component.text("Bookmark server list"), List.of(Component.text("See the server bookmarked recipes")), "bookmark_server_list"),
         EXIT(Component.text("Exit"), List.of(Component.text("Exit the recipe menu")), "exit");
 
+        public final static String REFERENCE_KEY = "recipe_action";
+        
         private final Component displayName;
         private final List<? extends Component> lores;
         private final String reference;

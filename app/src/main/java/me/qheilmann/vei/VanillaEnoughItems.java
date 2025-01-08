@@ -16,15 +16,16 @@ import me.qheilmann.vei.Listener.InventoryDragListener;
 
 public class VanillaEnoughItems extends JavaPlugin {
     
-    public static final String PLUGIN_NAME = VanillaEnoughItems.class.getSimpleName();
-    public static final Logger LOGGER = Logger.getLogger(PLUGIN_NAME);
+    public static final String NAME = VanillaEnoughItems.class.getSimpleName();
+    public static final String NAMESPACE = "vei";
+    public static final Logger LOGGER = Logger.getLogger(NAME);
 
     @Override
     public void onLoad() {
         CommandAPI.onLoad(new CommandAPIBukkitConfig(this));
         new CraftCommand(this).register();
 
-        LOGGER.info(PLUGIN_NAME + " has been loaded!");
+        LOGGER.info(NAME + " has been loaded!");
     }
 
     @Override
@@ -35,12 +36,12 @@ public class VanillaEnoughItems extends JavaPlugin {
 
         temporaryRecipe();
 
-        LOGGER.info(PLUGIN_NAME+ " has been enabled!");
+        LOGGER.info(NAME+ " has been enabled!");
     }
 
     @Override
     public void onDisable() {
-        LOGGER.info(PLUGIN_NAME + " has been disabled!");
+        LOGGER.info(NAME + " has been disabled!");
     }
 
     // TODO: Remove this method (temporary recipe)
