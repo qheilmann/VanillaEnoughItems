@@ -9,7 +9,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.CommandPermission;
 import dev.jorel.commandapi.arguments.RecipeArgument;
-import me.qheilmann.vei.API.RecipeInterface;
+import me.qheilmann.vei.Menu.MenuManager;
 
 public class CraftCommand implements ICommand{
     public static final String NAME = "craft";
@@ -24,9 +24,11 @@ public class CraftCommand implements ICommand{
                                         """;
 
     private JavaPlugin plugin;
+    private MenuManager menuManager;
 
-    public CraftCommand(JavaPlugin plugin) {
+    public CraftCommand(JavaPlugin plugin, MenuManager menuManager) {
         this.plugin = plugin;
+        this.menuManager = menuManager;
     }
 
     @Override
@@ -58,7 +60,7 @@ public class CraftCommand implements ICommand{
             return;
         }
         
-        new RecipeInterface(plugin).openInterface(player, shapedRecipe);
+        menuManager.openRecipeMenu(player, shapedRecipe);
     }
 
     // Utils

@@ -13,6 +13,7 @@ import dev.jorel.commandapi.CommandAPIBukkitConfig;
 import me.qheilmann.vei.Command.CraftCommand;
 import me.qheilmann.vei.Listener.InventoryClickListener;
 import me.qheilmann.vei.Listener.InventoryDragListener;
+import me.qheilmann.vei.Menu.MenuManager;
 
 public class VanillaEnoughItems extends JavaPlugin {
     
@@ -20,10 +21,14 @@ public class VanillaEnoughItems extends JavaPlugin {
     public static final String NAMESPACE = "vei";
     public static final Logger LOGGER = Logger.getLogger(NAME);
 
+    private MenuManager menuManager;
+
     @Override
     public void onLoad() {
+        menuManager = new MenuManager(this);
+
         CommandAPI.onLoad(new CommandAPIBukkitConfig(this));
-        new CraftCommand(this).register();
+        new CraftCommand(this, menuManager).register();
 
         LOGGER.info(NAME + " has been loaded!");
     }
@@ -31,7 +36,7 @@ public class VanillaEnoughItems extends JavaPlugin {
     @Override
     public void onEnable() {
         CommandAPI.onEnable();
-        getServer().getPluginManager().registerEvents(new InventoryClickListener(), this);
+        getServer().getPluginManager().registerEvents(new InventoryClickListener(menuManager), this);
         getServer().getPluginManager().registerEvents(new InventoryDragListener(this), this);
 
         temporaryRecipe();
