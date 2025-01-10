@@ -8,17 +8,20 @@ import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
-import org.bukkit.inventory.ShapedRecipe;
+import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
-
 import me.qheilmann.vei.VanillaEnoughItems;
-import me.qheilmann.vei.foundation.gui.ActionType;
+import me.qheilmann.vei.Menu.Button.ButtonFactory;
+import me.qheilmann.vei.Menu.Button.ButtonItem;
+import me.qheilmann.vei.Menu.Button.GenericButton;
+import me.qheilmann.vei.Menu.Button.RecipeMenuButton;
+import me.qheilmann.vei.foundation.gui.ButtonType;
 import me.qheilmann.vei.foundation.gui.GuiItemService;
 
-public class RecipeMenu implements IMenu{
-    
+public class RecipeMenu implements IMenu {
+
     private RecipeInventory recipeInventory;
     private JavaPlugin plugin;
     private MenuManager menuManager;
@@ -37,37 +40,53 @@ public class RecipeMenu implements IMenu{
         return recipeInventory.getInventory();
     }
 
+    public MenuManager getMenuManager() {
+        return menuManager;
+    }
+
     @Override
-    public void onMenuClick(InventoryClickEvent event)
-    {
-        event.setCancelled(true); // can be enhanced to cancel only if the click occurs inside the RecipeMenu AND does not modify the contents of the RecipeMenu (shift+click, ...)
-        
+    public void onMenuClick(InventoryClickEvent event) {
+        // can be enhanced to cancel only if the click occurs inside the RecipeMenu AND
+        // does not modify the contents of the RecipeMenu (shift+click, ...)
+        event.setCancelled(true);
+
         ItemStack item = event.getCurrentItem();
-        if(item == null || item.isEmpty()) {
+        if (item == null || item.isEmpty()) {
             return;
         }
-        
-        // Only click on something inside Menu (not empty)
-        NamespacedKey key = new NamespacedKey(VanillaEnoughItems.NAMESPACE, ActionType.REFERENCE_KEY);
-        boolean isActionItem = item.getItemMeta().getPersistentDataContainer().has(key, PersistentDataType.STRING);
-        
-        if(isActionItem) {
-            // TEMP
-            String ref = item.getPersistentDataContainer().get(key, PersistentDataType.STRING);
-            event.getWhoClicked().sendMessage("Action item clicked %s".formatted(ref));
 
-            if(ref == "info"){
-                ShapedRecipe craft = (ShapedRecipe)plugin.getServer().getRecipe(new NamespacedKey(VanillaEnoughItems.NAMESPACE, "warriorsword"));
-                // new RecipeInterface(plugin).openInterface((Player)event.getWhoClicked(), craft);
-                // event.getWhoClicked().sendMessage("yolo %d".formatted(plugin.getServer().getCurrentTick()));
-                BukkitScheduler scheduler = plugin.getServer().getScheduler();
-                scheduler.runTask(plugin, () -> menuManager.openRecipeMenu((Player)event.getWhoClicked(), craft)); // inside something like MenuManager ?
-                scheduler.runTask(plugin, () -> event.getWhoClicked().sendMessage("yolo %d".formatted(plugin.getServer().getCurrentTick())));
+        // Because of the way PaperMc/Minecraft create the inventory, all subclass of ItemStack are lost and cast to ItemStack
+        // So we can't use instanceof to detect the type of the item and check if it is a ButtonItem
+        // So we have to use the PersistentDataContainer to store the type of the item and retrieve the right button
+
+        // TODO refact the archi of the ButtonItem, subclass and ButtonType
+
+        NamespacedKey key = new NamespacedKey(VanillaEnoughItems.NAMESPACE, ButtonType.REFERENCE_KEY);
+        PersistentDataContainer pdc = item.getItemMeta().getPersistentDataContainer();
+        boolean isButtonItem = pdc.has(key, PersistentDataType.STRING);
+
+        if (!isButtonItem) {
+            return;
+        }
+
+        BukkitScheduler scheduler = plugin.getServer().getScheduler();
+        Player player = (Player) event.getWhoClicked(); // TODO replace each Button / Manager with HumanEntity
+        String ref = pdc.get(key, PersistentDataType.STRING);
+        ButtonType buttonType = ButtonType.fromReference(ref);
+        if (buttonType != null) {
+            ButtonItem button = ButtonFactory.createButton(buttonType, item);
+            if (button instanceof GenericButton genericButton) {
+                scheduler.runTask(plugin, () -> genericButton.trigger(menuManager, player));
+            }
+            else if (button instanceof RecipeMenuButton recipeMenuButton) {
+                scheduler.runTask(plugin, () -> recipeMenuButton.trigger(this, player));
+            }
+            else {
+                throw new IllegalArgumentException("Unknown ButtonItem type");
             }
         }
     }
 
-    
     @Override
     public void onMenuOpen(InventoryOpenEvent event) {
         return;

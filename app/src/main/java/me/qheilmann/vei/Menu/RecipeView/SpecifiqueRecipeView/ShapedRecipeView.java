@@ -16,7 +16,7 @@ import me.qheilmann.vei.Menu.RecipeView.IRecipeView;
 import me.qheilmann.vei.Menu.RecipeView.RecipeViewContainer;
 import me.qheilmann.vei.Menu.RecipeView.ViewSlot.IngredientViewSlot;
 import me.qheilmann.vei.Menu.RecipeView.ViewSlot.StaticViewSlot;
-import me.qheilmann.vei.foundation.gui.ActionType;
+import me.qheilmann.vei.foundation.gui.ButtonType;
 import me.qheilmann.vei.foundation.gui.GuiItemService;
 import me.qheilmann.vei.foundation.gui.VeiStyle;
 
@@ -115,11 +115,11 @@ public class ShapedRecipeView implements IRecipeView<ShapedRecipe> {
 
     private void initInventory() {
         VeiStyle style = VeiStyle.LIGHT;
-        recipeViewContainer.setViewSlot(new StaticViewSlot(NEXT_RECIPE_COORDS       , guiItemService.CreateActionItem(ActionType.NEXT_RECIPE, style)));
-        recipeViewContainer.setViewSlot(new StaticViewSlot(PREVIOUS_RECIPE_COORDS   , guiItemService.CreateActionItem(ActionType.PREVIOUS_RECIPE, style)));
-        recipeViewContainer.setViewSlot(new StaticViewSlot(BACK_RECIPE_COORDS       , guiItemService.CreateActionItem(ActionType.BACK_RECIPE, style)));
-        recipeViewContainer.setViewSlot(new StaticViewSlot(FORWARD_RECIPE_COORDS    , guiItemService.CreateActionItem(ActionType.FORWARD_RECIPE, style)));
-        recipeViewContainer.setViewSlot(new StaticViewSlot(MOVE_INGREDIENTS_COORDS  , guiItemService.CreateActionItem(ActionType.MOVE_INGREDIENTS, style)));
+        recipeViewContainer.setViewSlot(new StaticViewSlot(NEXT_RECIPE_COORDS       , guiItemService.CreateButtonItem(ButtonType.NEXT_RECIPE, style)));
+        recipeViewContainer.setViewSlot(new StaticViewSlot(PREVIOUS_RECIPE_COORDS   , guiItemService.CreateButtonItem(ButtonType.PREVIOUS_RECIPE, style)));
+        recipeViewContainer.setViewSlot(new StaticViewSlot(BACK_RECIPE_COORDS       , guiItemService.CreateButtonItem(ButtonType.BACK_RECIPE, style)));
+        recipeViewContainer.setViewSlot(new StaticViewSlot(FORWARD_RECIPE_COORDS    , guiItemService.CreateButtonItem(ButtonType.FORWARD_RECIPE, style)));
+        recipeViewContainer.setViewSlot(new StaticViewSlot(MOVE_INGREDIENTS_COORDS  , guiItemService.CreateButtonItem(ButtonType.MOVE_INGREDIENTS, style)));
 
         recipeViewContainer.setViewSlot(new StaticViewSlot(WORKBENCH_COORDS, new ItemStack(Material.CRAFTING_TABLE)));
     }

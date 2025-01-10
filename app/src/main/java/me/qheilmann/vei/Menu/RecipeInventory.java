@@ -18,7 +18,7 @@ import com.google.common.base.Preconditions;
 
 import me.qheilmann.vei.Menu.RecipeView.IRecipeView;
 import me.qheilmann.vei.Menu.RecipeView.RecipeViewFactory;
-import me.qheilmann.vei.foundation.gui.ActionType;
+import me.qheilmann.vei.foundation.gui.ButtonType;
 import me.qheilmann.vei.foundation.gui.GuiItemService;
 import me.qheilmann.vei.foundation.gui.VeiStyle;
 
@@ -110,16 +110,16 @@ public class RecipeInventory implements InventoryHolder, IOwnedByMenu {
     private void initInventory() {
         VeiStyle style = VeiStyle.LIGHT;
 
-        inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.QUICK_LINK),                    guiItemService.CreateActionItem(ActionType.QUICK_LINK,                    style));
-        inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.WORKBENCH_TYPE_SCROLL_LEFT),    guiItemService.CreateActionItem(ActionType.WORKBENCH_TYPE_SCROLL_LEFT,    style));
-        inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.WORKBENCH_TYPE_SCROLL_RIGHT),   guiItemService.CreateActionItem(ActionType.WORKBENCH_TYPE_SCROLL_RIGHT,   style));
-        inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.INFO),                          guiItemService.CreateActionItem(ActionType.INFO,                          style));
-        inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.WORKBENCH_VARIANT_SCROLL_UP),   guiItemService.CreateActionItem(ActionType.WORKBENCH_VARIANT_SCROLL_UP,   style));
-        inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.WORKBENCH_VARIANT_SCROLL_DOWN), guiItemService.CreateActionItem(ActionType.WORKBENCH_VARIANT_SCROLL_DOWN, style));
-        inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.BOOKMARK_LIST),                 guiItemService.CreateActionItem(ActionType.BOOKMARK_LIST,                 style));
-        inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.BOOKMARK_SERVER_LIST),          guiItemService.CreateActionItem(ActionType.BOOKMARK_SERVER_LIST,          style));
-        inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.EXIT),                          guiItemService.CreateActionItem(ActionType.EXIT,                          style));
-        inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.BOOKMARK_THIS_RECIPE),          guiItemService.CreateActionItem(ActionType.BOOKMARK_THIS_RECIPE,          style));
+        inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.QUICK_LINK),                    guiItemService.CreateButtonItem(ButtonType.QUICK_LINK,                    style));
+        inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.WORKBENCH_TYPE_SCROLL_LEFT),    guiItemService.CreateButtonItem(ButtonType.WORKBENCH_TYPE_SCROLL_LEFT,    style));
+        inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.WORKBENCH_TYPE_SCROLL_RIGHT),   guiItemService.CreateButtonItem(ButtonType.WORKBENCH_TYPE_SCROLL_RIGHT,   style));
+        inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.INFO),                          guiItemService.CreateButtonItem(ButtonType.INFO,                          style));
+        inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.WORKBENCH_VARIANT_SCROLL_UP),   guiItemService.CreateButtonItem(ButtonType.WORKBENCH_VARIANT_SCROLL_UP,   style));
+        inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.WORKBENCH_VARIANT_SCROLL_DOWN), guiItemService.CreateButtonItem(ButtonType.WORKBENCH_VARIANT_SCROLL_DOWN, style));
+        inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.BOOKMARK_LIST),                 guiItemService.CreateButtonItem(ButtonType.BOOKMARK_LIST,                 style));
+        inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.BOOKMARK_SERVER_LIST),          guiItemService.CreateButtonItem(ButtonType.BOOKMARK_SERVER_LIST,          style));
+        inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.EXIT),                          guiItemService.CreateButtonItem(ButtonType.EXIT,                          style));
+        inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.BOOKMARK_THIS_RECIPE),          guiItemService.CreateButtonItem(ButtonType.BOOKMARK_THIS_RECIPE,          style));
     }
 
     /**

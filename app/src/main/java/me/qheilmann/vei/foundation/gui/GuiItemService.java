@@ -12,6 +12,8 @@ import org.jetbrains.annotations.NotNull;
 import com.google.common.base.Preconditions;
 
 import me.qheilmann.vei.VanillaEnoughItems;
+import me.qheilmann.vei.Menu.Button.ButtonFactory;
+import me.qheilmann.vei.Menu.Button.ButtonItem;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 
@@ -19,27 +21,32 @@ public class GuiItemService
 {
     private final Material WarningItem = Material.BARRIER;
 
-    public ItemStack CreateActionItem(@NotNull ActionType actionType, @NotNull VeiStyle style) {
-        Preconditions.checkNotNull(actionType, "ActionType cannot be null");
+    // return ButtonItem
+    public ButtonItem CreateButtonItem(@NotNull ButtonType buttonType, @NotNull VeiStyle style) {
+        Preconditions.checkNotNull(buttonType, "ButtonType cannot be null");
         Preconditions.checkNotNull(style, "VeiStyle cannot be null");
         
-        ItemStack actionItem = style.getActionItem(actionType);
-        boolean isActionItemUndefined = (actionItem == null);
+        ItemStack buttonSkin = style.getButtonSkin(buttonType);
+        boolean isButtonItemNull = (buttonSkin == null);
 
-        if(actionItem == null) {
-            actionItem = new ItemStack(WarningItem);
+        if(buttonSkin == null) {
+            buttonSkin = new ItemStack(WarningItem);
         }
-        
-        actionItem.editMeta(meta -> meta.displayName(actionType.getDisplayName().color(style.getColor())));
-        actionItem.editMeta(meta -> meta.lore(actionType.getLores().stream().map(lore -> lore.color(style.getSecondaryColor())).toList()));
-        NamespacedKey  key = new NamespacedKey(VanillaEnoughItems.NAMESPACE, ActionType.REFERENCE_KEY);
-        actionItem.editMeta(meta -> meta.getPersistentDataContainer().set(key, PersistentDataType.STRING, actionType.getReference()));
-        
-        if(isActionItemUndefined){
-            actionItem = CreateWarningItem("Conversion of the action type %s to an item with the the style %s failed".formatted(actionType.toString(), style.getName()), actionItem);
+        else {
+            buttonSkin = buttonSkin.clone();
         }
 
-        return actionItem;
+        buttonSkin.editMeta(meta -> meta.displayName(buttonType.getDisplayName().color(style.getColor())));
+        buttonSkin.editMeta(meta -> meta.lore(buttonType.getLores().stream().map(lore -> lore.color(style.getSecondaryColor())).toList()));
+        NamespacedKey  key = new NamespacedKey(VanillaEnoughItems.NAMESPACE, ButtonType.REFERENCE_KEY);
+        buttonSkin.editMeta(meta -> meta.getPersistentDataContainer().set(key, PersistentDataType.STRING, buttonType.getReference()));
+        
+        if(isButtonItemNull){
+            buttonSkin = CreateWarningItem("Conversion of the button type %s to an item with the the style %s failed".formatted(buttonType.toString(), style.getName()), buttonSkin);
+        }
+
+        ButtonItem button = ButtonFactory.createButton(buttonType, buttonSkin);
+        return button;
     }
 
     public ItemStack CreateWarningItem(@NotNull String warningMessage) {
