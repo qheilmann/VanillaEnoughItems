@@ -12,11 +12,17 @@ import org.joml.Vector2i;
 
 import com.google.common.base.Preconditions;
 
+import me.qheilmann.vei.Menu.IMenu;
+import me.qheilmann.vei.Menu.MenuManager;
+import me.qheilmann.vei.Menu.Button.RecipeMenu.BackRecipeButton;
+import me.qheilmann.vei.Menu.Button.RecipeMenu.ForwardRecipeButton;
+import me.qheilmann.vei.Menu.Button.RecipeMenu.MoveIngredientsButton;
+import me.qheilmann.vei.Menu.Button.RecipeMenu.NextRecipeButton;
+import me.qheilmann.vei.Menu.Button.RecipeMenu.PreviousRecipeButton;
 import me.qheilmann.vei.Menu.RecipeView.IRecipeView;
 import me.qheilmann.vei.Menu.RecipeView.RecipeViewContainer;
 import me.qheilmann.vei.Menu.RecipeView.ViewSlot.IngredientViewSlot;
 import me.qheilmann.vei.Menu.RecipeView.ViewSlot.StaticViewSlot;
-import me.qheilmann.vei.foundation.gui.ButtonType;
 import me.qheilmann.vei.foundation.gui.GuiItemService;
 import me.qheilmann.vei.foundation.gui.VeiStyle;
 
@@ -58,13 +64,16 @@ public class ShapedRecipeView implements IRecipeView<ShapedRecipe> {
     private RecipeViewContainer recipeViewContainer;
     private ShapedRecipe shapedRecipe;
     private boolean hasRecipeChanged = true;
-    private final GuiItemService guiItemService;
+    private final IMenu ownerMenu;
+    private final MenuManager menuManager;
 
-    public ShapedRecipeView(@NotNull GuiItemService guiItemService, @NotNull ShapedRecipe recipe) {
-        Preconditions.checkNotNull(guiItemService, "GuiItemService cannot be null");
+    public ShapedRecipeView(@NotNull IMenu ownerMenu, @NotNull ShapedRecipe recipe, @NotNull MenuManager menuManager) {
+        Preconditions.checkNotNull(ownerMenu, "OwnerMenu cannot be null");
         Preconditions.checkNotNull(recipe, "Recipe cannot be null");
+        Preconditions.checkNotNull(menuManager, "MenuManager cannot be null");
         
-        this.guiItemService = guiItemService;
+        this.ownerMenu = ownerMenu;
+        this.menuManager = menuManager;
         recipeViewContainer = new RecipeViewContainer();
         initInventory();
         setRecipe(recipe);
@@ -115,11 +124,11 @@ public class ShapedRecipeView implements IRecipeView<ShapedRecipe> {
 
     private void initInventory() {
         VeiStyle style = VeiStyle.LIGHT;
-        recipeViewContainer.setViewSlot(new StaticViewSlot(NEXT_RECIPE_COORDS       , guiItemService.CreateButtonItem(ButtonType.NEXT_RECIPE, style)));
-        recipeViewContainer.setViewSlot(new StaticViewSlot(PREVIOUS_RECIPE_COORDS   , guiItemService.CreateButtonItem(ButtonType.PREVIOUS_RECIPE, style)));
-        recipeViewContainer.setViewSlot(new StaticViewSlot(BACK_RECIPE_COORDS       , guiItemService.CreateButtonItem(ButtonType.BACK_RECIPE, style)));
-        recipeViewContainer.setViewSlot(new StaticViewSlot(FORWARD_RECIPE_COORDS    , guiItemService.CreateButtonItem(ButtonType.FORWARD_RECIPE, style)));
-        recipeViewContainer.setViewSlot(new StaticViewSlot(MOVE_INGREDIENTS_COORDS  , guiItemService.CreateButtonItem(ButtonType.MOVE_INGREDIENTS, style)));
+        recipeViewContainer.setViewSlot(new StaticViewSlot(NEXT_RECIPE_COORDS       , new NextRecipeButton(style, ownerMenu , menuManager)));
+        recipeViewContainer.setViewSlot(new StaticViewSlot(PREVIOUS_RECIPE_COORDS   , new PreviousRecipeButton(style, ownerMenu , menuManager)));
+        recipeViewContainer.setViewSlot(new StaticViewSlot(BACK_RECIPE_COORDS       , new BackRecipeButton(style, ownerMenu , menuManager)));
+        recipeViewContainer.setViewSlot(new StaticViewSlot(FORWARD_RECIPE_COORDS    , new ForwardRecipeButton(style, ownerMenu , menuManager)));
+        recipeViewContainer.setViewSlot(new StaticViewSlot(MOVE_INGREDIENTS_COORDS  , new MoveIngredientsButton(style, ownerMenu , menuManager)));
 
         recipeViewContainer.setViewSlot(new StaticViewSlot(WORKBENCH_COORDS, new ItemStack(Material.CRAFTING_TABLE)));
     }
@@ -140,7 +149,7 @@ public class ShapedRecipeView implements IRecipeView<ShapedRecipe> {
                     recipeViewContainer.setViewSlot(new IngredientViewSlot(INPUTS_ORGIGIN_COORDS.add(x, y, new Vector2i()), materialChoice));
                 }
                 else {
-                    guiItemService.CreateWarningItem("Conversion of the RecipeChoice type to %s is not supported".formatted(recipeChoice.getClass().getName()));
+                    new GuiItemService().CreateWarningItem("Conversion of the RecipeChoice type to %s is not supported".formatted(recipeChoice.getClass().getName()));
                 }
             }
         }

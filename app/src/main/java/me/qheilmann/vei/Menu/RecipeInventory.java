@@ -16,9 +16,18 @@ import org.joml.Vector2i;
 
 import com.google.common.base.Preconditions;
 
+import me.qheilmann.vei.Menu.Button.Generic.BookmarkListButton;
+import me.qheilmann.vei.Menu.Button.Generic.BookmarkServerListButton;
+import me.qheilmann.vei.Menu.Button.Generic.ExitButton;
+import me.qheilmann.vei.Menu.Button.Generic.InfoButton;
+import me.qheilmann.vei.Menu.Button.RecipeMenu.BookmarkThisRecipeButton;
+import me.qheilmann.vei.Menu.Button.RecipeMenu.QuickLinkButton;
+import me.qheilmann.vei.Menu.Button.RecipeMenu.WorkbenchTypeScrollLeftButton;
+import me.qheilmann.vei.Menu.Button.RecipeMenu.WorkbenchTypeScrollRightButton;
+import me.qheilmann.vei.Menu.Button.RecipeMenu.WorkbenchVariantScrollDownButton;
+import me.qheilmann.vei.Menu.Button.RecipeMenu.WorkbenchVariantScrollUpButton;
 import me.qheilmann.vei.Menu.RecipeView.IRecipeView;
 import me.qheilmann.vei.Menu.RecipeView.RecipeViewFactory;
-import me.qheilmann.vei.foundation.gui.ButtonType;
 import me.qheilmann.vei.foundation.gui.GuiItemService;
 import me.qheilmann.vei.foundation.gui.VeiStyle;
 
@@ -68,13 +77,11 @@ public class RecipeInventory implements InventoryHolder, IOwnedByMenu {
     private final IMenu ownerMenu;
     private final JavaPlugin plugin;
     private IRecipeView<Recipe> recipeView;
-    private final GuiItemService guiItemService;
     private boolean isReady = false;
 
     public RecipeInventory(IMenu ownerMenu, JavaPlugin plugin, GuiItemService guiItemService) {
         this.ownerMenu = ownerMenu;
         this.plugin = plugin;
-        this.guiItemService = guiItemService;
         this.inventory = this.plugin.getServer().createInventory(this, 54, Component.text("Recipe"));
         initInventory();
     }
@@ -97,7 +104,7 @@ public class RecipeInventory implements InventoryHolder, IOwnedByMenu {
     }
 
     public void setRecipe(@NotNull Recipe recipe) {
-        recipeView = RecipeViewFactory.createRecipeView(recipe);
+        recipeView = RecipeViewFactory.createRecipeView(recipe, getOwnedMenu(), ((RecipeMenu)getOwnedMenu()).getMenuManager());
         recipeView.setRecipe(recipe);
         updateRecipeViewPart();
         isReady = true;
@@ -110,16 +117,17 @@ public class RecipeInventory implements InventoryHolder, IOwnedByMenu {
     private void initInventory() {
         VeiStyle style = VeiStyle.LIGHT;
 
-        inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.QUICK_LINK),                    guiItemService.CreateButtonItem(ButtonType.QUICK_LINK,                    style));
-        inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.WORKBENCH_TYPE_SCROLL_LEFT),    guiItemService.CreateButtonItem(ButtonType.WORKBENCH_TYPE_SCROLL_LEFT,    style));
-        inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.WORKBENCH_TYPE_SCROLL_RIGHT),   guiItemService.CreateButtonItem(ButtonType.WORKBENCH_TYPE_SCROLL_RIGHT,   style));
-        inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.INFO),                          guiItemService.CreateButtonItem(ButtonType.INFO,                          style));
-        inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.WORKBENCH_VARIANT_SCROLL_UP),   guiItemService.CreateButtonItem(ButtonType.WORKBENCH_VARIANT_SCROLL_UP,   style));
-        inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.WORKBENCH_VARIANT_SCROLL_DOWN), guiItemService.CreateButtonItem(ButtonType.WORKBENCH_VARIANT_SCROLL_DOWN, style));
-        inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.BOOKMARK_LIST),                 guiItemService.CreateButtonItem(ButtonType.BOOKMARK_LIST,                 style));
-        inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.BOOKMARK_SERVER_LIST),          guiItemService.CreateButtonItem(ButtonType.BOOKMARK_SERVER_LIST,          style));
-        inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.EXIT),                          guiItemService.CreateButtonItem(ButtonType.EXIT,                          style));
-        inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.BOOKMARK_THIS_RECIPE),          guiItemService.CreateButtonItem(ButtonType.BOOKMARK_THIS_RECIPE,          style));
+        MenuManager menuManager = ((RecipeMenu)ownerMenu).getMenuManager(); // TODO: refactor this stuff
+        inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.QUICK_LINK),                    new QuickLinkButton(style, ownerMenu, ((RecipeMenu)ownerMenu).getMenuManager()));
+        inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.WORKBENCH_TYPE_SCROLL_LEFT),    new WorkbenchTypeScrollLeftButton(style, ownerMenu, menuManager));
+        inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.WORKBENCH_TYPE_SCROLL_RIGHT),   new WorkbenchTypeScrollRightButton(style, ownerMenu, menuManager));
+        inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.INFO),                          new InfoButton(style, ownerMenu, menuManager));
+        inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.WORKBENCH_VARIANT_SCROLL_UP),   new WorkbenchVariantScrollUpButton(style, ownerMenu, menuManager));
+        inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.WORKBENCH_VARIANT_SCROLL_DOWN), new WorkbenchVariantScrollDownButton(style, ownerMenu, menuManager));
+        inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.BOOKMARK_LIST),                 new BookmarkListButton(style, ownerMenu, menuManager));
+        inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.BOOKMARK_SERVER_LIST),          new BookmarkServerListButton(style, ownerMenu, menuManager));
+        inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.EXIT),                          new ExitButton(style, ownerMenu, menuManager));
+        inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.BOOKMARK_THIS_RECIPE),          new BookmarkThisRecipeButton(style, ownerMenu, menuManager));
     }
 
     /**

@@ -13,11 +13,7 @@ import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 import me.qheilmann.vei.VanillaEnoughItems;
-import me.qheilmann.vei.Menu.Button.ButtonFactory;
 import me.qheilmann.vei.Menu.Button.ButtonItem;
-import me.qheilmann.vei.Menu.Button.GenericButton;
-import me.qheilmann.vei.Menu.Button.RecipeMenuButton;
-import me.qheilmann.vei.foundation.gui.ButtonType;
 import me.qheilmann.vei.foundation.gui.GuiItemService;
 
 public class RecipeMenu implements IMenu {
@@ -55,13 +51,13 @@ public class RecipeMenu implements IMenu {
             return;
         }
 
-        // Because of the way PaperMc/Minecraft create the inventory, all subclass of ItemStack are lost and cast to ItemStack
-        // So we can't use instanceof to detect the type of the item and check if it is a ButtonItem
-        // So we have to use the PersistentDataContainer to store the type of the item and retrieve the right button
+        // Because of the way PaperMc/Minecraft create the inventory, all subclass of ItemStack are lost and re-create as ItemStack
+        // So we can't use instanceof to detect the type of the item and check if it is a specifique subclass (ButtonItem, ...)
+        // So we have to use the PersistentDataContainer to store the type of the item and retrieve the subclass
 
         // TODO refact the archi of the ButtonItem, subclass and ButtonType
 
-        NamespacedKey key = new NamespacedKey(VanillaEnoughItems.NAMESPACE, ButtonType.REFERENCE_KEY);
+        NamespacedKey key = new NamespacedKey(VanillaEnoughItems.NAMESPACE, ButtonItem.REFERENCE_KEY);
         PersistentDataContainer pdc = item.getItemMeta().getPersistentDataContainer();
         boolean isButtonItem = pdc.has(key, PersistentDataType.STRING);
 
@@ -69,22 +65,28 @@ public class RecipeMenu implements IMenu {
             return;
         }
 
+        String reference = pdc.get(key, PersistentDataType.STRING);
+        ButtonItem button = ButtonItem.restoreButton(reference, item, this, menuManager);
+
         BukkitScheduler scheduler = plugin.getServer().getScheduler();
         Player player = (Player) event.getWhoClicked(); // TODO replace each Button / Manager with HumanEntity
-        String ref = pdc.get(key, PersistentDataType.STRING);
-        ButtonType buttonType = ButtonType.fromReference(ref);
-        if (buttonType != null) {
-            ButtonItem button = ButtonFactory.createButton(buttonType, item);
-            if (button instanceof GenericButton genericButton) {
-                scheduler.runTask(plugin, () -> genericButton.trigger(menuManager, player));
-            }
-            else if (button instanceof RecipeMenuButton recipeMenuButton) {
-                scheduler.runTask(plugin, () -> recipeMenuButton.trigger(this, player));
-            }
-            else {
-                throw new IllegalArgumentException("Unknown ButtonItem type");
-            }
-        }
+
+        scheduler.runTask(plugin, () -> button.trigger(player));
+
+
+        // ButtonType buttonType = ButtonType.fromReference(reference);
+        // if (buttonType != null) {
+        //     ButtonItem button = ButtonFactory.createButton(buttonType, item);
+        //     if (button instanceof GenericButton genericButton) {
+        //         scheduler.runTask(plugin, () -> genericButton.trigger(menuManager, player));
+        //     }
+        //     else if (button instanceof RecipeMenuButton recipeMenuButton) {
+        //         scheduler.runTask(plugin, () -> recipeMenuButton.trigger(this, player));
+        //     }
+        //     else {
+        //         throw new IllegalArgumentException("Unknown ButtonItem type");
+        //     }
+        // }
     }
 
     @Override

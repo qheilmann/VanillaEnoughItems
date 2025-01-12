@@ -2,17 +2,15 @@ package me.qheilmann.vei.foundation.gui;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
+
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 
 import com.google.common.base.Preconditions;
 
-import me.qheilmann.vei.VanillaEnoughItems;
-import me.qheilmann.vei.Menu.Button.ButtonFactory;
 import me.qheilmann.vei.Menu.Button.ButtonItem;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
@@ -22,31 +20,43 @@ public class GuiItemService
     private final Material WarningItem = Material.BARRIER;
 
     // return ButtonItem
-    public ButtonItem CreateButtonItem(@NotNull ButtonType buttonType, @NotNull VeiStyle style) {
-        Preconditions.checkNotNull(buttonType, "ButtonType cannot be null");
-        Preconditions.checkNotNull(style, "VeiStyle cannot be null");
+    public ButtonItem CreateButtonItem(@NotNull Supplier<? extends ButtonItem> buttonSupplier, @NotNull VeiStyle style) {
+        // Preconditions.checkNotNull(buttonSupplier, "ButtonSupplier cannot be null");
+        // Preconditions.checkNotNull(style, "VeiStyle cannot be null");
+
+        // ButtonItem button = buttonSupplier.get();
+        // ItemStack buttonSkin = style.getButtonSkin(button.getClass());
+        // boolean isButtonItemNull = (buttonSkin == null);
+
+
+
+        // ItemStack item = style.getButtonSkin(buttonClass);
+        // ButtonItem button = buttonClass.cast(item);
         
-        ItemStack buttonSkin = style.getButtonSkin(buttonType);
-        boolean isButtonItemNull = (buttonSkin == null);
+        // ItemStack buttonSkin = style.getButtonSkin(buttonClass);
+        // boolean isButtonItemNull = (buttonSkin == null);
 
-        if(buttonSkin == null) {
-            buttonSkin = new ItemStack(WarningItem);
-        }
-        else {
-            buttonSkin = buttonSkin.clone();
-        }
+        // if(buttonSkin == null) {
+        //     buttonSkin = new ItemStack(WarningItem);
+        // }
+        // else {
+        //     buttonSkin = buttonSkin.clone();
+        // }
 
-        buttonSkin.editMeta(meta -> meta.displayName(buttonType.getDisplayName().color(style.getColor())));
-        buttonSkin.editMeta(meta -> meta.lore(buttonType.getLores().stream().map(lore -> lore.color(style.getSecondaryColor())).toList()));
-        NamespacedKey  key = new NamespacedKey(VanillaEnoughItems.NAMESPACE, ButtonType.REFERENCE_KEY);
-        buttonSkin.editMeta(meta -> meta.getPersistentDataContainer().set(key, PersistentDataType.STRING, buttonType.getReference()));
+        // TEMP
+        // buttonSkin.editMeta(meta -> meta.displayName(buttonClass.getDisplayName().color(style.getColor())));
+        // buttonSkin.editMeta(meta -> meta.lore(buttonClass.getLores().stream().map(lore -> lore.color(style.getSecondaryColor())).toList()));
+        // NamespacedKey  key = new NamespacedKey(VanillaEnoughItems.NAMESPACE, ButtonType.REFERENCE_KEY);
+        // buttonSkin.editMeta(meta -> meta.getPersistentDataContainer().set(key, PersistentDataType.STRING, buttonClass.getReference()));
         
-        if(isButtonItemNull){
-            buttonSkin = CreateWarningItem("Conversion of the button type %s to an item with the the style %s failed".formatted(buttonType.toString(), style.getName()), buttonSkin);
-        }
+        // if(isButtonItemNull){
+        //     buttonSkin = CreateWarningItem("Conversion of the button type %s to an item with the the style %s failed".formatted(buttonClass.toString(), style.getName()), buttonSkin);
+        // }
 
-        ButtonItem button = ButtonFactory.createButton(buttonType, buttonSkin);
-        return button;
+        // ButtonItem button = ButtonFactory.createButton(buttonClass, buttonSkin);
+        // return button;
+
+        return null;
     }
 
     public ItemStack CreateWarningItem(@NotNull String warningMessage) {
