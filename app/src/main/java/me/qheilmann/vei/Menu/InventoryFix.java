@@ -40,6 +40,8 @@ public class InventoryFix<T extends Inventory> implements Inventory {
     public void setItem(int index, ItemStack item) {
         originalInventory.setItem(index, item);
         itemMap.put(index, item);
+
+        throwIfInventoryIsNotSame();
     }
 
     @Override
@@ -63,6 +65,8 @@ public class InventoryFix<T extends Inventory> implements Inventory {
         for (int i = 0; i < items.length; i++) {
             itemMap.put(i, items[i]);
         }
+
+        throwIfInventoryIsNotSame();
     }
 
     @Override
@@ -73,18 +77,21 @@ public class InventoryFix<T extends Inventory> implements Inventory {
     @Override
     public void setMaxStackSize(int size) {
         originalInventory.setMaxStackSize(size);
+        throwIfInventoryIsNotSame();
     }
 
     @Override
     public void clear(int index) {
         originalInventory.clear(index);
         itemMap.remove(index);
+        throwIfInventoryIsNotSame();
     }
 
     @Override
     public void clear() {
         originalInventory.clear();
         itemMap.clear();
+        throwIfInventoryIsNotSame();
     }
 
     @Override
@@ -199,11 +206,13 @@ public class InventoryFix<T extends Inventory> implements Inventory {
     @Override
     public void remove(Material material) {
         itemMap.entrySet().removeIf(entry -> entry.getValue() != null && entry.getValue().getType() == material);
+        throwIfInventoryIsNotSame();
     }
 
     @Override
     public void remove(ItemStack item) {
         itemMap.entrySet().removeIf(entry -> entry.getValue() != null && entry.getValue().equals(item));
+        throwIfInventoryIsNotSame();
     }
 
     @Override
