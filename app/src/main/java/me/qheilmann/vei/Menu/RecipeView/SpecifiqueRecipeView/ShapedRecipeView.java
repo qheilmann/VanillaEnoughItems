@@ -90,11 +90,11 @@ public class ShapedRecipeView implements IRecipeView<ShapedRecipe> {
 
         for (int y = 0; y < 3; y++) {
             for (int x = 0; x < 3; x++) {
-                recipeViewContainer.setViewSlot(new StaticViewSlot(INPUTS_ORGIGIN_COORDS.add(x, y, new Vector2i()), new ItemStack(Material.AIR)));
+                recipeViewContainer.setViewSlot(new StaticViewSlot(INPUTS_ORGIGIN_COORDS.add(x, y, new Vector2i()), ItemStack.empty()));
             }
         }
 
-        recipeViewContainer.setViewSlot(new StaticViewSlot(OUTPUTS_COORDS, new ItemStack(Material.AIR)));
+        recipeViewContainer.setViewSlot(new StaticViewSlot(OUTPUTS_COORDS, ItemStack.empty()));
     }
 
     @Override

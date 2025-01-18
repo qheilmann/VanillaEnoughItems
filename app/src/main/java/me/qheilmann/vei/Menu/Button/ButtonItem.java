@@ -3,15 +3,21 @@ package me.qheilmann.vei.Menu.Button;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+
+import javax.naming.Name;
 
 import org.apache.commons.lang3.function.TriFunction;
 import org.bukkit.NamespacedKey;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 
 import me.qheilmann.vei.VanillaEnoughItems;
+import me.qheilmann.vei.Core.Item.PersistentDataType.UuidPdt;
 import me.qheilmann.vei.Menu.IMenu;
 import me.qheilmann.vei.Menu.IOwnedByMenu;
 import me.qheilmann.vei.Menu.MenuManager;
@@ -25,6 +31,7 @@ public abstract class ButtonItem extends ItemStack implements IOwnedByMenu {
     
     protected static final String REFERENCE = "undefined";
     public static final String REFERENCE_KEY = "recipe_action";
+    public static final String UUID_KEY = "button_uuid";
     
     private final MenuManager menuManager;
     private final IMenu ownerMenu;
@@ -41,6 +48,7 @@ public abstract class ButtonItem extends ItemStack implements IOwnedByMenu {
         this.menuManager = menuManager;
     }
 
+    // TODO remove this method and menuManager
     public static ButtonItem restoreButton(String reference, ItemStack originalItemStack, IMenu originalMenuOwner, MenuManager menuManager) {
         TriFunction<ItemStack, IMenu, MenuManager, ButtonItem> constructor = buttonConstructorMap.get(reference);
         
@@ -54,6 +62,7 @@ public abstract class ButtonItem extends ItemStack implements IOwnedByMenu {
     protected void initButton(Component displayName, List<? extends Component> lores, VeiStyle style, String reference) {
         setNameAndLore(displayName, lores, style);
         setReference(reference);
+        setUuid();
     }
 
     public Component getDisplayName() {
@@ -90,5 +99,11 @@ public abstract class ButtonItem extends ItemStack implements IOwnedByMenu {
         this.editMeta(meta -> meta.getPersistentDataContainer().set(key, PersistentDataType.STRING, reference));
     }
 
-    public abstract void trigger(Player player);
+    protected void setUuid() {
+        NamespacedKey key = new NamespacedKey(VanillaEnoughItems.NAMESPACE, UUID_KEY);
+        UUID uuid = java.util.UUID.randomUUID();
+        this.editMeta(meta -> meta.getPersistentDataContainer().set(key, UuidPdt.TYPE, uuid));
+    }
+
+    public abstract void trigger(Player player); // TODO change to trigger(InventoryClickEvent event)
 }

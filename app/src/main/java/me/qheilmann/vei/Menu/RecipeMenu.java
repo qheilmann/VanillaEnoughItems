@@ -1,5 +1,7 @@
 package me.qheilmann.vei.Menu;
 
+import java.util.UUID;
+
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -9,10 +11,10 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 import me.qheilmann.vei.VanillaEnoughItems;
+import me.qheilmann.vei.Core.Item.PersistentDataType.UuidPdt;
 import me.qheilmann.vei.Menu.Button.ButtonItem;
 import me.qheilmann.vei.foundation.gui.GuiItemService;
 
@@ -42,36 +44,63 @@ public class RecipeMenu implements IMenu {
 
     @Override
     public void onMenuClick(InventoryClickEvent event) {
-        // can be enhanced to cancel only if the click occurs inside the RecipeMenu AND
-        // does not modify the contents of the RecipeMenu (shift+click, ...)
+        // POSSIBLE IMPROVEMENT: cancel the event only if the click occurs inside the RecipeMenu
+        // AND does not modify the contents of the RecipeMenu (shift+click, ...)
+        // so the player can still interact with the rest on they player inventory
         event.setCancelled(true);
+
+        if (!(event.getWhoClicked() instanceof Player player)) {
+            return;
+        }
 
         ItemStack item = event.getCurrentItem();
         if (item == null || item.isEmpty()) {
             return;
         }
 
+        NamespacedKey key = new NamespacedKey(VanillaEnoughItems.NAMESPACE, ButtonItem.UUID_KEY);
+        PersistentDataContainer pdc = item.getItemMeta().getPersistentDataContainer();
+        boolean isButtonItem = pdc.has(key, UuidPdt.TYPE);
+
+        if(!isButtonItem) {
+            return;
+        }
+
+        UUID uuid = pdc.get(key, UuidPdt.TYPE);
+        ButtonItem button = recipeInventory.getButtonByUuid(uuid);
+        if (button == null) {
+            return;
+        }
+
+        // button.trigger(player);
+
+        // TODO move the sheduler inside each button only if needed
+        BukkitScheduler scheduler = plugin.getServer().getScheduler();
+        scheduler.runTask(plugin, () -> button.trigger(player));
+        
+
+        // TODO remove this old implementation
         // Because of the way PaperMc/Minecraft create the inventory, all subclass of ItemStack are lost and re-create as ItemStack
         // So we can't use instanceof to detect the type of the item and check if it is a specifique subclass (ButtonItem, ...)
         // So we have to use the PersistentDataContainer to store the type of the item and retrieve the subclass
 
         // TODO refact the archi of the ButtonItem, subclass and ButtonType
 
-        NamespacedKey key = new NamespacedKey(VanillaEnoughItems.NAMESPACE, ButtonItem.REFERENCE_KEY);
-        PersistentDataContainer pdc = item.getItemMeta().getPersistentDataContainer();
-        boolean isButtonItem = pdc.has(key, PersistentDataType.STRING);
+        // NamespacedKey keyOld = new NamespacedKey(VanillaEnoughItems.NAMESPACE, ButtonItem.REFERENCE_KEY);
+        // PersistentDataContainer pdcOld = item.getItemMeta().getPersistentDataContainer();
+        // boolean isButtonItemOld = pdcOld.has(keyOld, PersistentDataType.STRING);
 
-        if (!isButtonItem) {
-            return;
-        }
+        // if (!isButtonItemOld) {
+        //     return;
+        // }
 
-        String reference = pdc.get(key, PersistentDataType.STRING);
-        ButtonItem button = ButtonItem.restoreButton(reference, item, this, menuManager);
+        // String reference = pdcOld.get(keyOld, PersistentDataType.STRING);
+        // ButtonItem buttonold = ButtonItem.restoreButton(reference, item, this, menuManager);
 
-        BukkitScheduler scheduler = plugin.getServer().getScheduler();
-        Player player = (Player) event.getWhoClicked(); // TODO replace each Button / Manager with HumanEntity
+        // BukkitScheduler scheduler = plugin.getServer().getScheduler();
+        // Player playerold = (Player) event.getWhoClicked(); // TODO replace each Button / Manager with HumanEntity
 
-        scheduler.runTask(plugin, () -> button.trigger(player));
+        // scheduler.runTask(plugin, () -> buttonold.trigger(playerold));
 
 
         // ButtonType buttonType = ButtonType.fromReference(reference);

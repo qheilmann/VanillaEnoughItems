@@ -526,7 +526,7 @@ public class InventoryShadow<T extends Inventory> implements Inventory {
                     VanillaEnoughItems.LOGGER.warning("ItemMap Slot " + j + ": " + itemMap.get(j) + "\n");
                 }
 
-            throw new IllegalStateException("The inventoryFix was not correctly implemented, the original inventory is not the same as the inventoryFix, please check the implementation");
+                throw new IllegalStateException("The inventoryFix was not correctly implemented, the original inventory is not the same as the inventoryFix, please check the implementation");
             }
         }
     }

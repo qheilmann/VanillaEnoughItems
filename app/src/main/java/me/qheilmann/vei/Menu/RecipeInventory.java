@@ -5,17 +5,25 @@ import net.kyori.adventure.text.Component;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.UUID;
+
+import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.Validate;
+import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.Recipe;
+import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Vector2i;
 
 import com.google.common.base.Preconditions;
 
+import me.qheilmann.vei.VanillaEnoughItems;
+import me.qheilmann.vei.Core.Item.PersistentDataType.UuidPdt;
+import me.qheilmann.vei.Menu.Button.ButtonItem;
 import me.qheilmann.vei.Menu.Button.Generic.BookmarkListButton;
 import me.qheilmann.vei.Menu.Button.Generic.BookmarkServerListButton;
 import me.qheilmann.vei.Menu.Button.Generic.ExitButton;
@@ -73,7 +81,7 @@ import me.qheilmann.vei.foundation.gui.VeiStyle;
  */
 public class RecipeInventory implements InventoryHolder, IOwnedByMenu {
 
-    private final Inventory inventory;
+    private final InventoryShadow<Inventory> inventory;
     private final IMenu ownerMenu;
     private final JavaPlugin plugin;
     private IRecipeView<Recipe> recipeView;
@@ -82,7 +90,7 @@ public class RecipeInventory implements InventoryHolder, IOwnedByMenu {
     public RecipeInventory(IMenu ownerMenu, JavaPlugin plugin, GuiItemService guiItemService) {
         this.ownerMenu = ownerMenu;
         this.plugin = plugin;
-        this.inventory = this.plugin.getServer().createInventory(this, 54, Component.text("Recipe"));
+        this.inventory = new InventoryShadow<Inventory>(this.plugin.getServer().createInventory(this, 54, Component.text("Recipe")));
         initInventory();
     }
 
@@ -95,7 +103,7 @@ public class RecipeInventory implements InventoryHolder, IOwnedByMenu {
             throw new IllegalStateException("RecipeMenu is not initialized, set a recipe first");
         }
         updateCycle();
-        return inventory;
+        return inventory.getOriginalInventory();
     }
 
     @Override
@@ -128,6 +136,33 @@ public class RecipeInventory implements InventoryHolder, IOwnedByMenu {
         inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.BOOKMARK_SERVER_LIST),          new BookmarkServerListButton(style, ownerMenu, menuManager));
         inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.EXIT),                          new ExitButton(style, ownerMenu, menuManager));
         inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.BOOKMARK_THIS_RECIPE),          new BookmarkThisRecipeButton(style, ownerMenu, menuManager));
+    }
+
+    /**
+     * Get the first button with this UUID inside this inventory
+     * @param uuid the UUID of the button
+     * @return the button with the given UUID or null if no button with the given UUID exists
+     */
+    public @Nullable ButtonItem getButtonByUuid(@NotNull UUID uuid) {
+        Preconditions.checkArgument(uuid != null, "uuid must not be null");
+        NamespacedKey key = new NamespacedKey(VanillaEnoughItems.NAMESPACE, ButtonItem.UUID_KEY);
+        
+        for (var slot : inventory.getStorageContents()) {
+            if (slot == null || !slot.hasItemMeta()) {
+                continue;
+            }
+            
+            PersistentDataContainer pdc = slot.getItemMeta().getPersistentDataContainer();
+            boolean hasUUID = pdc.has(key, UuidPdt.TYPE);
+            if (!hasUUID || !pdc.get(key, UuidPdt.TYPE).equals(uuid)) {
+                continue;
+            }
+            
+            if (slot instanceof ButtonItem button) { // should always be true
+                return button;
+            }
+        }
+        return null;
     }
 
     /**
