@@ -12,6 +12,8 @@ import org.jetbrains.annotations.Nullable;
 
 import com.google.common.base.Preconditions;
 
+import me.qheilmann.vei.VanillaEnoughItems;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -42,6 +44,11 @@ public class InventoryShadow<T extends Inventory> implements Inventory {
         for (int i = 0; i < originalInventory.getSize(); i++) {
             itemMap.put(i, originalInventory.getItem(i));
         }
+        throwIfInventoryIsNotSame();
+    }
+
+    public T getOriginalInventory() {
+        return originalInventory;
     }
 
     @Override
@@ -57,6 +64,13 @@ public class InventoryShadow<T extends Inventory> implements Inventory {
     */
     private void internalSetItem(int index, @Nullable ItemStack item) {
         originalInventory.setItem(index, item);
+
+        if (item == null || item.isEmpty())
+        {
+            itemMap.put(index, null);
+            return;
+        }
+
         itemMap.put(index, item);
     }
 
@@ -496,6 +510,22 @@ public class InventoryShadow<T extends Inventory> implements Inventory {
             ItemStack originalItem = originalInventory.getItem(i);
             ItemStack mapItem = itemMap.get(i);
             if (!Objects.equals(originalItem, mapItem)) {
+                VanillaEnoughItems.LOGGER.warning("The inventoryFix was not correctly implemented, the original inventory is not the same as the inventoryFix, please check the implementation");
+                
+                VanillaEnoughItems.LOGGER.warning("Different Item at slot " + i);
+                VanillaEnoughItems.LOGGER.warning("Slot " + i + ": " + originalItem + " != " + mapItem);
+
+                VanillaEnoughItems.LOGGER.warning("Full Inventory: ");
+                VanillaEnoughItems.LOGGER.warning("Original Inventory: ");
+                for (int j = 0; j < originalInventory.getSize(); j++) {
+                    VanillaEnoughItems.LOGGER.warning("Original Slot " + j + ": " + originalInventory.getItem(j) + "\n");
+                }
+
+                VanillaEnoughItems.LOGGER.warning("Item Map: ");
+                for (int j = 0; j < itemMap.size(); j++) {
+                    VanillaEnoughItems.LOGGER.warning("ItemMap Slot " + j + ": " + itemMap.get(j) + "\n");
+                }
+
             throw new IllegalStateException("The inventoryFix was not correctly implemented, the original inventory is not the same as the inventoryFix, please check the implementation");
             }
         }
