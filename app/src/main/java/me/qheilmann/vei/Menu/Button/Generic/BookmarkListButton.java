@@ -3,7 +3,9 @@ package me.qheilmann.vei.Menu.Button.Generic;
 import java.util.List;
 
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitScheduler;
 import org.jetbrains.annotations.NotNull;
 
 import me.qheilmann.vei.Menu.IMenu;
@@ -31,8 +33,13 @@ public class BookmarkListButton extends GenericButton {
     protected BookmarkListButton(ItemStack skin, IMenu ownerMenu, MenuManager menuManager) {
         super(skin, ownerMenu, menuManager);
     }
-    
-    public void trigger(Player player){
+
+    @Override
+    public void trigger(InventoryClickEvent inventoryClickEvent) {
+        if(!(inventoryClickEvent.getWhoClicked() instanceof Player player)) {
+            return;
+        }
+        // TODO inside each class take the plugin and create the sheduler
         getMenuManager().openBookmarkMenu(player);
     }
 }

@@ -1,6 +1,7 @@
 package me.qheilmann.vei.Menu.Button.Generic;
 
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
@@ -33,7 +34,10 @@ public class InfoButton extends GenericButton {
     }
     
     @Override
-    public void trigger(Player player) {
+    public void trigger(InventoryClickEvent inventoryClickEvent) {
+        if(!(inventoryClickEvent.getWhoClicked() instanceof Player player)){
+            return;
+        }
         getMenuManager().openSettingsMenu(player);
     }
 }

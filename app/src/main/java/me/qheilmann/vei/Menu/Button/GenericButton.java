@@ -17,6 +17,7 @@ public abstract class GenericButton extends ButtonItem {
     
     protected static final String REFERENCE = "undefined_generic_button";
 
+    // TODO remove this
     public GenericButton(@NotNull VeiStyle style, IMenu owner, MenuManager menuManager) {
         this(style.getButtonSkin(GenericButton.class), owner, menuManager);
         initButton(displayName, lores, style, REFERENCE);

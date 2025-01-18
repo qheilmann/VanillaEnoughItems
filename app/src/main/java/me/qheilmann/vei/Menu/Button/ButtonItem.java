@@ -5,12 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import javax.naming.Name;
-
 import org.apache.commons.lang3.function.TriFunction;
 import org.bukkit.NamespacedKey;
-import org.bukkit.entity.HumanEntity;
-import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
@@ -105,5 +101,5 @@ public abstract class ButtonItem extends ItemStack implements IOwnedByMenu {
         this.editMeta(meta -> meta.getPersistentDataContainer().set(key, UuidPdt.TYPE, uuid));
     }
 
-    public abstract void trigger(Player player); // TODO change to trigger(InventoryClickEvent event)
+    public abstract void trigger(InventoryClickEvent inventoryClickEvent);
 }

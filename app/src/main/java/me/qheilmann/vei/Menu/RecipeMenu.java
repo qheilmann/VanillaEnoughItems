@@ -3,7 +3,6 @@ package me.qheilmann.vei.Menu;
 import java.util.UUID;
 
 import org.bukkit.NamespacedKey;
-import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
@@ -12,7 +11,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitScheduler;
 import me.qheilmann.vei.VanillaEnoughItems;
 import me.qheilmann.vei.Core.Item.PersistentDataType.UuidPdt;
 import me.qheilmann.vei.Menu.Button.ButtonItem;
@@ -49,10 +47,6 @@ public class RecipeMenu implements IMenu {
         // so the player can still interact with the rest on they player inventory
         event.setCancelled(true);
 
-        if (!(event.getWhoClicked() instanceof Player player)) {
-            return;
-        }
-
         ItemStack item = event.getCurrentItem();
         if (item == null || item.isEmpty()) {
             return;
@@ -72,11 +66,11 @@ public class RecipeMenu implements IMenu {
             return;
         }
 
-        // button.trigger(player);
+        button.trigger(event);
 
         // TODO move the sheduler inside each button only if needed
-        BukkitScheduler scheduler = plugin.getServer().getScheduler();
-        scheduler.runTask(plugin, () -> button.trigger(player));
+        // BukkitScheduler scheduler = plugin.getServer().getScheduler();
+        // scheduler.runTask(plugin, () -> button.trigger(player));
         
 
         // TODO remove this old implementation

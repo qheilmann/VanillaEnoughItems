@@ -1,6 +1,7 @@
 package me.qheilmann.vei.Menu.Button.RecipeMenu;
 
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
@@ -31,9 +32,12 @@ public class ForwardRecipeButton extends RecipeMenuButton {
     protected ForwardRecipeButton(ItemStack skin, IMenu ownerMenu, MenuManager menuManager) {
         super(skin, ownerMenu, menuManager);
     }
-
+    
     @Override
-    public void trigger(Player player) {
+    public void trigger(InventoryClickEvent inventoryClickEvent) {
+        if(!(inventoryClickEvent.getWhoClicked() instanceof Player player)){
+            return;
+        }
         player.openWorkbench(null, true); // TEMP implement forward button
     }
 }

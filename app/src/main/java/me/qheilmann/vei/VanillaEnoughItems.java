@@ -4,6 +4,7 @@ import java.util.logging.Logger;
 
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -13,7 +14,12 @@ import dev.jorel.commandapi.CommandAPIBukkitConfig;
 import me.qheilmann.vei.Command.CraftCommand;
 import me.qheilmann.vei.Listener.InventoryClickListener;
 import me.qheilmann.vei.Listener.InventoryDragListener;
+import me.qheilmann.vei.Menu.InventoryShadow;
 import me.qheilmann.vei.Menu.MenuManager;
+import me.qheilmann.vei.Menu.RecipeMenu;
+import me.qheilmann.vei.Menu.Button.RecipeMenu.QuickLinkButton;
+import me.qheilmann.vei.foundation.gui.VeiStyle;
+import net.kyori.adventure.text.Component;
 
 public class VanillaEnoughItems extends JavaPlugin {
     
