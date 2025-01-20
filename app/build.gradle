@@ -26,6 +26,7 @@ dependencies {
     implementation libs.guava
     implementation 'io.papermc.paper:paper-api:1.21.1-R0.1-SNAPSHOT'
     implementation "dev.jorel:commandapi-bukkit-shade-mojang-mapped:9.6.0"
+    implementation("dev.triumphteam:triumph-gui:3.1.10")
 }
 
 // Apply a specific Java toolchain to ease working on different environments.
@@ -58,6 +59,7 @@ shadowJar {
     archiveVersion.set(pluginVersion)
     archiveClassifier.set('')
     relocate("dev.jorel.commandapi", "me.qheilmann.VanillaEnoughItems.commandapi")
+    relocate("dev.triumphteam.gui", "com.qheilmann.myMenu.gui")
 }
 
 def syncWarningComment = " This will be updated by the Gradle task; modify in the gradle.properties file if changes are needed."
