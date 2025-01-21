@@ -9,21 +9,16 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
-import com.google.common.base.Preconditions;
-
 import dev.triumphteam.gui.components.util.ItemNbt;
 
 /*
  * 
  * @author Most part come from TriumphTeam <a href="https://github.com/TriumphTeam/triumph-gui">TriumphTeam</a>
  */
-public class GuiItem<G extends BaseGui<G>> {
+public class GuiItem<G extends BaseGui<G>> extends ItemStack{
     
     // Action to do when clicking on the item
     GuiAction<InventoryClickEvent, G> action;
-
-    // The ItemStack of the GuiItem
-    private ItemStack itemStack;
 
     // Random UUID to identify the item when clicking
     private UUID uuid = UUID.randomUUID();
@@ -35,12 +30,12 @@ public class GuiItem<G extends BaseGui<G>> {
      * @param action    The {@link GuiAction} to run when clicking on the Item
      */
     public GuiItem(@NotNull final ItemStack itemStack, @Nullable final GuiAction<@NotNull InventoryClickEvent, G> action) {
-        Preconditions.checkNotNull(itemStack, "The ItemStack for the GUI Item cannot be null!");
+        super(itemStack);
 
         this.action = action;
 
         // Sets the UUID to an NBT tag to be identifiable later
-        setItemStack(itemStack);
+        ItemNbt.setString(itemStack.clone(), "mf-gui", uuid.toString());
     }
 
     /**
@@ -69,32 +64,6 @@ public class GuiItem<G extends BaseGui<G>> {
      */
     public GuiItem(@NotNull final Material material, @Nullable final GuiAction<@NotNull InventoryClickEvent, G> action) {
         this(new ItemStack(material), action);
-    }
-
-    /**
-     * Gets the GuiItem's {@link ItemStack}
-     *
-     * @return The {@link ItemStack}
-     */
-    @NotNull
-    public ItemStack getItemStack() {
-        return itemStack;
-    }
-
-    /**
-     * Replaces the {@link ItemStack} of the GUI Item
-     *
-     * @param itemStack The new {@link ItemStack}
-     */
-    public void setItemStack(@NotNull final ItemStack itemStack) {
-        Preconditions.checkNotNull(itemStack, "The ItemStack for the GUI Item cannot be null!");
-
-        if (itemStack.getType() == Material.AIR) {
-            this.itemStack = itemStack.clone();
-            return;
-        }
-
-        this.itemStack = ItemNbt.setString(itemStack.clone(), "mf-gui", uuid.toString()); // TODO replace with PDC always
     }
 
     /**

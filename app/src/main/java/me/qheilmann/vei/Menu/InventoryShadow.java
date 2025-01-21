@@ -24,7 +24,9 @@ import java.util.Objects;
 
 /**
  * This class is an Inventory implementation who store a shadow copy of the items inside the inventory.
- * craftbukkit (I think) create a new identique ItemStack instance when you set an item in the inventory, but not a derived class
+ * <p>
+ * Craftbukkit (I think) create a new identique ItemStack instance when you set an item in the inventory, but not a derived class just the base ItemStack class
+ * <p>
  * This class store a copy of the items instance inside a local map and return the items from the map instead of the original inventory.
  * This way if you retrieve an item from the inventory you can compare it with intanceof and it will return the correct class.
  * Note: This class is not don't support contents outer the storage contents
