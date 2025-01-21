@@ -44,7 +44,7 @@ import net.kyori.adventure.text.Component;
  * 
  * @author Most part come from TriumphTeam <a href="https://github.com/TriumphTeam/triumph-gui">TriumphTeam</a>
  */
-public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
+public /* TODO temporary test abstract */ class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
 
     // The plugin instance for registering the event and for the close delay.
     private static final Plugin plugin = VanillaEnoughItems.getPlugin(VanillaEnoughItems.class);
@@ -328,7 +328,7 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
      */
     public void open(@NotNull final HumanEntity player) {
         if (player.isSleeping()) return;
-        player.openInventory(inventory);
+        player.openInventory(inventory.getOriginalInventory());
     }
 
     /**
@@ -652,7 +652,7 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
     @NotNull
     @Override
     public Inventory getInventory() {
-        return inventory;
+        return inventory; // for the moment return the shadow inventory, if needed to get the original inventory, use getOriginalInventory()
     }
 
     /**
