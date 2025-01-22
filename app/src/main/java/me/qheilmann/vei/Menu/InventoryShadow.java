@@ -23,14 +23,14 @@ import java.util.Map.Entry;
 import java.util.Objects;
 
 /**
- * This class is an Inventory implementation who store a shadow copy of the items inside the inventory.
+ * This class is an Inventory implementation that stores a shadow copy of the items inside the inventory.
  * <p>
- * Craftbukkit (I think) create a new identique ItemStack instance when you set an item in the inventory, but not a derived class just the base ItemStack class
+ * Craftbukkit (I think) creates a new identical ItemStack instance when you set an item in the inventory, but not a derived class, just the base ItemStack class.
  * <p>
- * This class store a copy of the items instance inside a local map and return the items from the map instead of the original inventory.
- * This way if you retrieve an item from the inventory you can compare it with intanceof and it will return the correct class.
- * Note: This class is not don't support contents outer the storage contents
-*/
+ * This class stores a copy of the item instances inside a local map and returns the items from the map instead of the original inventory.
+ * This way, if you retrieve an item from the inventory, you can compare it with instanceof and it will return the correct class.
+ * Note: This class does not support alternate contents other than the basic storage contents (e.g., inside player inventory just the inventory, not the armor contents, crafting matrix, etc.)
+ */
 public class InventoryShadow<T extends Inventory> implements Inventory {
     private final T originalInventory;
     private final Map<Integer, ItemStack> itemMap;
@@ -38,6 +38,8 @@ public class InventoryShadow<T extends Inventory> implements Inventory {
     /**
      * Creates a new InventoryShadow with the original inventory.
      * @param originalInventory the original inventory to fix.
+     * <p>
+     * Note: The inventory holder of this InventoryShadow will be the same as the original inventory.
      * This will not retrieve the original item instances inputted inside the originalInventory; it will take the ItemStack instances (which are copies) from the originalInventory.
      */
     public InventoryShadow(T originalInventory) {
@@ -91,11 +93,15 @@ public class InventoryShadow<T extends Inventory> implements Inventory {
         return originalInventory.getSize();
     }
 
-    /*
+    /**
      * Unimplemented method, not supported by InventoryShadow
-     * Use getStorageContents instead (Warning: this methode retrieve the items from the storage contents)
+     * Use getStorageContents instead (Warning: this methode only retrieve the items from the storage contents)
+     * 
+     * @deprecated in favour of {@link #getStorageContents()}
+     * @return null
      */
     @Override
+    @Deprecated
     public @Nullable ItemStack @NotNull [] getContents() {
         throw new UnsupportedOperationException("getContents is not implemented, is not supported by InventoryShadow. Use getStorageContents instead.");
     }
@@ -113,11 +119,14 @@ public class InventoryShadow<T extends Inventory> implements Inventory {
             .toArray(ItemStack[]::new);
     }
 
-    /*
+    /**
      * Unimplemented method, not supported by InventoryShadow
-     * Use setStorageContents instead (Warning: this methode set the items in the storage contents)
+     * Use setStorageContents instead (Warning: this methode only set the items in the storage contents)
+     * 
+     * @deprecated in favour of {@link #setStorageContents(ItemStack[])}
      */
     @Override
+    @Deprecated
     public void setContents(@Nullable ItemStack @NotNull [] items) throws IllegalArgumentException{
         throw new UnsupportedOperationException("setContents is not implemented, is not supported by InventoryShadow. Use setStorageContents instead.");
     }
@@ -372,8 +381,18 @@ public class InventoryShadow<T extends Inventory> implements Inventory {
         for (ItemStack item : items) {
             int toAdd = item.getAmount();
 
+            int maxIteration = 0;
             while(true)
             {
+                // PERFORMANCE: This is a temporary test to prevent infinite loops in case of a mal implementation, can be removed later
+                if(maxIteration++ >= 56)
+                {
+                    VanillaEnoughItems.LOGGER.warning("Infinite loop detected in addItem method");
+                    VanillaEnoughItems.LOGGER.warning("Item: " + item + " toAdd: " + toAdd);
+                    throwIfInventoryIsNotSame();
+                    throw new IllegalStateException("Inventores are the same but infinite loop detected in addItem method");
+                }
+
                 int firstPartialIndex = firstPartial(item);
 
                 // We don't have any more partial items to add to, so add to an empty slot
@@ -392,16 +411,23 @@ public class InventoryShadow<T extends Inventory> implements Inventory {
                     int amountToAdd = Math.min(item.getMaxStackSize(), toAdd);
                     ItemStack newItemStack = new ItemStack(item);
                     newItemStack.setAmount(amountToAdd);
+                    itemMap.put(firstEmptyIndex, newItemStack);
+                    toAdd -= amountToAdd;
+                }
+                else {
+                    // Partial item found, add to it
+                    ItemStack invItem = getItem(firstPartialIndex);
+                    int currentAmount = invItem.getAmount();
+                    int maxStackSize = invItem.getMaxStackSize();
+                    int amountToAdd = Math.min(maxStackSize - currentAmount, toAdd);
+                    invItem.setAmount(currentAmount + amountToAdd);
                     toAdd -= amountToAdd;
                 }
 
-                // Partial item found, add to it
-                ItemStack invItem = getItem(firstPartialIndex);
-                int currentAmount = invItem.getAmount();
-                int maxStackSize = invItem.getMaxStackSize();
-                int amountToAdd = Math.min(maxStackSize - currentAmount, toAdd);
-                invItem.setAmount(currentAmount + amountToAdd);
-                toAdd -= amountToAdd;
+                if(toAdd <= 0)
+                {
+                    break;
+                }
             }
         }
         
@@ -468,11 +494,14 @@ public class InventoryShadow<T extends Inventory> implements Inventory {
         return leftover;
     }
 
-    /*
+    /**
      * Unimplemented method, not supported by InventoryShadow
      * Use removeItem instead (Warning: this methode remove the items from the storage contents)
+     * 
+     * @deprecated in favour of {@link #removeItem(ItemStack...)}
      */
     @Override
+    @Deprecated
     public @NotNull HashMap<Integer, ItemStack> removeItemAnySlot(@NotNull ItemStack... items) throws IllegalArgumentException {
         throw new UnsupportedOperationException("removeItemAnySlot it's not implemented, is not supported by InventoryShadow");
     }
