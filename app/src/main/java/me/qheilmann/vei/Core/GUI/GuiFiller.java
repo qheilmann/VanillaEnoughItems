@@ -33,7 +33,7 @@ import java.util.List;
 
 /*
  * 
- * @author Most part come from TriumphTeam <a href="https://github.com/TriumphTeam/triumph-gui">TriumphTeam</a>
+ * @author Most original part come from Triumph GUI <a href="https://github.com/TriumphTeam/triumph-gui">TriumphTeam</a>
  */
 public final class GuiFiller<G extends BaseGui<G>> {
 

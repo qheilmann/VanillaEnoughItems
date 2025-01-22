@@ -5,23 +5,28 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import dev.triumphteam.gui.components.util.ItemNbt;
+import me.qheilmann.vei.VanillaEnoughItems;
+import me.qheilmann.vei.Core.Item.PersistentDataType.UuidPdt;
 
 /*
- * 
- * @author Most part come from TriumphTeam <a href="https://github.com/TriumphTeam/triumph-gui">TriumphTeam</a>
+ *
+ * @author Most original part come from Triumph GUI <a href="https://github.com/TriumphTeam/triumph-gui">TriumphTeam</a>
  */
 public class GuiItem<G extends BaseGui<G>> extends ItemStack{
-    
+
+    private static final @NotNull String UUID_KEY = "mf-gui";
+
     // Action to do when clicking on the item
     GuiAction<InventoryClickEvent, G> action;
 
     // Random UUID to identify the item when clicking
-    private UUID uuid = UUID.randomUUID();
+    private UUID uuid;
 
     /**
      * Main constructor of the GuiItem
@@ -34,8 +39,8 @@ public class GuiItem<G extends BaseGui<G>> extends ItemStack{
 
         this.action = action;
 
-        // Sets the UUID to an NBT tag to be identifiable later
-        ItemNbt.setString(itemStack.clone(), "mf-gui", uuid.toString());
+        UUID uuid = UUID.randomUUID();      
+        setUuid(uuid);
     }
 
     /**
@@ -70,7 +75,7 @@ public class GuiItem<G extends BaseGui<G>> extends ItemStack{
      * Gets the random {@link UUID} that was generated when the GuiItem was made
      */
     @NotNull
-    UUID getUuid() {
+    public UUID getUuid() {
         return uuid;
     }
 
@@ -78,7 +83,7 @@ public class GuiItem<G extends BaseGui<G>> extends ItemStack{
      * Gets the {@link GuiAction} to do when the player clicks on it
      */
     @Nullable
-    GuiAction<InventoryClickEvent, G> getAction() {
+    public GuiAction<InventoryClickEvent, G> getAction() {
         return action;
     }
 
@@ -89,5 +94,17 @@ public class GuiItem<G extends BaseGui<G>> extends ItemStack{
      */
     public void setAction(@Nullable final GuiAction<@NotNull InventoryClickEvent, G> action) {
         this.action = action;
+    }
+
+    private void setUuid(UUID uuid) {
+        this.uuid = uuid;
+
+        // Old way
+        ItemNbt.setString(this, "mf-gui", uuid.toString());
+
+        // TODO use PDC
+        // PDC
+        // NamespacedKey key = new NamespacedKey(VanillaEnoughItems.NAMESPACE, UUID_KEY);
+        // this.editMeta(meta -> meta.getPersistentDataContainer().set(key, UuidPdt.TYPE, uuid));
     }
 }

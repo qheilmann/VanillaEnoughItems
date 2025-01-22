@@ -31,7 +31,6 @@ import dev.triumphteam.gui.components.GuiType;
 import dev.triumphteam.gui.components.InteractionModifier;
 import dev.triumphteam.gui.components.exception.GuiException;
 import dev.triumphteam.gui.components.util.VersionHelper;
-import dev.triumphteam.gui.guis.GuiListener;
 import dev.triumphteam.gui.guis.InteractionModifierListener;
 
 import me.qheilmann.vei.VanillaEnoughItems;
@@ -42,13 +41,12 @@ import net.kyori.adventure.text.Component;
 /*
  * Base class that every GUI extends
  * 
- * @author Most part come from TriumphTeam <a href="https://github.com/TriumphTeam/triumph-gui">TriumphTeam</a>
+ * @author Most original part come from Triumph GUI <a href="https://github.com/TriumphTeam/triumph-gui">TriumphTeam</a>
  */
-public /* TODO temporary test abstract */ class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
+public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
 
     // The plugin instance for registering the event and for the close delay.
     private static final Plugin plugin = VanillaEnoughItems.getPlugin(VanillaEnoughItems.class);
-
 
     private static Method GET_SCHEDULER_METHOD = null;
     private static Method EXECUTE_METHOD = null;
@@ -62,22 +60,9 @@ public /* TODO temporary test abstract */ class BaseGui<G extends BaseGui<G>> im
         } catch (NoSuchMethodException | ClassNotFoundException ignored) {
         }
 
-        Bukkit.getPluginManager().registerEvents(new GuiListener(), plugin);
+        // TODO make a system to register all listener type
+        Bukkit.getPluginManager().registerEvents(new GuiListener<Gui>(), plugin);
         Bukkit.getPluginManager().registerEvents(new InteractionModifierListener(), plugin);
-    }
-
-    @SuppressWarnings("unchecked")
-    public static <T extends BaseGui<T>> boolean instanceOfBaseGui(@NotNull Object object) {
-        if (object == null) {
-            return false;
-        }
-
-        Class<BaseGui<T>> baseGui = (Class<BaseGui<T>>) (Class<?>) BaseGui.class;
-        return baseGui.isAssignableFrom(object.getClass());
-    }
-    
-    public static <T> boolean isInstanceOfBaseGui(T obj) {
-        return obj instanceof BaseGui<?>;
     }
 
     /**
@@ -160,6 +145,7 @@ public /* TODO temporary test abstract */ class BaseGui<G extends BaseGui<G>> im
             rows = 0;
             inventorySize = guiType.getLimit();
         }
+
         this.guiType = guiType;
         this.interactionModifiers = safeCopyOf(interactionModifiers);
         this.title = title;
