@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
+
 import java.util.Objects;
 
 /**
@@ -116,7 +117,7 @@ public class InventoryShadow<T extends Inventory> implements Inventory {
             .filter(entry -> entry.getValue() != null)
             .sorted(Map.Entry.comparingByKey())
             .map(Map.Entry::getValue)
-            .toArray(ItemStack[]::new);
+            .toArray(ItemStack[]::new); // This will create an array of type ItemStack[], but elements will retain their actual runtime types
     }
 
     /**
@@ -366,6 +367,22 @@ public class InventoryShadow<T extends Inventory> implements Inventory {
             .orElse(-1);
     }
 
+    /**
+     * Stores the given ItemStacks in the inventory. This will try to fill 
+     * existing stacks and empty slots as well as it can.
+     * <p>
+     * The returned HashMap contains what it couldn't store, where the key is 
+     * the index of the parameter, and the value is the ItemStack at that index 
+     * of the varargs parameter. If all items are stored, it will return an 
+     * empty HashMap.
+     * <p>
+     * Note: If the method fills a new empty slot with an item, this new slot 
+     * will be the right class only if the subclass overrides the clone method.
+     * 
+     * @param items the items to add
+     * @return a map of leftover items that could not be added
+     * @throws IllegalArgumentException if the items are null
+     */
     @Override
     public HashMap<Integer, ItemStack> addItem(@NotNull ItemStack... items) throws IllegalArgumentException {
         Preconditions.checkArgument(items != null, "Items cannot be null");
@@ -385,7 +402,7 @@ public class InventoryShadow<T extends Inventory> implements Inventory {
             while(true)
             {
                 // PERFORMANCE: This is a temporary test to prevent infinite loops in case of a mal implementation, can be removed later
-                if(maxIteration++ >= 56)
+                if(maxIteration++ >= 54)
                 {
                     VanillaEnoughItems.LOGGER.warning("Infinite loop detected in addItem method");
                     VanillaEnoughItems.LOGGER.warning("Item: " + item + " toAdd: " + toAdd);
@@ -409,7 +426,7 @@ public class InventoryShadow<T extends Inventory> implements Inventory {
                     
                     // Add to the empty slot
                     int amountToAdd = Math.min(item.getMaxStackSize(), toAdd);
-                    ItemStack newItemStack = new ItemStack(item);
+                    ItemStack newItemStack = item.clone();
                     newItemStack.setAmount(amountToAdd);
                     itemMap.put(firstEmptyIndex, newItemStack);
                     toAdd -= amountToAdd;

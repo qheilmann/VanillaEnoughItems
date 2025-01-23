@@ -5,20 +5,17 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import dev.triumphteam.gui.components.util.ItemNbt;
-import me.qheilmann.vei.VanillaEnoughItems;
-import me.qheilmann.vei.Core.Item.PersistentDataType.UuidPdt;
 
 /*
  *
  * @author Most original part come from Triumph GUI <a href="https://github.com/TriumphTeam/triumph-gui">TriumphTeam</a>
  */
-public class GuiItem<G extends BaseGui<G>> extends ItemStack{
+public class GuiItem<G extends BaseGui<G>> extends ItemStack {
 
     private static final @NotNull String UUID_KEY = "mf-gui";
 
@@ -94,6 +91,17 @@ public class GuiItem<G extends BaseGui<G>> extends ItemStack{
      */
     public void setAction(@Nullable final GuiAction<@NotNull InventoryClickEvent, G> action) {
         this.action = action;
+    }
+
+    public GuiItem<G> clone() {
+        try {
+            GuiItem<G> cloned = new GuiItem<>(super.clone());
+            cloned.setUuid(this.getUuid());
+            cloned.setAction(this.getAction());
+            return cloned;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void setUuid(UUID uuid) {
