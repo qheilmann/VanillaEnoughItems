@@ -15,6 +15,7 @@ import com.google.common.base.Preconditions;
 import me.qheilmann.vei.VanillaEnoughItems;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
@@ -391,11 +392,122 @@ public class InventoryShadow<T extends Inventory> implements Inventory {
             Preconditions.checkArgument(item != null, "Item cannot be null");
         }
 
-        // Attempt to add items to the original inventory
-        HashMap<Integer, ItemStack> leftover = originalInventory.addItem(items);
+        ItemStack[] itemCopy = Arrays.stream(items)
+            .map(item -> item == null ? null : item.clone())
+            .toArray(ItemStack[]::new);
         
+        // Attempt to add items to the original inventor
+        // (after adding items to the itemMap, as this method updates the items)
+
+        // VanillaEnoughItems.LOGGER.info("Inital Items: ");
+        // for (ItemStack entry : items) {
+        //     if (entry != null) {
+        //         VanillaEnoughItems.LOGGER.info("Entries: " + entry.toString());
+        //     }
+        // }
+
+        // VanillaEnoughItems.LOGGER.warning("[221] Full Inventory: ");
+        // VanillaEnoughItems.LOGGER.warning("[222]Original Inventory: ");
+        // for (int j = 0; j < originalInventory.getSize(); j++) {
+        //     VanillaEnoughItems.LOGGER.warning("[223#]Original Slot " + j + ": " + originalInventory.getItem(j) + "\n");
+        // }
+
+        // VanillaEnoughItems.LOGGER.warning("[224]Item Map: ");
+        // for (int j = 0; j < itemMap.size(); j++) {
+        //     VanillaEnoughItems.LOGGER.warning("[225#]ItemMap Slot " + j + ": " + itemMap.get(j) + "\n");
+        // }
+
+        // Create a hard copy of itemMap
+        Map<Integer, ItemStack> itemMapCopy = new HashMap<>();
+        for (Map.Entry<Integer, ItemStack> entry : itemMap.entrySet()) {
+            ItemStack item = entry.getValue();
+            itemMapCopy.put(entry.getKey(), item == null ? null : item.clone());
+        }
+
+        // ItemStack itemb5 = getItem(5);
+        // ItemStack itemb3 = getItem(3);
+        ItemStack itemb5 = itemMap.get(5);
+        ItemStack itemb3 = itemMap.get(3);
+        VanillaEnoughItems.LOGGER.info("[644a] InvItem: " + itemb5 + " Ref: " + System.identityHashCode(itemb5));
+
+        HashMap<Integer, ItemStack> leftover = originalInventory.addItem(items);
+
+        ItemStack itemc5 = itemMapCopy.get(5);
+        ItemStack itemc3 = itemMapCopy.get(3);
+
+        // ItemStack itema5 = getItem(5);
+        // ItemStack itema3 = getItem(3);
+        ItemStack itema5 = itemMap.get(5);
+        ItemStack itema3 = itemMap.get(3);
+
+        VanillaEnoughItems.LOGGER.info("[644b] itema5: " + itema5 + " Ref: " + System.identityHashCode(itema5));
+        VanillaEnoughItems.LOGGER.info("[644d] itema3: " + itema3 + " Ref: " + System.identityHashCode(itema3));
+        VanillaEnoughItems.LOGGER.info("[644h] itemc5: " + itemc5 + " Ref: " + System.identityHashCode(itemc5));
+        VanillaEnoughItems.LOGGER.info("[644i] itemc3: " + itemc3 + " Ref: " + System.identityHashCode(itemc3));
+
+        if (itemb5 != itema5) {
+            VanillaEnoughItems.LOGGER.info("[644c] itemb5 and itema5 are different instances.");
+        } else {
+            VanillaEnoughItems.LOGGER.info("[644c] itemb5 and itema5 are the same instance.");
+        }
+
+        if (itemb3 != itema3) {
+            VanillaEnoughItems.LOGGER.info("[644e] itemb3 and itema3 are different instances.");
+        } else {
+            VanillaEnoughItems.LOGGER.info("[644e] itemb3 and itema3 are the same instance.");
+        }
+
+        if (itema5 != itema3) {
+            VanillaEnoughItems.LOGGER.info("[644f] itema5 and itema3 are different instances.");
+        } else {
+            VanillaEnoughItems.LOGGER.info("[644f] itema5 and itema3 are the same instance.");
+        }
+
+        if (itemb5 != itemb3) {
+            VanillaEnoughItems.LOGGER.info("[644g] itemb5 and itemb3 are different instances.");
+        } else {
+            VanillaEnoughItems.LOGGER.info("[644g] itemb5 and itemb3 are the same instance.");
+        }
+
+
+
+        // VanillaEnoughItems.LOGGER.warning("[331] Full Inventory: ");
+        // VanillaEnoughItems.LOGGER.warning("[332]Original Inventory: ");
+        // for (int j = 0; j < originalInventory.getSize(); j++) {
+        //     VanillaEnoughItems.LOGGER.warning("[333#]Original Slot " + j + ": " + originalInventory.getItem(j) + "\n");
+        // }
+
+        // VanillaEnoughItems.LOGGER.warning("[334]Item Map: ");
+        // for (int j = 0; j < itemMap.size(); j++) {
+        //     VanillaEnoughItems.LOGGER.warning("[335#]ItemMap Slot " + j + ": " + itemMap.get(j) + "\n");
+        // }
+
+        // VanillaEnoughItems.LOGGER.info("After original addItem: ");
+        // for (ItemStack entry : items) {
+        //     if (entry != null) {
+        //         VanillaEnoughItems.LOGGER.info("After original: " + entry.toString());
+        //     }
+        // }
+
+        // VanillaEnoughItems.LOGGER.info("Leftover: ");
+        // for (Map.Entry<Integer, ItemStack> entry : leftover.entrySet()) {
+        //     ItemStack value = entry.getValue();
+        //     if (value != null) {
+        //         VanillaEnoughItems.LOGGER.info("Leftover: " + entry.getKey() + " " + value);
+        //     }
+        // }
+
+        // for (ItemStack entry : itemCopy) {
+        //     if (entry != null) {
+        //         VanillaEnoughItems.LOGGER.info("ItemCopy: " + entry.toString());
+        //     }
+        // }
+
+        // HashMap<Integer, ItemStack> leftover = new HashMap<>();
+
         // Attempt to add items to the itemMap
-        for (ItemStack item : items) {
+        for (int i = 0; i < itemCopy.length; i++) {
+            ItemStack item = itemCopy[i];
             int toAdd = item.getAmount();
 
             int maxIteration = 0;
@@ -410,35 +522,119 @@ public class InventoryShadow<T extends Inventory> implements Inventory {
                     throw new IllegalStateException("Inventores are the same but infinite loop detected in addItem method");
                 }
 
-                int firstPartialIndex = firstPartial(item);
+                int firstPartialIndex = -1;
+                firstPartialIndex = itemMapCopy.entrySet().stream()
+                .filter(entry -> entry.getValue() != null)
+                .filter(entry -> entry.getValue().isSimilar(item))
+                .filter(entry -> entry.getValue().getAmount() < entry.getValue().getMaxStackSize())
+                .sorted(Map.Entry.comparingByKey())
+                .findFirst()
+                .map(Entry::getKey)
+                .orElse(-1);
+
+                VanillaEnoughItems.LOGGER.info("[441] First partial index: " + firstPartialIndex);
 
                 // We don't have any more partial items to add to, so add to an empty slot
                 if(firstPartialIndex == -1)
                 {
-                    int firstEmptyIndex = firstEmpty();
+                    int firstEmptyIndex = -1;
+                    for (int j = 0; j < originalInventory.getSize(); j++) {
+                        if (itemMapCopy.get(j) == null) {
+                            firstEmptyIndex = j;
+                            break;
+                        }
+                    }
+
+                    VanillaEnoughItems.LOGGER.info("[442] First empty index: " + firstEmptyIndex);
                     
                     // We don't have any empty slots to add to, so we're done
                     if(firstEmptyIndex == -1)
                     {
-                        // leftover
+                        // ItemStack left = item.clone();
+                        // left.setAmount(toAdd);
+                        // leftover.put(i, left);
                         break;
                     }
                     
+                    VanillaEnoughItems.LOGGER.info("[425a] toAdd (before): " + toAdd);
+
                     // Add to the empty slot
-                    int amountToAdd = Math.min(item.getMaxStackSize(), toAdd);
-                    ItemStack newItemStack = item.clone();
-                    newItemStack.setAmount(amountToAdd);
-                    itemMap.put(firstEmptyIndex, newItemStack);
+                    
+                    // In the current implementation of the Inventory, if the 
+                    // stacksize is greater than the maxStackSize it will add 
+                    // the item directly without splitting it, except if the
+                    // stacksize is greater than 99, in this case it will split
+                    // int amountToAddOld = Math.min(toAdd, 99);
+                    // // int amountToAdd = Math.min(toAdd, item.getMaxStackSize());
+
+                    // VanillaEnoughItems.LOGGER.info("[443] Amount to add: " + amountToAddOld);
+                    // ItemStack newItemStackOld = item.clone();
+                    // newItemStackOld.setAmount(amountToAddOld);
+                    // itemMap.put(firstEmptyIndex, newItemStackOld);
+                    // toAdd -= amountToAddOld;
+                    // VanillaEnoughItems.LOGGER.info("[444] toAdd (after): " + toAdd);
+
+                    ItemStack newMapItem = item.clone();
+
+                    // In the current implementation of the Inventory, if the 
+                    // stacksize is greater than the maxStackSize it will add 
+                    // the item directly without splitting it, except if the
+                    // stacksize is greater than 99, in this case it will split
+                    int amountToAdd = Math.min(toAdd, 99);
+                    // int amountToAdd = Math.min(toAdd, item.getMaxStackSize());
+
+                    VanillaEnoughItems.LOGGER.info("[443] Amount to add: " + amountToAdd);
+
+
+                    newMapItem.setAmount(amountToAdd);
+
+                    // Check if the original inventory is the same as the inventoryShadow (type and amount)
+                    ItemStack originalItem = originalInventory.getItem(firstEmptyIndex);
+                    if (originalItem != null && !originalItem.equals(newMapItem)) {
+                        VanillaEnoughItems.LOGGER.warning("The inventoryShadow was not correctly implemented, the original inventory is not the same as the inventoryShadow, please check the implementation");
+                        VanillaEnoughItems.LOGGER.warning("Different Item at slot " + firstEmptyIndex);
+                        VanillaEnoughItems.LOGGER.warning("Slot " + firstEmptyIndex + ": \n" + originalItem + "\n != \n" + newMapItem + "\n");
+                        throw new IllegalStateException("The inventoryShadow was not correctly implemented, the original inventory is not the same as the inventoryShadow please check the implementation");
+                    }
+
+                    internalSetItem(firstEmptyIndex, newMapItem);
                     toAdd -= amountToAdd;
+
+                    VanillaEnoughItems.LOGGER.info("[444] toAdd (after): " + toAdd);
                 }
                 else {
                     // Partial item found, add to it
-                    ItemStack invItem = getItem(firstPartialIndex);
-                    int currentAmount = invItem.getAmount();
-                    int maxStackSize = invItem.getMaxStackSize();
+                    VanillaEnoughItems.LOGGER.info("[444b] First partial index redo: " + firstPartialIndex);
+                    // ItemStack partialMapItem = getItem(firstPartialIndex);
+                    ItemStack partialMapItem = itemMapCopy.get(firstPartialIndex);
+                    if (partialMapItem.isEmpty()) {
+                        partialMapItem = null;
+                    }
+
+                    VanillaEnoughItems.LOGGER.info("[444c] InvItem: " + partialMapItem);
+                    int currentAmount = partialMapItem.getAmount();
+                    VanillaEnoughItems.LOGGER.info("[445a] toAdd (before): " + toAdd);
+                    VanillaEnoughItems.LOGGER.info("[445b] Current amount: " + currentAmount);
+                    int maxStackSize = partialMapItem.getMaxStackSize();
+                    VanillaEnoughItems.LOGGER.info("[445c] Max stack size: " + maxStackSize);
                     int amountToAdd = Math.min(maxStackSize - currentAmount, toAdd);
-                    invItem.setAmount(currentAmount + amountToAdd);
+                    VanillaEnoughItems.LOGGER.info("[445] Amount to add: " + amountToAdd);
+
+                    partialMapItem.setAmount(currentAmount + amountToAdd);
+
+                    // Check if the original inventory is the same as the inventoryShadow (type and amount)
+                    ItemStack originalItem = originalInventory.getItem(firstPartialIndex);
+                    if (originalItem != null && !originalItem.equals(partialMapItem)) {
+                        VanillaEnoughItems.LOGGER.warning("The inventoryShadow was not correctly implemented, the original inventory is not the same as the inventoryShadow, please check the implementation");
+                        VanillaEnoughItems.LOGGER.warning("Different Item at slot " + firstPartialIndex);
+                        VanillaEnoughItems.LOGGER.warning("Slot " + firstPartialIndex + ": \n" + originalItem + "\n != \n" + partialMapItem + "\n");
+                        throw new IllegalStateException("The inventoryShadow was not correctly implemented, the original inventory is not the same as the inventoryShadow please check the implementation");
+                    }
+
+                    internalSetItem(firstPartialIndex, partialMapItem);
                     toAdd -= amountToAdd;
+
+                    VanillaEnoughItems.LOGGER.info("[446] toAdd (after): " + toAdd);
                 }
 
                 if(toAdd <= 0)
@@ -472,9 +668,6 @@ public class InventoryShadow<T extends Inventory> implements Inventory {
         for (ItemStack item : items) {
             Preconditions.checkArgument(item != null, "Item cannot be null");
         }
-
-        // Attempt to remove items from the original inventory
-        HashMap<Integer, ItemStack> leftover = originalInventory.removeItem(items);
         
         // Attempt to remove items from the itemMap
         for (ItemStack item : items)
@@ -506,6 +699,10 @@ public class InventoryShadow<T extends Inventory> implements Inventory {
                 }
             }
         }
+
+        // Attempt to remove items from the original inventory
+        // (after removing items from the itemMap, as this method updates the items)
+        HashMap<Integer, ItemStack> leftover = originalInventory.removeItem(items);
 
         throwIfInventoryIsNotSame();
         return leftover;
@@ -561,15 +758,15 @@ public class InventoryShadow<T extends Inventory> implements Inventory {
                 VanillaEnoughItems.LOGGER.warning("The inventoryFix was not correctly implemented, the original inventory is not the same as the inventoryFix, please check the implementation");
                 
                 VanillaEnoughItems.LOGGER.warning("Different Item at slot " + i);
-                VanillaEnoughItems.LOGGER.warning("Slot " + i + ": " + originalItem + " != " + mapItem);
+                VanillaEnoughItems.LOGGER.warning("Slot " + i + ": \n" + originalItem + "\n != \n" + mapItem + "\n");
 
                 VanillaEnoughItems.LOGGER.warning("Full Inventory: ");
-                VanillaEnoughItems.LOGGER.warning("Original Inventory: ");
+                VanillaEnoughItems.LOGGER.warning("Original Inventory: \n");
                 for (int j = 0; j < originalInventory.getSize(); j++) {
                     VanillaEnoughItems.LOGGER.warning("Original Slot " + j + ": " + originalInventory.getItem(j) + "\n");
                 }
 
-                VanillaEnoughItems.LOGGER.warning("Item Map: ");
+                VanillaEnoughItems.LOGGER.warning("\nItem Map: \n");
                 for (int j = 0; j < itemMap.size(); j++) {
                     VanillaEnoughItems.LOGGER.warning("ItemMap Slot " + j + ": " + itemMap.get(j) + "\n");
                 }
