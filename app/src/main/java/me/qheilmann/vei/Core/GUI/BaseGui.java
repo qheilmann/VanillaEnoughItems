@@ -60,8 +60,7 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
         } catch (NoSuchMethodException | ClassNotFoundException ignored) {
         }
 
-        // TODO make a system to register all listener type
-        Bukkit.getPluginManager().registerEvents(new GuiListener<Gui>(), plugin);
+        Bukkit.getPluginManager().registerEvents(new GuiListener<>(), plugin);
         Bukkit.getPluginManager().registerEvents(new InteractionModifierListener(), plugin);
     }
 
