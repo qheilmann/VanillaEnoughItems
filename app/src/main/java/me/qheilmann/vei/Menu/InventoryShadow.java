@@ -20,18 +20,29 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import java.util.Map.Entry;
-
 import java.util.Objects;
 
 /**
- * This class is an Inventory implementation that stores a shadow copy of the items inside the inventory.
+ * This class is an Inventory implementation that stores a shadow copy of the 
+ * items inside the inventory.
  * <p>
- * Craftbukkit (I think) creates a new identical ItemStack instance when you set an item in the inventory, but not a derived class, just the base ItemStack class.
+ * Craftbukkit, for example, creates a new identical ItemStack instance when 
+ * you set an item in the inventory, but if you add a derived class of 
+ * ItemStack, it will convert it to a copy ItemStack and then store it. the 
+ * derived type is lost.
  * <p>
- * This class stores a copy of the item instances inside a local map and returns the items from the map instead of the original inventory.
- * This way, if you retrieve an item from the inventory, you can compare it with instanceof and it will return the correct class.
- * Note: This class does not support alternate contents other than the basic storage contents (e.g., inside player inventory just the inventory, not the armor contents, crafting matrix, etc.)
+ * This class stores the item instances inside a local map and returns the 
+ * items from the map instead of the original inventory. This way, if you 
+ * retrieve an item from the inventory, you can compare it with instanceof or 
+ * use polymorphism to run the correct implementation of your derived type.
+ * <p>
+ * Note: This class does not support alternate contents other than the basic 
+ * storage contents (e.g., inside player inventory the alternate contents is 
+ * the armor or the crafting matrix, etc.)
+ * <p>
+ * Inside some methods, the ItemStack clone method is used, so if you use a 
+ * derived class of ItemStack, make sure to override the clone method to return 
+ * the correct type.
  */
 public class InventoryShadow<T extends Inventory> implements Inventory {
     private final T originalInventory;
@@ -39,20 +50,31 @@ public class InventoryShadow<T extends Inventory> implements Inventory {
 
     /**
      * Creates a new InventoryShadow with the original inventory.
-     * @param originalInventory the original inventory to fix.
+     * @param originalInventory the original inventory to add items.
      * <p>
-     * Note: The inventory holder of this InventoryShadow will be the same as the original inventory.
-     * This will not retrieve the original item instances inputted inside the originalInventory; it will take the ItemStack instances (which are copies) from the originalInventory.
+     * Note: The inventory holder of this InventoryShadow will be the same as 
+     * the original inventory.
+     * <p>
+     * This constructor will transfer the items from the original inventory to 
+     * the shadow inventory. However, it will not retrieve the original item 
+     * instances inputted inside the originalInventory; it will take the same 
+     * ItemStack instances (ItemStack base class) as stored in the 
+     * originalInventory.
      */
     public InventoryShadow(T originalInventory) {
         this.originalInventory = originalInventory;
-        this.itemMap = new HashMap<>(originalInventory.getSize());
-        for (int i = 0; i < originalInventory.getSize(); i++) {
+        int originalSize = originalInventory.getSize();
+        this.itemMap = new HashMap<>(originalSize);
+        for (int i = 0; i < originalSize; i++) {
             itemMap.put(i, originalInventory.getItem(i));
         }
         throwIfInventoryIsNotSame();
     }
 
+    /**
+     * Returns the original inventory.
+     * @return the original inventory.
+     */
     public T getOriginalInventory() {
         return originalInventory;
     }
@@ -64,9 +86,11 @@ public class InventoryShadow<T extends Inventory> implements Inventory {
     }
 
     /*
-    * This method is used to set an item inside the inventory, 
-    * the original inventory use CraftItemStack.asNMSCopy(item) and duplicate the item instance
-    * This method will not check if the two inventory are the same
+    * Set an item inside the inventory.
+    * The original inventory uses CraftItemStack.asNMSCopy(item) and duplicates
+    * the item instance. 
+    * <p>
+    * This method will not check if the two inventories are the same.
     */
     private void internalSetItem(int index, @Nullable ItemStack item) {
         originalInventory.setItem(index, item);
@@ -96,52 +120,73 @@ public class InventoryShadow<T extends Inventory> implements Inventory {
     }
 
     /**
-     * Unimplemented method, not supported by InventoryShadow
-     * Use getStorageContents instead (Warning: this methode only retrieve the items from the storage contents)
+     * Unimplemented method, not supported by {@link InventoryShadow}.
+     * Use {@link #getStorageContents()} instead (Warning: this method only 
+     * retrieves the items from the storage contents).
      * 
-     * @deprecated in favour of {@link #getStorageContents()}
-     * @return null
+     * @deprecated in favor of {@link #getStorageContents()}
+     * @return throw {@link UnsupportedOperationException}
      */
     @Override
     @Deprecated
-    public @Nullable ItemStack @NotNull [] getContents() {
+    public @Nullable ItemStack @NotNull [] getContents() throws UnsupportedOperationException {
         throw new UnsupportedOperationException("getContents is not implemented, is not supported by InventoryShadow. Use getStorageContents instead.");
     }
 
+    /**
+     * Gets a hard copy of the storage contents of the inventory.
+     * Each ItemStack in the array is a clone of the item stored in the 
+     * inventory.
+     * @return an array of items inside the inventory, containing null if the 
+     * slot is empty.
+     */
     @Override
     public @Nullable ItemStack @NotNull [] getStorageContents() {
-        if(itemMap.size() == 0) {
-            return null;
+        int size = itemMap.size();
+        ItemStack[] contents = new ItemStack[size];
+
+        for (int i = 0; i < size; i++) {
+            ItemStack item = itemMap.get(i);
+            contents[i] = (item == null || item.isEmpty()) ? null : item.clone();
         }
 
-        return itemMap.entrySet().stream()
-            .filter(entry -> entry.getValue() != null)
-            .sorted(Map.Entry.comparingByKey())
-            .map(Map.Entry::getValue)
-            .toArray(ItemStack[]::new); // This will create an array of type ItemStack[], but elements will retain their actual runtime types
+        return contents;
     }
 
     /**
-     * Unimplemented method, not supported by InventoryShadow
-     * Use setStorageContents instead (Warning: this methode only set the items in the storage contents)
+     * Unimplemented method, not supported by {@link InventoryShadow}.
+     * Use {@link #setStorageContents(ItemStack[])} instead (Warning: this 
+     * method only sets the items in the storage contents).
      * 
-     * @deprecated in favour of {@link #setStorageContents(ItemStack[])}
+     * @deprecated in favor of {@link #setStorageContents(ItemStack[])}
+     * @return throw {@link UnsupportedOperationException}
      */
     @Override
     @Deprecated
-    public void setContents(@Nullable ItemStack @NotNull [] items) throws IllegalArgumentException{
+    public void setContents(@Nullable ItemStack @NotNull [] items) throws UnsupportedOperationException{
         throw new UnsupportedOperationException("setContents is not implemented, is not supported by InventoryShadow. Use setStorageContents instead.");
     }
 
+    /**
+     * Sets the storage contents of the inventory.
+     * <p>
+     * Pads with empty slots if the size of the items is less than the size
+     * of the inventory.
+     * @param items the items to set in the inventory.
+     * @throws IllegalArgumentException if the items are null or the size of
+     * the items is greater than the size of the inventory.
+     */
     @Override
     public void setStorageContents(@Nullable ItemStack @NotNull [] items) throws IllegalArgumentException {
+        Preconditions.checkArgument(items != null, "Items cannot be null");
         Preconditions.checkArgument(items.length <= this.getSize(), "Invalid inventory size (%s); expected %s or less", items.length, this.getSize());
 
-        for (int i = 0; i < this.getSize(); i++) {
-            if (i >= items.length) {
-                this.internalSetItem(i, null);
-            } else {
+        int size = itemMap.size();
+        for (int i = 0; i < size; i++) {
+            if (i < items.length) {
                 this.internalSetItem(i, items[i]);
+            } else {
+                this.internalSetItem(i, null);
             }
         }
 
@@ -166,8 +211,8 @@ public class InventoryShadow<T extends Inventory> implements Inventory {
     }
 
     /*
-     * Clear the item at the specified index.
-     * This method will not check if the two inventory are the same
+     * Clears the item at the specified index.
+     * This method will not check if the two inventories are the same.
      */
     private void internalClear(int index) {
         internalSetItem(index, null);
@@ -246,12 +291,12 @@ public class InventoryShadow<T extends Inventory> implements Inventory {
             return true;
         }
 
-        // idk if I need to use equals or isSimilar the docs are not clear,
-        // but the docs say that the stack size is verified so equals should be the correct method
-        return itemMap.values().stream().filter(Objects::nonNull)
-            .filter(item::equals)
-            .mapToInt(ItemStack::getAmount)
-            .sum() >= amount;
+        for (ItemStack i : itemMap.values()) {
+            if (item != null && item.equals(i) && --amount <= 0) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -264,34 +309,64 @@ public class InventoryShadow<T extends Inventory> implements Inventory {
             return true;
         }
 
-        return itemMap.values().stream().filter(Objects::nonNull)
+        return itemMap.values().stream()
+            .filter(Objects::nonNull)
             .filter(item::isSimilar)
             .mapToInt(ItemStack::getAmount)
             .sum() >= amount;
     }
 
+    /**
+     * Returns a HashMap of slots and ItemStacks that contain the specified
+     * material.
+     * <p>
+     * The HashMap contains entries where the key is the slot index, and the 
+     * value is an ItemStack clone in that slot. If no matching ItemStack with 
+     * the given Material is found, an empty map is returned.
+     * @param material the material to search for
+     * @return a HashMap of slots and ItemStacks clone that contain the 
+     * specified material
+     * @throws IllegalArgumentException if the material is null
+     * @see #all(ItemStack)
+     */
     @Override
     @NotNull
     public HashMap<Integer, ? extends ItemStack> all(@NotNull Material material) throws IllegalArgumentException {
         Preconditions.checkArgument(material != null, "Material cannot be null");
+
         HashMap<Integer, ItemStack> slots = new HashMap<>();
+
         for (Map.Entry<Integer, ItemStack> entry : itemMap.entrySet()) {
             ItemStack item = entry.getValue();
             if (item != null && item.getType() == material) {
-                slots.put(entry.getKey(), item);
+                slots.put(entry.getKey(), item.clone());
             }
         }
         return slots;
     }
 
+    /**
+     * Returns a HashMap of slots and ItemStacks that are equals to the 
+     * specified item (type and ammount).
+     * <p>
+     * The HashMap contains entries where the key is the slot index, and the 
+     * value is an ItemStack clone in that slot. If no matching ItemStack with 
+     * the given item is found, an empty map is returned.
+     * @param item the item to search for
+     * @return a HashMap of slots and ItemStacks clone that are similar to the 
+     * specified item
+     * @throws IllegalArgumentException if the item is null
+     * @see #all(Material)
+     */
     @Override
     @NotNull
     public HashMap<Integer, ? extends ItemStack> all(@Nullable ItemStack item) {
         HashMap<Integer, ItemStack> slots = new HashMap<>();
+
         for (Map.Entry<Integer, ItemStack> entry : itemMap.entrySet()) {
-            ItemStack value = entry.getValue();
-            if ((value != null && value.equals(item)) || (value == null && item == null)) { // all specific item or all empty slots
-                slots.put(entry.getKey(), value);
+            ItemStack mapItem = entry.getValue();
+            if (mapItem != null && mapItem.equals(item)) {
+                slots.put(entry.getKey(), mapItem.clone());
             }
         }
         return slots;
@@ -300,7 +375,8 @@ public class InventoryShadow<T extends Inventory> implements Inventory {
     @Override
     public int first(@NotNull Material material) throws IllegalArgumentException {
         Preconditions.checkArgument(material != null, "Material cannot be null");
-        for (Map.Entry<Integer, ItemStack> entry : itemMap.entrySet()) {
+
+        for (Map.Entry<Integer, ItemStack> entry : itemMap.entrySet()) {;
             ItemStack item = entry.getValue();
             if (item != null && item.getType() == material) {
                 return entry.getKey();
@@ -312,9 +388,10 @@ public class InventoryShadow<T extends Inventory> implements Inventory {
     @Override
     public int first(@NotNull ItemStack item) {
         Preconditions.checkArgument(item != null, "Item cannot be null");
+
         for (Map.Entry<Integer, ItemStack> entry : itemMap.entrySet()) {
-            ItemStack value = entry.getValue();
-            if (value != null && value.equals(item)) {
+            ItemStack mapItem = entry.getValue();
+            if (mapItem != null && mapItem.equals(item)) {
                 return entry.getKey();
             }
         }
@@ -323,7 +400,8 @@ public class InventoryShadow<T extends Inventory> implements Inventory {
 
     @Override
     public int firstEmpty() {
-        for (int i = 0; i < originalInventory.getSize(); i++) {
+        int size = itemMap.size();
+        for (int i = 0; i < size; i++) {
             if (itemMap.get(i) == null) {
                 return i;
             }
@@ -333,6 +411,7 @@ public class InventoryShadow<T extends Inventory> implements Inventory {
 
     @Override
     public boolean isEmpty() {
+        // item.isEmpty() is not considered empty in this method (stack size 0)
         return itemMap.values().stream().allMatch(item -> item == null);
     }
 
@@ -350,35 +429,54 @@ public class InventoryShadow<T extends Inventory> implements Inventory {
         throwIfInventoryIsNotSame();
     }
 
-    /*
-     * Returns the first slot with a partial item stack that is similar to the specified item.
+    /**
+     * Returns the first slot with a partial item stack that is similar to the 
+     * specified item.
      */
-    private int firstPartial(ItemStack item) {
+    protected int firstPartial(ItemStack item) {
         if (item == null) {
             return -1;
         }
 
-        return itemMap.entrySet().stream()
-            .filter(entry -> entry.getValue() != null)
-            .filter(entry -> entry.getValue().isSimilar(item))
-            .filter(entry -> entry.getValue().getAmount() < entry.getValue().getMaxStackSize())
-            .sorted(Map.Entry.comparingByKey())
-            .findFirst()
-            .map(Entry::getKey)
-            .orElse(-1);
+        int size = itemMap.size();
+        for (int i = 0; i < size; i++) {
+            ItemStack cItem = itemMap.get(i);
+            if (cItem != null && cItem.getAmount() < getMaxItemStack(cItem) && cItem.isSimilar(item)) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     /**
-     * Stores the given ItemStacks in the inventory. This will try to fill 
-     * existing stacks and empty slots as well as it can.
+     * Returns the max stack size of the item stack.
+     * The minimum of the max stack size of the item and the max stack size of 
+     * the inventory.
+     */
+    private int getMaxItemStack(ItemStack item) {
+        return Math.min(item.getMaxStackSize(), originalInventory.getMaxStackSize());
+    }
+
+    /**
+     * Stores the given {@link ItemStack} in the {@link Inventory}. This will
+     * try to fill existing stacks and empty slots as well as it can.
      * <p>
-     * The returned HashMap contains what it couldn't store, where the key is 
-     * the index of the parameter, and the value is the ItemStack at that index 
-     * of the varargs parameter. If all items are stored, it will return an 
+     * The returned HashMap contains what it couldn't store, where the key is
+     * the index of the parameter, and the value is the ItemStack at that index
+     * of the varargs parameter. If all items are stored, it will return an
      * empty HashMap.
      * <p>
-     * Note: If the method fills a new empty slot with an item, this new slot 
-     * will be the right class only if the subclass overrides the clone method.
+     * It is known that in some implementations this method will also set the
+     * inputted argument amount to the number of that item not placed in slots.
+     * (see Note 1)
+     * <p>
+     * Note 1: The inputted {@link ItemStack} can't be already used (like
+     * inside an {@link Inventory}), as it will be modified and cause
+     * inconsistency.
+     * <p>
+     * Note 2: If the method fills a new empty slot with an item, this new slot
+     * will be the right class only if the subclass overrides the {@link
+     * #clone()} method.
      * 
      * @param items the items to add
      * @return a map of leftover items that could not be added
@@ -387,260 +485,91 @@ public class InventoryShadow<T extends Inventory> implements Inventory {
     @Override
     public HashMap<Integer, ItemStack> addItem(@NotNull ItemStack... items) throws IllegalArgumentException {
         Preconditions.checkArgument(items != null, "Items cannot be null");
-
         for (ItemStack item : items) {
             Preconditions.checkArgument(item != null, "Item cannot be null");
         }
 
-        // Create a hard copy of the items for avoid to add multiple time the
-        // same item stack in the inventory (shadow item).
-        // Otherwise it will create inconsistency in the inventory
-        ItemStack[] itemsCopy = Arrays.stream(items)
-            .map(item -> item.clone())
-            .toArray(ItemStack[]::new);
+        // PERFORMANCE: After the implementation is stable and unit tests are set up
+        // In the first step:
+        // - remove the originalInventory.addItem, because the itemMap will in each case overwrite the items inside originalInventory
+        // - modify input items so that they are identical to those modified in the original inventory, because the originalInventory will be removed
+        // - move the leftover to the itemMap modification, because the originalInventory will be removed
+        // - remove the hard copy of the items, because the originalInventory will be removed
+        // - remove the throwIfItemStackMismatch, because the originalInventory will be removed
+        // Then in the second step:
+        // - remove maxIteration inside the while loop
+        // - remove the throwIfInventoryIsNotSame, because the originalInventory will be removed
 
-        ItemStack[] itemsCopy2 = Arrays.stream(items)
-            .map(item -> item.clone())
-            .toArray(ItemStack[]::new);
-        
-        // Attempt to add items to the original inventor
-        // (after adding items to the itemMap, as this method updates the items)
+        /* TEMP */ ItemStack[] itemsDefault = Arrays.stream(items)
+        /* TEMP */     .map(item -> item.clone())
+        /* TEMP */     .toArray(ItemStack[]::new);
 
-        // VanillaEnoughItems.LOGGER.info("Inital Items: ");
-        // for (ItemStack entry : items) {
-        //     if (entry != null) {
-        //         VanillaEnoughItems.LOGGER.info("Entries: " + entry.toString());
-        //     }
-        // }
-
-        // VanillaEnoughItems.LOGGER.warning("[221] Full Inventory: ");
-        // VanillaEnoughItems.LOGGER.warning("[222]Original Inventory: ");
-        // for (int j = 0; j < originalInventory.getSize(); j++) {
-        //     VanillaEnoughItems.LOGGER.warning("[223#]Original Slot " + j + ": " + originalInventory.getItem(j) + "\n");
-        // }
-
-        // VanillaEnoughItems.LOGGER.warning("[224]Item Map: ");
-        // for (int j = 0; j < itemMap.size(); j++) {
-        //     VanillaEnoughItems.LOGGER.warning("[225#]ItemMap Slot " + j + ": " + itemMap.get(j) + "\n");
-        // }
-
-        // Create a hard copy of itemMap
-        Map<Integer, ItemStack> itemMapCopy = new HashMap<>();
-        for (Map.Entry<Integer, ItemStack> entry : itemMap.entrySet()) {
-            ItemStack item = entry.getValue();
-            itemMapCopy.put(entry.getKey(), item == null ? null : item.clone());
-        }
-
-        // ItemStack itemb5 = getItem(5);
-        // ItemStack itemb3 = getItem(3);
-        ItemStack itemb5 = itemMap.get(5);
-        ItemStack itemb3 = itemMap.get(3);
-        VanillaEnoughItems.LOGGER.info("[644a] InvItem: " + itemb5 + " Ref: " + System.identityHashCode(itemb5));
-
-        HashMap<Integer, ItemStack> leftover = originalInventory.addItem(itemsCopy2);
-        
-        // To make sure the packets are sent to the client
-        // for (ListIterator<ItemStack> it = originalInventory.iterator(); it.hasNext(); ) {
-        //     int slot = it.nextIndex();
-        //     ItemStack item = it.next();
-        //     originalInventory.setItem(slot, item);
-        // }
-        // JavaPlugin plugin = VanillaEnoughItems.getPlugin(VanillaEnoughItems.class);
-        // plugin.getServer().getScheduler().scheduleSyncDelayedTask(
-        //     plugin, new Runnable() {
-        //         @Override
-        //         public void run() {
-        //             for (HumanEntity humanEntity : originalInventory.getViewers()) {
-        //             Player player = (Player) humanEntity;
-        //             player.updateInventory();
-        //             }
-        //         }
-        //     },
-        //     1L
-        // );
-
-        ItemStack itemc5 = itemMapCopy.get(5);
-        ItemStack itemc3 = itemMapCopy.get(3);
-
-        // ItemStack itema5 = getItem(5);
-        // ItemStack itema3 = getItem(3);
-        ItemStack itema5 = itemMap.get(5);
-        ItemStack itema3 = itemMap.get(3);
-
-        VanillaEnoughItems.LOGGER.info("[644b] itema5: " + itema5 + " Ref: " + System.identityHashCode(itema5));
-        VanillaEnoughItems.LOGGER.info("[644d] itema3: " + itema3 + " Ref: " + System.identityHashCode(itema3));
-        VanillaEnoughItems.LOGGER.info("[644h] itemc5: " + itemc5 + " Ref: " + System.identityHashCode(itemc5));
-
-        if (itemb5 != itema5) {
-            VanillaEnoughItems.LOGGER.info("[644c] itemb5 and itema5 are different instances.");
-        } else {
-            VanillaEnoughItems.LOGGER.info("[644c] itemb5 and itema5 are the same instance.");
-        }
-
-        if (itemb3 != itema3) {
-            VanillaEnoughItems.LOGGER.info("[644e] itemb3 and itema3 are different instances.");
-        } else {
-            VanillaEnoughItems.LOGGER.info("[644e] itemb3 and itema3 are the same instance.");
-        }
-
-        if (itema5 != itema3) {
-            VanillaEnoughItems.LOGGER.info("[644f] itema5 and itema3 are different instances.");
-        } else {
-            VanillaEnoughItems.LOGGER.info("[644f] itema5 and itema3 are the same instance.");
-        }
-
-        if (itemb5 != itemb3) {
-            VanillaEnoughItems.LOGGER.info("[644g] itemb5 and itemb3 are different instances.");
-        } else {
-            VanillaEnoughItems.LOGGER.info("[644g] itemb5 and itemb3 are the same instance.");
-        }
-
-
-
-        // VanillaEnoughItems.LOGGER.warning("[331] Full Inventory: ");
-        // VanillaEnoughItems.LOGGER.warning("[332]Original Inventory: ");
-        // for (int j = 0; j < originalInventory.getSize(); j++) {
-        //     VanillaEnoughItems.LOGGER.warning("[333#]Original Slot " + j + ": " + originalInventory.getItem(j) + "\n");
-        // }
-
-        // VanillaEnoughItems.LOGGER.warning("[334]Item Map: ");
-        // for (int j = 0; j < itemMap.size(); j++) {
-        //     VanillaEnoughItems.LOGGER.warning("[335#]ItemMap Slot " + j + ": " + itemMap.get(j) + "\n");
-        // }
-
-        // VanillaEnoughItems.LOGGER.info("After original addItem: ");
-        // for (ItemStack entry : items) {
-        //     if (entry != null) {
-        //         VanillaEnoughItems.LOGGER.info("After original: " + entry.toString());
-        //     }
-        // }
-
-        // VanillaEnoughItems.LOGGER.info("Leftover: ");
-        // for (Map.Entry<Integer, ItemStack> entry : leftover.entrySet()) {
-        //     ItemStack value = entry.getValue();
-        //     if (value != null) {
-        //         VanillaEnoughItems.LOGGER.info("Leftover: " + entry.getKey() + " " + value);
-        //     }
-        // }
-
-        // for (ItemStack entry : itemCopy) {
-        //     if (entry != null) {
-        //         VanillaEnoughItems.LOGGER.info("ItemCopy: " + entry.toString());
-        //     }
-        // }
-
-        // HashMap<Integer, ItemStack> leftover = new HashMap<>();
+        /* TEMP */ HashMap<Integer, ItemStack> leftover = originalInventory.addItem(items); // TODO the itemsCopy need to also change items
 
         // Attempt to add items to the itemMap
-        for (int i = 0; i < itemsCopy.length; i++) {
-            ItemStack item = itemsCopy[i];
+        for (int i = 0; i < itemsDefault.length; i++) {
+            ItemStack item = itemsDefault[i];
             int toAdd = item.getAmount();
 
-            int maxIteration = 0;
+            /* TEMP */ int maxIteration = 0;
             while(true)
             {
-                // PERFORMANCE: This is a temporary test to prevent infinite loops in case of a mal implementation, can be removed later
-                if(maxIteration++ >= 54)
-                {
-                    VanillaEnoughItems.LOGGER.warning("Infinite loop detected in addItem method");
-                    VanillaEnoughItems.LOGGER.warning("Item: " + item + " toAdd: " + toAdd);
-                    throwIfInventoryIsNotSame();
-                    throw new IllegalStateException("Inventores are the same but infinite loop detected in addItem method");
-                }
+                /* TEMP */ //This is a temporary test to prevent infinite loops in case of a mal implementation, can be removed later
+                /* TEMP */  if(maxIteration++ >= 54)
+                /* TEMP */  {
+                /* TEMP */      VanillaEnoughItems.LOGGER.warning("Infinite loop detected in addItem method\nItem: " + item + " toAdd: " + toAdd);
+                /* TEMP */      throwIfInventoryIsNotSame();
+                /* TEMP */      throw new IllegalStateException("Inventores are the same but infinite loop detected in addItem method");
+                /* TEMP */  }
 
                 int firstPartialIndex = firstPartial(item);
-                VanillaEnoughItems.LOGGER.info("[441] First partial index: " + firstPartialIndex);
 
                 // We don't have any more partial items to add to, so add to an empty slot
                 if(firstPartialIndex == -1)
                 {
                     int firstEmptyIndex = firstEmpty();
-                    VanillaEnoughItems.LOGGER.info("[442] First empty index: " + firstEmptyIndex);
                     
                     // We don't have any empty slots to add to, so we're done
                     if(firstEmptyIndex == -1)
                     {
-                        // ItemStack left = item.clone();
-                        // left.setAmount(toAdd);
-                        // leftover.put(i, left);
+                        // leftover.put(i, item);
                         break;
                     }
-                    
-                    VanillaEnoughItems.LOGGER.info("[425a] toAdd (before): " + toAdd);
+                    // else we have empty slots left, add to it
 
-                    // Add to the empty slot
-                    
                     // In the current implementation of the Inventory, if the 
                     // stacksize is greater than the maxStackSize it will add 
                     // the item directly without splitting it, except if the
                     // stacksize is greater than 99, in this case it will split
-                    // int amountToAddOld = Math.min(toAdd, 99);
-                    // // int amountToAdd = Math.min(toAdd, item.getMaxStackSize());
-
-                    // VanillaEnoughItems.LOGGER.info("[443] Amount to add: " + amountToAddOld);
-                    // ItemStack newItemStackOld = item.clone();
-                    // newItemStackOld.setAmount(amountToAddOld);
-                    // itemMap.put(firstEmptyIndex, newItemStackOld);
-                    // toAdd -= amountToAddOld;
-                    // VanillaEnoughItems.LOGGER.info("[444] toAdd (after): " + toAdd);
-
                     ItemStack newMapItem = item.clone();
-
-                    // In the current implementation of the Inventory, if the 
-                    // stacksize is greater than the maxStackSize it will add 
-                    // the item directly without splitting it, except if the
-                    // stacksize is greater than 99, in this case it will split
                     int amountToAdd = Math.min(toAdd, 99);
-                    // int amountToAdd = Math.min(toAdd, item.getMaxStackSize());
-
-                    VanillaEnoughItems.LOGGER.info("[443] Amount to add: " + amountToAdd);
-
-
                     newMapItem.setAmount(amountToAdd);
 
-                    // Check if the original inventory is the same as the inventoryShadow (type and amount)
-                    ItemStack originalItem = originalInventory.getItem(firstEmptyIndex);
-                    if (originalItem != null && !originalItem.equals(newMapItem)) {
-                        VanillaEnoughItems.LOGGER.warning("The inventoryShadow was not correctly implemented, the original inventory is not the same as the inventoryShadow, please check the implementation");
-                        VanillaEnoughItems.LOGGER.warning("Different Item at slot " + firstEmptyIndex);
-                        VanillaEnoughItems.LOGGER.warning("Slot " + firstEmptyIndex + ": \n" + originalItem + "\n != \n" + newMapItem + "\n");
-                        throw new IllegalStateException("The inventoryShadow was not correctly implemented, the original inventory is not the same as the inventoryShadow please check the implementation");
-                    }
+                    /* TEMP */ // Check if the original inventory is the same as the itemMap
+                    /* TEMP */ // (type and amount), before overwriting
+                    /* TEMP */ throwIfItemStackMismatch(newMapItem, firstEmptyIndex);
 
+                    // overwrite the original inventory item to have the same
+                    // instance between the two inventories
                     internalSetItem(firstEmptyIndex, newMapItem);
                     toAdd -= amountToAdd;
-
-                    VanillaEnoughItems.LOGGER.info("[444] toAdd (after): " + toAdd);
                 }
                 else {
                     // Partial item found, add to it
-                    VanillaEnoughItems.LOGGER.info("[444b] First partial index redo: " + firstPartialIndex);
                     ItemStack partialMapItem = getItem(firstPartialIndex);
-
-                    VanillaEnoughItems.LOGGER.info("[444c] InvItem: " + partialMapItem);
                     int currentAmount = partialMapItem.getAmount();
-                    VanillaEnoughItems.LOGGER.info("[445a] toAdd (before): " + toAdd);
-                    VanillaEnoughItems.LOGGER.info("[445b] Current amount: " + currentAmount);
                     int maxStackSize = partialMapItem.getMaxStackSize();
-                    VanillaEnoughItems.LOGGER.info("[445c] Max stack size: " + maxStackSize);
                     int amountToAdd = Math.min(maxStackSize - currentAmount, toAdd);
-                    VanillaEnoughItems.LOGGER.info("[445] Amount to add: " + amountToAdd);
-
                     partialMapItem.setAmount(currentAmount + amountToAdd);
 
-                    // Check if the original inventory is the same as the inventoryShadow (type and amount)
-                    ItemStack originalItem = originalInventory.getItem(firstPartialIndex);
-                    if (originalItem != null && !originalItem.equals(partialMapItem)) {
-                        VanillaEnoughItems.LOGGER.warning("The inventoryShadow was not correctly implemented, the original inventory is not the same as the inventoryShadow, please check the implementation");
-                        VanillaEnoughItems.LOGGER.warning("Different Item at slot " + firstPartialIndex);
-                        VanillaEnoughItems.LOGGER.warning("Slot " + firstPartialIndex + ": \n" + originalItem + "\n != \n" + partialMapItem + "\n");
-                        throw new IllegalStateException("The inventoryShadow was not correctly implemented, the original inventory is not the same as the inventoryShadow please check the implementation");
-                    }
+                    /* TEMP */ // Check if the original inventory is the same as the itemMap
+                    /* TEMP */ // (type and amount), before overwriting
+                    /* TEMP */ throwIfItemStackMismatch(partialMapItem, firstPartialIndex);
 
+                    // overwrite the original inventory item to have the same
+                    // instance between the two inventories
                     internalSetItem(firstPartialIndex, partialMapItem);
                     toAdd -= amountToAdd;
-
-                    VanillaEnoughItems.LOGGER.info("[446] toAdd (after): " + toAdd);
                 }
 
                 if(toAdd <= 0)
@@ -650,7 +579,8 @@ public class InventoryShadow<T extends Inventory> implements Inventory {
             }
         }
         
-        throwIfInventoryIsNotSame();
+        /* TEMP */ // Check if the original inventory is the same as the itemMap
+        /* TEMP */ throwIfInventoryIsNotSame();
         return leftover;
     }
 
@@ -682,21 +612,20 @@ public class InventoryShadow<T extends Inventory> implements Inventory {
 
             while(true)
             {
-                int index = first(item);
+                int firstSlotIndex = first(item);
 
                 // We don't have any more items to delete
-                if(index == -1)
+                if(firstSlotIndex == -1)
                 {
-                    item.setAmount(toDelete);
                     break;
                 }
 
-                ItemStack invItem = getItem(index);
+                ItemStack invItem = getItem(firstSlotIndex);
                 int currentAmount = invItem.getAmount();
                 if(currentAmount <= toDelete) // clear the slot, all used up and continue
                 {
                     toDelete -= currentAmount;
-                    internalClear(index);
+                    internalClear(firstSlotIndex);
                 }
                 else // remove the amount from the stack and break
                 {
@@ -715,14 +644,16 @@ public class InventoryShadow<T extends Inventory> implements Inventory {
     }
 
     /**
-     * Unimplemented method, not supported by InventoryShadow
-     * Use removeItem instead (Warning: this methode remove the items from the storage contents)
+     * Unimplemented method, not supported by {@link InventoryShadow}.
+     * Use {@link #removeItem(ItemStack...)} instead (Warning: this method 
+     * only removes the items from the storage contents).
      * 
-     * @deprecated in favour of {@link #removeItem(ItemStack...)}
+     * @deprecated in favor of {@link #removeItem(ItemStack...)}
+     * @return throw {@link UnsupportedOperationException}
      */
     @Override
     @Deprecated
-    public @NotNull HashMap<Integer, ItemStack> removeItemAnySlot(@NotNull ItemStack... items) throws IllegalArgumentException {
+    public @NotNull HashMap<Integer, ItemStack> removeItemAnySlot(@NotNull ItemStack... items) throws UnsupportedOperationException {
         throw new UnsupportedOperationException("removeItemAnySlot it's not implemented, is not supported by InventoryShadow");
     }
 
@@ -752,33 +683,66 @@ public class InventoryShadow<T extends Inventory> implements Inventory {
     }
 
     /**
-     * Throw an IllegalStateException if the original inventory is not the same as the inventoryFix
-     * This method is used to check if the inventoryFix was correctly implemented and it's used for debugging temporary
+     * Throws an IllegalStateException if the original inventory is not the same
+     * as the InventoryShadow. This method is used to check if the 
+     * InventoryShadow was correctly implemented and it's used for debugging 
+     * temporarily.
      */
     @Deprecated(forRemoval = true)
     protected void throwIfInventoryIsNotSame() {
-        for (int i = 0; i < originalInventory.getSize(); i++) {
+        int originalSize = originalInventory.getSize();
+        int itemMapSize = itemMap.size();
+
+        if (originalSize != itemMapSize) {
+            String message = "The InventoryShadow was not correctly implemented, the original inventory size is not the same as the InventoryShadow size, please check the implementation";
+            VanillaEnoughItems.LOGGER.warning(message);
+            throw new IllegalStateException(message);
+        }
+
+        for (int i = 0; i < originalSize; i++) {
             ItemStack originalItem = originalInventory.getItem(i);
             ItemStack mapItem = itemMap.get(i);
+
             if (!Objects.equals(originalItem, mapItem)) {
-                VanillaEnoughItems.LOGGER.warning("The inventoryFix was not correctly implemented, the original inventory is not the same as the inventoryFix, please check the implementation");
+                String introMessage = "The InventoryShadow was not correctly implemented, the original inventory is not the same as the InventoryShadow, please check the implementation";
+                VanillaEnoughItems.LOGGER.warning(introMessage);
                 
-                VanillaEnoughItems.LOGGER.warning("Different Item at slot " + i);
-                VanillaEnoughItems.LOGGER.warning("Slot " + i + ": \n" + originalItem + "\n != \n" + mapItem + "\n");
+                VanillaEnoughItems.LOGGER.warning("Different Item at slot: %d\n".formatted(i));
+                VanillaEnoughItems.LOGGER.warning("Slot %d: \n%s\n != \n%s\n\n".formatted(i, originalItem, mapItem));
 
-                VanillaEnoughItems.LOGGER.warning("Full Inventory: ");
-                VanillaEnoughItems.LOGGER.warning("Original Inventory: \n");
-                for (int j = 0; j < originalInventory.getSize(); j++) {
-                    VanillaEnoughItems.LOGGER.warning("Original Slot " + j + ": " + originalInventory.getItem(j) + "\n");
+                VanillaEnoughItems.LOGGER.warning("Original Inventory:\n");
+                for (int j = 0; j < originalSize; j++) {
+                    VanillaEnoughItems.LOGGER.warning("OriginalSlot[%d]: %s\n".formatted(j, originalInventory.getItem(j)));
                 }
 
-                VanillaEnoughItems.LOGGER.warning("\nItem Map: \n");
-                for (int j = 0; j < itemMap.size(); j++) {
-                    VanillaEnoughItems.LOGGER.warning("ItemMap Slot " + j + ": " + itemMap.get(j) + "\n");
+                VanillaEnoughItems.LOGGER.warning("\nItem Map Inventory:\n");
+                for (int j = 0; j < itemMapSize; j++) {
+                    VanillaEnoughItems.LOGGER.warning("ItemMapSlot[%d]: %s\n".formatted(j, itemMap.get(j)));
                 }
 
-                throw new IllegalStateException("The inventoryFix was not correctly implemented, the original inventory is not the same as the inventoryFix, please check the implementation");
+                throw new IllegalStateException(introMessage);
             }
+        }
+    }
+
+    /**
+     * Throws an {@link IllegalStateException} if a specific {@link ItemStack}
+     * reference is the same as a specific ItemStack in the original inventory.
+     * This method is used to check if the InventoryShadow was correctly
+     * implemented and it's used for debugging temporarily.
+     * @param referenceItemStack the reference ItemStack to compare
+     * @param originalInventoryIndex the index of the ItemStack in the original
+     * inventory to compare
+     */
+    @Deprecated(forRemoval = true)
+    private void throwIfItemStackMismatch(ItemStack referenceItemStack, int originalInventoryIndex) {
+        ItemStack originalItem = originalInventory.getItem(originalInventoryIndex);
+        if (originalItem != null && !originalItem.equals(referenceItemStack)) {
+            String message = "The inventoryShadow was not correctly implemented, the original inventory will not be the same as the itemMap, please check the implementation";
+            VanillaEnoughItems.LOGGER.warning(message);
+            VanillaEnoughItems.LOGGER.warning("Different Item at slot %d".formatted(originalInventoryIndex));
+            VanillaEnoughItems.LOGGER.warning("Slot %d: \n%s\n != \n%s\n".formatted(originalInventoryIndex, originalItem, referenceItemStack));
+            throw new IllegalStateException(message);
         }
     }
 }
