@@ -4,24 +4,29 @@ import java.util.UUID;
 
 import javax.annotation.Nullable;
 
+import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
+import org.bukkit.event.inventory.InventoryEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import io.papermc.paper.persistence.PersistentDataContainerView;
+import me.qheilmann.vei.VanillaEnoughItems;
 import me.qheilmann.vei.Core.Item.PersistentDataType.UuidPdt;
 
 /**
+ * The listener for all GUI events.
  * 
- * @author Most original part come from Triumph GUI <a href="https://github.com/TriumphTeam/triumph-gui">TriumphTeam</a>
+ * @author qhelmann but most original part come from Triumph GUI <a href="https://github.com/TriumphTeam/triumph-gui">TriumphTeam</a>
  */
 public class GuiListener<G extends BaseGui<G>> implements Listener {
-    
+
     /**
      * Handles what happens when a player clicks on the GUI
      *
@@ -29,48 +34,44 @@ public class GuiListener<G extends BaseGui<G>> implements Listener {
      */
     @EventHandler
     public void onGuiClick(final InventoryClickEvent event) {
+        G gui = getGuiFromEvent(event);
+        if (gui == null) return;
+
+        Inventory clickedInventory = event.getClickedInventory();
         
-        final InventoryHolder holder = event.getInventory().getHolder();
-        
-        // Checks if the inventory holder is a BaseGui<?>
-        if (! (holder instanceof BaseGui<?> baseGui)) 
-            return;
-
-        // Casts the holder to a BaseGui<G> or G (it's the same)
-        @SuppressWarnings("unchecked")
-        G gui = (G) baseGui;
-
-        // START
-
-        // Executes the outside click action
-        final GuiAction<InventoryClickEvent, G> outsideClickAction = gui.getOutsideClickAction();
-        if (outsideClickAction != null && event.getClickedInventory() == null) {
-            outsideClickAction.execute(event, gui);
+        // Outside click action, then return
+        if (clickedInventory == null) {
+            final GuiAction<InventoryClickEvent, G> outsideClickAction = gui.getOutsideClickAction();
+            if (outsideClickAction != null) {
+                executeAction(outsideClickAction, event, gui, "outside click");
+            }
             return;
         }
+        
+        InventoryType clickedInventoryType = clickedInventory.getType();
 
-        if (event.getClickedInventory() == null) return;
-
-        // Default click action and checks weather or not there is a default action and executes it
-        final GuiAction<InventoryClickEvent, G> defaultTopClick = gui.getDefaultTopClickAction();
-        if (defaultTopClick != null && event.getClickedInventory().getType() != InventoryType.PLAYER) {
-            defaultTopClick.execute(event, gui);
-        }
-
-        // Default click action and checks weather or not there is a default action and executes it
-        final GuiAction<InventoryClickEvent, G> playerInventoryClick = gui.getPlayerInventoryAction();
-        if (playerInventoryClick != null && event.getClickedInventory().getType() == InventoryType.PLAYER) {
-            playerInventoryClick.execute(event, gui);
-        }
-
-        // Default click action and checks weather or not there is a default action and executes it
+        // Default click action
         final GuiAction<InventoryClickEvent, G> defaultClick = gui.getDefaultClickAction();
-        if (defaultClick != null) defaultClick.execute(event, gui);
+        if (defaultClick != null) {
+            executeAction(defaultClick, event, gui, "default click");
+        }
 
-        // Slot action and checks weather or not there is a slot action and executes it
+        // Default top click action
+        final GuiAction<InventoryClickEvent, G> defaultTopClick = gui.getDefaultTopClickAction();
+        if (defaultTopClick != null && clickedInventoryType != InventoryType.PLAYER) {
+            executeAction(defaultTopClick, event, gui, "default top click");
+        }
+
+        // Default player inventory click action
+        final GuiAction<InventoryClickEvent, G> playerInventoryClick = gui.getPlayerInventoryAction();
+        if (playerInventoryClick != null && clickedInventoryType == InventoryType.PLAYER) {
+            executeAction(playerInventoryClick, event, gui, "player inventory click");
+        }
+
+        // Default specific slot click action
         final GuiAction<InventoryClickEvent, G> slotAction = gui.getSlotAction(event.getSlot());
-        if (slotAction != null && event.getClickedInventory().getType() != InventoryType.PLAYER) {
-            slotAction.execute(event, gui);
+        if (slotAction != null && clickedInventoryType != InventoryType.PLAYER) {
+            executeAction(slotAction, event, gui, "slot click");
         }
 
         GuiItem<G> guiItem = gui.getGuiItem(event.getSlot());
@@ -79,59 +80,28 @@ public class GuiListener<G extends BaseGui<G>> implements Listener {
         // Checks if the current item clicked is the same as the item in the slot
         if (!isIdenticalItem(event.getCurrentItem(), guiItem)) return;
 
-        // Executes the action of the item
+        // GuiItem click action
         final GuiAction<InventoryClickEvent, G> itemAction = guiItem.getAction();
-        if (itemAction != null) itemAction.execute(event, gui); // TODO maybe set try catch if the user action make unexpected error
+        if (itemAction != null) {
+            executeAction(itemAction, event, gui, "item click");
+        }
     }
 
     /**
-     * Handles what happens when a player clicks on the GUI
+     * Handles what happens when a player drag on the GUI
      *
      * @param event The InventoryClickEvent
      */
     @EventHandler
     public void onGuiDrag(final InventoryDragEvent event) {
+        G gui = getGuiFromEvent(event);
+        if (gui == null) return;
 
-        // TODO reduce code duplication
-        final InventoryHolder holder = event.getInventory().getHolder();
-        
-        // Checks if the inventory holder is a BaseGui<?>
-        if (! (holder instanceof BaseGui<?> baseGui)) 
-            return;
-
-        // Casts the holder to a BaseGui<G> or G (it's the same)
-        @SuppressWarnings("unchecked")
-        G gui = (G) baseGui;
-
-        // Default click action and checks weather or not there is a default action and executes it
+        // Drag action
         final GuiAction<InventoryDragEvent, G> dragAction = gui.getDragAction();
-        if (dragAction != null) dragAction.execute(event, gui);
-    }
-
-    /**
-     * Handles what happens when the GUI is closed
-     *
-     * @param event The InventoryCloseEvent
-     */
-    @EventHandler
-    public void onGuiClose(final InventoryCloseEvent event) {
-        
-        final InventoryHolder holder = event.getInventory().getHolder();
-        
-        // Checks if the inventory holder is a BaseGui<?>
-        if (! (holder instanceof BaseGui<?> baseGui)) 
-            return;
-
-        // Casts the holder to a BaseGui<G> or G (it's the same)
-        @SuppressWarnings("unchecked")
-        G gui = (G) baseGui;
-
-        // The GUI action for closing
-        final GuiAction<InventoryCloseEvent, G> closeAction = gui.getCloseGuiAction();
-
-        // Checks if there is or not an action set and executes it
-        if (closeAction != null && !gui.isUpdating() && gui.isCloseActionEnabled())
-            closeAction.execute(event, gui);
+        if (dragAction != null){
+            executeAction(dragAction, event, gui, "drag");  
+        }
     }
 
     /**
@@ -141,23 +111,31 @@ public class GuiListener<G extends BaseGui<G>> implements Listener {
      */
     @EventHandler
     public void onGuiOpen(final InventoryOpenEvent event) {
+        G gui = getGuiFromEvent(event);
+        if (gui == null) return;
 
-        final InventoryHolder holder = event.getInventory().getHolder();
-        
-        // Checks if the inventory holder is a BaseGui<?>
-        if (! (holder instanceof BaseGui<?> baseGui)) 
-            return;
-
-        // Casts the holder to a BaseGui<G> or G (it's the same)
-        @SuppressWarnings("unchecked")
-        G gui = (G) baseGui;
-
-        // The GUI action for opening
+        // Open action
         final GuiAction<InventoryOpenEvent, G> openAction = gui.getOpenGuiAction();
+        if (openAction != null && !gui.isUpdating()){
+            executeAction(openAction, event, gui, "open");
+        }
+    }
 
-        // Checks if there is or not an action set and executes it
-        if (openAction != null && !gui.isUpdating())
-            openAction.execute(event, gui);
+    /**
+     * Handles what happens when the GUI is closed
+     *
+     * @param event The InventoryCloseEvent
+     */
+    @EventHandler
+    public void onGuiClose(final InventoryCloseEvent event) {
+        G gui = getGuiFromEvent(event);
+        if (gui == null) return;
+        
+        // Close action
+        final GuiAction<InventoryCloseEvent, G> closeAction = gui.getCloseGuiAction();
+        if (closeAction != null && !gui.isUpdating() && gui.isCloseActionEnabled()){
+            executeAction(closeAction, event, gui, "close");
+        }
     }
 
     /**
@@ -176,5 +154,47 @@ public class GuiListener<G extends BaseGui<G>> implements Listener {
 
         UUID uuid = pdc.get(GuiItem.UUID_KEY, UuidPdt.TYPE);
         return uuid != null && uuid.equals(guiItem.getUuid());
+    }
+
+    /**
+     * Executes the action and catches any exceptions that may occur.
+     *
+     * @param action     The action to execute.
+     * @param event      The event sent to the action.
+     * @param gui        The GUI sent to the action.
+     * @param actionType The type of action being executed.
+     */
+    private <E extends Event> void executeAction(GuiAction<E, G> action, E event, G gui, String actionType) {
+        try {
+            action.execute(event, gui);
+        } catch (Exception e) {
+            VanillaEnoughItems.LOGGER.warning(
+                String.format(
+                    "An error occurred while executing the %s action for %s%nMessage: %s%nCause: %s%nStacktrace: %s",
+                    actionType, gui.getClass().getSimpleName(), e.getMessage(), e.getCause(), e.getStackTrace()
+                )
+            );
+        }
+    }
+
+    /**
+     * Gets the GUI from the event.
+     * If null is returned, the event can be ignored.
+     *
+     * @param event The event to get the GUI from.
+     * @return The GUI from the event.
+     */
+    @Nullable
+    private G getGuiFromEvent(InventoryEvent event) {
+        InventoryHolder holder = event.getInventory().getHolder();
+        if (!(holder instanceof BaseGui<?> baseGui)) 
+            return null;
+
+        // All derived BaseGui types will correctly cast to G and function as a
+        // BaseGui. Thanks to polymorphism and CRTP, only one listener is
+        // needed for all GUIs.
+        @SuppressWarnings("unchecked")
+        G gui = (G) baseGui;
+        return gui;
     }
 }
