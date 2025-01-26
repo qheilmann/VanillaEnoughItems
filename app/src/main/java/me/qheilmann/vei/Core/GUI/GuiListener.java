@@ -1,5 +1,7 @@
 package me.qheilmann.vei.Core.GUI;
 
+import java.util.UUID;
+
 import javax.annotation.Nullable;
 
 import org.bukkit.event.EventHandler;
@@ -11,7 +13,8 @@ import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
-import dev.triumphteam.gui.components.util.ItemNbt;
+import io.papermc.paper.persistence.PersistentDataContainerView;
+import me.qheilmann.vei.Core.Item.PersistentDataType.UuidPdt;
 
 /**
  * 
@@ -70,31 +73,11 @@ public class GuiListener<G extends BaseGui<G>> implements Listener {
             slotAction.execute(event, gui);
         }
 
-        GuiItem<G> guiItem;
-
-        // TODO there is no PaginatedGui in the code for the moment
-        // Checks whether it's a paginated gui or not
-        // if (gui instanceof PaginatedGui) {
-        //     final PaginatedGui paginatedGui = (PaginatedGui) gui;
-
-        //     // Gets the gui item from the added items or the page items
-        //     guiItem = paginatedGui.getGuiItem(event.getSlot());
-        //     if (guiItem == null) guiItem = paginatedGui.getPageItem(event.getSlot());
-
-        // } else {
-            // The clicked GUI Item
-            guiItem = gui.getGuiItem(event.getSlot());
-        // }
-
-        // Checks if the item is null (not a GUI item)
+        GuiItem<G> guiItem = gui.getGuiItem(event.getSlot());
         if(guiItem == null) return;
 
-        // TODO check if this test is necessary
-        // maybe get the getItem from the shadow inventory and check if PDC uuid is present, then try to cast to GuiItem<G> and check if it's null
-
         // Checks if the current item clicked is the same as the item in the slot
-        ItemStack currentItem = event.getCurrentItem();
-        if (!isGuiItem(currentItem, guiItem)) return;
+        if (!isIdenticalItem(event.getCurrentItem(), guiItem)) return;
 
         // Executes the action of the item
         final GuiAction<InventoryClickEvent, G> itemAction = guiItem.getAction();
@@ -178,17 +161,20 @@ public class GuiListener<G extends BaseGui<G>> implements Listener {
     }
 
     /**
-     * Checks if the item is or not a GUI item
+     * Checks if the current item UUID is the same as the item returned by the
+     * inventory.
      *
-     * @param currentItem The current item clicked
-     * @param guiItem     The GUI item in the slot
-     * @return Whether it is or not a GUI item
+     * @param currentItem The current item clicked.
+     * @param guiItem     The GUI item returned by the inventory.
+     * @return Whether it is a GUI item or not.
      */
-    private boolean isGuiItem(@Nullable final ItemStack currentItem, @Nullable final GuiItem<G> guiItem) {
+    private boolean isIdenticalItem(@Nullable final ItemStack currentItem, @Nullable final GuiItem<G> guiItem) {
         if (currentItem == null || guiItem == null) return false;
-        // Checks whether the Item is truly a GUI Item
-        final String nbt = ItemNbt.getString(currentItem, "mf-gui");
-        if (nbt == null) return false;
-        return nbt.equals(guiItem.getUuid().toString());
+
+        PersistentDataContainerView pdc = currentItem.getPersistentDataContainer();
+        if (pdc == null) return false;
+
+        UUID uuid = pdc.get(GuiItem.UUID_KEY, UuidPdt.TYPE);
+        return uuid != null && uuid.equals(guiItem.getUuid());
     }
 }

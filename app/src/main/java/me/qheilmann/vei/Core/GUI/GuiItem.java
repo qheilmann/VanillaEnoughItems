@@ -5,11 +5,13 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
-import dev.triumphteam.gui.components.util.ItemNbt;
+import me.qheilmann.vei.VanillaEnoughItems;
+import me.qheilmann.vei.Core.Item.PersistentDataType.UuidPdt;
 
 /*
  *
@@ -17,7 +19,8 @@ import dev.triumphteam.gui.components.util.ItemNbt;
  */
 public class GuiItem<G extends BaseGui<G>> extends ItemStack {
 
-    private static final @NotNull String UUID_KEY = "mf-gui";
+    private static final @NotNull String UUID_KEY_STRING = "gui_item_uuid";
+    public static final @NotNull NamespacedKey UUID_KEY = new NamespacedKey(VanillaEnoughItems.NAMESPACE, UUID_KEY_STRING);
 
     // Action to do when clicking on the item
     GuiAction<InventoryClickEvent, G> action;
@@ -35,9 +38,7 @@ public class GuiItem<G extends BaseGui<G>> extends ItemStack {
         super(itemStack);
 
         this.action = action;
-
-        UUID uuid = UUID.randomUUID();      
-        setUuid(uuid);
+        setUuid(UUID.randomUUID());
     }
 
     /**
@@ -104,15 +105,8 @@ public class GuiItem<G extends BaseGui<G>> extends ItemStack {
         }
     }
 
-    private void setUuid(UUID uuid) {
+    protected void setUuid(UUID uuid) {
         this.uuid = uuid;
-
-        // Old way
-        ItemNbt.setString(this, "mf-gui", uuid.toString());
-
-        // TODO use PDC
-        // PDC
-        // NamespacedKey key = new NamespacedKey(VanillaEnoughItems.NAMESPACE, UUID_KEY);
-        // this.editMeta(meta -> meta.getPersistentDataContainer().set(key, UuidPdt.TYPE, uuid));
+        this.editMeta(meta -> meta.getPersistentDataContainer().set(UUID_KEY, UuidPdt.TYPE, uuid));
     }
 }

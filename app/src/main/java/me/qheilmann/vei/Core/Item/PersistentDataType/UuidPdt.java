@@ -1,17 +1,16 @@
 package me.qheilmann.vei.Core.Item.PersistentDataType;
 
-import java.nio.ByteBuffer;
 import java.util.UUID;
 
 import org.bukkit.persistence.PersistentDataAdapterContext;
 import org.bukkit.persistence.PersistentDataType;
 
-public class UuidPdt implements PersistentDataType<byte[], UUID> {
+public class UuidPdt implements PersistentDataType<int[], UUID> {
     public static final UuidPdt TYPE = new UuidPdt();
 
     @Override
-    public Class<byte[]> getPrimitiveType() {
-        return byte[].class;
+    public Class<int[]> getPrimitiveType() {
+        return int[].class;
     }
 
     @Override
@@ -20,18 +19,21 @@ public class UuidPdt implements PersistentDataType<byte[], UUID> {
     }
 
     @Override
-    public byte[] toPrimitive(UUID complex, PersistentDataAdapterContext context) {
-        ByteBuffer bb = ByteBuffer.wrap(new byte[Long.BYTES * 2]);
-        bb.putLong(complex.getMostSignificantBits());
-        bb.putLong(complex.getLeastSignificantBits());
-        return bb.array();
+    public int[] toPrimitive(UUID complex, PersistentDataAdapterContext context) {
+        long mostSigBits = complex.getMostSignificantBits();
+        long leastSigBits = complex.getLeastSignificantBits();
+        return new int[] {
+            (int) (mostSigBits >> 32),
+            (int) mostSigBits,
+            (int) (leastSigBits >> 32),
+            (int) leastSigBits
+        };
     }
 
     @Override
-    public UUID fromPrimitive(byte[] primitive, PersistentDataAdapterContext context) {
-        ByteBuffer bb = ByteBuffer.wrap(primitive);
-        long firstLong = bb.getLong();
-        long secondLong = bb.getLong();
-        return new UUID(firstLong, secondLong);
+    public UUID fromPrimitive(int[] primitive, PersistentDataAdapterContext context) {
+        long mostSigBits = ((long) primitive[0] << 32) | (primitive[1] & 0xFFFFFFFFL);
+        long leastSigBits = ((long) primitive[2] << 32) | (primitive[3] & 0xFFFFFFFFL);
+        return new UUID(mostSigBits, leastSigBits);
     }
 }
