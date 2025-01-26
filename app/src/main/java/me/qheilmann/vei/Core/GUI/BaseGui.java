@@ -245,27 +245,25 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
     }
 
     /**
-     * Adds a {@link GuiAction} for when clicking on a specific slot.
-     * See {@link InventoryClickEvent}.
+     * Assigns a {@link GuiAction} to be executed when a specific slot is clicked.
      *
      * @param slot       The slot that will trigger the {@link GuiAction}.
-     * @param slotAction {@link GuiAction} to resolve when clicking on specific slots.
+     * @param slotAction The {@link GuiAction} to execute when the specified slot is clicked.
      */
-    public void addSlotAction(final int slot, @Nullable final GuiAction<@NotNull InventoryClickEvent, G> slotAction) {
+    public void setSlotAction(final int slot, @Nullable final GuiAction<@NotNull InventoryClickEvent, G> slotAction) {
         validateSlot(slot);
         slotActions.put(slot, slotAction);
     }
 
     /**
-     * Alternative method for {@link #addSlotAction(int, GuiAction)} to add a {@link GuiAction} to a specific slot using <i>ROWS</i> and <i>COLUMNS</i> instead of slots.
-     * See {@link InventoryClickEvent}.
+     * Sets a {@link GuiAction} for a specific slot using row and column coordinates.
      *
-     * @param row        The row of the slot.
-     * @param col        The column of the slot.
-     * @param slotAction {@link GuiAction} to resolve when clicking on the slot.
+     * @param row        The row number of the slot.
+     * @param col        The column number of the slot.
+     * @param slotAction The {@link GuiAction} to execute when the slot is clicked.
      */
-    public void addSlotAction(final int row, final int col, @Nullable final GuiAction<@NotNull InventoryClickEvent, G> slotAction) {
-        addSlotAction(getSlotFromRowCol(row, col), slotAction);
+    public void setSlotAction(final int row, final int col, @Nullable final GuiAction<@NotNull InventoryClickEvent, G> slotAction) {
+        setSlotAction(getSlotFromRowCol(row, col), slotAction);
     }
 
     /**

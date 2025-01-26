@@ -2,6 +2,7 @@ package me.qheilmann.vei.Core.GUI;
 
 import java.util.Set;
 
+import org.bukkit.Material;
 import org.jetbrains.annotations.NotNull;
 
 import dev.triumphteam.gui.components.GuiType;
@@ -9,6 +10,8 @@ import dev.triumphteam.gui.components.InteractionModifier;
 import net.kyori.adventure.text.Component;
 
 public class Gui extends BaseGui<Gui> {
+    public GuiItem<Gui> lapizGui = new GuiItem<>(Material.LAPIS_BLOCK);
+
     /**
      * Main constructor for the GUI
      *

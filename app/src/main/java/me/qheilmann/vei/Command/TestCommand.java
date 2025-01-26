@@ -86,7 +86,7 @@ public class TestCommand implements ICommand{
         lapiz.lore(List.of(Component.text("Click me (random gold)")));
         lapiz.setAction((event, contextGui) -> {
             event.setCancelled(true);
-            int randomStack = (int) (Math.random() * 64);
+            int randomStack = 1 + (int) (Math.random() * 64);
             ItemStack item = new ItemStack(Material.GOLD_INGOT, randomStack);
             GuiItem<Gui> gold = new GuiItem<>(item);
             contextGui.setItem(2, 1, gold);
@@ -136,12 +136,13 @@ public class TestCommand implements ICommand{
 
     private void derivedClass(Player player) {
         TestMenu menu = new TestMenu();
+        menu.open(player);
 
-        // If the BaseGui was closed, the item will not be added because the addItem() methode will not be visible
+        // After this line is just for test and should not be used in a real case
+
+        // The BaseGui should be a closed class, the addItem() method should not be visible
         GuiItem<TestMenu> junkItem = new GuiItem<>(Material.DIRT);
         junkItem.lore(List.of(Component.text("If the BaseGui was closed, the item will not be added because the addItem() methode will not be visible")));
         menu.addItem(junkItem);
-
-        menu.open(player);
     }
 }
