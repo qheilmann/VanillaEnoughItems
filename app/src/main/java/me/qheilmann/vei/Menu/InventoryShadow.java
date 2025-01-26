@@ -23,26 +23,31 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * This class is an Inventory implementation that stores a shadow copy of the 
+ * This class is an Inventory implementation that stores a shadow copy of the
  * items inside the inventory.
  * <p>
- * Craftbukkit, for example, creates a new identical ItemStack instance when 
- * you set an item in the inventory, but if you add a derived class of 
- * ItemStack, it will convert it to a copy ItemStack and then store it. the 
+ * Craftbukkit, for example, creates a new identical ItemStack instance when
+ * you set an item in the inventory, but if you add a derived class of
+ * ItemStack, it will convert it to a copy ItemStack and then store it. The
  * derived type is lost.
  * <p>
- * This class stores the item instances inside a local map and returns the 
- * items from the map instead of the original inventory. This way, if you 
- * retrieve an item from the inventory, you can compare it with instanceof or 
+ * This class stores the item instances inside a local map and returns the
+ * items from the map instead of the original inventory. This way, if you
+ * retrieve an item from the inventory, you can compare it with instanceof or
  * use polymorphism to run the correct implementation of your derived type.
  * <p>
- * Note: This class does not support alternate contents other than the basic 
- * storage contents (e.g., inside player inventory the alternate contents is 
+ * - This class does not support alternate contents other than the basic
+ * storage contents (e.g., inside player inventory the alternate contents is
  * the armor or the crafting matrix, etc.)
  * <p>
- * Inside some methods, the ItemStack clone method is used, so if you use a 
- * derived class of ItemStack, make sure to override the clone method to return 
- * the correct type.
+ * - Make sure the derived class of ItemStack overrides the clone method to
+ * return the correct type.
+ * <p>
+ * - This class is not thread-safe.
+ * <p>
+ * - This class does not support inventory modified by other sources than
+ * this class. (e.g., Player inventory click, same original inventory used
+ * elsewhere)
  */
 public class InventoryShadow<T extends Inventory> implements Inventory {
     private final T originalInventory;
