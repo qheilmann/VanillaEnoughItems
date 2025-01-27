@@ -34,7 +34,8 @@ public class TestMenu extends BaseGui<TestMenu> {
 
         // Example Open GUI action
         this.setOpenGuiAction((event, context) -> {
-            event.getPlayer().sendMessage("You opened the GUI !");
+            event.getPlayer().sendMessage("(1) You opened\nthe GUI ! (multiline with \\n)");
+            event.getPlayer().sendMessage("(2) You opened%nthe GUI ! (multiline with \"%%n\".formatted, but [CR] char)".formatted());
         });
 
         // Example Close GUI action

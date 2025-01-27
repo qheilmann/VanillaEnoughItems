@@ -522,7 +522,7 @@ public class InventoryShadow<T extends Inventory> implements Inventory {
                 /* TEMP */ //This is a temporary test to prevent infinite loops in case of a mal implementation, can be removed later
                 /* TEMP */  if(maxIteration++ >= 54)
                 /* TEMP */  {
-                /* TEMP */      VanillaEnoughItems.LOGGER.warning("Infinite loop detected in addItem method\nItem: " + item + " toAdd: " + toAdd);
+                /* TEMP */      VanillaEnoughItems.LOGGER.warning("Infinite loop detected in addItem method%nItem: " + item + " toAdd: " + toAdd);
                 /* TEMP */      throwIfInventoryIsNotSame();
                 /* TEMP */      throw new IllegalStateException("Inventores are the same but infinite loop detected in addItem method");
                 /* TEMP */  }
@@ -712,17 +712,17 @@ public class InventoryShadow<T extends Inventory> implements Inventory {
                 String introMessage = "The InventoryShadow was not correctly implemented, the original inventory is not the same as the InventoryShadow, please check the implementation";
                 VanillaEnoughItems.LOGGER.warning(introMessage);
                 
-                VanillaEnoughItems.LOGGER.warning("Different Item at slot: %d\n".formatted(i));
-                VanillaEnoughItems.LOGGER.warning("Slot %d: \n%s\n != \n%s\n\n".formatted(i, originalItem, mapItem));
+                VanillaEnoughItems.LOGGER.warning("Different Item at slot: %d%n".formatted(i));
+                VanillaEnoughItems.LOGGER.warning("Slot %d: %n%s%n != %n%s%n%n".formatted(i, originalItem, mapItem));
 
-                VanillaEnoughItems.LOGGER.warning("Original Inventory:\n");
+                VanillaEnoughItems.LOGGER.warning("Original Inventory:%n");
                 for (int j = 0; j < originalSize; j++) {
-                    VanillaEnoughItems.LOGGER.warning("OriginalSlot[%d]: %s\n".formatted(j, originalInventory.getItem(j)));
+                    VanillaEnoughItems.LOGGER.warning("OriginalSlot[%d]: %s%n".formatted(j, originalInventory.getItem(j)));
                 }
 
-                VanillaEnoughItems.LOGGER.warning("\nItem Map Inventory:\n");
+                VanillaEnoughItems.LOGGER.warning("%nItem Map Inventory:%n");
                 for (int j = 0; j < itemMapSize; j++) {
-                    VanillaEnoughItems.LOGGER.warning("ItemMapSlot[%d]: %s\n".formatted(j, itemMap.get(j)));
+                    VanillaEnoughItems.LOGGER.warning("ItemMapSlot[%d]: %s%n".formatted(j, itemMap.get(j)));
                 }
 
                 throw new IllegalStateException(introMessage);
@@ -746,7 +746,7 @@ public class InventoryShadow<T extends Inventory> implements Inventory {
             String message = "The inventoryShadow was not correctly implemented, the original inventory will not be the same as the itemMap, please check the implementation";
             VanillaEnoughItems.LOGGER.warning(message);
             VanillaEnoughItems.LOGGER.warning("Different Item at slot %d".formatted(originalInventoryIndex));
-            VanillaEnoughItems.LOGGER.warning("Slot %d: \n%s\n != \n%s\n".formatted(originalInventoryIndex, originalItem, referenceItemStack));
+            VanillaEnoughItems.LOGGER.warning("Slot %d: %n%s%n != %n%s%n".formatted(originalInventoryIndex, originalItem, referenceItemStack));
             throw new IllegalStateException(message);
         }
     }
