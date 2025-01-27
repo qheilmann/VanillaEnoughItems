@@ -22,10 +22,13 @@ import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
+import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+
+import com.google.common.base.Preconditions;
 
 import dev.triumphteam.gui.components.GuiType;
 import dev.triumphteam.gui.components.InteractionModifier;
@@ -33,7 +36,6 @@ import dev.triumphteam.gui.components.exception.GuiException;
 import dev.triumphteam.gui.components.util.VersionHelper;
 import dev.triumphteam.gui.guis.InteractionModifierListener;
 
-import me.qheilmann.vei.VanillaEnoughItems;
 import me.qheilmann.vei.Menu.InventoryShadow;
 
 import net.kyori.adventure.text.Component;
@@ -45,40 +47,24 @@ import net.kyori.adventure.text.Component;
  */
 public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
 
-    // The plugin instance for registering the event and for the close delay.
-    private static final Plugin plugin = VanillaEnoughItems.getPlugin(VanillaEnoughItems.class);
+    // The plugin instance for the close delay.
+    private static Plugin plugin = null;
 
     private static Method GET_SCHEDULER_METHOD = null;
     private static Method EXECUTE_METHOD = null;
 
-    // Registering the listener class.
     static {
         try {
             GET_SCHEDULER_METHOD = Entity.class.getMethod("getScheduler");
             final Class<?> entityScheduler = Class.forName("io.papermc.paper.threadedregions.scheduler.EntityScheduler");
             EXECUTE_METHOD = entityScheduler.getMethod("execute", Plugin.class, Runnable.class, Runnable.class, long.class);
-        } catch (NoSuchMethodException | ClassNotFoundException ignored) {
-        }
-
-        Bukkit.getPluginManager().registerEvents(new GuiListener<>(), plugin);
-        Bukkit.getPluginManager().registerEvents(new InteractionModifierListener(), plugin);
-    }
-
-    /**
-     * Copy a set into an EnumSet, required because {@link EnumSet#copyOf(EnumSet)} throws an exception if the collection passed as argument is empty.
-     *
-     * @param set The set to be copied.
-     * @return An EnumSet with the provided elements from the original set.
-     */
-    @NotNull
-    private static Set<InteractionModifier> safeCopyOf(@NotNull final Set<InteractionModifier> set) {
-        return set.isEmpty() ? EnumSet.noneOf(InteractionModifier.class) : EnumSet.copyOf(set);
+        } 
+        catch (NoSuchMethodException | ClassNotFoundException ignored)
+        {}
     }
 
     // Main inventory who also holds the GuiItems
     private InventoryShadow<Inventory> inventory;
-    // Contains all items the GUI will have // to remove
-    private Map<Integer, GuiItem<G>> guiItems;
     // Gui filler.
     private final GuiFiller<G> filler = new GuiFiller<G>(this);
     // Actions for specific slots.
@@ -119,7 +105,7 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
      * @param interactionModifiers Modifiers to select which interactions are allowed.
      * @since 3.0.0.
      */
-    public BaseGui(final int rows, @NotNull final Component title, @NotNull final Set<InteractionModifier> interactionModifiers) {
+    protected BaseGui(final int rows, @NotNull final Component title, @NotNull final Set<@NotNull InteractionModifier> interactionModifiers) {
         this(GuiType.CHEST, title, interactionModifiers, rows);
     }
 
@@ -131,11 +117,11 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
      * @param interactionModifiers Modifiers to select which interactions are allowed.
      * @since 3.0.0
      */
-    public BaseGui(@NotNull final GuiType guiType, @NotNull final Component title, @NotNull final Set<InteractionModifier> interactionModifiers) {
+    protected BaseGui(@NotNull final GuiType guiType, @NotNull final Component title, @NotNull final Set<@NotNull InteractionModifier> interactionModifiers) {
         this(guiType, title, interactionModifiers, 6);
     }
 
-    private BaseGui(@NotNull final GuiType guiType, @NotNull final Component title, @NotNull final Set<InteractionModifier> interactionModifiers, int rows) {
+    private BaseGui(@NotNull final GuiType guiType, @NotNull final Component title, @NotNull final Set<@NotNull InteractionModifier> interactionModifiers, int rows) {
         int inventorySize;
         if(guiType == GuiType.CHEST) {
             this.rows = (rows >= 1 && rows <= 6) ? rows : 1;
@@ -152,13 +138,60 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
         this.slotActions = new LinkedHashMap<>(inventorySize);
     }
 
+    public static void onEnable(@NotNull final Plugin plugin) {
+        BaseGui.setPlugin(plugin);
+        BaseGui.registerListener(plugin);
+    }
+
+    /**
+     * Copy a set into an EnumSet, required because {@link EnumSet#copyOf(EnumSet)} throws an exception if the collection passed as argument is empty.
+     *
+     * @param set The set to be copied.
+     * @return An EnumSet with the provided elements from the original set.
+     */
+    private static @NotNull Set<@NotNull InteractionModifier> safeCopyOf(@NotNull final Set<@NotNull InteractionModifier> set) {
+        return set.isEmpty() ? EnumSet.noneOf(InteractionModifier.class) : EnumSet.copyOf(set);
+    }
+
+    /**
+     * Sets the plugin for the GUI.
+     *
+     * @param plugin The plugin to set.
+     */
+    private static void setPlugin(@NotNull final Plugin plugin) {
+        Preconditions.checkArgument(plugin != null, "Plugin cannot be null.");
+
+        BaseGui.plugin = plugin;
+    }
+
+    /**
+     * Registers the listener for the GUI.
+     */
+    private static void registerListener(@NotNull final Plugin plugin) {
+        Preconditions.checkState(plugin != null, "Before registering the listener, the plugin must be set. Use setPlugin() method.");
+
+        Bukkit.getPluginManager().registerEvents(new GuiListener<>(), plugin);
+        Bukkit.getPluginManager().registerEvents(new InteractionModifierListener(), plugin);
+    }
+
+    /**
+     * Gets the slot from the row and column passed.
+     *
+     * @param row The row.
+     * @param col The column.
+     * @return The slot needed.
+     */
+    private static int getSlotFromRowCol(final int row, final int col) {
+        return col + row * 9;
+    }
+
     /**
      * Gets the GUI's title.
      *
      * @return The GUI's title.
      */
     @NotNull
-    public Component getTitle() {
+    protected Component getTitle() {
         return title;
     }
 
@@ -168,8 +201,8 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
      * @param slot    The GUI slot.
      * @param guiItem The {@link GuiItem} to add to the slot.
      */
-    public void setItem(final int slot, @NotNull final GuiItem<G> guiItem) {
-        validateSlot(slot);
+    protected void setItem(final int slot, @Nullable final GuiItem<G> guiItem) {
+        checkSlotBoundaries(slot);
         inventory.setItem(slot, guiItem);
     }
 
@@ -179,7 +212,9 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
      * @param slots   The slots in which the item should go.
      * @param guiItem The {@link GuiItem} to add to the slots.
      */
-    public void setItem(@NotNull final List<Integer> slots, @NotNull final GuiItem<G> guiItem) {
+    protected void setItem(@NotNull final List<@NotNull Integer> slots, @NotNull final GuiItem<G> guiItem) {
+        Preconditions.checkArgument(slots != null, "Slots cannot be null.");
+
         for (final int slot : slots) {
             setItem(slot, guiItem);
         }
@@ -192,7 +227,7 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
      * @param col     The GUI column number.
      * @param guiItem The {@link GuiItem} to add to the slot.
      */
-    public void setItem(final int row, final int col, @NotNull final GuiItem<G> guiItem) {
+    protected void setItem(final int row, final int col, @Nullable final GuiItem<G> guiItem) {               
         setItem(getSlotFromRowCol(row, col), guiItem);
     }
 
@@ -203,8 +238,8 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
      * @return A HashMap containing the ItemStacks (not GuiItem) that were not removed, or null if all stacks were removed.
      * @see Inventory#removeItem(ItemStack)
      */
-    @SafeVarargs
-    public final HashMap<Integer, ItemStack> removeItem(@NotNull final GuiItem<G>... item) {
+    @SuppressWarnings("unchecked")
+    protected HashMap<Integer, ItemStack> removeItem(@NotNull final GuiItem<@NotNull G>... item) {
         return inventory.removeItem(item);
     }
 
@@ -213,8 +248,8 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
      *
      * @param slot The GUI slot.
      */
-    public void removeSlot(final int slot) {
-        validateSlot(slot);
+    protected void removeSlot(final int slot) {
+        checkSlotBoundaries(slot);
         inventory.setItem(slot, null);
     }
 
@@ -224,7 +259,7 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
      * @param row The row.
      * @param col The column.
      */
-    public void removeSlot(final int row, final int col) {
+    protected void removeSlot(final int row, final int col) {
         removeSlot(getSlotFromRowCol(row, col));
     }
 
@@ -239,9 +274,9 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
      * @return A HashMap containing the ItemStacks (not GuiItem) that were not stored, or null if all stacks were stored.
      * @see Inventory#addItem(ItemStack...)
      */
-    @SafeVarargs
-    public final void addItem(@NotNull final GuiItem<G>... items) {
-        inventory.addItem(items);
+    @SuppressWarnings("unchecked")
+    protected @NotNull HashMap<Integer, @NotNull ItemStack> addItem(@NotNull final GuiItem<@NotNull G>... items) {
+        return inventory.addItem(items);
     }
 
     /**
@@ -250,8 +285,8 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
      * @param slot       The slot that will trigger the {@link GuiAction}.
      * @param slotAction The {@link GuiAction} to execute when the specified slot is clicked.
      */
-    public void setSlotAction(final int slot, @Nullable final GuiAction<@NotNull InventoryClickEvent, G> slotAction) {
-        validateSlot(slot);
+    protected void setSlotAction(final int slot, @Nullable final GuiAction<@NotNull InventoryClickEvent, G> slotAction) {
+        checkSlotBoundaries(slot);
         slotActions.put(slot, slotAction);
     }
 
@@ -262,7 +297,7 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
      * @param col        The column number of the slot.
      * @param slotAction The {@link GuiAction} to execute when the slot is clicked.
      */
-    public void setSlotAction(final int row, final int col, @Nullable final GuiAction<@NotNull InventoryClickEvent, G> slotAction) {
+    protected void setSlotAction(final int row, final int col, @Nullable final GuiAction<@NotNull InventoryClickEvent, G> slotAction) {
         setSlotAction(getSlotFromRowCol(row, col), slotAction);
     }
 
@@ -274,7 +309,7 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
      */
     @Nullable
     @SuppressWarnings("unchecked")
-    public GuiItem<G> getGuiItem(final int slot) {
+    protected GuiItem<G> getGuiItem(final int slot) {
         ItemStack itemstack = inventory.getItem(slot);
 
         Class<GuiItem<G>> clazz = (Class<GuiItem<G>>) (Class<?>) GuiItem.class;
@@ -291,7 +326,7 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
      * @return Whether the GUI is updating or not.
      */
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-    public boolean isUpdating() {
+    protected boolean isUpdating() {
         return updating;
     }
 
@@ -300,39 +335,46 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
      *
      * @param updating Sets the GUI to the updating status.
      */
-    public void setUpdating(final boolean updating) {
+    protected void setUpdating(final boolean updating) {
         this.updating = updating;
     }
 
     /**
      * Opens the GUI for a {@link HumanEntity}.
      *
-     * @param player The {@link HumanEntity} to open the GUI to.
+     * @param humanEntity The {@link HumanEntity} to open the GUI to.
      */
-    public void open(@NotNull final HumanEntity player) {
-        if (player.isSleeping()) return;
-        player.openInventory(inventory.getOriginalInventory());
+    @Nullable
+    public InventoryView open(@NotNull final HumanEntity humanEntity) {
+        Preconditions.checkArgument(humanEntity != null, "Player cannot be null.");
+
+        if (humanEntity.isSleeping())
+            return null;
+
+        return humanEntity.openInventory(inventory.getOriginalInventory());
     }
 
     /**
      * Closes the GUI with a {@code 2 tick} delay (to prevent items from being taken from the {@link Inventory}).
      *
-     * @param player The {@link HumanEntity} to close the GUI to.
+     * @param humanEntity The {@link HumanEntity} to close the GUI to.
      */
-    public void close(@NotNull final HumanEntity player) {
-        close(player, true);
+    public void close(@NotNull final HumanEntity humanEntity) {
+        close(humanEntity, true);
     }
 
     /**
      * Closes the GUI with a {@code 2 tick} delay (to prevent items from being taken from the {@link Inventory}).
      *
-     * @param player         The {@link HumanEntity} to close the GUI to.
+     * @param humanEntity         The {@link HumanEntity} to close the GUI to.
      * @param runCloseAction If should or not run the close action.
      */
-    public void close(@NotNull final HumanEntity player, final boolean runCloseAction) {
+    public void close(@NotNull final HumanEntity humanEntity, final boolean runCloseAction) {
+        Preconditions.checkArgument(humanEntity != null, "HumanEntity cannot be null.");
+
         Runnable task = () -> {
             this.runCloseAction = runCloseAction;
-            player.closeInventory();
+            humanEntity.closeInventory();
             this.runCloseAction = true;
         };
 
@@ -342,7 +384,7 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
             }
 
             try {
-                EXECUTE_METHOD.invoke(GET_SCHEDULER_METHOD.invoke(player), plugin, task, null, 2L);
+                EXECUTE_METHOD.invoke(GET_SCHEDULER_METHOD.invoke(humanEntity), plugin, task, null, 2L);
             } catch (IllegalAccessException | InvocationTargetException e) {
                 throw new GuiException("Could not invoke Folia task.", e);
             }
@@ -356,7 +398,11 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
      * Updates the GUI for all the {@link Inventory} views.
      */
     public void update() {
-        for (HumanEntity viewer : new ArrayList<>(inventory.getViewers())) ((Player) viewer).updateInventory();
+        for (HumanEntity viewer : new ArrayList<>(inventory.getViewers())) {
+            if (viewer instanceof Player player) {
+                player.updateInventory();
+            }
+        }
     }
 
     /**
@@ -368,15 +414,15 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
      */
     @Contract("_ -> this")
     @NotNull
-    public BaseGui<G> updateTitle(@NotNull final Component title) {
+    protected BaseGui<G> updateTitle(@NotNull final Component title) {
         updating = true;
 
         final List<HumanEntity> viewers = new ArrayList<>(inventory.getViewers());
 
         inventory = new InventoryShadow<Inventory>(Bukkit.createInventory(this, inventory.getSize(), title));
 
-        for (final HumanEntity player : viewers) {
-            open(player);
+        for (final HumanEntity humanEntity : viewers) {
+            open(humanEntity);
         }
 
         updating = false;
@@ -393,7 +439,7 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
      */
     @NotNull
     @Contract(" -> this")
-    public BaseGui<G> disableItemPlace() {
+    protected BaseGui<G> disableItemPlace() {
         interactionModifiers.add(InteractionModifier.PREVENT_ITEM_PLACE);
         return this;
     }
@@ -407,7 +453,7 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
      */
     @NotNull
     @Contract(" -> this")
-    public BaseGui<G> disableItemTake() {
+    protected BaseGui<G> disableItemTake() {
         interactionModifiers.add(InteractionModifier.PREVENT_ITEM_TAKE);
         return this;
     }
@@ -421,7 +467,7 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
      */
     @NotNull
     @Contract(" -> this")
-    public BaseGui<G> disableItemSwap() {
+    protected BaseGui<G> disableItemSwap() {
         interactionModifiers.add(InteractionModifier.PREVENT_ITEM_SWAP);
         return this;
     }
@@ -434,7 +480,7 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
      */
     @NotNull
     @Contract(" -> this")
-    public BaseGui<G> disableItemDrop() {
+    protected BaseGui<G> disableItemDrop() {
         interactionModifiers.add(InteractionModifier.PREVENT_ITEM_DROP);
         return this;
     }
@@ -448,7 +494,7 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
      */
     @NotNull
     @Contract(" -> this")
-    public BaseGui<G> disableOtherActions() {
+    protected BaseGui<G> disableOtherActions() {
         interactionModifiers.add(InteractionModifier.PREVENT_OTHER_ACTIONS);
         return this;
     }
@@ -462,7 +508,7 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
      */
     @NotNull
     @Contract(" -> this")
-    public BaseGui<G> disableAllInteractions() {
+    protected BaseGui<G> disableAllInteractions() {
         interactionModifiers.addAll(InteractionModifier.VALUES);
         return this;
     }
@@ -476,7 +522,7 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
      */
     @NotNull
     @Contract(" -> this")
-    public BaseGui<G> enableItemPlace() {
+    protected BaseGui<G> enableItemPlace() {
         interactionModifiers.remove(InteractionModifier.PREVENT_ITEM_PLACE);
         return this;
     }
@@ -490,7 +536,7 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
      */
     @NotNull
     @Contract(" -> this")
-    public BaseGui<G> enableItemTake() {
+    protected BaseGui<G> enableItemTake() {
         interactionModifiers.remove(InteractionModifier.PREVENT_ITEM_TAKE);
         return this;
     }
@@ -504,7 +550,7 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
      */
     @NotNull
     @Contract(" -> this")
-    public BaseGui<G> enableItemSwap() {
+    protected BaseGui<G> enableItemSwap() {
         interactionModifiers.remove(InteractionModifier.PREVENT_ITEM_SWAP);
         return this;
     }
@@ -517,7 +563,7 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
      */
     @NotNull
     @Contract(" -> this")
-    public BaseGui<G> enableItemDrop() {
+    protected BaseGui<G> enableItemDrop() {
         interactionModifiers.remove(InteractionModifier.PREVENT_ITEM_DROP);
         return this;
     }
@@ -531,7 +577,7 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
      */
     @NotNull
     @Contract(" -> this")
-    public BaseGui<G> enableOtherActions() {
+    protected BaseGui<G> enableOtherActions() {
         interactionModifiers.remove(InteractionModifier.PREVENT_OTHER_ACTIONS);
         return this;
     }
@@ -545,12 +591,12 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
      */
     @NotNull
     @Contract(" -> this")
-    public BaseGui<G> enableAllInteractions() {
+    protected BaseGui<G> enableAllInteractions() {
         interactionModifiers.clear();
         return this;
     }
 
-    public boolean isAllInteractionsDisabled() {
+    protected boolean isAllInteractionsDisabled() {
         return interactionModifiers.size() == InteractionModifier.VALUES.size();
     }
 
@@ -561,7 +607,7 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
      * @author SecretX.
      * @since 3.0.0.
      */
-    public boolean canPlaceItems() {
+    protected boolean canPlaceItems() {
         return !interactionModifiers.contains(InteractionModifier.PREVENT_ITEM_PLACE);
     }
 
@@ -572,7 +618,7 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
      * @author SecretX.
      * @since 3.0.0.
      */
-    public boolean canTakeItems() {
+    protected boolean canTakeItems() {
         return !interactionModifiers.contains(InteractionModifier.PREVENT_ITEM_TAKE);
     }
 
@@ -583,7 +629,7 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
      * @author SecretX.
      * @since 3.0.0.
      */
-    public boolean canSwapItems() {
+    protected boolean canSwapItems() {
         return !interactionModifiers.contains(InteractionModifier.PREVENT_ITEM_SWAP);
     }
 
@@ -593,7 +639,7 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
      * @return True if item drop is allowed for this GUI
      * @since 3.0.3
      */
-    public boolean canDropItems() {
+    protected boolean canDropItems() {
         return !interactionModifiers.contains(InteractionModifier.PREVENT_ITEM_DROP);
     }
 
@@ -603,7 +649,7 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
      * @return True if other actions are allowed
      * @since 3.0.4
      */
-    public boolean canDoOtherActions() {
+    protected boolean canDoOtherActions() {
         return !interactionModifiers.contains(InteractionModifier.PREVENT_OTHER_ACTIONS);
     }
 
@@ -613,17 +659,27 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
      * @return The {@link GuiFiller}.
      */
     @NotNull
-    public GuiFiller<G> getFiller() {
+    protected GuiFiller<G> getFiller() {
         return filler;
     }
 
     /**
      * Gets an immutable {@link Map} with all the GUI items.
+     * <p>
+     * Note: ItemStack that are not {@link GuiItem} will be ignored, and not 
+     * returned.
      *
      * @return The {@link Map} with all the {@link #guiItems}.
      */
     @NotNull
-    public Map<@NotNull Integer, @NotNull GuiItem<G>> getGuiItems() {
+    protected Map<@NotNull Integer, @NotNull GuiItem<G>> getGuiItems() {
+        Map<Integer, GuiItem<G>> guiItems = new LinkedHashMap<>();
+        for (int i = 0; i < inventory.getSize(); i++) {
+            GuiItem<G> guiItem = getGuiItem(i);
+            if (guiItem != null) {
+                guiItems.put(i, guiItem);
+            }
+        }
         return guiItems;
     }
 
@@ -643,7 +699,9 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
      *
      * @param inventory The new inventory.
      */
-    public void setInventory(@NotNull final InventoryShadow<Inventory> inventory) {
+    protected void setInventory(@NotNull final InventoryShadow<@NotNull Inventory> inventory) {
+        Preconditions.checkArgument(inventory != null, "Inventory cannot be null.");
+
         this.inventory = inventory;
     }
 
@@ -652,7 +710,7 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
      *
      * @return The {@link #rows} of the GUI.
      */
-    public int getRows() {
+    protected int getRows() {
         return rows;
     }
 
@@ -662,7 +720,7 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
      * @return The {@link GuiType}.
      */
     @NotNull
-    public GuiType guiType() {
+    protected GuiType guiType() {
         return guiType;
     }
 
@@ -670,7 +728,7 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
      * Gets the default click resolver.
      */
     @Nullable
-    GuiAction<InventoryClickEvent, G> getDefaultClickAction() {
+    protected GuiAction<InventoryClickEvent, G> getDefaultClickAction() {
         return defaultClickAction;
     }
 
@@ -680,7 +738,7 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
      *
      * @param defaultClickAction {@link GuiAction} to resolve when any item is clicked.
      */
-    public void setDefaultClickAction(@Nullable final GuiAction<@NotNull InventoryClickEvent, G> defaultClickAction) {
+    protected void setDefaultClickAction(@Nullable final GuiAction<@NotNull InventoryClickEvent, G> defaultClickAction) {
         this.defaultClickAction = defaultClickAction;
     }
 
@@ -688,7 +746,7 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
      * Gets the default top click resolver.
      */
     @Nullable
-    GuiAction<InventoryClickEvent, G> getDefaultTopClickAction() {
+    protected GuiAction<InventoryClickEvent, G> getDefaultTopClickAction() {
         return defaultTopClickAction;
     }
 
@@ -699,7 +757,7 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
      *
      * @param defaultTopClickAction {@link GuiAction} to resolve when clicking on the top inventory.
      */
-    public void setDefaultTopClickAction(@Nullable final GuiAction<@NotNull InventoryClickEvent, G> defaultTopClickAction) {
+    protected void setDefaultTopClickAction(@Nullable final GuiAction<@NotNull InventoryClickEvent, G> defaultTopClickAction) {
         this.defaultTopClickAction = defaultTopClickAction;
     }
 
@@ -707,11 +765,11 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
      * Gets the player inventory action.
      */
     @Nullable
-    GuiAction<InventoryClickEvent, G> getPlayerInventoryAction() {
+    protected GuiAction<InventoryClickEvent, G> getPlayerInventoryAction() {
         return playerInventoryAction;
     }
 
-    public void setPlayerInventoryAction(@Nullable final GuiAction<@NotNull InventoryClickEvent, G> playerInventoryAction) {
+    protected void setPlayerInventoryAction(@Nullable final GuiAction<@NotNull InventoryClickEvent, G> playerInventoryAction) {
         this.playerInventoryAction = playerInventoryAction;
     }
 
@@ -719,7 +777,7 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
      * Gets the default drag resolver.
      */
     @Nullable
-    GuiAction<InventoryDragEvent, G> getDragAction() {
+    protected GuiAction<InventoryDragEvent, G> getDragAction() {
         return dragAction;
     }
 
@@ -729,7 +787,7 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
      *
      * @param dragAction {@link GuiAction} to resolve.
      */
-    public void setDragAction(@Nullable final GuiAction<@NotNull InventoryDragEvent, G> dragAction) {
+    protected void setDragAction(@Nullable final GuiAction<@NotNull InventoryDragEvent, G> dragAction) {
         this.dragAction = dragAction;
     }
 
@@ -737,7 +795,7 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
      * Gets the close gui resolver.
      */
     @Nullable
-    GuiAction<InventoryCloseEvent, G> getCloseGuiAction() {
+    protected GuiAction<InventoryCloseEvent, G> getCloseGuiAction() {
         return closeGuiAction;
     }
 
@@ -747,7 +805,7 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
      *
      * @param closeGuiAction {@link GuiAction} to resolve when the inventory is closed.
      */
-    public void setCloseGuiAction(@Nullable final GuiAction<@NotNull InventoryCloseEvent, G> closeGuiAction) {
+    protected void setCloseGuiAction(@Nullable final GuiAction<@NotNull InventoryCloseEvent, G> closeGuiAction) {
         this.closeGuiAction = closeGuiAction;
     }
 
@@ -755,7 +813,7 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
      * Gets the open gui resolver.
      */
     @Nullable
-    GuiAction<InventoryOpenEvent, G> getOpenGuiAction() {
+    protected GuiAction<InventoryOpenEvent, G> getOpenGuiAction() {
         return openGuiAction;
     }
 
@@ -765,7 +823,7 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
      *
      * @param openGuiAction {@link GuiAction} to resolve when opening the inventory.
      */
-    public void setOpenGuiAction(@Nullable final GuiAction<@NotNull InventoryOpenEvent, G> openGuiAction) {
+    protected void setOpenGuiAction(@Nullable final GuiAction<@NotNull InventoryOpenEvent, G> openGuiAction) {
         this.openGuiAction = openGuiAction;
     }
 
@@ -773,7 +831,7 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
      * Gets the resolver for the outside click.
      */
     @Nullable
-    GuiAction<InventoryClickEvent, G> getOutsideClickAction() {
+    protected GuiAction<InventoryClickEvent, G> getOutsideClickAction() {
         return outsideClickAction;
     }
 
@@ -783,7 +841,7 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
      *
      * @param outsideClickAction {@link GuiAction} to resolve when clicking outside of the inventory.
      */
-    public void setOutsideClickAction(@Nullable final GuiAction<@NotNull InventoryClickEvent, G> outsideClickAction) {
+    protected void setOutsideClickAction(@Nullable final GuiAction<@NotNull InventoryClickEvent, G> outsideClickAction) {
         this.outsideClickAction = outsideClickAction;
     }
 
@@ -793,27 +851,16 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
      * @param slot The slot clicked.
      */
     @Nullable
-    GuiAction<InventoryClickEvent, G> getSlotAction(final int slot) {
+    protected GuiAction<InventoryClickEvent, G> getSlotAction(final int slot) {
         return slotActions.get(slot);
     }
 
-    boolean isCloseActionEnabled() {
+    protected boolean isCloseActionEnabled() {
         return runCloseAction;
     }
 
-    boolean isOpenActionEnabled() {
+    protected boolean isOpenActionEnabled() {
         return runOpenAction;
-    }
-
-    /**
-     * Gets the slot from the row and column passed.
-     *
-     * @param row The row.
-     * @param col The column.
-     * @return The slot needed.
-     */
-    int getSlotFromRowCol(final int row, final int col) {
-        return col + row * 9;
     }
 
     /**
@@ -821,15 +868,18 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
      *
      * @param slot The slot to check.
      */
-    private void validateSlot(final int slot) {
+    private void checkSlotBoundaries(final int slot) {
         final int limit = guiType.getLimit();
 
         if (guiType == GuiType.CHEST) {
-            if (slot < 0 || slot >= rows * limit) throwInvalidSlot(slot);
+            if (slot < 0 || slot >= rows * limit)
+                throwInvalidSlot(slot);
+
             return;
         }
 
-        if (slot < 0 || slot > limit) throwInvalidSlot(slot);
+        if (slot < 0 || slot > limit)
+            throwInvalidSlot(slot);
     }
 
     /**
@@ -844,5 +894,4 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
 
         throw new GuiException("Slot " + slot + " is not valid for the gui type - " + guiType.name() + "!");
     }
-
 }

@@ -5,10 +5,13 @@ import me.qheilmann.vei.Core.GUI.BaseGui;
 import me.qheilmann.vei.Core.GUI.GuiItem;
 import net.kyori.adventure.text.Component;
 
+import java.util.HashMap;
 import java.util.List;
 
 import org.bukkit.Material;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 
 public class TestMenu extends BaseGui<TestMenu> {
 
@@ -93,6 +96,12 @@ public class TestMenu extends BaseGui<TestMenu> {
         lapisBlock.setAction(this::handleLapisBlockClick);
 
         setItem(0, 5, lapisBlock);
+    }
+
+    @Override
+    @SafeVarargs
+    public final @NotNull HashMap<Integer, @NotNull ItemStack> addItem(@NotNull final GuiItem<TestMenu>... items) {
+        return super.addItem(items);
     }
 
     private void handleLapisBlockClick(InventoryClickEvent event, TestMenu context) {
