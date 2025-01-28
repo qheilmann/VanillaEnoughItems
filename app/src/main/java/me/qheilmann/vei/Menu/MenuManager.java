@@ -6,6 +6,9 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import me.qheilmann.vei.Core.Menu.RecipeMenu;
+import net.kyori.adventure.text.Component;
+
 public class MenuManager {
 
     private final JavaPlugin plugin;
@@ -21,7 +24,16 @@ public class MenuManager {
      * which will run the task on the next tick.
      */
     public void openRecipeMenu(Player player, Recipe recipe) {
-        RecipeMenu recipeMenu = new RecipeMenu(plugin, this);
+        RecipeMenu recipeMenu = new RecipeMenu(recipe); // TODO
+        player.sendMessage(Component.text("Image menu open"));
+        recipeMenu.open(player);
+    }
+
+    /**
+     * Old way to open the recipe menu for the given player <p>
+     */
+    public void openRecipeMenuOld(Player player, Recipe recipe) {
+        RecipeMenuOld recipeMenu = new RecipeMenuOld(plugin, this);
         recipeMenu.setRecipe(recipe);
         player.openInventory(recipeMenu.getInventory());
     }
