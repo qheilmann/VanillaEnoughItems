@@ -52,17 +52,15 @@ public class Gui extends BaseGui<Gui> {
     @Override
     public void setItem(final int row, final int col, @Nullable final GuiItem<Gui> guiItem) {
         super.setItem(row, col, guiItem);
-        }
+    }
 
     @Override
-    @SafeVarargs
-    public final @NotNull HashMap<Integer, @NotNull ItemStack> addItem(@NotNull final GuiItem<Gui>... items) {
+    public final @NotNull HashMap<Integer, @NotNull ItemStack> addItem(@NotNull final List<@NotNull GuiItem<Gui>> items) {
         return super.addItem(items);
     }
 
     @Override
-    @SafeVarargs
-    public final @NotNull HashMap<Integer, @NotNull ItemStack> removeItem(@NotNull final GuiItem<Gui>... items) {
+    public final @NotNull HashMap<Integer, @NotNull ItemStack> removeItem(@NotNull final List<@NotNull GuiItem<Gui>> items) {
         return super.removeItem(items);
     }
 }

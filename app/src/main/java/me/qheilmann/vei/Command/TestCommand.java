@@ -96,21 +96,21 @@ public class TestCommand implements ICommand{
         emerald.lore(List.of(Component.text("Click me (add item to inventory)")));
         emerald.setAction((event, contextGui) -> {
             event.setCancelled(true);
-            contextGui.addItem(new GuiItem<Gui>(Material.DIAMOND));
+            contextGui.addItem(List.of(new GuiItem<Gui>(Material.DIAMOND)));
         });
 
         GuiItem<Gui> coal = new GuiItem<>(Material.COAL);
         coal.lore(List.of(Component.text("Click me (remove item from inventory)")));
         coal.setAction((event, contextGui) -> {
             event.setCancelled(true);
-            contextGui.removeItem(new GuiItem<Gui>(Material.DIAMOND));
+            contextGui.removeItem(List.of(new GuiItem<Gui>(Material.DIAMOND)));
         });
 
         GuiItem<Gui> iron = new GuiItem<>(Material.IRON_INGOT);
         iron.lore(List.of(Component.text("Click me (add other GuiItem) final lapis")));
         iron.setAction((event, contextGui) -> {
             event.setCancelled(true);
-            contextGui.addItem(lapiz); // work only because lapiz is a final ref
+            contextGui.addItem(List.of(lapiz)); // work only because lapiz is a final ref
         });
 
         GuiItem<Gui> lapisBlock = new GuiItem<>(Material.LAPIS_BLOCK);
@@ -119,7 +119,7 @@ public class TestCommand implements ICommand{
         ironBlock.lore(List.of(Component.text("Click me (add other GuiItem) ref lapis")));
         ironBlock.setAction((event, contextGui) -> {
             event.setCancelled(true);
-            contextGui.addItem(contextGui.lapizGui); // work only because lapizGui is inside the Gui class
+            contextGui.addItem(List.of(contextGui.lapizGui)); // work only because lapizGui is inside the Gui class
         });
         
         gui.setItem(0, 0, diams);
@@ -143,6 +143,6 @@ public class TestCommand implements ICommand{
         // The BaseGui should be a closed class, the addItem() method should not be visible
         GuiItem<TestMenu> junkItem = new GuiItem<>(Material.DIRT);
         junkItem.lore(List.of(Component.text("If the BaseGui was closed, the item will not be added because the addItem() methode will not be visible")));
-        menu.addItem(junkItem);
+        menu.addItem(List.of(junkItem));
     }
 }

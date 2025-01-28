@@ -65,7 +65,7 @@ public class TestMenu extends BaseGui<TestMenu> {
 
         goldBlock = new GuiItem<>(Material.COAL_BLOCK); // not final just for testing
         goldBlock.setAction((event, context) -> {
-            context.addItem(context.goldBlock);
+            context.addItem(List.of(context.goldBlock));
             event.getWhoClicked().sendMessage("You clicked a coal block, (This should not be printed not the right item) !");
         });
 
@@ -73,7 +73,7 @@ public class TestMenu extends BaseGui<TestMenu> {
         ironBlock.lore(List.of(Component.text("Click me to add another GuiItem with a specified action")));
         ironBlock.setAction((event, contextGui) -> {
             // contextGui.setItem(1,1, contextGui.goldBlock);
-            contextGui.addItem(contextGui.goldBlock);
+            contextGui.addItem(List.of(contextGui.goldBlock));
             event.getWhoClicked().sendMessage("You clicked an iron block add 1 gold GuiItem !");
         });
 
@@ -82,12 +82,12 @@ public class TestMenu extends BaseGui<TestMenu> {
         goldBlock.lore(List.of(Component.text("Click me to add a gold block with a specified action")));
         goldBlock.setAction((event, context) -> {
             // context.setItem(1,2, context.ironBlock);
-            context.addItem(context.ironBlock);
+            context.addItem(List.of(context.ironBlock));
             event.getWhoClicked().sendMessage("You clicked a gold block add 1 iron !");
         });
 
         // Add the button to the GUI at a specific slot
-        addItem(ironBlock);
+        addItem(List.of(ironBlock));
         // setItem(0, ironBlock);
 
         // add same GuiItem over itself
@@ -99,8 +99,7 @@ public class TestMenu extends BaseGui<TestMenu> {
     }
 
     @Override
-    @SafeVarargs
-    public final @NotNull HashMap<Integer, @NotNull ItemStack> addItem(@NotNull final GuiItem<TestMenu>... items) {
+    public final @NotNull HashMap<Integer, @NotNull ItemStack> addItem(@NotNull final List<GuiItem<TestMenu>> items) {
         return super.addItem(items);
     }
 
@@ -112,7 +111,7 @@ public class TestMenu extends BaseGui<TestMenu> {
         // context.addItem(someLapiz);
 
         // [Add exactly clicked amount (cloned) always same slot]
-        context.addItem(context.lapisBlock.clone());
+        context.addItem(List.of(context.lapisBlock.clone()));
 
         // [Add exactly clicked amount (ITSELF NOT AUTHORIZE)]
         // context.addItem(context.lapisBlock);
@@ -120,7 +119,7 @@ public class TestMenu extends BaseGui<TestMenu> {
         // [Then add itself but with amount of 1]
         GuiItem<TestMenu> newLapis = context.lapisBlock.clone();
         newLapis.setAmount(1);
-        context.addItem(newLapis); 
+        context.addItem(List.of(newLapis)); 
         
         event.getWhoClicked().sendMessage("You clicked a lapis block, add 1 lapis block !");
     }

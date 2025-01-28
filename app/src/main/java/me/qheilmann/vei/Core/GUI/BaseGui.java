@@ -29,7 +29,6 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import com.google.common.base.Preconditions;
-
 import dev.triumphteam.gui.components.GuiType;
 import dev.triumphteam.gui.components.InteractionModifier;
 import dev.triumphteam.gui.components.exception.GuiException;
@@ -239,8 +238,9 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
      * @see Inventory#removeItem(ItemStack)
      */
     @SuppressWarnings("unchecked")
-    protected HashMap<Integer, ItemStack> removeItem(@NotNull final GuiItem<@NotNull G>... item) {
-        return inventory.removeItem(item);
+    protected @NotNull HashMap<Integer, @NotNull ItemStack> removeItem(@NotNull final List<GuiItem<@NotNull G>> items) {
+        GuiItem<@NotNull G>[] itemsArray = items.toArray(new GuiItem[0]);
+        return inventory.removeItem(itemsArray);
     }
 
     /**
@@ -275,8 +275,9 @@ public abstract class BaseGui<G extends BaseGui<G>> implements InventoryHolder {
      * @see Inventory#addItem(ItemStack...)
      */
     @SuppressWarnings("unchecked")
-    protected @NotNull HashMap<Integer, @NotNull ItemStack> addItem(@NotNull final GuiItem<@NotNull G>... items) {
-        return inventory.addItem(items);
+    protected @NotNull HashMap<Integer, @NotNull ItemStack> addItem(@NotNull final List<GuiItem<@NotNull G>> items) {
+        GuiItem<@NotNull G>[] itemsArray = items.toArray(new GuiItem[0]);
+        return inventory.addItem(itemsArray);
     }
 
     /**
