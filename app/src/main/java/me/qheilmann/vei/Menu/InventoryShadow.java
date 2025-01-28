@@ -488,7 +488,7 @@ public class InventoryShadow<T extends Inventory> implements Inventory {
      * @throws IllegalArgumentException if the items are null
      */
     @Override
-    public HashMap<Integer, ItemStack> addItem(@NotNull ItemStack... items) throws IllegalArgumentException {
+    public @NotNull HashMap<Integer, @NotNull ItemStack> addItem(@NotNull ItemStack... items) throws IllegalArgumentException {
         Preconditions.checkArgument(items != null, "Items cannot be null");
         for (ItemStack item : items) {
             Preconditions.checkArgument(item != null, "Item cannot be null");
@@ -509,7 +509,7 @@ public class InventoryShadow<T extends Inventory> implements Inventory {
         /* TEMP */     .map(item -> item.clone())
         /* TEMP */     .toArray(ItemStack[]::new);
 
-        /* TEMP */ HashMap<Integer, ItemStack> leftover = originalInventory.addItem(items); // TODO the itemsCopy need to also change items
+        /* TEMP */ HashMap<Integer, ItemStack> leftover = originalInventory.addItem(items);
 
         // Attempt to add items to the itemMap
         for (int i = 0; i < itemsDefault.length; i++) {

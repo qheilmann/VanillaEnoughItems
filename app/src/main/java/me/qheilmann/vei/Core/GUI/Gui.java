@@ -1,8 +1,13 @@
 package me.qheilmann.vei.Core.GUI;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.bukkit.Material;
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import dev.triumphteam.gui.components.GuiType;
@@ -32,5 +37,32 @@ public class Gui extends BaseGui<Gui> {
      */
     public Gui(@NotNull final GuiType guiType, @NotNull final Component title, @NotNull final Set<InteractionModifier> interactionModifiers) {
         super(guiType, title, interactionModifiers);
+    }
+
+    @Override
+    public void setItem(final int slot, @Nullable final GuiItem<Gui> guiItem) {
+        super.setItem(slot, guiItem);
+    }
+
+    @Override
+    public void setItem(@NotNull final List<@NotNull Integer> slots, @NotNull final GuiItem<Gui> guiItem) {
+        super.setItem(slots, guiItem);
+    }
+
+    @Override
+    public void setItem(final int row, final int col, @Nullable final GuiItem<Gui> guiItem) {
+        super.setItem(row, col, guiItem);
+        }
+
+    @Override
+    @SafeVarargs
+    public final @NotNull HashMap<Integer, @NotNull ItemStack> addItem(@NotNull final GuiItem<Gui>... items) {
+        return super.addItem(items);
+    }
+
+    @Override
+    @SafeVarargs
+    public final @NotNull HashMap<Integer, @NotNull ItemStack> removeItem(@NotNull final GuiItem<Gui>... items) {
+        return super.removeItem(items);
     }
 }

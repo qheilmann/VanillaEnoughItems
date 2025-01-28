@@ -12,6 +12,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPIBukkitConfig;
 import me.qheilmann.vei.Command.CraftCommand;
+import me.qheilmann.vei.Command.TestCommand;
+import me.qheilmann.vei.Core.GUI.BaseGui;
 import me.qheilmann.vei.Listener.InventoryClickListener;
 import me.qheilmann.vei.Listener.InventoryDragListener;
 import me.qheilmann.vei.Menu.InventoryShadow;
@@ -43,10 +45,12 @@ public class VanillaEnoughItems extends JavaPlugin {
     @Override
     public void onEnable() {
         CommandAPI.onEnable();
+        BaseGui.onEnable(this);
         getServer().getPluginManager().registerEvents(new InventoryClickListener(menuManager), this);
         getServer().getPluginManager().registerEvents(new InventoryDragListener(this), this);
 
         temporaryRecipe();
+        temporaryTestMethode();
 
         LOGGER.info(NAME+ " has been enabled!");
     }
@@ -96,6 +100,74 @@ public class VanillaEnoughItems extends JavaPlugin {
             var recipeItem = recipeIterator.next();
             LOGGER.info("Recipe: " + recipeItem.getResult() + " " + recipeItem.getClass().getName());
             maxIteration++;
+        }
+    }
+
+    private void temporaryTestMethode()
+    {
+        LOGGER.info("Test methode YoloBanza");
+
+        InventoryShadow<Inventory> inventory = new InventoryShadow<Inventory>(getServer().createInventory(null, 9,  Component.text("Test")));
+        inventory.setItem(0, new ItemStack(Material.DIAMOND));
+        inventory.setItem(1, new QuickLinkButton(VeiStyle.LIGHT, new RecipeMenu(this, menuManager), menuManager));
+
+        LOGGER.info("Inventory[1]: " + inventory.getItem(0).getType());
+        LOGGER.info("Inventory[2]: " + inventory.getItem(1).getType());
+
+        ItemStack result1 = inventory.getItem(0);
+        ItemStack result2 = inventory.getItem(1);
+
+        if(result1 instanceof ItemStack)
+        {
+            LOGGER.info("Result1 is an ItemStack");
+            LOGGER.info("Result1: " + result1.getClass());
+        }
+        else
+        {
+            LOGGER.info("Result1 is not an ItemStack");
+            LOGGER.info("Result4: " + result1.getClass());
+        }
+
+        if(result2 instanceof QuickLinkButton)
+        {
+            LOGGER.info("Result2 is a QuickLinkButton");
+            LOGGER.info("Result2: " + result2.getClass());
+        }
+        else
+        {
+            LOGGER.info("Result2 is not a QuickLinkButton");
+            LOGGER.info("Result4: " + result2.getClass());
+        }
+
+        Inventory inventory2 = getServer().createInventory(null, 9,  Component.text("Test"));
+        inventory2.setItem(0, new ItemStack(Material.DIAMOND));
+        inventory2.setItem(1, new QuickLinkButton(VeiStyle.LIGHT, new RecipeMenu(this, menuManager), menuManager));
+
+        LOGGER.info("Inventory2[1]: " + inventory2.getItem(0).getType());
+        LOGGER.info("Inventory2[2]: " + inventory2.getItem(1).getType());
+
+        ItemStack result3 = inventory2.getItem(0);
+        ItemStack result4 = inventory2.getItem(1);
+
+        if(result3 instanceof ItemStack)
+        {
+            LOGGER.info("Result3 is an ItemStack");
+            LOGGER.info("Result3: " + result3.getClass());
+        }
+        else
+        {
+            LOGGER.info("Result3 is not an ItemStack");
+        }
+
+        if(result4 instanceof QuickLinkButton)
+        {
+            LOGGER.info("Result4 is a QuickLinkButton");
+            LOGGER.info("Result4: " + result4.getClass());
+        }
+        else
+        {
+            LOGGER.info("Result4 is not a QuickLinkButton");
+            LOGGER.info("Result4: " + result4.getClass());
         }
     }
 }
