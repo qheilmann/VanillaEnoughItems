@@ -1,6 +1,6 @@
 package me.qheilmann.vei.foundation.gui;
 // TODO Remove this
-public enum ButtonType {
+public enum ButtonTypeOld {
     // WORKBENCH_TYPE_SCROLL_LEFT(Component.text("Scroll left"), List.of(Component.text("See previous workbench type")), "workbench_type_scroll_left"),
     // WORKBENCH_TYPE_SCROLL_RIGHT(Component.text("Scroll right"), List.of(Component.text("See next workbench type")), "workbench_type_scroll_right"),
     // WORKBENCH_VARIANT_SCROLL_UP(Component.text("Scroll up"), List.of(Component.text("See previous workbench variant")), "workbench_variant_scroll_up"),

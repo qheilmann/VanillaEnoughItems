@@ -42,6 +42,7 @@ public abstract class ButtonItem extends ItemStack implements IOwnedByMenu {
         super(skin);
         this.ownerMenu = ownerMenu;
         this.menuManager = menuManager;
+        setUuid();
     }
 
     // TODO remove this method and menuManager
@@ -61,10 +62,12 @@ public abstract class ButtonItem extends ItemStack implements IOwnedByMenu {
         setUuid();
     }
 
+    // TODO remove this
     public Component getDisplayName() {
         return displayName;
     }
 
+    // TODO remove this
     public List<? extends Component> getLores() {
         return lores;
     }
@@ -73,14 +76,17 @@ public abstract class ButtonItem extends ItemStack implements IOwnedByMenu {
         return ownerMenu;
     }
 
+    // TODO remove this
     public MenuManager getMenuManager() {
         return menuManager;
     }
 
+    // TODO remove this
     public static Map<String, TriFunction<ItemStack, IMenu, MenuManager, ButtonItem>> getButtonConstructorMap() {
         return buttonConstructorMap;
     }
 
+    // TODO remove this
     protected static void registerButtonItem(String reference, TriFunction<ItemStack, IMenu, MenuManager, ButtonItem> constructor) {
         buttonConstructorMap.put(reference, constructor);
     }
@@ -95,7 +101,7 @@ public abstract class ButtonItem extends ItemStack implements IOwnedByMenu {
         this.editMeta(meta -> meta.getPersistentDataContainer().set(key, PersistentDataType.STRING, reference));
     }
 
-    protected void setUuid() {
+    private void setUuid() {
         NamespacedKey key = new NamespacedKey(VanillaEnoughItems.NAMESPACE, UUID_KEY);
         UUID uuid = java.util.UUID.randomUUID();
         this.editMeta(meta -> meta.getPersistentDataContainer().set(key, UuidPdt.TYPE, uuid));

@@ -18,7 +18,7 @@ import me.qheilmann.vei.Listener.InventoryClickListener;
 import me.qheilmann.vei.Listener.InventoryDragListener;
 import me.qheilmann.vei.Menu.InventoryShadow;
 import me.qheilmann.vei.Menu.MenuManager;
-import me.qheilmann.vei.Menu.RecipeMenu;
+import me.qheilmann.vei.Menu.RecipeMenuOld;
 import me.qheilmann.vei.Menu.Button.RecipeMenu.QuickLinkButton;
 import me.qheilmann.vei.foundation.gui.VeiStyle;
 import net.kyori.adventure.text.Component;
@@ -109,7 +109,7 @@ public class VanillaEnoughItems extends JavaPlugin {
 
         InventoryShadow<Inventory> inventory = new InventoryShadow<Inventory>(getServer().createInventory(null, 9,  Component.text("Test")));
         inventory.setItem(0, new ItemStack(Material.DIAMOND));
-        inventory.setItem(1, new QuickLinkButton(VeiStyle.LIGHT, new RecipeMenu(this, menuManager), menuManager));
+        inventory.setItem(1, new QuickLinkButton(VeiStyle.LIGHT, new RecipeMenuOld(this, menuManager), menuManager));
 
         LOGGER.info("Inventory[1]: " + inventory.getItem(0).getType());
         LOGGER.info("Inventory[2]: " + inventory.getItem(1).getType());
@@ -141,7 +141,7 @@ public class VanillaEnoughItems extends JavaPlugin {
 
         Inventory inventory2 = getServer().createInventory(null, 9,  Component.text("Test"));
         inventory2.setItem(0, new ItemStack(Material.DIAMOND));
-        inventory2.setItem(1, new QuickLinkButton(VeiStyle.LIGHT, new RecipeMenu(this, menuManager), menuManager));
+        inventory2.setItem(1, new QuickLinkButton(VeiStyle.LIGHT, new RecipeMenuOld(this, menuManager), menuManager));
 
         LOGGER.info("Inventory2[1]: " + inventory2.getItem(0).getType());
         LOGGER.info("Inventory2[2]: " + inventory2.getItem(1).getType());

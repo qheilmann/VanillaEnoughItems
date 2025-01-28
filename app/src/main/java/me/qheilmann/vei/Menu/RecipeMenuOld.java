@@ -16,14 +16,12 @@ import me.qheilmann.vei.Core.Item.PersistentDataType.UuidPdt;
 import me.qheilmann.vei.Menu.Button.ButtonItem;
 import me.qheilmann.vei.foundation.gui.GuiItemService;
 
-public class RecipeMenu implements IMenu {
+public class RecipeMenuOld implements IMenu {
 
     private RecipeInventory recipeInventory;
-    private JavaPlugin plugin;
     private MenuManager menuManager;
 
-    public RecipeMenu(JavaPlugin plugin, MenuManager menuManager) {
-        this.plugin = plugin;
+    public RecipeMenuOld(JavaPlugin plugin, MenuManager menuManager) {
         this.menuManager = menuManager;
         this.recipeInventory = new RecipeInventory(this, plugin, new GuiItemService());
     }

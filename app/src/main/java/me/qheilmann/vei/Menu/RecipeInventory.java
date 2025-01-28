@@ -112,7 +112,7 @@ public class RecipeInventory implements InventoryHolder, IOwnedByMenu {
     }
 
     public void setRecipe(@NotNull Recipe recipe) {
-        recipeView = RecipeViewFactory.createRecipeView(recipe, getOwnedMenu(), ((RecipeMenu)getOwnedMenu()).getMenuManager());
+        recipeView = RecipeViewFactory.createRecipeView(recipe, getOwnedMenu(), ((RecipeMenuOld)getOwnedMenu()).getMenuManager());
         recipeView.setRecipe(recipe);
         updateRecipeViewPart();
         isReady = true;
@@ -125,8 +125,8 @@ public class RecipeInventory implements InventoryHolder, IOwnedByMenu {
     private void initInventory() {
         VeiStyle style = VeiStyle.LIGHT;
 
-        MenuManager menuManager = ((RecipeMenu)ownerMenu).getMenuManager(); // TODO: refactor this stuff
-        inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.QUICK_LINK),                    new QuickLinkButton(style, ownerMenu, ((RecipeMenu)ownerMenu).getMenuManager()));
+        MenuManager menuManager = ((RecipeMenuOld)ownerMenu).getMenuManager(); // TODO: refactor this stuff
+        inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.QUICK_LINK),                    new QuickLinkButton(style, ownerMenu, ((RecipeMenuOld)ownerMenu).getMenuManager()));
         inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.WORKBENCH_TYPE_SCROLL_LEFT),    new WorkbenchTypeScrollLeftButton(style, ownerMenu, menuManager));
         inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.WORKBENCH_TYPE_SCROLL_RIGHT),   new WorkbenchTypeScrollRightButton(style, ownerMenu, menuManager));
         inventory.setItem(menuCoordAsMenuIndex(SingleItemCoord.INFO),                          new InfoButton(style, ownerMenu, menuManager));
