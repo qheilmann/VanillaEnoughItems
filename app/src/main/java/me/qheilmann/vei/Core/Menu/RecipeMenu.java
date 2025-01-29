@@ -2,25 +2,234 @@ package me.qheilmann.vei.Core.Menu;
 
 import java.util.List;
 
-import org.bukkit.Material;
-import org.bukkit.inventory.ItemStack;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Recipe;
 
 import dev.triumphteam.gui.components.InteractionModifier;
 import me.qheilmann.vei.Core.GUI.BaseGui;
 import me.qheilmann.vei.Core.GUI.GuiItem;
+import me.qheilmann.vei.Core.Slot.Slot;
+import me.qheilmann.vei.Core.Slot.SlotRange;
+import me.qheilmann.vei.Core.Style.ButtonType.VeiButtonType;
+import me.qheilmann.vei.Core.Style.Styles.Style;
 import net.kyori.adventure.text.Component;
 
 public class RecipeMenu extends BaseGui<RecipeMenu> {
-    public RecipeMenu(Recipe recipe) {
+    private static final Slot QUICK_LINK_SLOT = new Slot(0, 0);
+    private static final Slot WORKBENCH_TYPE_SCROLL_LEFT_SLOT = new Slot(1, 0);
+    private static final Slot WORKBENCH_TYPE_SCROLL_RIGHT_SLOT = new Slot(7, 0);
+    private static final Slot INFO_SLOT = new Slot(8, 0);
+    private static final Slot WORKBENCH_VARIANT_SCROLL_UP_SLOT = new Slot(0, 1);
+    private static final Slot WORKBENCH_VARIANT_SCROLL_DOWN_SLOT = new Slot(0, 5);
+    private static final Slot BOOKMARK_THIS_RECIPE_TOGGLE_SLOT = new Slot(8, 2);
+    private static final Slot BOOKMARK_LIST_SLOT = new Slot(8, 3);
+    private static final Slot BOOKMARK_SERVER_LIST_SLOT = new Slot(8, 4);
+    private static final Slot EXIT_SLOT = new Slot(8, 5);
+
+    private static final SlotRange WORKBENCH_SLOT_RANGE = new SlotRange(new Slot(2, 0), new Slot(6, 0));
+    private static final SlotRange WORKBENCH_VARIANT_SLOT_RANGE = new SlotRange(new Slot(0, 2), new Slot(0, 4));
+    private static final SlotRange RECIPE_VIEW_SLOT_RANGE = new SlotRange(new Slot(1, 1), new Slot(7, 5));
+
+    private GuiItem<RecipeMenu> quickLinkItem;
+    private GuiItem<RecipeMenu> workbenchTypeScrollLeftItem;
+    private GuiItem<RecipeMenu> workbenchTypeScrollRightItem;
+    private GuiItem<RecipeMenu> infoItem;
+    private GuiItem<RecipeMenu> workbenchVariantScrollUpItem;
+    private GuiItem<RecipeMenu> workbenchVariantScrollDownItem;
+    private GuiItem<RecipeMenu> bookmarkThisRecipeItemToggle;
+    private GuiItem<RecipeMenu> bookmarkListItem;
+    private GuiItem<RecipeMenu> bookmarkServerListItem;
+    private GuiItem<RecipeMenu> exitItem;
+
+    private final String bookmarkMessage = "Bookmark";
+    private final String unbookmarkMessage = "Unbookmark";
+    private final String bookmarkLoreMessage = "Add this recipe to your bookmark";
+    private final String unbookmarkLoreMessage = "Remove this recipe from your bookmark";
+
+    public RecipeMenu(Style style, Recipe recipe) {
         super(6, Component.text("Recipe Menu"), InteractionModifier.VALUES);
-    
+
         this.setDefaultClickAction((event, context) -> event.setCancelled(true)); // Cancel the event for the entire GUI
 
-        var item = new GuiItem<RecipeMenu>(new ItemStack(Material.GOLD_BLOCK), (event, context) -> {
-            event.getWhoClicked().sendMessage("You clicked the gold block!");
-        });
-
-        addItem(List.of(item)); // TODO check with two items
+        // Prepare buttons
+        setupQuickLinkButton(style);
+        setupWorkbenchTypeScrollLeftButton(style);
+        setupScrollRightForWorkbenchType(style);
+        setupInfoButton(style);
+        setupWorkbenchVariantScrollUpControl(style);
+        setupWorkbenchVariantScrollDownAction(style);
+        setupBookmarkRecipeToggleItem(style);
+        setupBookmarkListGuiItem(style);
+        setupBookmarkServerListItem(style);
+        setupExitButton(style);
     }
+
+    //#region Button setup
+
+    private void setupQuickLinkButton(Style style) {
+        quickLinkItem = new GuiItem<>(style.getButtonMaterial(VeiButtonType.RecipeMenu.QUICK_LINK));
+        quickLinkItem.editMeta(meta -> meta.displayName(
+            Component.text("Quick link").color(style.getPrimaryColor())
+        ));
+        quickLinkItem.editMeta(meta -> meta.lore(List.of(
+            Component.text("click to get the command equivalent for go to this recipe").color(style.getSecondaryColor()),
+            Component.text("/recipe <myRecipe> <category>").color(style.getSecondaryColor())
+        )));
+        quickLinkItem.setAction(this::quickLinkAction);
+        setItem(QUICK_LINK_SLOT.getIndex(), quickLinkItem);
+    }
+
+    private void setupWorkbenchTypeScrollLeftButton(Style style) {
+        workbenchTypeScrollLeftItem = new GuiItem<>(style.getButtonMaterial(VeiButtonType.RecipeMenu.WORKBENCH_TYPE_SCROLL_LEFT));
+        workbenchTypeScrollLeftItem.editMeta(meta -> meta.displayName(
+            Component.text("Scroll left").color(style.getPrimaryColor())
+        ));
+        workbenchTypeScrollLeftItem.editMeta(meta -> meta.lore(List.of(
+            Component.text("See previous workbench type").color(style.getSecondaryColor())
+        )));
+        workbenchTypeScrollLeftItem.setAction(this::workbenchTypeScrollLeftAction);
+        setItem(WORKBENCH_TYPE_SCROLL_LEFT_SLOT.getIndex(), workbenchTypeScrollLeftItem);
+    }
+
+    private void setupScrollRightForWorkbenchType(Style style) {
+        workbenchTypeScrollRightItem = new GuiItem<>(style.getButtonMaterial(VeiButtonType.RecipeMenu.WORKBENCH_TYPE_SCROLL_RIGHT));
+        workbenchTypeScrollRightItem.editMeta(meta -> meta.displayName(
+            Component.text("Scroll right").color(style.getPrimaryColor())
+        ));
+        workbenchTypeScrollRightItem.editMeta(meta -> meta.lore(List.of(
+            Component.text("See next workbench type").color(style.getSecondaryColor())
+        )));
+        workbenchTypeScrollRightItem.setAction(this::workbenchTypeScrollRightAction);
+        setItem(WORKBENCH_TYPE_SCROLL_RIGHT_SLOT.getIndex(), workbenchTypeScrollRightItem);
+    }
+
+    private void setupInfoButton(Style style) {
+        infoItem = new GuiItem<>(style.getButtonMaterial(VeiButtonType.Generic.INFO));
+        infoItem.editMeta(meta -> meta.displayName(
+            Component.text("Info").color(style.getPrimaryColor())
+        ));
+        infoItem.editMeta(meta -> meta.lore(List.of(
+            Component.text("See VEI info").color(style.getSecondaryColor())
+        )));
+        infoItem.setAction(this::infoAction);
+        setItem(INFO_SLOT.getIndex(), infoItem);
+    }
+
+    private void setupWorkbenchVariantScrollUpControl(Style style) {
+        workbenchVariantScrollUpItem = new GuiItem<>(style.getButtonMaterial(VeiButtonType.RecipeMenu.WORKBENCH_VARIANT_SCROLL_UP));
+        workbenchVariantScrollUpItem.editMeta(meta -> meta.displayName(
+            Component.text("Scroll up").color(style.getPrimaryColor())
+        ));
+        workbenchVariantScrollUpItem.editMeta(meta -> meta.lore(List.of(
+            Component.text("See previous workbench variant").color(style.getSecondaryColor())
+        )));
+        workbenchVariantScrollUpItem.setAction(this::workbenchVariantScrollUpAction);
+        setItem(WORKBENCH_VARIANT_SCROLL_UP_SLOT.getIndex(), workbenchVariantScrollUpItem);
+    }
+
+    private void setupWorkbenchVariantScrollDownAction(Style style) {
+        workbenchVariantScrollDownItem = new GuiItem<>(style.getButtonMaterial(VeiButtonType.RecipeMenu.WORKBENCH_VARIANT_SCROLL_DOWN));
+        workbenchVariantScrollDownItem.editMeta(meta -> meta.displayName(
+            Component.text("Scroll down").color(style.getPrimaryColor())
+        ));
+        workbenchVariantScrollDownItem.editMeta(meta -> meta.lore(List.of(
+            Component.text("See next workbench variant").color(style.getSecondaryColor())
+        )));
+        workbenchVariantScrollDownItem.setAction(this::workbenchVariantScrollDownAction);
+        setItem(WORKBENCH_VARIANT_SCROLL_DOWN_SLOT.getIndex(), workbenchVariantScrollDownItem);
+    }
+
+    private void setupBookmarkRecipeToggleItem(Style style) {
+        bookmarkThisRecipeItemToggle = new GuiItem<>(style.getButtonMaterial(VeiButtonType.RecipeMenu.BOOKMARK_THIS_RECIPE));
+        bookmarkThisRecipeItemToggle.editMeta(meta -> meta.displayName(
+            Component.text(bookmarkMessage).color(style.getPrimaryColor())
+        ));
+        bookmarkThisRecipeItemToggle.editMeta(meta -> meta.lore(
+            List.of(Component.text(bookmarkLoreMessage).color(style.getSecondaryColor())
+        )));
+        bookmarkThisRecipeItemToggle.setAction(this::bookmarkRecipeToggleAction);
+        setItem(BOOKMARK_THIS_RECIPE_TOGGLE_SLOT.getIndex(), bookmarkThisRecipeItemToggle);
+    }
+
+    private void setupBookmarkListGuiItem(Style style) {
+        bookmarkListItem = new GuiItem<>(style.getButtonMaterial(VeiButtonType.RecipeMenu.BOOKMARK_LIST));
+        bookmarkListItem.editMeta(meta -> meta.displayName(
+            Component.text("Bookmark list").color(style.getPrimaryColor())
+        ));
+        bookmarkListItem.editMeta(meta -> meta.lore(List.of(
+            Component.text("See your bookmarked recipes").color(style.getSecondaryColor())
+        )));
+        bookmarkListItem.setAction(this::bookmarkListAction);
+        setItem(BOOKMARK_LIST_SLOT.getIndex(), bookmarkListItem);
+    }
+
+    private void setupBookmarkServerListItem(Style style) {
+        bookmarkServerListItem = new GuiItem<>(style.getButtonMaterial(VeiButtonType.RecipeMenu.BOOKMARK_SERVER_LIST));
+        bookmarkServerListItem.editMeta(meta -> meta.displayName(
+            Component.text("Bookmark server list").color(style.getPrimaryColor())
+        ));
+        bookmarkServerListItem.editMeta(meta -> meta.lore(List.of(
+            Component.text("See the server bookmarked recipes").color(style.getSecondaryColor())
+        )));
+        bookmarkServerListItem.setAction(this::bookmarkServerListAction);
+        setItem(BOOKMARK_SERVER_LIST_SLOT.getIndex(), bookmarkServerListItem);
+    }
+
+    private void setupExitButton(Style style) {
+        exitItem = new GuiItem<>(style.getButtonMaterial(VeiButtonType.Generic.EXIT));
+        exitItem.editMeta(meta -> meta.displayName(
+            Component.text("Exit").color(style.getPrimaryColor())
+        ));
+        exitItem.editMeta(meta -> meta.lore(List.of(
+            Component.text("Exit the recipe menu").color(style.getSecondaryColor())
+        )));
+        exitItem.setAction(this::exitAction);
+        setItem(EXIT_SLOT.getIndex(), exitItem);
+    }
+    
+    //#endregion Button setup
+
+    //#region Button actions
+
+    private void quickLinkAction(InventoryClickEvent event, RecipeMenu menu) {
+        event.getWhoClicked().sendMessage("Quick link action");
+    }
+
+    private void workbenchTypeScrollLeftAction(InventoryClickEvent event, RecipeMenu menu) {
+        event.getWhoClicked().sendMessage("Scroll left action");
+    }
+
+    private void workbenchTypeScrollRightAction(InventoryClickEvent event, RecipeMenu menu) {
+        event.getWhoClicked().sendMessage("Scroll right action");
+    }
+
+    private void infoAction(InventoryClickEvent event, RecipeMenu menu) {
+        event.getWhoClicked().sendMessage("Info action");
+    }
+
+    private void workbenchVariantScrollUpAction(InventoryClickEvent event, RecipeMenu menu) {
+        event.getWhoClicked().sendMessage("Scroll up action");
+    }
+
+    private void workbenchVariantScrollDownAction(InventoryClickEvent event, RecipeMenu menu) {
+        event.getWhoClicked().sendMessage("Scroll down action");
+    }
+
+    private void bookmarkRecipeToggleAction(InventoryClickEvent event, RecipeMenu menu) {
+        event.getWhoClicked().sendMessage("Bookmark toggle action");
+    }
+
+    private void bookmarkListAction(InventoryClickEvent event, RecipeMenu menu) {
+        event.getWhoClicked().sendMessage("Bookmark list action");
+    }
+
+    private void bookmarkServerListAction(InventoryClickEvent event, RecipeMenu menu) {
+        event.getWhoClicked().sendMessage("Bookmark server list action");
+    }
+
+    private void exitAction(InventoryClickEvent event, RecipeMenu menu) {
+        event.getWhoClicked().sendMessage("Exit action");
+    }
+
+    //#endregion Button actions
 }

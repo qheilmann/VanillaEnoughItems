@@ -14,6 +14,7 @@ import dev.jorel.commandapi.CommandAPIBukkitConfig;
 import me.qheilmann.vei.Command.CraftCommand;
 import me.qheilmann.vei.Command.TestCommand;
 import me.qheilmann.vei.Core.GUI.BaseGui;
+import me.qheilmann.vei.Core.Style.StyleManager;
 import me.qheilmann.vei.Listener.InventoryClickListener;
 import me.qheilmann.vei.Listener.InventoryDragListener;
 import me.qheilmann.vei.Menu.InventoryShadow;
@@ -33,7 +34,7 @@ public class VanillaEnoughItems extends JavaPlugin {
 
     @Override
     public void onLoad() {
-        menuManager = new MenuManager(this);
+        menuManager = new MenuManager(this, StyleManager.DEFAULT_STYLE);
 
         CommandAPI.onLoad(new CommandAPIBukkitConfig(this));
         new CraftCommand(this, menuManager).register();

@@ -7,14 +7,17 @@ import org.bukkit.inventory.Recipe;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import me.qheilmann.vei.Core.Menu.RecipeMenu;
+import me.qheilmann.vei.Core.Style.Styles.Style;
 import net.kyori.adventure.text.Component;
 
 public class MenuManager {
 
     private final JavaPlugin plugin;
+    private final Style style;
 
-    public MenuManager(JavaPlugin plugin) {
+    public MenuManager(JavaPlugin plugin, Style style) {
         this.plugin = plugin;
+        this.style = style;
     }
 
     /**
@@ -24,7 +27,7 @@ public class MenuManager {
      * which will run the task on the next tick.
      */
     public void openRecipeMenu(Player player, Recipe recipe) {
-        RecipeMenu recipeMenu = new RecipeMenu(recipe); // TODO
+        RecipeMenu recipeMenu = new RecipeMenu(style, recipe); // TODO
         player.sendMessage(Component.text("Image menu open"));
         recipeMenu.open(player);
     }
