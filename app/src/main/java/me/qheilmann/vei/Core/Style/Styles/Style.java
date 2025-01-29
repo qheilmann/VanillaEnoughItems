@@ -11,7 +11,7 @@ import net.kyori.adventure.text.format.TextColor;
 public abstract class Style {
     private StyleProfile profile;
     private ItemStack paddingItem;
-    private TextColor color; // color used for component color
+    private TextColor primaryColor; // color used for component color
     private TextColor secondaryColor;
     private final Map<ButtonType, ItemStack> buttonMaterials; // if the key is not present, the null key is used, if the null key is not present, the default skin is used
     private ItemStack defaultMaterial = new ItemStack(Material.STONE);
@@ -19,7 +19,7 @@ public abstract class Style {
     public Style(StyleProfile profile, ItemStack paddingItem, TextColor color, TextColor secondaryColor, Map<ButtonType, ItemStack> buttonMaterials) {
         this.profile = profile;
         this.paddingItem = paddingItem;
-        this.color = color;
+        this.primaryColor = color;
         this.secondaryColor = secondaryColor;
         this.buttonMaterials = buttonMaterials;
     }
@@ -32,8 +32,8 @@ public abstract class Style {
         return paddingItem;
     }
 
-    public TextColor getColor() {
-        return color;
+    public TextColor getPrimaryColor() {
+        return primaryColor;
     }
 
     public TextColor getSecondaryColor() {
