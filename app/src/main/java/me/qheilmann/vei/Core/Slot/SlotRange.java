@@ -29,8 +29,8 @@ public class SlotRange {
      * @param cornerB     The second corner of the range, on the opposite side of cornerA
      */
     public SlotRange(Slot cornerA, Slot cornerB) {
-        Preconditions.checkNotNull(cornerA, "cornerA cannot be null");
-        Preconditions.checkNotNull(cornerB, "cornerB cannot be null");
+        Preconditions.checkArgument(cornerA != null, "cornerA cannot be null");
+        Preconditions.checkArgument(cornerB != null, "cornerB cannot be null");
 
         // Adjust the corners so that topLeftSlot is always the top left corner and bottomRightSlot is always the bottom right corner
         int topLeftX = Math.min(cornerA.getX(), cornerB.getX());

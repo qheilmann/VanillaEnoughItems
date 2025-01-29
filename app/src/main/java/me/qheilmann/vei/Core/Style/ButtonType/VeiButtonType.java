@@ -1,5 +1,9 @@
 package me.qheilmann.vei.Core.Style.ButtonType;
 
+import org.jetbrains.annotations.NotNull;
+
+import com.google.common.base.Preconditions;
+
 public class VeiButtonType implements ButtonType {
     public static class RecipeMenu {
         public static final ButtonType BACK_RECIPE = new VeiButtonType("back_recipe");
@@ -23,13 +27,16 @@ public class VeiButtonType implements ButtonType {
         public static final ButtonType INFO = new VeiButtonType("info");
     }
 
+    @NotNull
     private final String id;
 
-    private VeiButtonType(String id) {
+    private VeiButtonType(@NotNull String id) {
+        Preconditions.checkNotNull(id, "id cannot be null");
         this.id = id;
     }
 
     @Override
+    @NotNull
     public String getId() {
         return id;
     }

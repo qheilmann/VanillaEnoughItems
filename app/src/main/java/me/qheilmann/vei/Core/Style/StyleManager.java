@@ -3,8 +3,8 @@ package me.qheilmann.vei.Core.Style;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.annotation.Nullable;
-
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.bukkit.NamespacedKey;
 
 import me.qheilmann.vei.Core.Style.Styles.DarkStyle;
@@ -20,11 +20,11 @@ public class StyleManager {
         registerStyle(DarkStyle.STYLE);
     }
 
-    public void registerStyle(Style style) {
+    public void registerStyle(@NotNull Style style) {
         styles.put(style.getProfile().getId(), style);
     }
 
-    public void unregisterStyle(NamespacedKey styleId) {
+    public void unregisterStyle(@NotNull NamespacedKey styleId) {
         styles.remove(styleId);
     }
 
@@ -40,6 +40,7 @@ public class StyleManager {
         return styles.getOrDefault(styleId, null);
     }
 
+    @NotNull
     public Style[] getAllStyle() {
         return styles.values().toArray(new Style[0]);
     }

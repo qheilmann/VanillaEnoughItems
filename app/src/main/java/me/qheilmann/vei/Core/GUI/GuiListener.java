@@ -78,7 +78,10 @@ public class GuiListener<G extends BaseGui<G>> implements Listener {
         if(guiItem == null) return;
 
         // Checks if the current item clicked is the same as the item in the slot
-        if (!isIdenticalItem(event.getCurrentItem(), guiItem)) return;
+        if (!isIdenticalItem(event.getCurrentItem(), guiItem)){
+            VanillaEnoughItems.LOGGER.warning("The item clicked is not the same as the item in the same slot inside the GUI, (skip action)");
+            return;
+        }
 
         // GuiItem click action
         final GuiAction<InventoryClickEvent, G> itemAction = guiItem.getAction();
