@@ -22,8 +22,8 @@ public class LightStyle extends Style{
         super(
             buildStyleProfile(), 
             new ItemStack(Material.WHITE_STAINED_GLASS_PANE), 
-            TextColor.color(Color.GRAY.asRGB()), 
             TextColor.color(Color.WHITE.asRGB()), 
+            TextColor.color(Color.GRAY.asRGB()), 
             buildbuttonMaterialsMap()
         );
     }
