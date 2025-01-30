@@ -27,8 +27,7 @@ public class MenuManager {
      * which will run the task on the next tick.
      */
     public void openRecipeMenu(Player player, Recipe recipe) {
-        RecipeMenu recipeMenu = new RecipeMenu(style, recipe); // TODO
-        player.sendMessage(Component.text("Image menu open"));
+        RecipeMenu recipeMenu = new RecipeMenu(style, recipe);
         recipeMenu.open(player);
     }
 

@@ -12,8 +12,9 @@ import me.qheilmann.vei.Core.Style.Styles.LightStyle;
 import me.qheilmann.vei.Core.Style.Styles.Style;
 
 public class StyleManager {
-    private final Map<NamespacedKey, Style> styles = new HashMap<>();
     public static final Style DEFAULT_STYLE = LightStyle.STYLE;
+    
+    private final Map<NamespacedKey, Style> styles = new HashMap<>();
 
     public StyleManager() {
         registerStyle(LightStyle.STYLE);
@@ -45,6 +46,3 @@ public class StyleManager {
         return styles.values().toArray(new Style[0]);
     }
 }
-
-
-// TODO set the nullable annotation on all style class (a least the public ones)

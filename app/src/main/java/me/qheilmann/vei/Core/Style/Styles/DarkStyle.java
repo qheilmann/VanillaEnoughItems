@@ -14,8 +14,13 @@ import me.qheilmann.vei.Core.Style.ButtonType.VeiButtonType;
 import net.kyori.adventure.text.format.TextColor;
 
 public class DarkStyle extends Style {
-    public static final DarkStyle STYLE = new DarkStyle();
-    public static final NamespacedKey ID = new NamespacedKey(VanillaEnoughItems.NAMESPACE, "dark_theme");
+    public static final DarkStyle STYLE;
+    public static final NamespacedKey ID;
+
+    static {
+        ID = new NamespacedKey(VanillaEnoughItems.NAMESPACE, "dark_theme");
+        STYLE = new DarkStyle(); // must be set after ID
+    }
 
     private DarkStyle() {
         super(

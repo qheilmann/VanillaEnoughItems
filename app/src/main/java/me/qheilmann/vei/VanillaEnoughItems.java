@@ -34,9 +34,9 @@ public class VanillaEnoughItems extends JavaPlugin {
 
     @Override
     public void onLoad() {
-        menuManager = new MenuManager(this, StyleManager.DEFAULT_STYLE);
-
         CommandAPI.onLoad(new CommandAPIBukkitConfig(this));
+        menuManager = new MenuManager(this, StyleManager.DEFAULT_STYLE);
+        
         new CraftCommand(this, menuManager).register();
         new TestCommand().register();
 

@@ -2,12 +2,10 @@ package me.qheilmann.vei.Core.Style.Styles;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
-
 import me.qheilmann.vei.VanillaEnoughItems;
 import me.qheilmann.vei.Core.Style.ButtonType.ButtonType;
 import me.qheilmann.vei.Core.Style.ButtonType.VeiButtonType;
@@ -15,8 +13,13 @@ import me.qheilmann.vei.Service.CustomHeadFactory;
 import net.kyori.adventure.text.format.TextColor;
 
 public class LightStyle extends Style{
-    public static final LightStyle STYLE = new LightStyle();
-    public static final NamespacedKey ID = new NamespacedKey(VanillaEnoughItems.NAMESPACE, "light_theme");
+    public static final LightStyle STYLE;
+    public static final NamespacedKey ID; 
+
+    static {
+        ID = new NamespacedKey(VanillaEnoughItems.NAMESPACE, "light_theme");
+        STYLE = new LightStyle(); // must be set after ID
+    }
 
     private LightStyle() {
         super(
