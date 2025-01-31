@@ -8,7 +8,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import me.qheilmann.vei.Core.Menu.RecipeMenu;
 import me.qheilmann.vei.Core.Style.Styles.Style;
-import net.kyori.adventure.text.Component;
 
 public class MenuManager {
 

@@ -1,70 +1,30 @@
 package me.qheilmann.vei.Core.Slot;
 
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import org.jetbrains.annotations.NotNull;
 
 import com.google.common.base.Preconditions;
 
 /**
- * Represents a range of slots in a 9x6 grid (max chest size)
- */
-public class SlotRange {
+ * Defines a range of slots within a grid, specified by two corner slots.
+ * The slots within the range are ordered row by row, starting from the first row in the first column,
+ * then the first row in the second column, and so on.
+*/
+public class SlotRange extends SlotSequence {
 
-    public static final SlotRange TOP_ROW = new SlotRange(Slot.TOP_LEFT, Slot.TOP_RIGHT);
-    public static final SlotRange BOTTOM_ROW = new SlotRange(Slot.BOTTOM_LEFT, Slot.BOTTOM_RIGHT);
-    public static final SlotRange LEFT_COLUMN = new SlotRange(Slot.TOP_LEFT, Slot.BOTTOM_LEFT);
-    public static final SlotRange RIGHT_COLUMN = new SlotRange(Slot.TOP_RIGHT, Slot.BOTTOM_RIGHT);
-    public static final SlotRange ALL = new SlotRange(Slot.TOP_LEFT, Slot.BOTTOM_RIGHT);
-    public static final SlotRange EMPTY = new SlotRange(new LinkedHashSet<>());
-
-    private final Set<Slot> slots;
-    private final Slot topLeftSlot;
-    private final Slot bottomRightSlot;
+    private Slot topLeftSlot;
+    private Slot bottomRightSlot;
 
     /**
-     * Defines a range of slots in a 9x6 grid (max chest size)
+     * Defines a range of slots
      * 
      * @param cornerA     The first corner of the range
      * @param cornerB     The second corner of the range, on the opposite side of cornerA
      */
-    public SlotRange(Slot cornerA, Slot cornerB) {
-        Preconditions.checkArgument(cornerA != null, "cornerA cannot be null");
-        Preconditions.checkArgument(cornerB != null, "cornerB cannot be null");
-
-        // Adjust the corners so that topLeftSlot is always the top left corner and bottomRightSlot is always the bottom right corner
-        int topLeftX = Math.min(cornerA.getX(), cornerB.getX());
-        int topLeftY = Math.min(cornerA.getY(), cornerB.getY());
-        int bottomRightX = Math.max(cornerA.getX(), cornerB.getX());
-        int bottomRightY = Math.max(cornerA.getY(), cornerB.getY());
-
-        this.topLeftSlot = new Slot(topLeftX, topLeftY);
-        this.bottomRightSlot = new Slot(bottomRightX, bottomRightY);
-
-        Set<Slot> cslots = new LinkedHashSet<>();
-        for (int x = topLeftSlot.getX(); x <= bottomRightSlot.getX(); x++) {
-            for (int y = topLeftSlot.getY(); y <= bottomRightSlot.getY(); y++) {
-                cslots.add(new Slot(x, y));
-            }
-        }
-
-        this.slots = Collections.unmodifiableSet(cslots);
-    }
-
-    /**
-     * Defines a list of slots in a 9x6 grid (max chest size)
-     * @param slots The slots to include in the range
-     */
-    public SlotRange(Set<Slot> slots) {
-        this.slots = Collections.unmodifiableSet(slots);
-
-        this.topLeftSlot = slots.stream()
-            .min(new SlotComparator())
-            .orElse(null);
-        
-        this.bottomRightSlot = slots.stream()
-            .max(new SlotComparator())
-            .orElse(null);
+    public SlotRange(@NotNull Slot cornerA, @NotNull Slot cornerB) {
+        super(getSlotsBetween(cornerA, cornerB));
+        this.topLeftSlot = getTopLeftSlot(cornerA, cornerB);
+        this.bottomRightSlot = getBottomRightSlot(cornerA, cornerB);
     }
 
     /**
@@ -72,6 +32,7 @@ public class SlotRange {
      * 
      * @return The top left slot
      */
+    @NotNull
     public Slot getTopLeftSlot() {
         return topLeftSlot;
     }
@@ -81,16 +42,77 @@ public class SlotRange {
      * 
      * @return The bottom right slot
      */
+    @NotNull
     public Slot getBottomRightSlot() {
         return bottomRightSlot;
     }
 
     /**
-     * Get all the slots in the range
+     * Set the top left slot of the range, can be on the other side 
      * 
-     * @return All slots in the range
+     * @throws IllegalArgumentException if topLeftSlot is null
      */
-    public Set<Slot> getSlots() {
+    public void setTopLeftSlot(@NotNull Slot topLeftSlot) {
+        Preconditions.checkArgument(topLeftSlot != null, "topLeftSlot cannot be null");
+
+        this.clear();
+        this.addAll(getSlotsBetween(topLeftSlot, this.bottomRightSlot));
+
+        // Update the top left slot, sometimes the top left slot is not the top left 
+        // slot anymore so we need to update both corners
+        this.bottomRightSlot = getBottomRightSlot(topLeftSlot, bottomRightSlot);
+        this.topLeftSlot = getTopLeftSlot(topLeftSlot, bottomRightSlot);
+    }
+
+    public void setBottomRightSlot(@NotNull Slot bottomRightSlot) {
+        Preconditions.checkArgument(bottomRightSlot != null, "bottomRightSlot cannot be null");
+
+        this.clear();
+        this.addAll(getSlotsBetween(this.topLeftSlot, bottomRightSlot));
+
+        // Update the bottom right slot, sometimes the bottom right slot is not the bottom right 
+        // slot anymore so we need to update both corners
+        this.bottomRightSlot = getBottomRightSlot(topLeftSlot, bottomRightSlot);
+        this.topLeftSlot = getTopLeftSlot(topLeftSlot, bottomRightSlot);
+    }
+
+    /**
+     * Get all the slots between the two corners. The slots within the range are
+     * ordered row by row, starting from the first row in the first column, then
+     * the first row in the second column, and so on.
+     * 
+     * @param cornerA The first corner of the range.
+     * @param cornerB The second corner of the range, on the opposite side of
+     * cornerA.
+     * @return A list of slots between the corners
+     * @throws IllegalArgumentException if either cornerA or cornerB is null.
+     */
+    @NotNull
+    private static ArrayList<Slot> getSlotsBetween(@NotNull Slot cornerA, @NotNull Slot cornerB) {
+        Preconditions.checkArgument(cornerA != null, "cornerA cannot be null");
+        Preconditions.checkArgument(cornerB != null, "cornerB cannot be null");
+
+        Slot topLeftSlot = getTopLeftSlot(cornerA, cornerB);
+        Slot bottomRightSlot = getBottomRightSlot(cornerA, cornerB);
+
+        ArrayList<Slot> slots = new ArrayList<>();
+        for (int y = topLeftSlot.getY(); y <= bottomRightSlot.getY(); y++) {
+            for (int x = topLeftSlot.getX(); x <= bottomRightSlot.getX(); x++) {
+            slots.add(new Slot(x, y));
+            }
+        }
         return slots;
+    }
+
+    private static Slot getTopLeftSlot(@NotNull Slot cornerA, @NotNull Slot cornerB) {
+        int minXCoord = Math.min(cornerA.getX(), cornerB.getX());
+        int minYCoord = Math.min(cornerA.getY(), cornerB.getY());
+        return new Slot(minXCoord, minYCoord);
+    }
+
+    private static Slot getBottomRightSlot(@NotNull Slot cornerA, @NotNull Slot cornerB) {
+        int maxXCoord = Math.max(cornerA.getX(), cornerB.getX());
+        int maxYCoord = Math.max(cornerA.getY(), cornerB.getY());
+        return new Slot(maxXCoord, maxYCoord);
     }
 }

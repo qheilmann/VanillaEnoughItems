@@ -1,5 +1,7 @@
 package me.qheilmann.vei.Core.Slot;
 
+import java.util.Objects;
+
 import org.jetbrains.annotations.NotNull;
 import org.joml.Vector2i;
 
@@ -9,10 +11,34 @@ import com.google.common.base.Preconditions;
  * Represents a single slot in a 9x6 grid (max chest size)
  */
 public class Slot {
+    public static final int ROW_COUNT = 6;
+    public static final int COLUMN_COUNT = 9;
+
     public static final Slot TOP_LEFT = new Slot(0, 0);
-    public static final Slot TOP_RIGHT = new Slot(8, 0);
-    public static final Slot BOTTOM_LEFT = new Slot(0, 5);
-    public static final Slot BOTTOM_RIGHT = new Slot(8, 5);
+    public static final Slot TOP_RIGHT = new Slot(COLUMN_COUNT-1, 0);
+    public static final Slot BOTTOM_LEFT = new Slot(0, ROW_COUNT-1);
+    public static final Slot BOTTOM_RIGHT = new Slot(COLUMN_COUNT-1, ROW_COUNT-1);
+    
+    // All of this are mutable, so they can't be used
+    // public static final SlotRange ALL = new SlotRange(TOP_LEFT, BOTTOM_RIGHT);
+    
+    // public static final SlotRange TOP_ROW = new SlotRange(TOP_LEFT, TOP_RIGHT);
+    // public static final SlotRange SECOND_ROW = new SlotRange(new Slot(0, 1), new Slot(COLUMN_COUNT-1, 1));
+    // public static final SlotRange THIRD_ROW = new SlotRange(new Slot(0, 2), new Slot(COLUMN_COUNT-1, 2));
+    // public static final SlotRange FOURTH_ROW = new SlotRange(new Slot(0, 3), new Slot(COLUMN_COUNT-1, 3));
+    // public static final SlotRange FIFTH_ROW = new SlotRange(new Slot(0, 4), new Slot(COLUMN_COUNT-1, 4));
+    // public static final SlotRange BOTTOM_ROW = new SlotRange(BOTTOM_LEFT, BOTTOM_RIGHT);
+    
+    
+    // public static final SlotRange LEFT_COLUMN = new SlotRange(TOP_LEFT, BOTTOM_LEFT);
+    // public static final SlotRange SECOND_COLUMN = new SlotRange(new Slot(1, 0), new Slot(1, ROW_COUNT-1));
+    // public static final SlotRange THIRD_COLUMN = new SlotRange(new Slot(2, 0), new Slot(2, ROW_COUNT-1));
+    // public static final SlotRange FOURTH_COLUMN = new SlotRange(new Slot(3, 0), new Slot(3, ROW_COUNT-1));
+    // public static final SlotRange FIFTH_COLUMN = new SlotRange(new Slot(4, 0), new Slot(4, ROW_COUNT-1));
+    // public static final SlotRange SIXTH_COLUMN = new SlotRange(new Slot(5, 0), new Slot(5, ROW_COUNT-1));
+    // public static final SlotRange SEVENTH_COLUMN = new SlotRange(new Slot(6, 0), new Slot(6, ROW_COUNT-1));
+    // public static final SlotRange EIGHTH_COLUMN = new SlotRange(new Slot(7, 0), new Slot(7, ROW_COUNT-1));
+    // public static final SlotRange RIGHT_COLUMN = new SlotRange(TOP_RIGHT, BOTTOM_RIGHT);
 
     private final Vector2i coord;
 
@@ -32,8 +58,8 @@ public class Slot {
      * @param y The y coordinate of the slot
      */
     public Slot(int x, int y) {
-        Preconditions.checkArgument(x >= 0 && x < 9, "x must be between 0 and 8, current value: %d", x);
-        Preconditions.checkArgument(y >= 0 && y < 6, "y must be between 0 and 5, current value: %d", y);
+        Preconditions.checkArgument(x >= 0 && x < COLUMN_COUNT, "x must be between %d and %d, current value: %d", 0, COLUMN_COUNT, x);
+        Preconditions.checkArgument(y >= 0 && y < ROW_COUNT, "y must be between %d and %d, current value: %d", 0, ROW_COUNT, y);
 
         this.coord = new Vector2i(x, y);
     }
@@ -73,7 +99,20 @@ public class Slot {
      * @return The index of the slot
      */
     public int getIndex() {
-        return coord.y * 9 + coord.x;
+        return coord.y * COLUMN_COUNT + coord.x;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        Slot slot = (Slot) obj;
+        return getX() == slot.getX() && getY() == slot.getY();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(coord.x, coord.y);
     }
 
     @NotNull
