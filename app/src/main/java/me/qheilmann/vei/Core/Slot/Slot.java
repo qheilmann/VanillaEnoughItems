@@ -18,27 +18,6 @@ public class Slot {
     public static final Slot TOP_RIGHT = new Slot(COLUMN_COUNT-1, 0);
     public static final Slot BOTTOM_LEFT = new Slot(0, ROW_COUNT-1);
     public static final Slot BOTTOM_RIGHT = new Slot(COLUMN_COUNT-1, ROW_COUNT-1);
-    
-    // All of this are mutable, so they can't be used
-    // public static final SlotRange ALL = new SlotRange(TOP_LEFT, BOTTOM_RIGHT);
-    
-    // public static final SlotRange TOP_ROW = new SlotRange(TOP_LEFT, TOP_RIGHT);
-    // public static final SlotRange SECOND_ROW = new SlotRange(new Slot(0, 1), new Slot(COLUMN_COUNT-1, 1));
-    // public static final SlotRange THIRD_ROW = new SlotRange(new Slot(0, 2), new Slot(COLUMN_COUNT-1, 2));
-    // public static final SlotRange FOURTH_ROW = new SlotRange(new Slot(0, 3), new Slot(COLUMN_COUNT-1, 3));
-    // public static final SlotRange FIFTH_ROW = new SlotRange(new Slot(0, 4), new Slot(COLUMN_COUNT-1, 4));
-    // public static final SlotRange BOTTOM_ROW = new SlotRange(BOTTOM_LEFT, BOTTOM_RIGHT);
-    
-    
-    // public static final SlotRange LEFT_COLUMN = new SlotRange(TOP_LEFT, BOTTOM_LEFT);
-    // public static final SlotRange SECOND_COLUMN = new SlotRange(new Slot(1, 0), new Slot(1, ROW_COUNT-1));
-    // public static final SlotRange THIRD_COLUMN = new SlotRange(new Slot(2, 0), new Slot(2, ROW_COUNT-1));
-    // public static final SlotRange FOURTH_COLUMN = new SlotRange(new Slot(3, 0), new Slot(3, ROW_COUNT-1));
-    // public static final SlotRange FIFTH_COLUMN = new SlotRange(new Slot(4, 0), new Slot(4, ROW_COUNT-1));
-    // public static final SlotRange SIXTH_COLUMN = new SlotRange(new Slot(5, 0), new Slot(5, ROW_COUNT-1));
-    // public static final SlotRange SEVENTH_COLUMN = new SlotRange(new Slot(6, 0), new Slot(6, ROW_COUNT-1));
-    // public static final SlotRange EIGHTH_COLUMN = new SlotRange(new Slot(7, 0), new Slot(7, ROW_COUNT-1));
-    // public static final SlotRange RIGHT_COLUMN = new SlotRange(TOP_RIGHT, BOTTOM_RIGHT);
 
     private final Vector2i coord;
 
@@ -119,5 +98,93 @@ public class Slot {
     private static Vector2i validateCoord(@NotNull Vector2i coord) {
         Preconditions.checkNotNull(coord, "coord cannot be null");
         return coord;
+    }
+
+    // Inner class for predefined slot ranges
+    public static class ChestSlotRanges {
+        public static final SlotRange ALL = new SlotRange(TOP_LEFT, BOTTOM_RIGHT);
+    
+        private static final SlotRange TOP_ROW = new SlotRange(TOP_LEFT, TOP_RIGHT);
+        private static final SlotRange SECOND_ROW = new SlotRange(new Slot(0, 1), new Slot(COLUMN_COUNT-1, 1));
+        private static final SlotRange THIRD_ROW = new SlotRange(new Slot(0, 2), new Slot(COLUMN_COUNT-1, 2));
+        private static final SlotRange FOURTH_ROW = new SlotRange(new Slot(0, 3), new Slot(COLUMN_COUNT-1, 3));
+        private static final SlotRange FIFTH_ROW = new SlotRange(new Slot(0, 4), new Slot(COLUMN_COUNT-1, 4));
+        private static final SlotRange BOTTOM_ROW = new SlotRange(BOTTOM_LEFT, BOTTOM_RIGHT);
+        
+        
+        private static final SlotRange LEFT_COLUMN = new SlotRange(TOP_LEFT, BOTTOM_LEFT);
+        private static final SlotRange SECOND_COLUMN = new SlotRange(new Slot(1, 0), new Slot(1, ROW_COUNT-1));
+        private static final SlotRange THIRD_COLUMN = new SlotRange(new Slot(2, 0), new Slot(2, ROW_COUNT-1));
+        private static final SlotRange FOURTH_COLUMN = new SlotRange(new Slot(3, 0), new Slot(3, ROW_COUNT-1));
+        private static final SlotRange FIFTH_COLUMN = new SlotRange(new Slot(4, 0), new Slot(4, ROW_COUNT-1));
+        private static final SlotRange SIXTH_COLUMN = new SlotRange(new Slot(5, 0), new Slot(5, ROW_COUNT-1));
+        private static final SlotRange SEVENTH_COLUMN = new SlotRange(new Slot(6, 0), new Slot(6, ROW_COUNT-1));
+        private static final SlotRange EIGHTH_COLUMN = new SlotRange(new Slot(7, 0), new Slot(7, ROW_COUNT-1));
+        private static final SlotRange RIGHT_COLUMN = new SlotRange(TOP_RIGHT, BOTTOM_RIGHT);
+
+
+        public static SlotRange getAllSlot() {
+            return new SlotRange(ChestSlotRanges.ALL);
+        }
+
+        public static SlotRange getTopRow() {
+            return new SlotRange(ChestSlotRanges.TOP_ROW);
+        }
+
+        public static SlotRange getSecondRow() {
+            return new SlotRange(ChestSlotRanges.SECOND_ROW);
+        }
+
+        public static SlotRange getThirdRow() {
+            return new SlotRange(ChestSlotRanges.THIRD_ROW);
+        }
+
+        public static SlotRange getFourthRow() {
+            return new SlotRange(ChestSlotRanges.FOURTH_ROW);
+        }
+
+        public static SlotRange getFifthRow() {
+            return new SlotRange(ChestSlotRanges.FIFTH_ROW);
+        }
+
+        public static SlotRange getBottomRow() {
+            return new SlotRange(ChestSlotRanges.BOTTOM_ROW);
+        }
+
+        public static SlotRange getLeftColumn() {
+            return new SlotRange(ChestSlotRanges.LEFT_COLUMN);
+        }
+
+        public static SlotRange getSecondColumn() {
+            return new SlotRange(ChestSlotRanges.SECOND_COLUMN);
+        }
+
+        public static SlotRange getThirdColumn() {
+            return new SlotRange(ChestSlotRanges.THIRD_COLUMN);
+        }
+
+        public static SlotRange getFourthColumn() {
+            return new SlotRange(ChestSlotRanges.FOURTH_COLUMN);
+        }
+
+        public static SlotRange getFifthColumn() {
+            return new SlotRange(ChestSlotRanges.FIFTH_COLUMN);
+        }
+
+        public static SlotRange getSixthColumn() {
+            return new SlotRange(ChestSlotRanges.SIXTH_COLUMN);
+        }
+
+        public static SlotRange getSeventhColumn() {
+            return new SlotRange(ChestSlotRanges.SEVENTH_COLUMN);
+        }
+
+        public static SlotRange getEighthColumn() {
+            return new SlotRange(ChestSlotRanges.EIGHTH_COLUMN);
+        }
+
+        public static SlotRange getRightColumn() {
+            return new SlotRange(ChestSlotRanges.RIGHT_COLUMN);
+        }
     }
 }

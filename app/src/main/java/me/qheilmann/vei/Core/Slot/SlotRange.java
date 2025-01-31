@@ -27,6 +27,12 @@ public class SlotRange extends SlotSequence {
         this.bottomRightSlot = getBottomRightSlot(cornerA, cornerB);
     }
 
+    public SlotRange(@NotNull SlotRange slotRange) {
+        super(slotRange);
+        this.topLeftSlot = slotRange.getTopLeftSlot();
+        this.bottomRightSlot = slotRange.getBottomRightSlot();
+    }
+
     /**
      * Get the top left slot of the range
      * 
