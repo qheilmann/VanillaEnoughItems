@@ -10,10 +10,10 @@ import com.google.common.base.Preconditions;
  * The slots within the range are ordered row by row, starting from the first row in the first column,
  * then the first row in the second column, and so on.
 */
-public class SlotRange extends SlotSequence {
+public class SlotRange<T extends Slot<T>> extends SlotSequence {
 
-    private Slot topLeftSlot;
-    private Slot bottomRightSlot;
+    private T topLeftSlot;
+    private T bottomRightSlot;
 
     /**
      * Defines a range of slots
@@ -21,13 +21,13 @@ public class SlotRange extends SlotSequence {
      * @param cornerA     The first corner of the range
      * @param cornerB     The second corner of the range, on the opposite side of cornerA
      */
-    public SlotRange(@NotNull Slot cornerA, @NotNull Slot cornerB) {
+    public SlotRange(@NotNull T cornerA, @NotNull T cornerB) {
         super(getSlotsBetween(cornerA, cornerB));
         this.topLeftSlot = getTopLeftSlot(cornerA, cornerB);
         this.bottomRightSlot = getBottomRightSlot(cornerA, cornerB);
     }
 
-    public SlotRange(@NotNull SlotRange slotRange) {
+    public SlotRange(@NotNull SlotRange<T> slotRange) {
         super(slotRange);
         this.topLeftSlot = slotRange.getTopLeftSlot();
         this.bottomRightSlot = slotRange.getBottomRightSlot();
@@ -39,7 +39,7 @@ public class SlotRange extends SlotSequence {
      * @return The top left slot
      */
     @NotNull
-    public Slot getTopLeftSlot() {
+    public T getTopLeftSlot() {
         return topLeftSlot;
     }
 
@@ -49,7 +49,7 @@ public class SlotRange extends SlotSequence {
      * @return The bottom right slot
      */
     @NotNull
-    public Slot getBottomRightSlot() {
+    public T getBottomRightSlot() {
         return bottomRightSlot;
     }
 
@@ -58,7 +58,7 @@ public class SlotRange extends SlotSequence {
      * 
      * @throws IllegalArgumentException if topLeftSlot is null
      */
-    public void setTopLeftSlot(@NotNull Slot topLeftSlot) {
+    public void setTopLeftSlot(@NotNull T topLeftSlot) {
         Preconditions.checkArgument(topLeftSlot != null, "topLeftSlot cannot be null");
 
         this.clear();
@@ -70,9 +70,9 @@ public class SlotRange extends SlotSequence {
         this.topLeftSlot = getTopLeftSlot(topLeftSlot, bottomRightSlot);
     }
 
-    public void setBottomRightSlot(@NotNull Slot bottomRightSlot) {
+    public void setBottomRightSlot(@NotNull T bottomRightSlot) {
         Preconditions.checkArgument(bottomRightSlot != null, "bottomRightSlot cannot be null");
-
+        
         this.clear();
         this.addAll(getSlotsBetween(this.topLeftSlot, bottomRightSlot));
 
@@ -94,31 +94,42 @@ public class SlotRange extends SlotSequence {
      * @throws IllegalArgumentException if either cornerA or cornerB is null.
      */
     @NotNull
-    private static ArrayList<Slot> getSlotsBetween(@NotNull Slot cornerA, @NotNull Slot cornerB) {
+    private static <T extends Slot<T>> ArrayList<T> getSlotsBetween(@NotNull T cornerA, @NotNull T cornerB) {
         Preconditions.checkArgument(cornerA != null, "cornerA cannot be null");
         Preconditions.checkArgument(cornerB != null, "cornerB cannot be null");
 
-        Slot topLeftSlot = getTopLeftSlot(cornerA, cornerB);
-        Slot bottomRightSlot = getBottomRightSlot(cornerA, cornerB);
+        T topLeftSlot = getTopLeftSlot(cornerA, cornerB);
+        T bottomRightSlot = getBottomRightSlot(cornerA, cornerB);
 
-        ArrayList<Slot> slots = new ArrayList<>();
+        ArrayList<T> slots = new ArrayList<>();
         for (int y = topLeftSlot.getY(); y <= bottomRightSlot.getY(); y++) {
             for (int x = topLeftSlot.getX(); x <= bottomRightSlot.getX(); x++) {
-            slots.add(new Slot(x, y));
+                T slot = cornerA.createDuplicate();
+                slot.setX(x);
+                slot.setY(y);
+                slots.add(slot);
             }
         }
         return slots;
     }
 
-    private static Slot getTopLeftSlot(@NotNull Slot cornerA, @NotNull Slot cornerB) {
+    private static <T extends Slot<T>> T getTopLeftSlot(@NotNull T cornerA, @NotNull T cornerB) {
         int minXCoord = Math.min(cornerA.getX(), cornerB.getX());
         int minYCoord = Math.min(cornerA.getY(), cornerB.getY());
-        return new Slot(minXCoord, minYCoord);
+
+        T newSlot = cornerA.createDuplicate();
+        newSlot.setX(minXCoord);
+        newSlot.setY(minYCoord);
+        return newSlot;
     }
 
-    private static Slot getBottomRightSlot(@NotNull Slot cornerA, @NotNull Slot cornerB) {
+    private static <T extends Slot<T>> T getBottomRightSlot(@NotNull T cornerA, @NotNull T cornerB) {
         int maxXCoord = Math.max(cornerA.getX(), cornerB.getX());
         int maxYCoord = Math.max(cornerA.getY(), cornerB.getY());
-        return new Slot(maxXCoord, maxYCoord);
+
+        T newSlot = cornerA.createDuplicate();
+        newSlot.setX(maxXCoord);
+        newSlot.setY(maxYCoord);
+        return newSlot;
     }
 }

@@ -5,31 +5,29 @@ import java.util.List;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.meta.ItemMeta;
-
 import dev.triumphteam.gui.components.InteractionModifier;
 import me.qheilmann.vei.Core.GUI.BaseGui;
 import me.qheilmann.vei.Core.GUI.GuiItem;
-import me.qheilmann.vei.Core.Slot.Slot;
-import me.qheilmann.vei.Core.Slot.SlotRange;
+import me.qheilmann.vei.Core.Slot.ChestSlot;
 import me.qheilmann.vei.Core.Style.ButtonType.VeiButtonType;
 import me.qheilmann.vei.Core.Style.Styles.Style;
 import net.kyori.adventure.text.Component;
 
 public class RecipeMenu extends BaseGui<RecipeMenu> {
-    private static final Slot QUICK_LINK_SLOT = new Slot(0, 0);
-    private static final Slot WORKBENCH_TYPE_SCROLL_LEFT_SLOT = new Slot(1, 0);
-    private static final Slot WORKBENCH_TYPE_SCROLL_RIGHT_SLOT = new Slot(7, 0);
-    private static final Slot INFO_SLOT = new Slot(8, 0);
-    private static final Slot WORKBENCH_VARIANT_SCROLL_UP_SLOT = new Slot(0, 1);
-    private static final Slot WORKBENCH_VARIANT_SCROLL_DOWN_SLOT = new Slot(0, 5);
-    private static final Slot BOOKMARK_THIS_RECIPE_TOGGLE_SLOT = new Slot(8, 2);
-    private static final Slot BOOKMARK_LIST_SLOT = new Slot(8, 3);
-    private static final Slot BOOKMARK_SERVER_LIST_SLOT = new Slot(8, 4);
-    private static final Slot EXIT_SLOT = new Slot(8, 5);
+    private static final ChestSlot QUICK_LINK_SLOT = new ChestSlot(0, 0);
+    private static final ChestSlot WORKBENCH_TYPE_SCROLL_LEFT_SLOT = new ChestSlot(1, 0);
+    private static final ChestSlot WORKBENCH_TYPE_SCROLL_RIGHT_SLOT = new ChestSlot(7, 0);
+    private static final ChestSlot INFO_SLOT = new ChestSlot(8, 0);
+    private static final ChestSlot WORKBENCH_VARIANT_SCROLL_UP_SLOT = new ChestSlot(0, 1);
+    private static final ChestSlot WORKBENCH_VARIANT_SCROLL_DOWN_SLOT = new ChestSlot(0, 5);
+    private static final ChestSlot BOOKMARK_THIS_RECIPE_TOGGLE_SLOT = new ChestSlot(8, 2);
+    private static final ChestSlot BOOKMARK_LIST_SLOT = new ChestSlot(8, 3);
+    private static final ChestSlot BOOKMARK_SERVER_LIST_SLOT = new ChestSlot(8, 4);
+    private static final ChestSlot EXIT_SLOT = new ChestSlot(8, 5);
 
-    private static final SlotRange WORKBENCH_SLOT_RANGE = new SlotRange(new Slot(2, 0), new Slot(6, 0));
-    private static final SlotRange WORKBENCH_VARIANT_SLOT_RANGE = new SlotRange(new Slot(0, 2), new Slot(0, 4));
-    private static final SlotRange RECIPE_VIEW_SLOT_RANGE = new SlotRange(new Slot(1, 1), new Slot(7, 5));
+    // private static final SlotRange<ChestSlot> WORKBENCH_SLOT_RANGE = new SlotRange<>(new ChestSlot(2, 0), new ChestSlot(6, 0));
+    // private static final SlotRange<ChestSlot> WORKBENCH_VARIANT_SLOT_RANGE = new SlotRange<>(new ChestSlot(0, 2), new ChestSlot(0, 4));
+    // private static final SlotRange<ChestSlot> RECIPE_VIEW_SLOT_RANGE = new SlotRange<>(new ChestSlot(1, 1), new ChestSlot(7, 5));
 
     private GuiItem<RecipeMenu> quickLinkItem;
     private GuiItem<RecipeMenu> workbenchTypeScrollLeftItem;
@@ -43,9 +41,9 @@ public class RecipeMenu extends BaseGui<RecipeMenu> {
     private GuiItem<RecipeMenu> exitItem;
 
     private final String bookmarkMessage = "Bookmark";
-    private final String unbookmarkMessage = "Unbookmark";
+    // private final String unbookmarkMessage = "Unbookmark";
     private final String bookmarkLoreMessage = "Add this recipe to your bookmark";
-    private final String unbookmarkLoreMessage = "Remove this recipe from your bookmark";
+    // private final String unbookmarkLoreMessage = "Remove this recipe from your bookmark";
 
     private final Style style;
 
