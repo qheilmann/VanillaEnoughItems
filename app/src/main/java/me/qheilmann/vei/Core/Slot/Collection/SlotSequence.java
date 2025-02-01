@@ -1,7 +1,11 @@
-package me.qheilmann.vei.Core.Slot;
+package me.qheilmann.vei.Core.Slot.Collection;
 
 import java.util.ArrayList;
 import java.util.Collection;
+
+import org.jetbrains.annotations.NotNull;
+
+import me.qheilmann.vei.Core.Slot.Slot;
 
 /**
  * A sequence of slots.
@@ -9,7 +13,7 @@ import java.util.Collection;
  * Note: this is for the moment a dummy class exactly like ArrayList<T>
  * @param <T> the type of slots in this sequence
  */
-public class SlotSequence extends ArrayList<Slot> {
+public class SlotSequence<T extends Slot<T>> extends ArrayList<Slot<T>> {
     /**
      * Constructs an empty list with the specified initial capacity.
      *
@@ -36,7 +40,7 @@ public class SlotSequence extends ArrayList<Slot> {
      * @param slots the collection whose elements are to be placed into this list
      * @throws NullPointerException if the specified collection is null
      */
-    public SlotSequence(Collection<? extends Slot> slots) {
+    public SlotSequence(@NotNull Collection<? extends Slot<T>> slots) {
         super(slots);
     }
 }

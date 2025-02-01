@@ -8,26 +8,28 @@ import org.bukkit.inventory.meta.ItemMeta;
 import dev.triumphteam.gui.components.InteractionModifier;
 import me.qheilmann.vei.Core.GUI.BaseGui;
 import me.qheilmann.vei.Core.GUI.GuiItem;
-import me.qheilmann.vei.Core.Slot.ChestSlot;
+import me.qheilmann.vei.Core.Slot.Collection.SlotRange;
+import me.qheilmann.vei.Core.Slot.Implementation.ChestSlot;
+import me.qheilmann.vei.Core.Slot.Implementation.MaxChestSlot;
 import me.qheilmann.vei.Core.Style.ButtonType.VeiButtonType;
 import me.qheilmann.vei.Core.Style.Styles.Style;
 import net.kyori.adventure.text.Component;
 
 public class RecipeMenu extends BaseGui<RecipeMenu> {
-    private static final ChestSlot QUICK_LINK_SLOT = new ChestSlot(0, 0);
-    private static final ChestSlot WORKBENCH_TYPE_SCROLL_LEFT_SLOT = new ChestSlot(1, 0);
-    private static final ChestSlot WORKBENCH_TYPE_SCROLL_RIGHT_SLOT = new ChestSlot(7, 0);
-    private static final ChestSlot INFO_SLOT = new ChestSlot(8, 0);
-    private static final ChestSlot WORKBENCH_VARIANT_SCROLL_UP_SLOT = new ChestSlot(0, 1);
-    private static final ChestSlot WORKBENCH_VARIANT_SCROLL_DOWN_SLOT = new ChestSlot(0, 5);
-    private static final ChestSlot BOOKMARK_THIS_RECIPE_TOGGLE_SLOT = new ChestSlot(8, 2);
-    private static final ChestSlot BOOKMARK_LIST_SLOT = new ChestSlot(8, 3);
-    private static final ChestSlot BOOKMARK_SERVER_LIST_SLOT = new ChestSlot(8, 4);
-    private static final ChestSlot EXIT_SLOT = new ChestSlot(8, 5);
+    private static final ChestSlot QUICK_LINK_SLOT                    = new MaxChestSlot(0, 0);
+    private static final ChestSlot WORKBENCH_TYPE_SCROLL_LEFT_SLOT    = new MaxChestSlot(1, 0);
+    private static final ChestSlot WORKBENCH_TYPE_SCROLL_RIGHT_SLOT   = new MaxChestSlot(7, 0);
+    private static final ChestSlot INFO_SLOT                          = new MaxChestSlot(8, 0);
+    private static final ChestSlot WORKBENCH_VARIANT_SCROLL_UP_SLOT   = new MaxChestSlot(0, 1);
+    private static final ChestSlot WORKBENCH_VARIANT_SCROLL_DOWN_SLOT = new MaxChestSlot(0, 5);
+    private static final ChestSlot BOOKMARK_THIS_RECIPE_TOGGLE_SLOT   = new MaxChestSlot(8, 2);
+    private static final ChestSlot BOOKMARK_LIST_SLOT                 = new MaxChestSlot(8, 3);
+    private static final ChestSlot BOOKMARK_SERVER_LIST_SLOT          = new MaxChestSlot(8, 4);
+    private static final ChestSlot EXIT_SLOT                          = new MaxChestSlot(8, 5);
 
-    // private static final SlotRange<ChestSlot> WORKBENCH_SLOT_RANGE = new SlotRange<>(new ChestSlot(2, 0), new ChestSlot(6, 0));
-    // private static final SlotRange<ChestSlot> WORKBENCH_VARIANT_SLOT_RANGE = new SlotRange<>(new ChestSlot(0, 2), new ChestSlot(0, 4));
-    // private static final SlotRange<ChestSlot> RECIPE_VIEW_SLOT_RANGE = new SlotRange<>(new ChestSlot(1, 1), new ChestSlot(7, 5));
+    private static final SlotRange<ChestSlot> WORKBENCH_SLOT_RANGE         = new SlotRange<>(new MaxChestSlot(2, 0), new MaxChestSlot(6, 0));
+    private static final SlotRange<ChestSlot> WORKBENCH_VARIANT_SLOT_RANGE = new SlotRange<>(new MaxChestSlot(0, 2), new MaxChestSlot(0, 4));
+    private static final SlotRange<ChestSlot> RECIPE_VIEW_SLOT_RANGE       = new SlotRange<>(new MaxChestSlot(1, 1), new MaxChestSlot(7, 5));
 
     private GuiItem<RecipeMenu> quickLinkItem;
     private GuiItem<RecipeMenu> workbenchTypeScrollLeftItem;
@@ -40,9 +42,9 @@ public class RecipeMenu extends BaseGui<RecipeMenu> {
     private GuiItem<RecipeMenu> bookmarkServerListItem;
     private GuiItem<RecipeMenu> exitItem;
 
-    private final String bookmarkMessage = "Bookmark";
-    // private final String unbookmarkMessage = "Unbookmark";
-    private final String bookmarkLoreMessage = "Add this recipe to your bookmark";
+    private final String bookmarkMessage       = "Bookmark";
+    // private final String unbookmarkMessage     = "Unbookmark";
+    private final String bookmarkLoreMessage   = "Add this recipe to your bookmark";
     // private final String unbookmarkLoreMessage = "Remove this recipe from your bookmark";
 
     private final Style style;

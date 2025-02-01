@@ -1,9 +1,21 @@
-package me.qheilmann.vei.Core.Slot;
+package me.qheilmann.vei.Core.Slot.Collection;
 
 import java.util.Collection;
 import java.util.HashSet;
 
-public class SlotSet extends HashSet<Slot> {
+import javax.annotation.Nullable;
+
+import org.jspecify.annotations.NullMarked;
+
+import com.google.common.base.Preconditions;
+
+import me.qheilmann.vei.Core.Slot.Slot;
+
+/**
+ * A set of slots, there are no duplicates nor order
+ * A {@link HashSet} implementation of the {@link Slot} interface.
+ */
+public class SlotSet<T extends Slot<T>> extends HashSet<T> {
     /**
      * Constructs a new, empty slotSet; the backing {@code HashMap} instance
      * has default initial capacity (16) and load factor (0.75).
@@ -22,7 +34,7 @@ public class SlotSet extends HashSet<Slot> {
      * set
      * @throws NullPointerException if the specified collection is null
      */
-    public SlotSet(Collection<? extends Slot> slots) {
+    public SlotSet(Collection<? extends T> slots) {
         super(slots);
     }
 
@@ -57,5 +69,19 @@ public class SlotSet extends HashSet<Slot> {
      */
     public SlotSet(int initialCapacity) {
         super(initialCapacity);
+    }
+
+    /**
+     * Add a slot to the set, if the slot is null it will not be added
+     * 
+     * @param slot the slot to add
+     * @return true if the slot was added, false otherwise
+     */
+    @Override
+    public boolean add(@Nullable T slot) {
+        if(slot == null) {
+            return false;
+        }
+        return super.add(slot);
     }
 }
