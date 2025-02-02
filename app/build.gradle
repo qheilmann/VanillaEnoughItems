@@ -1,3 +1,9 @@
+// Gradle build script
+
+//----------------------------------------------
+// Gradle header
+//----------------------------------------------
+
 plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     id 'application'
@@ -41,56 +47,207 @@ application {
     mainClass = 'VanillaEnoughItems.App'
 }
 
-tasks.named('test') {
-    // Use JUnit Platform for unit tests.
-    useJUnitPlatform()
+// --------------------------------------------------
+// Pipeline definition
+// --------------------------------------------------
+
+tasks.register('SyncBuildCopyPipeline') {
+    dependsOn orderedPipeline([prepareVersion, syncFiles, buildJarShadow, copyToDevServer])
+    doLast {
+        println "Deployment pipeline completed!"
+    }
 }
 
-jar {
-    dependsOn "syncAll"
-    archiveBaseName.set(pluginNameShadowLess)
-    archiveVersion.set(pluginVersion)
-    archiveClassifier.set('')
+// --------------------------------------------------
+// Pipeline stages
+// --------------------------------------------------
+
+tasks.register('prepareVersion') {
+    dependsOn("setSnapshotVersion")
+    doLast {
+        println "Preparing version done"
+        println "Version: ${fullPluginVersion}"
+    }
 }
 
-shadowJar {
-    dependsOn "syncAll"
-    archiveBaseName.set(pluginName)
-    archiveVersion.set(pluginVersion)
-    archiveClassifier.set('')
-    relocate("dev.jorel.commandapi", "me.qheilmann.VanillaEnoughItems.commandapi")
-    relocate("dev.triumphteam.gui", "com.qheilmann.myMenu.gui")
+tasks.register('syncFiles') {
+    dependsOn("syncPaperPluginYml", "syncVSCodeSettingsJson")
+    doLast {
+        println "+syncPaperPluginYml"
+        println "+syncVSCodeSettingsJson"
+        println "Syncing files done"
+    }
 }
 
+tasks.register('buildJarShadow') {
+    dependsOn("shadowJar")
+    doLast {
+        println "shadowJar built successfully!"
+    }
+}
+
+tasks.register('buildJarShadowLess') {
+    dependsOn("jar")
+    doLast {
+        println "Jar built successfully!"
+    }
+}
+
+tasks.register('tests') {
+    dependsOn("test")
+    doLast {
+        println "Tests done"
+    }
+}
+
+tasks.register('docs') {
+    doLast {
+        println "Generating documentation done"
+    }
+}
+
+tasks.register('deployDev') {
+    dependsOn("copyToDevServer")
+    doLast {
+        println "Copying files to the server done"
+    }
+}
+
+// --------------------------------------------------
+// Helper function
+// --------------------------------------------------
+
+def orderedPipeline(taskList) {
+    for (int i = 0; i < taskList.size() - 1; i++) {
+        taskList[i + 1].mustRunAfter(taskList[i])
+    }
+    return taskList
+}
+
+// --------------------------------------------------
+// Pipeline sub tasks
+// --------------------------------------------------
 def syncWarningComment = " This will be updated by the Gradle task; modify in the gradle.properties file if changes are needed."
 
-task syncAll {
-    dependsOn "syncPaperPluginYml", "syncVSCodeSettingsJson"
+ext {
+    fullPluginVersion = "undefined"
 }
 
-task syncPaperPluginYml {
+tasks.register('setSnapshotVersion') {
+    doLast {
+        // def currentDate = new Date().format("yyyyMMdd.HHmmss")
+        // fullPluginVersion = "${pluginVersion}-snapshot.${currentDate}"
+        fullPluginVersion = "${pluginVersion}-snapshot"
+        println "Snapshot version set to ${fullPluginVersion}"
+    }
+}
+
+tasks.register('syncPaperPluginYml') {
+    dependsOn("setSnapshotVersion")
     doLast {
         def paperPluginFile = file('src/main/resources/paper-plugin.yml')
         def content = paperPluginFile.text
         content = content.replaceAll(/api-version: .* # \(a2cf\) .*/, 
                                      "api-version: ${paperApiVersionShort} # (a2cf) ${syncWarningComment}")
         content = content.replaceAll(/version: .* # \(9cb5\) .*/,
-                                     "version: ${pluginVersion} # (9cb5) ${syncWarningComment}")
+                                     "version: ${fullPluginVersion} # (9cb5) ${syncWarningComment}")
         paperPluginFile.text = content
     }
 }
 
-task syncVSCodeSettingsJson {
+tasks.register('syncVSCodeSettingsJson') {
+    dependsOn("setSnapshotVersion")
     doLast {
         def settingsFile = file('../.vscode/settings.json')
         def content = settingsFile.text
         content = content.replaceAll(/"pluginNameShadowLess": ".*", \/\/ \(ea92\) .*/, 
                                     "\"pluginNameShadowLess\": \"${pluginNameShadowLess}\", // (ea92) ${syncWarningComment}")
         content = content.replaceAll(/"pluginName": ".*", \/\/ \(bbda\) .*/, 
-                                    "\"pluginName\": \"${pluginName}\", // (bbda) ${syncWarningComment}")
+                                    "\"pluginName\": \"${pluginNameShadow}\", // (bbda) ${syncWarningComment}")
         content = content.replaceAll(/"pluginVersion": ".*", \/\/ \(0dca\) .*/, 
-                                    "\"pluginVersion\": \"${pluginVersion}\", // (0dca) ${syncWarningComment}")
+                                    "\"pluginVersion\": \"${fullPluginVersion}\", // (0dca) ${syncWarningComment}")
         settingsFile.text = content
     }
 }
 
+jar {
+    dependsOn("setSnapshotVersion")
+
+    doFirst {
+        println "Building Jar..."
+        archiveBaseName.set(pluginNameShadowLess)
+        archiveVersion.set(fullPluginVersion)
+        archiveClassifier.set('')
+    }
+    
+    doLast {
+        println "Jar built ${archiveBaseName.get()}-${archiveVersion.get()}.jar"
+    }
+}
+
+shadowJar {
+    dependsOn("setSnapshotVersion")
+
+    doFirst {
+        println "Building ShadowJar..."
+        archiveBaseName.set(pluginNameShadow)
+        archiveVersion.set(fullPluginVersion)
+        archiveClassifier.set('')
+    }
+
+    relocate("dev.jorel.commandapi", "me.qheilmann.VanillaEnoughItems.commandapi")
+    relocate("dev.triumphteam.gui", "com.qheilmann.myMenu.gui")
+
+    doLast {
+        println "ShadowJar built ${archiveBaseName.get()}-${archiveVersion.get()}.jar"
+    }
+}
+
+tasks.named('test') {
+    // Use JUnit Platform for unit tests.
+    useJUnitPlatform()
+}
+
+tasks.register('copyToDevServer') {
+    dependsOn("cleanFilesWithPrefix", "buildJarShadow")
+    doLast {
+        println "Copying files to the server..."
+
+        def jarFileName = "${pluginNameShadow}-${fullPluginVersion}.jar"
+        def serverPluginFolderPathLocal = "..\\${serverPluginFolderPath}" // Go to the git repository root
+        serverPluginFolderPathLocal = serverPluginFolderPathLocal.replace("/", File.separator)
+        serverPluginFolderPathLocal = serverPluginFolderPathLocal.replace("\\", File.separator)
+        def absolutePath = file(serverPluginFolderPathLocal).absolutePath
+
+        copy {
+            from("$buildDir/libs/${jarFileName}")  // Copy the target JAR
+            into(absolutePath) // Destination folder
+        }
+        println "Copied ${jarFileName} to ${absolutePath}"
+    }
+}
+
+tasks.register('cleanFilesWithPrefix') {
+    doLast {
+        println "Deleting files with prefix VanillaEnoughItems-..."
+
+        def serverPluginFolderPathLocal = "..\\${serverPluginFolderPath}" // Go to the git repository root
+        serverPluginFolderPathLocal = serverPluginFolderPathLocal.replace("/", File.separator)
+        serverPluginFolderPathLocal = serverPluginFolderPathLocal.replace("\\", File.separator)
+        def absolutePath = file(serverPluginFolderPathLocal).absolutePath
+
+        def dir = file(absolutePath)
+        def prefix = "VanillaEnoughItems-"
+        dir.eachFile { file ->
+            if (file.name.startsWith(prefix)) {
+                file.delete() // The file currently being used cannot be deleted (like the current plugin version used by the server)
+                println "Deleted ${file.name}"
+            }
+        }
+        println "Deletion completed."
+    }
+}
+
+// TODO
+// when developing, use the snapshot-date version and place it inside update folder (so next restart it's updated)
+//          but an the meantime, retreive the current version from the server and override it

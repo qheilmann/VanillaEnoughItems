@@ -3,4 +3,4 @@ description: This is like NEI, JEI or REI but for a Minecraft server side only e
 main: me.qheilmann.vei.VanillaEnoughItems
 author: qheilmann
 api-version: 1.21 # (a2cf)  This will be updated by the Gradle task; modify in the gradle.properties file if changes are needed.
-version: 0.0.4 # (9cb5)  This will be updated by the Gradle task; modify in the gradle.properties file if changes are needed.
+version: 0.0.4-snapshot # (9cb5)  This will be updated by the Gradle task; modify in the gradle.properties file if changes are needed.
