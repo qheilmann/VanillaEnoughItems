@@ -1,46 +1,43 @@
 package me.qheilmann.vei.Core.Slot.Collection;
 
-import java.util.ArrayList;
 import java.util.Collection;
-
+import java.util.LinkedHashSet;
 import org.jetbrains.annotations.NotNull;
 
 import me.qheilmann.vei.Core.Slot.Slot;
+import me.qheilmann.vei.Core.Utils.NotNullSequenceSet;
 
 /**
- * A sequence of slots.
- * <p>
- * Note: this is for the moment a dummy class exactly like ArrayList<T>
- * @param <T> the type of slots in this sequence
+ * A specialized set implementation for managing Slot objects.
+ * This class ensures no duplicate elements, as defined by the
+ * {@link Slot#equals(Object)} method, and guarantees that no null elements
+ * are added. Unlike {@link SlotSet}, this class maintains the order of
+ * elements as they were added.
+ *
+ * @param <T> the type of Slot elements maintained by this set
+ * @see SlotSet
  */
-public class SlotSequence<T extends Slot<T>> extends ArrayList<Slot<T>> {
-    /**
-     * Constructs an empty list with the specified initial capacity.
-     *
-     * @param  initialCapacity  the initial capacity of the list
-     * @throws IllegalArgumentException if the specified initial capacity
-     *         is negative
-     */
-    public SlotSequence(int initialCapacity) {
-        super(initialCapacity);
-    }
+public class SlotSequence<T extends Slot<T>> extends NotNullSequenceSet<T> {
 
     /**
-     * Constructs an empty list with an initial capacity of ten.
+     * Constructs a new, empty SlotSequence. The backing {@code LinkedHashSet}
+     * instance has default initial capacity (16) and load factor (0.75).
      */
     public SlotSequence() {
-        super();
+        super(new LinkedHashSet<T>());
     }
 
     /**
-     * Constructs a list containing the elements of the specified
-     * collection, in the order they are returned by the collection's
-     * iterator.
+     * Constructs a new SlotSequence containing the elements in the specified
+     * collection. The {@code LinkedHashSet} is created with default load factor
+     * (0.75) and an initial capacity sufficient to contain the elements in
+     * the specified collection.
      *
-     * @param slots the collection whose elements are to be placed into this list
-     * @throws NullPointerException if the specified collection is null
+     * @param slots the collection whose elements are to be placed into this set
+     * @throws NullPointerException if the specified collection is null or 
+     * contains null elements
      */
-    public SlotSequence(@NotNull Collection<? extends Slot<T>> slots) {
-        super(slots);
+    public SlotSequence(@NotNull Collection<? extends T> slots) {
+        super(new LinkedHashSet<T>(), slots);
     }
 }
