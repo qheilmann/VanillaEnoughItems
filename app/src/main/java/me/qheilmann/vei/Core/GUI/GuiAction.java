@@ -4,7 +4,7 @@ import org.bukkit.event.Event;
 import org.jetbrains.annotations.NotNull;
 
 @FunctionalInterface
-public interface GuiAction<E extends Event, G extends BaseGui<G>> {
+public interface GuiAction<E extends Event, G extends BaseGui<G, ?>> {
     
     /*
      * Executes the action.

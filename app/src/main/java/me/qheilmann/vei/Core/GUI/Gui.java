@@ -12,9 +12,11 @@ import org.jetbrains.annotations.NotNull;
 
 import dev.triumphteam.gui.components.GuiType;
 import dev.triumphteam.gui.components.InteractionModifier;
+import me.qheilmann.vei.Core.Slot.Collection.SlotSet;
+import me.qheilmann.vei.Core.Slot.Implementation.ChestSlot;
 import net.kyori.adventure.text.Component;
 
-public class Gui extends BaseGui<Gui> {
+public class Gui extends BaseGui<Gui, ChestSlot> { // TODO this Gui is a chestGui for now (one ctor use number of row)
     public GuiItem<Gui> lapizGui = new GuiItem<>(Material.LAPIS_BLOCK);
 
     /**
@@ -40,27 +42,22 @@ public class Gui extends BaseGui<Gui> {
     }
 
     @Override
-    public void setItem(final int slot, @Nullable final GuiItem<Gui> guiItem) {
+    public void setItem(final ChestSlot slot, @Nullable final GuiItem<Gui> guiItem) {
         super.setItem(slot, guiItem);
     }
 
     @Override
-    public void setItem(@NotNull final List<@NotNull Integer> slots, @NotNull final GuiItem<Gui> guiItem) {
+    public void setItem(@NotNull final SlotSet<ChestSlot> slots, @NotNull final GuiItem<Gui> guiItem) {
         super.setItem(slots, guiItem);
     }
 
     @Override
-    public void setItem(final int row, final int col, @Nullable final GuiItem<Gui> guiItem) {
-        super.setItem(row, col, guiItem);
-    }
-
-    @Override
-    public final @NotNull HashMap<Integer, @NotNull ItemStack> addItem(@NotNull final List<@NotNull GuiItem<Gui>> items) {
+    public final @NotNull HashMap<Integer, @NotNull ItemStack> addItem(@NotNull final List<GuiItem<Gui>> items) {
         return super.addItem(items);
     }
 
     @Override
-    public final @NotNull HashMap<Integer, @NotNull ItemStack> removeItem(@NotNull final List<@NotNull GuiItem<Gui>> items) {
+    public final @NotNull HashMap<Integer, @NotNull ItemStack> removeItem(@NotNull final List<GuiItem<Gui>> items) {
         return super.removeItem(items);
     }
 }

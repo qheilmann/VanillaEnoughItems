@@ -15,6 +15,7 @@ import dev.triumphteam.gui.components.InteractionModifier;
 import me.qheilmann.vei.Core.GUI.Gui;
 import me.qheilmann.vei.Core.GUI.GuiItem;
 import me.qheilmann.vei.Core.Menu.TestMenu;
+import me.qheilmann.vei.Core.Slot.Implementation.ChestSlot;
 import net.kyori.adventure.text.Component;
 
 public class TestCommand implements ICommand{
@@ -89,7 +90,7 @@ public class TestCommand implements ICommand{
             int randomStack = 1 + (int) (Math.random() * 64);
             ItemStack item = new ItemStack(Material.GOLD_INGOT, randomStack);
             GuiItem<Gui> gold = new GuiItem<>(item);
-            contextGui.setItem(2, 1, gold);
+            contextGui.setItem(new ChestSlot(2, 1, 6), gold);
         });
 
         GuiItem<Gui> emerald = new GuiItem<>(Material.EMERALD);
@@ -122,13 +123,13 @@ public class TestCommand implements ICommand{
             contextGui.addItem(List.of(contextGui.lapizGui)); // work only because lapizGui is inside the Gui class
         });
         
-        gui.setItem(0, 0, diams);
-        gui.setItem(1, 0, redstoneDust);
-        gui.setItem(2, 0, lapiz);
-        gui.setItem(3, 0, emerald);
-        gui.setItem(4, 0, coal);
-        gui.setItem(5, 0, iron);
-        gui.setItem(5, 1, ironBlock);
+        gui.setItem(new ChestSlot(0, 0, 6), diams);
+        gui.setItem(new ChestSlot(1, 0, 6), redstoneDust);
+        gui.setItem(new ChestSlot(2, 0, 6), lapiz);
+        gui.setItem(new ChestSlot(3, 0, 6), emerald);
+        gui.setItem(new ChestSlot(4, 0, 6), coal);
+        gui.setItem(new ChestSlot(5, 0, 6), iron);
+        gui.setItem(new ChestSlot(5, 1, 6), ironBlock);
 
         gui.open(player);
         player.sendMessage("Test command executed");

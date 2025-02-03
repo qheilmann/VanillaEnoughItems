@@ -5,6 +5,8 @@ import java.util.List;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.material.Chest;
+
 import dev.triumphteam.gui.components.InteractionModifier;
 import me.qheilmann.vei.Core.GUI.BaseGui;
 import me.qheilmann.vei.Core.GUI.GuiItem;
@@ -15,7 +17,7 @@ import me.qheilmann.vei.Core.Style.ButtonType.VeiButtonType;
 import me.qheilmann.vei.Core.Style.Styles.Style;
 import net.kyori.adventure.text.Component;
 
-public class RecipeMenu extends BaseGui<RecipeMenu> {
+public class RecipeMenu extends BaseGui<RecipeMenu, ChestSlot> { // TODO DONT WORK WITH MAXCHEST SLOT
     private static final ChestSlot QUICK_LINK_SLOT                    = new MaxChestSlot(0, 0);
     private static final ChestSlot WORKBENCH_TYPE_SCROLL_LEFT_SLOT    = new MaxChestSlot(1, 0);
     private static final ChestSlot WORKBENCH_TYPE_SCROLL_RIGHT_SLOT   = new MaxChestSlot(7, 0);
@@ -83,7 +85,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu> {
             Component.text("/recipe <myRecipe> <category>").color(style.getSecondaryColor())
         )));
         quickLinkItem.setAction(this::quickLinkAction);
-        setItem(QUICK_LINK_SLOT.getIndex(), quickLinkItem);
+        setItem(QUICK_LINK_SLOT, quickLinkItem);
     }
 
     private void setupWorkbenchTypeScrollLeftButton() {
@@ -95,7 +97,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu> {
             Component.text("See previous workbench type").color(style.getSecondaryColor())
         )));
         workbenchTypeScrollLeftItem.setAction(this::workbenchTypeScrollLeftAction);
-        setItem(WORKBENCH_TYPE_SCROLL_LEFT_SLOT.getIndex(), workbenchTypeScrollLeftItem);
+        setItem(WORKBENCH_TYPE_SCROLL_LEFT_SLOT, workbenchTypeScrollLeftItem);
     }
 
     private void setupScrollRightForWorkbenchType() {
@@ -107,7 +109,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu> {
             Component.text("See next workbench type").color(style.getSecondaryColor())
         )));
         workbenchTypeScrollRightItem.setAction(this::workbenchTypeScrollRightAction);
-        setItem(WORKBENCH_TYPE_SCROLL_RIGHT_SLOT.getIndex(), workbenchTypeScrollRightItem);
+        setItem(WORKBENCH_TYPE_SCROLL_RIGHT_SLOT, workbenchTypeScrollRightItem);
     }
 
     private void setupInfoButton() {
@@ -119,7 +121,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu> {
             Component.text("See VEI info").color(style.getSecondaryColor())
         )));
         infoItem.setAction(this::infoAction);
-        setItem(INFO_SLOT.getIndex(), infoItem);
+        setItem(INFO_SLOT, infoItem);
     }
 
     private void setupWorkbenchVariantScrollUpControl() {
@@ -131,7 +133,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu> {
             Component.text("See previous workbench variant").color(style.getSecondaryColor())
         )));
         workbenchVariantScrollUpItem.setAction(this::workbenchVariantScrollUpAction);
-        setItem(WORKBENCH_VARIANT_SCROLL_UP_SLOT.getIndex(), workbenchVariantScrollUpItem);
+        setItem(WORKBENCH_VARIANT_SCROLL_UP_SLOT, workbenchVariantScrollUpItem);
     }
 
     private void setupWorkbenchVariantScrollDownAction() {
@@ -143,7 +145,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu> {
             Component.text("See next workbench variant").color(style.getSecondaryColor())
         )));
         workbenchVariantScrollDownItem.setAction(this::workbenchVariantScrollDownAction);
-        setItem(WORKBENCH_VARIANT_SCROLL_DOWN_SLOT.getIndex(), workbenchVariantScrollDownItem);
+        setItem(WORKBENCH_VARIANT_SCROLL_DOWN_SLOT, workbenchVariantScrollDownItem);
     }
 
     private void setupBookmarkRecipeToggleItem() {
@@ -155,7 +157,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu> {
             List.of(Component.text(bookmarkLoreMessage).color(style.getSecondaryColor())
         )));
         bookmarkThisRecipeItemToggle.setAction(this::bookmarkRecipeToggleAction);
-        setItem(BOOKMARK_THIS_RECIPE_TOGGLE_SLOT.getIndex(), bookmarkThisRecipeItemToggle);
+        setItem(BOOKMARK_THIS_RECIPE_TOGGLE_SLOT, bookmarkThisRecipeItemToggle);
     }
 
     private void setupBookmarkListGuiItem() {
@@ -167,7 +169,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu> {
             Component.text("See your bookmarked recipes").color(style.getSecondaryColor())
         )));
         bookmarkListItem.setAction(this::bookmarkListAction);
-        setItem(BOOKMARK_LIST_SLOT.getIndex(), bookmarkListItem);
+        setItem(BOOKMARK_LIST_SLOT, bookmarkListItem);
     }
 
     private void setupBookmarkServerListItem() {
@@ -179,7 +181,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu> {
             Component.text("See the server bookmarked recipes").color(style.getSecondaryColor())
         )));
         bookmarkServerListItem.setAction(this::bookmarkServerListAction);
-        setItem(BOOKMARK_SERVER_LIST_SLOT.getIndex(), bookmarkServerListItem);
+        setItem(BOOKMARK_SERVER_LIST_SLOT, bookmarkServerListItem);
     }
 
     private void setupExitButton() {
@@ -191,7 +193,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu> {
             Component.text("Exit the recipe menu").color(style.getSecondaryColor())
         )));
         exitItem.setAction(this::exitAction);
-        setItem(EXIT_SLOT.getIndex(), exitItem);
+        setItem(EXIT_SLOT, exitItem);
     }
     
     //#endregion Button setup
@@ -247,6 +249,6 @@ public class RecipeMenu extends BaseGui<RecipeMenu> {
         meta.setMaxStackSize(1);
         meta.setHideTooltip(true);
         padding.setItemMeta(meta);
-        this.getFiller().fill(padding);
+        // this.getFiller().fill(padding); // TODO old filler
     }
 }

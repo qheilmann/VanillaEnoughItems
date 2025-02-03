@@ -3,6 +3,7 @@ package me.qheilmann.vei.Core.Menu;
 import dev.triumphteam.gui.components.InteractionModifier;
 import me.qheilmann.vei.Core.GUI.BaseGui;
 import me.qheilmann.vei.Core.GUI.GuiItem;
+import me.qheilmann.vei.Core.Slot.Implementation.ChestSlot;
 import net.kyori.adventure.text.Component;
 
 import java.util.HashMap;
@@ -13,7 +14,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
-public class TestMenu extends BaseGui<TestMenu> {
+public class TestMenu extends BaseGui<TestMenu, ChestSlot> { // TODO check pk le MaxChestSlot marche pas
 
     private GuiItem<TestMenu> goldBlock;
     private GuiItem<TestMenu> ironBlock;
@@ -57,7 +58,7 @@ public class TestMenu extends BaseGui<TestMenu> {
         });
 
         // Example Slot action
-        this.setSlotAction(5,8, (event, context) -> {
+        this.setSlotAction(new ChestSlot(5, 8, 6), (event, context) -> {
             context.getInventory().clear(); // Clear the inventory if clicked on the last slot
         });
 
@@ -95,7 +96,7 @@ public class TestMenu extends BaseGui<TestMenu> {
         lapisBlock.lore(List.of(Component.text("Click me to add a lapis block here")));
         lapisBlock.setAction(this::handleLapisBlockClick);
 
-        setItem(0, 5, lapisBlock);
+    setItem(new ChestSlot(0, 5, 6), lapisBlock);
     }
 
     @Override

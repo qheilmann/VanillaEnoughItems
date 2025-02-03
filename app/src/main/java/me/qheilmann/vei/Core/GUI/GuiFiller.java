@@ -23,220 +23,228 @@
  */
 package me.qheilmann.vei.Core.GUI;
 
-import org.jetbrains.annotations.NotNull;
-
-import dev.triumphteam.gui.components.GuiType;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import me.qheilmann.vei.Core.Slot.GridSlot;
 
 /*
  * 
  * @author Most original part come from Triumph GUI <a href="https://github.com/TriumphTeam/triumph-gui">TriumphTeam</a>
  */
-public final class GuiFiller<G extends BaseGui<G>> {
+public final class GuiFiller<G extends BaseGui<G, S>, S extends GridSlot<S>> {
 
-    private final BaseGui<G> gui;
+    private final BaseGui<G, S> gui;
 
-    public GuiFiller(final BaseGui<G> gui) {
+    public GuiFiller(final BaseGui<G, S> gui) {
         this.gui = gui;
     }
 
-    /**
-     * Fills top portion of the GUI
-     *
-     * @param guiItem GuiItem
-     */
-    public void fillTop(@NotNull final GuiItem<G> guiItem) {
-        fillTop(Collections.singletonList(guiItem));
-    }
 
-    /**
-     * Fills top portion of the GUI with alternation
-     *
-     * @param guiItems List of GuiItems
-     */
-    public void fillTop(@NotNull final List<GuiItem<G>> guiItems) {
-        final List<GuiItem<G>> items = repeatList(guiItems);
-        for (int i = 0; i < 9; i++) {
-            if (!gui.getGuiItems().containsKey(i)) gui.setItem(i, items.get(i));
-        }
-    }
 
-    /**
-     * Fills bottom portion of the GUI
-     *
-     * @param guiItem GuiItem
-     */
-    public void fillBottom(@NotNull final GuiItem<G> guiItem) {
-        fillBottom(Collections.singletonList(guiItem));
-    }
+    // TODO this need to be reworked, with the new GridSlot system
 
-    /**
-     * Fills bottom portion of the GUI with alternation
-     *
-     * @param guiItems GuiItem
-     */
-    public void fillBottom(@NotNull final List<GuiItem<G>> guiItems) {
-        final int rows = gui.getRows();
-        final List<GuiItem<G>> items = repeatList(guiItems);
-        for (int i = 9; i > 0; i--) {
-            if (gui.getGuiItems().get((rows * 9) - i) == null) {
-                gui.setItem((rows * 9) - i, items.get(i));
-            }
-        }
-    }
 
-    /**
-     * Fills the outside section of the GUI with a GuiItem
-     *
-     * @param guiItem GuiItem
-     */
-    public void fillBorder(@NotNull final GuiItem<G> guiItem) {
-        fillBorder(Collections.singletonList(guiItem));
-    }
 
-    /**
-     * Fill empty slots with Multiple GuiItems, goes through list and starts again
-     *
-     * @param guiItems GuiItem
-     */
-    public void fillBorder(@NotNull final List<GuiItem<G>> guiItems) {
-        final int rows = gui.getRows();
-        if (rows <= 2) return;
+    // /**
+    //  * Fills top portion of the GUI
+    //  *
+    //  * @param guiItem GuiItem
+    //  */
+    // public void fillTop(@NotNull final GuiItem<G> guiItem, @NotNull Supplier<S> specifiqueSlotSupplier) {
+    //     fillTop(Collections.singletonList(guiItem), specifiqueSlotSupplier);
+    // }
 
-        final List<GuiItem<G>> items = repeatList(guiItems);
+    // /**
+    //  * Fills top portion of the GUI with alternation
+    //  *
+    //  * @param guiItems List of GuiItems
+    //  */
+    // public void fillTop(@NotNull final List<GuiItem<G>> guiItems, @NotNull Supplier<S> specifiqueSlotSupplier) {
+    //     final List<GuiItem<G>> items = repeatList(guiItems);
+    //     SlotRange<S> bottomRowSlots = GridSlot.getTopRow(specifiqueSlotSupplier);
+    //     int i = 0;
+    //     for (S slot : bottomRowSlots) {
+    //         int slotIndex = slot.getIndex();
+    //         if (gui.getGuiItems().get(slotIndex) == null) {
+    //             gui.setItem(slot, items.get(i));
+    //         }
+    //         i++;
+    //     }
+    // }
 
-        for (int i = 0; i < rows * 9; i++) {
-            if ((i <= 8)
-                    || (i >= (rows * 9) - 8) && (i <= (rows * 9) - 2)
-                    || i % 9 == 0
-                    || i % 9 == 8)
-                gui.setItem(i, items.get(i));
+    // /**
+    //  * Fills bottom portion of the GUI
+    //  *
+    //  * @param guiItem GuiItem
+    //  */
+    // public void fillBottom(@NotNull final GuiItem<G> guiItem, @NotNull Supplier<S> specifiqueSlotSupplier) {
+    //     fillBottom(Collections.singletonList(guiItem), specifiqueSlotSupplier);
+    // }
 
-        }
-    }
+    // /**
+    //  * Fills bottom portion of the GUI with alternation
+    //  *
+    //  * @param guiItems GuiItem
+    //  */
+    // public void fillBottom(@NotNull final List<GuiItem<G>> guiItems, @NotNull Supplier<S> specifiqueSlotSupplier) {
+    //     final List<GuiItem<G>> items = repeatList(guiItems);
+    //     SlotRange<S> bottomRowSlots = GridSlot.getBottomRow(specifiqueSlotSupplier);
+    //     int i = 0;
+    //     for (S slot : bottomRowSlots) {
+    //         if (gui.getGuiItem(slot) == null) {
+    //             gui.setItem(slot, items.get(i)); // TODO warning here it will replace the item in the slot who are not GuiItem
+    //         }
+    //         i++;
+    //     }
+    // }
 
-    /**
-     * Fills rectangle from points within the GUI
-     *
-     * @param rowFrom Row point 1
-     * @param colFrom Col point 1
-     * @param rowTo   Row point 2
-     * @param colTo   Col point 2
-     * @param guiItem Item to fill with
-     * @author Harolds
-     */
-    public void fillBetweenPoints(final int rowFrom, final int colFrom, final int rowTo, final int colTo, @NotNull final GuiItem<G> guiItem) {
-        fillBetweenPoints(rowFrom, colFrom, rowTo, colTo, Collections.singletonList(guiItem));
-    }
+    // /**
+    //  * Fills the outside section of the GUI with a GuiItem
+    //  *
+    //  * @param guiItem GuiItem
+    //  */
+    // public void fillBorder(@NotNull final GuiItem<G> guiItem) {
+    //     fillBorder(Collections.singletonList(guiItem));
+    // }
 
-    /**
-     * Fills rectangle from points within the GUI
-     *
-     * @param rowFrom  Row point 1
-     * @param colFrom  Col point 1
-     * @param rowTo    Row point 2
-     * @param colTo    Col point 2
-     * @param guiItems Item to fill with
-     * @author Harolds
-     */
-    public void fillBetweenPoints(final int rowFrom, final int colFrom, final int rowTo, final int colTo, @NotNull final List<GuiItem<G>> guiItems) {
-        final int minRow = Math.min(rowFrom, rowTo);
-        final int maxRow = Math.max(rowFrom, rowTo);
-        final int minCol = Math.min(colFrom, colTo);
-        final int maxCol = Math.max(colFrom, colTo);
+    // /**
+    //  * Fill empty slots with Multiple GuiItems, goes through list and starts again
+    //  *
+    //  * @param guiItems GuiItem
+    //  */
+    // public void fillBorder(@NotNull final List<GuiItem<G>> guiItems) {
+    //     final int rows = gui.getRows();
+    //     if (rows <= 2) return;
 
-        final int rows = gui.getRows();
-        final List<GuiItem<G>> items = repeatList(guiItems);
+    //     final List<GuiItem<G>> items = repeatList(guiItems);
 
-        for (int row = 1; row <= rows; row++) {
-            for (int col = 1; col <= 9; col++) {
-                final int slot = getSlotFromRowCol(row, col);
-                if (!((row >= minRow && row <= maxRow) && (col >= minCol && col <= maxCol)))
-                    continue;
+    //     for (int i = 0; i < rows * 9; i++) {
+    //         if ((i <= 8)
+    //                 || (i >= (rows * 9) - 8) && (i <= (rows * 9) - 2)
+    //                 || i % 9 == 0
+    //                 || i % 9 == 8)
+    //             gui.setItem(i, items.get(i));
 
-                gui.setItem(slot, items.get(slot));
-            }
-        }
-    }
+    //     }
+    // }
 
-    /**
-     * Sets an GuiItem to fill up the entire inventory where there is no other item
-     *
-     * @param guiItem The item to use as fill
-     */
-    public void fill(@NotNull final GuiItem<G> guiItem) {
-        fill(Collections.singletonList(guiItem));
-    }
+    // /**
+    //  * Fills rectangle from points within the GUI
+    //  *
+    //  * @param rowFrom Row point 1
+    //  * @param colFrom Col point 1
+    //  * @param rowTo   Row point 2
+    //  * @param colTo   Col point 2
+    //  * @param guiItem Item to fill with
+    //  * @author Harolds
+    //  */
+    // public void fillBetweenPoints(final int rowFrom, final int colFrom, final int rowTo, final int colTo, @NotNull final GuiItem<G, S> guiItem) {
+    //     fillBetweenPoints(rowFrom, colFrom, rowTo, colTo, Collections.singletonList(guiItem));
+    // }
 
-    /**
-     * Fill empty slots with Multiple GuiItems, goes through list and starts again
-     *
-     * @param guiItems GuiItem
-     */
-    public void fill(@NotNull final List<GuiItem<G>> guiItems) {
+    // /**
+    //  * Fills rectangle from points within the GUI
+    //  *
+    //  * @param rowFrom  Row point 1
+    //  * @param colFrom  Col point 1
+    //  * @param rowTo    Row point 2
+    //  * @param colTo    Col point 2
+    //  * @param guiItems Item to fill with
+    //  * @author Harolds
+    //  */
+    // public void fillBetweenPoints(final int rowFrom, final int colFrom, final int rowTo, final int colTo, @NotNull final List<GuiItem<G, S>> guiItems) {
+    //     final int minRow = Math.min(rowFrom, rowTo);
+    //     final int maxRow = Math.max(rowFrom, rowTo);
+    //     final int minCol = Math.min(colFrom, colTo);
+    //     final int maxCol = Math.max(colFrom, colTo);
 
-        final GuiType type = gui.guiType();
+    //     final int rows = gui.getRows();
+    //     final List<GuiItem<G>> items = repeatList(guiItems);
 
-        final int fill;
-        if (type == GuiType.CHEST) {
-            fill = gui.getRows() * type.getLimit();
-        } else {
-            fill = type.getLimit();
-        }
+    //     for (int row = 1; row <= rows; row++) {
+    //         for (int col = 1; col <= 9; col++) {
+    //             final int slot = getSlotFromRowCol(row, col);
+    //             if (!((row >= minRow && row <= maxRow) && (col >= minCol && col <= maxCol)))
+    //                 continue;
 
-        final List<GuiItem<G>> items = repeatList(guiItems);
-        for (int i = 0; i < fill; i++) {
-            if (gui.getGuiItems().get(i) == null) gui.setItem(i, items.get(i));
-        }
-    }
+    //             gui.setItem(slot, items.get(slot));
+    //         }
+    //     }
+    // }
 
-    /**
-     * Fills specified side of the GUI with a GuiItem
-     *
-     * @param guiItems GuiItem
-     */
-    public void fillSide(@NotNull final Side side, @NotNull final List<GuiItem<G>> guiItems) {
-        switch (side) {
-            case LEFT:
-                this.fillBetweenPoints(1, 1, gui.getRows(), 1, guiItems);
-            case RIGHT:
-                this.fillBetweenPoints(1, 9, gui.getRows(), 9, guiItems);
-            case BOTH:
-                this.fillBetweenPoints(1, 1, gui.getRows(), 1, guiItems);
-                this.fillBetweenPoints(1, 9, gui.getRows(), 9, guiItems);
-        }
-    }
+    // /**
+    //  * Sets an GuiItem to fill up the entire inventory where there is no other item
+    //  *
+    //  * @param guiItem The item to use as fill
+    //  */
+    // public void fill(@NotNull final GuiItem<G> guiItem) {
+    //     fill(Collections.singletonList(guiItem));
+    // }
 
-    /**
-     * Repeats a list of items. Allows for alternating items
-     * Stores references to existing objects -> Does not create new objects
-     *
-     * @param guiItems List of items to repeat
-     * @return New list
-     */
-    private List<GuiItem<G>> repeatList(@NotNull final List<GuiItem<G>> guiItems) {
-        final List<GuiItem<G>> repeated = new ArrayList<>();
-        Collections.nCopies(gui.getRows() * 9, guiItems).forEach(repeated::addAll);
-        return repeated;
-    }
+    // /**
+    //  * Fill empty slots with Multiple GuiItems, goes through list and starts again
+    //  *
+    //  * @param guiItems GuiItem
+    //  */
+    // public void fill(@NotNull final List<GuiItem<G>> guiItems) {
 
-    /**
-     * Gets the slot from the row and col passed
-     *
-     * @param row The row
-     * @param col The col
-     * @return The new slot
-     */
-    private int getSlotFromRowCol(final int row, final int col) {
-        return (col + (row - 1) * 9) - 1;
-    }
+    //     final GuiType type = gui.guiType();
 
-    public enum Side {
-        LEFT,
-        RIGHT,
-        BOTH
-    }
+    //     final int fill;
+    //     if (type == GuiType.CHEST) {
+    //         fill = gui.getRows() * type.getLimit();
+    //     } else {
+    //         fill = type.getLimit();
+    //     }
+
+    //     final List<GuiItem<G>> items = repeatList(guiItems);
+    //     for (int i = 0; i < fill; i++) {
+    //         if (gui.getGuiItems().get(i) == null) gui.setItem(i, items.get(i));
+    //     }
+    // }
+
+    // /**
+    //  * Fills specified side of the GUI with a GuiItem
+    //  *
+    //  * @param guiItems GuiItem
+    //  */
+    // public void fillSide(@NotNull final Side side, @NotNull final List<GuiItem<G>> guiItems) {
+    //     switch (side) {
+    //         case LEFT:
+    //             this.fillBetweenPoints(1, 1, gui.getRows(), 1, guiItems);
+    //         case RIGHT:
+    //             this.fillBetweenPoints(1, 9, gui.getRows(), 9, guiItems);
+    //         case BOTH:
+    //             this.fillBetweenPoints(1, 1, gui.getRows(), 1, guiItems);
+    //             this.fillBetweenPoints(1, 9, gui.getRows(), 9, guiItems);
+    //     }
+    // }
+
+    // /**
+    //  * Repeats a list of items. Allows for alternating items
+    //  * Stores references to existing objects -> Does not create new objects
+    //  *
+    //  * @param guiItems List of items to repeat
+    //  * @return New list
+    //  */
+    // private List<GuiItem<G>> repeatList(@NotNull final List<GuiItem<G>> guiItems) {
+    //     final List<GuiItem<G>> repeated = new ArrayList<>();
+    //     Collections.nCopies(gui.getRows() * 9, guiItems).forEach(repeated::addAll);
+    //     return repeated;
+    // }
+
+    // /**
+    //  * Gets the slot from the row and col passed
+    //  *
+    //  * @param row The row
+    //  * @param col The col
+    //  * @return The new slot
+    //  */
+    // private int getSlotFromRowCol(final int row, final int col) {
+    //     return (col + (row - 1) * 9) - 1;
+    // }
+
+    // public enum Side {
+    //     LEFT,
+    //     RIGHT,
+    //     BOTH
+    // }
 }

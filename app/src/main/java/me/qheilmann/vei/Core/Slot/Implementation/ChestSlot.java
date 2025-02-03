@@ -12,7 +12,7 @@ import me.qheilmann.vei.Core.Slot.GridSlot;
  * Represents a slot in a chest inventory with 9 columns and a variable number
  * of rows (max: 6)
  */
-public class ChestSlot extends GridSlot<ChestSlot> {
+public class ChestSlot extends GridSlot<ChestSlot> { // TODO for MaxChestSlot to work i need to make CRTP here too then create a base class for each slot type
     public static final int COLUMN_COUNT = 9;
     public static final int MAX_ROW_COUNT = 6;
 

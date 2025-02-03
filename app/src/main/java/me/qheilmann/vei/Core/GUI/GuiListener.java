@@ -25,7 +25,7 @@ import me.qheilmann.vei.Core.Item.PersistentDataType.UuidPdt;
  * 
  * @author qhelmann but most original part come from Triumph GUI <a href="https://github.com/TriumphTeam/triumph-gui">TriumphTeam</a>
  */
-public class GuiListener<G extends BaseGui<G>> implements Listener {
+public class GuiListener<G extends BaseGui<G, ?>> implements Listener {
 
     /**
      * Handles what happens when a player clicks on the GUI
@@ -190,7 +190,7 @@ public class GuiListener<G extends BaseGui<G>> implements Listener {
     @Nullable
     private G getGuiFromEvent(InventoryEvent event) {
         InventoryHolder holder = event.getInventory().getHolder();
-        if (!(holder instanceof BaseGui<?> baseGui)) 
+        if (!(holder instanceof BaseGui<?, ?> baseGui)) 
             return null;
 
         // All derived BaseGui types will correctly cast to G and function as a

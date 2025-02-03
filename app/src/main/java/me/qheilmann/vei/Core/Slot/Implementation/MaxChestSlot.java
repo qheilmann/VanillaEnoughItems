@@ -1,5 +1,9 @@
 package me.qheilmann.vei.Core.Slot.Implementation;
 
+import java.util.function.Supplier;
+
+import org.jetbrains.annotations.NotNull;
+
 /**
  * Represents a single slot in an max chest inventory (6 rows)
  */
@@ -13,5 +17,11 @@ public class MaxChestSlot extends ChestSlot{
 
     public MaxChestSlot(int x, int y) {
         super(x, y, ROW_COUNT);
+    }
+
+    @Override
+    @NotNull
+    public Supplier<ChestSlot> getSupplier() { // TODO repalce to MaxChestSlot
+        return () -> new MaxChestSlot(0);
     }
 }
