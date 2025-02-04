@@ -18,10 +18,10 @@
                 "isDefault": true
             },
             "problemMatcher": [],
-            // "presentation": {
-            //     "close": true,
-            //     "clear": true
-            // },
+            "presentation": {
+                "close": true,
+                "clear": true
+            },
             "runOptions": {
                 "instanceLimit": 1
 			}
