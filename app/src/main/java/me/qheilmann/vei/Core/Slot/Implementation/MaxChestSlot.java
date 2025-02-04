@@ -1,7 +1,5 @@
 package me.qheilmann.vei.Core.Slot.Implementation;
 
-import java.util.function.Supplier;
-
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -27,11 +25,5 @@ public class MaxChestSlot extends ChestSlot{
     @NotNull
     public ChestSlot clone() {
         return new MaxChestSlot(this);
-    }
-
-    @Override
-    @NotNull
-    public Supplier<ChestSlot> getSupplier() { // TODO repalce to MaxChestSlot
-        return () -> new MaxChestSlot(0);
     }
 }

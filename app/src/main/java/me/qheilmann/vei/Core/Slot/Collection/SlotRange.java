@@ -1,8 +1,8 @@
 package me.qheilmann.vei.Core.Slot.Collection;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Spliterator;
@@ -16,13 +16,14 @@ import org.jetbrains.annotations.NotNull;
 import com.google.common.base.Preconditions;
 import me.qheilmann.vei.Core.Slot.GridSlot;
 import me.qheilmann.vei.Core.Slot.Slot;
+import me.qheilmann.vei.Core.Utils.NotNullSet;
 
 /**
  * Defines a range of slots within a grid, specified by two corner slots.
  * The slots within the range are ordered row by row, starting from the first row in the first column,
  * then the first row in the second column, and so on.
 */
-public class SlotRange<T extends GridSlot<T>> extends SlotSequence<T> {
+public class SlotRange<T extends GridSlot> extends SlotSequence<T> {
 
     private T topLeftSlot;
     private T bottomRightSlot;
@@ -191,7 +192,7 @@ public class SlotRange<T extends GridSlot<T>> extends SlotSequence<T> {
      */
     @NotNull
     @SuppressWarnings("unchecked")
-    public <U extends GridSlot<T>> U[] toArray(@NotNull U[] array) {
+    public <U extends GridSlot> U[] toArray(@NotNull U[] array) {
         U[] slotsArray = prepareArray(array, this.size());
 
         Iterator<T> iterator = super.iterator();
@@ -313,14 +314,14 @@ public class SlotRange<T extends GridSlot<T>> extends SlotSequence<T> {
      * @throws IllegalArgumentException if either cornerA or cornerB is null.
      */
     @NotNull
-    private static <T extends GridSlot<T>> ArrayList<T> getSlotsBetween(@NotNull T cornerA, @NotNull T cornerB) {
+    private static <T extends GridSlot> NotNullSet<T> getSlotsBetween(@NotNull T cornerA, @NotNull T cornerB) {
         Preconditions.checkArgument(cornerA != null, "cornerA cannot be null");
         Preconditions.checkArgument(cornerB != null, "cornerB cannot be null");
 
         T topLeftSlot = getTopLeftSlot(cornerA, cornerB);
         T bottomRightSlot = getBottomRightSlot(cornerA, cornerB);
 
-        ArrayList<T> slots = new ArrayList<>();
+        NotNullSet<T> slots = new NotNullSet<>(new HashSet<>());
         int bottomRightX = bottomRightSlot.getX();
         int bottomRightY = bottomRightSlot.getY();
         for (int y = topLeftSlot.getY(); y <= bottomRightY; y++) {
@@ -335,7 +336,7 @@ public class SlotRange<T extends GridSlot<T>> extends SlotSequence<T> {
     }
 
     @NotNull
-    private static <T extends GridSlot<T>> T getTopLeftSlot(@NotNull T cornerA, @NotNull T cornerB) {
+    private static <T extends GridSlot> T getTopLeftSlot(@NotNull T cornerA, @NotNull T cornerB) {
         int minXCoord = Math.min(cornerA.getX(), cornerB.getX());
         int minYCoord = Math.min(cornerA.getY(), cornerB.getY());
 
@@ -346,7 +347,7 @@ public class SlotRange<T extends GridSlot<T>> extends SlotSequence<T> {
     }
 
     @NotNull
-    private static <T extends GridSlot<T>> T getBottomRightSlot(@NotNull T cornerA, @NotNull T cornerB) {
+    private static <T extends GridSlot> T getBottomRightSlot(@NotNull T cornerA, @NotNull T cornerB) {
         int maxXCoord = Math.max(cornerA.getX(), cornerB.getX());
         int maxYCoord = Math.max(cornerA.getY(), cornerB.getY());
 
@@ -366,7 +367,7 @@ public class SlotRange<T extends GridSlot<T>> extends SlotSequence<T> {
      * @return an array ready to be filled and returned from {@code toArray()} method.
      */
     @SuppressWarnings("unchecked")
-    private <U extends GridSlot<T>> U[] prepareArray(@NotNull U[] array, int setSize) {
+    private <U extends GridSlot> U[] prepareArray(@NotNull U[] array, int setSize) {
         Preconditions.checkNotNull(array, "array cannot be null");
         if (array.length < setSize) {
             return (U[]) java.lang.reflect.Array

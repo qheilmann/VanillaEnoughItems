@@ -5,33 +5,30 @@ import java.util.List;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.material.Chest;
-
 import dev.triumphteam.gui.components.InteractionModifier;
 import me.qheilmann.vei.Core.GUI.BaseGui;
 import me.qheilmann.vei.Core.GUI.GuiItem;
 import me.qheilmann.vei.Core.Slot.Collection.SlotRange;
-import me.qheilmann.vei.Core.Slot.Implementation.ChestSlot;
 import me.qheilmann.vei.Core.Slot.Implementation.MaxChestSlot;
 import me.qheilmann.vei.Core.Style.ButtonType.VeiButtonType;
 import me.qheilmann.vei.Core.Style.Styles.Style;
 import net.kyori.adventure.text.Component;
 
-public class RecipeMenu extends BaseGui<RecipeMenu, ChestSlot> { // TODO DONT WORK WITH MAXCHEST SLOT
-    private static final ChestSlot QUICK_LINK_SLOT                    = new MaxChestSlot(0, 0);
-    private static final ChestSlot WORKBENCH_TYPE_SCROLL_LEFT_SLOT    = new MaxChestSlot(1, 0);
-    private static final ChestSlot WORKBENCH_TYPE_SCROLL_RIGHT_SLOT   = new MaxChestSlot(7, 0);
-    private static final ChestSlot INFO_SLOT                          = new MaxChestSlot(8, 0);
-    private static final ChestSlot WORKBENCH_VARIANT_SCROLL_UP_SLOT   = new MaxChestSlot(0, 1);
-    private static final ChestSlot WORKBENCH_VARIANT_SCROLL_DOWN_SLOT = new MaxChestSlot(0, 5);
-    private static final ChestSlot BOOKMARK_THIS_RECIPE_TOGGLE_SLOT   = new MaxChestSlot(8, 2);
-    private static final ChestSlot BOOKMARK_LIST_SLOT                 = new MaxChestSlot(8, 3);
-    private static final ChestSlot BOOKMARK_SERVER_LIST_SLOT          = new MaxChestSlot(8, 4);
-    private static final ChestSlot EXIT_SLOT                          = new MaxChestSlot(8, 5);
+public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
+    private static final MaxChestSlot QUICK_LINK_SLOT                    = new MaxChestSlot(0, 0);
+    private static final MaxChestSlot WORKBENCH_TYPE_SCROLL_LEFT_SLOT    = new MaxChestSlot(1, 0);
+    private static final MaxChestSlot WORKBENCH_TYPE_SCROLL_RIGHT_SLOT   = new MaxChestSlot(7, 0);
+    private static final MaxChestSlot INFO_SLOT                          = new MaxChestSlot(8, 0);
+    private static final MaxChestSlot WORKBENCH_VARIANT_SCROLL_UP_SLOT   = new MaxChestSlot(0, 1);
+    private static final MaxChestSlot WORKBENCH_VARIANT_SCROLL_DOWN_SLOT = new MaxChestSlot(0, 5);
+    private static final MaxChestSlot BOOKMARK_THIS_RECIPE_TOGGLE_SLOT   = new MaxChestSlot(8, 2);
+    private static final MaxChestSlot BOOKMARK_LIST_SLOT                 = new MaxChestSlot(8, 3);
+    private static final MaxChestSlot BOOKMARK_SERVER_LIST_SLOT          = new MaxChestSlot(8, 4);
+    private static final MaxChestSlot EXIT_SLOT                          = new MaxChestSlot(8, 5);
 
-    private static final SlotRange<ChestSlot> WORKBENCH_SLOT_RANGE         = new SlotRange<>(new MaxChestSlot(2, 0), new MaxChestSlot(6, 0));
-    private static final SlotRange<ChestSlot> WORKBENCH_VARIANT_SLOT_RANGE = new SlotRange<>(new MaxChestSlot(0, 2), new MaxChestSlot(0, 4));
-    private static final SlotRange<ChestSlot> RECIPE_VIEW_SLOT_RANGE       = new SlotRange<>(new MaxChestSlot(1, 1), new MaxChestSlot(7, 5));
+    private static final SlotRange<MaxChestSlot> WORKBENCH_SLOT_RANGE         = new SlotRange<>(new MaxChestSlot(2, 0), new MaxChestSlot(6, 0));
+    private static final SlotRange<MaxChestSlot> WORKBENCH_VARIANT_SLOT_RANGE = new SlotRange<>(new MaxChestSlot(0, 2), new MaxChestSlot(0, 4));
+    private static final SlotRange<MaxChestSlot> RECIPE_VIEW_SLOT_RANGE       = new SlotRange<>(new MaxChestSlot(1, 1), new MaxChestSlot(7, 5));
 
     private GuiItem<RecipeMenu> quickLinkItem;
     private GuiItem<RecipeMenu> workbenchTypeScrollLeftItem;

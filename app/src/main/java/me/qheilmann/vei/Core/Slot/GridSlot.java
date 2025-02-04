@@ -10,7 +10,7 @@ import me.qheilmann.vei.Core.Slot.Collection.SlotRange;
 /**
  * Defines a slot in a grid inventory (like a chest, dispenser, etc.)
  */
-public abstract class GridSlot<T extends GridSlot<T>> extends Slot<T> {
+public abstract class GridSlot extends Slot {
     private final int columnCount;
     private final int rowCount;
 
@@ -58,7 +58,7 @@ public abstract class GridSlot<T extends GridSlot<T>> extends Slot<T> {
     /**
      * Copy constructor
      */
-    public GridSlot(@NotNull GridSlot<T> slot) {
+    public GridSlot(@NotNull GridSlot slot) {
         super(slot);
         this.columnCount = slot.getColumnCount();
         this.rowCount = slot.getRowCount();
@@ -66,7 +66,7 @@ public abstract class GridSlot<T extends GridSlot<T>> extends Slot<T> {
 
     @Override
     @NotNull
-    public abstract GridSlot<T> clone();
+    public abstract GridSlot clone();
 
     @Override
     public void setIndex(int index) {
@@ -160,7 +160,7 @@ public abstract class GridSlot<T extends GridSlot<T>> extends Slot<T> {
      * Get the first slot in the first row of the grid
      */
     @NotNull
-    public static <T extends GridSlot<T>> T getTopLeft(@NotNull T slotTypeReference) {
+    public static <T extends GridSlot> T getTopLeft(@NotNull T slotTypeReference) {
         T topLeft = Slot.cloneSlot(slotTypeReference);
         topLeft.setX(0);
         topLeft.setY(0);
@@ -171,7 +171,7 @@ public abstract class GridSlot<T extends GridSlot<T>> extends Slot<T> {
      * Get the last slot in the first row of the grid
      */
     @NotNull
-    public static <T extends GridSlot<T>> T getTopRight(@NotNull T slotTypeReference) {
+    public static <T extends GridSlot> T getTopRight(@NotNull T slotTypeReference) {
         T topRight = Slot.cloneSlot(slotTypeReference);
         topRight.setX(topRight.getColumnCount() - 1);
         topRight.setY(0);
@@ -182,7 +182,7 @@ public abstract class GridSlot<T extends GridSlot<T>> extends Slot<T> {
      * Get the first slot in the last row of the grid
      */
     @NotNull
-    public static <T extends GridSlot<T>> T getBottomLeft(@NotNull T slotTypeReference) {
+    public static <T extends GridSlot> T getBottomLeft(@NotNull T slotTypeReference) {
         T bottomLeft = Slot.cloneSlot(slotTypeReference);
         bottomLeft.setX(0);
         bottomLeft.setY(bottomLeft.getRowCount() - 1);
@@ -193,7 +193,7 @@ public abstract class GridSlot<T extends GridSlot<T>> extends Slot<T> {
      * Get the last slot in the last row of the grid
      */
     @NotNull
-    public static <T extends GridSlot<T>> T getBottomRight(@NotNull T slotTypeReference) {
+    public static <T extends GridSlot> T getBottomRight(@NotNull T slotTypeReference) {
         T bottomRight = Slot.cloneSlot(slotTypeReference);
         bottomRight.setX(bottomRight.getColumnCount() - 1);
         bottomRight.setY(bottomRight.getRowCount() - 1);
@@ -206,7 +206,7 @@ public abstract class GridSlot<T extends GridSlot<T>> extends Slot<T> {
      * Get all the slots in the grid
      */
     @NotNull
-    public static <T extends GridSlot<T>> SlotRange<T> getAllSlots(@NotNull T slotTypeReference) {
+    public static <T extends GridSlot> SlotRange<T> getAllSlots(@NotNull T slotTypeReference) {
         T topLeft = getTopLeft(slotTypeReference);
         T bottomRight = getBottomRight(slotTypeReference);
 
@@ -219,7 +219,7 @@ public abstract class GridSlot<T extends GridSlot<T>> extends Slot<T> {
      * Get all the slots in the first row of the grid
      */
     @NotNull
-    public static <T extends GridSlot<T>> SlotRange<T> getTopRow(@NotNull T slotTypeReference) {
+    public static <T extends GridSlot> SlotRange<T> getTopRow(@NotNull T slotTypeReference) {
         T topLeft = getTopLeft(slotTypeReference);
         T topRight = getTopRight(slotTypeReference);
 
@@ -230,7 +230,7 @@ public abstract class GridSlot<T extends GridSlot<T>> extends Slot<T> {
      * Get all the slots in the last row of the grid
      */
     @NotNull
-    public static <T extends GridSlot<T>> SlotRange<T> getBottomRow(@NotNull T slotTypeReference) {
+    public static <T extends GridSlot> SlotRange<T> getBottomRow(@NotNull T slotTypeReference) {
         T bottomLeft = getBottomLeft(slotTypeReference);
         T bottomRight = getBottomRight(slotTypeReference);
 
@@ -243,7 +243,7 @@ public abstract class GridSlot<T extends GridSlot<T>> extends Slot<T> {
      * @param row The row number, starting from 0
      */
     @NotNull
-    public static <T extends GridSlot<T>> SlotRange<T> getRow(int row, @NotNull T slotTypeReference) {
+    public static <T extends GridSlot> SlotRange<T> getRow(int row, @NotNull T slotTypeReference) {
         T left = Slot.cloneSlot(slotTypeReference);
         left.setX(0);
         left.setY(row);
@@ -261,7 +261,7 @@ public abstract class GridSlot<T extends GridSlot<T>> extends Slot<T> {
      * Get all the slots in the first column of the grid
      */
     @NotNull
-    public static <T extends GridSlot<T>> SlotRange<T> getLeftColumn(@NotNull T slotTypeReference) {
+    public static <T extends GridSlot> SlotRange<T> getLeftColumn(@NotNull T slotTypeReference) {
         T topLeft = getTopLeft(slotTypeReference);
         T bottomLeft = getBottomLeft(slotTypeReference);
 
@@ -272,7 +272,7 @@ public abstract class GridSlot<T extends GridSlot<T>> extends Slot<T> {
      * Get all the slots in the last column of the grid
      */
     @NotNull
-    public static <T extends GridSlot<T>> SlotRange<T> getRightColumn(@NotNull T slotTypeReference) {
+    public static <T extends GridSlot> SlotRange<T> getRightColumn(@NotNull T slotTypeReference) {
         T topRight = getTopRight(slotTypeReference);
         T bottomRight = getBottomRight(slotTypeReference);
 
@@ -285,7 +285,7 @@ public abstract class GridSlot<T extends GridSlot<T>> extends Slot<T> {
      * @param column The column number, starting from 0
      */
     @NotNull
-    public static <T extends GridSlot<T>> SlotRange<T> getColumn(int column, @NotNull T slotTypeReference) {
+    public static <T extends GridSlot> SlotRange<T> getColumn(int column, @NotNull T slotTypeReference) {
         T top = Slot.cloneSlot(slotTypeReference);
         top.setX(column);
         top.setY(0);

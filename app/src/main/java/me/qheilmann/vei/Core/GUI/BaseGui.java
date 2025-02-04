@@ -45,7 +45,7 @@ import net.kyori.adventure.text.Component;
  * 
  * @author Most original part come from Triumph GUI <a href="https://github.com/TriumphTeam/triumph-gui">TriumphTeam</a>
  */
-public abstract class BaseGui<G extends BaseGui<G, S>, S extends Slot<S>> implements InventoryHolder {
+public abstract class BaseGui<G extends BaseGui<G, S>, S extends Slot> implements InventoryHolder {
 
     // The plugin instance for the close delay.
     private static Plugin plugin = null;

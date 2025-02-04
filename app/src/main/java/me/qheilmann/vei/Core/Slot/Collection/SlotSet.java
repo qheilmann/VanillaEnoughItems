@@ -18,7 +18,7 @@ import me.qheilmann.vei.Core.Utils.NotNullSet;
  * @param <T> the type of Slot elements maintained by this set
  * @see SlotSequence
  */
-public class SlotSet<T extends Slot<T>> extends NotNullSet<T> {
+public class SlotSet<T extends Slot> extends NotNullSet<T> {
 
     /**
      * Constructs a new, empty SlotSet; the backing {@code HashSet} instance

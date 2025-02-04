@@ -7,7 +7,7 @@ import com.google.common.base.Preconditions;
 /**
  * Represents a single slot in an inventory
  */
-public abstract class Slot<T extends Slot<T>> implements ISlotSupplier<T> {
+public abstract class Slot {
     protected int index;
 
     /**
@@ -20,7 +20,7 @@ public abstract class Slot<T extends Slot<T>> implements ISlotSupplier<T> {
     /**
      * Copy constructor
      */
-    public Slot(@NotNull Slot<T> slot) {
+    public Slot(@NotNull Slot slot) {
         Preconditions.checkNotNull(slot, "slot cannot be null");
         this.index = slot.getIndex();
     }
@@ -32,7 +32,7 @@ public abstract class Slot<T extends Slot<T>> implements ISlotSupplier<T> {
      * deep copy in the correct type
      */
     @NotNull
-    public abstract Slot<T> clone();
+    public abstract Slot clone();
 
     /**
      * Get the index of the slot
@@ -46,18 +46,18 @@ public abstract class Slot<T extends Slot<T>> implements ISlotSupplier<T> {
      */
     public void setIndex(int index) {
         this.index = index;
-    }
+        }
 
-    @Override
-    public boolean equals(Object obj) {
+        @Override
+        public boolean equals(Object obj) {
         if (this == obj) return true;
         if (obj == null || !(obj instanceof Slot)) return false;
-        Slot<?> slot = (Slot<?>) obj;
+        Slot slot = (Slot) obj;
         return getIndex() == slot.getIndex();
-    }
+        }
 
-    @Override
-    public int hashCode() {
+        @Override
+        public int hashCode() {
         return getIndex();
     }
 
@@ -72,7 +72,7 @@ public abstract class Slot<T extends Slot<T>> implements ISlotSupplier<T> {
      */
     @NotNull
     @SuppressWarnings("unchecked")
-    public static <T extends Slot<T>> T cloneSlot(@NotNull T slotTypeReference) {
+    public static <T extends Slot> T cloneSlot(@NotNull T slotTypeReference) {
         Preconditions.checkNotNull(slotTypeReference, "slotTypeReference cannot be null");
         try {
             return (T) slotTypeReference.clone();

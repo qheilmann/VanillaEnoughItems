@@ -54,7 +54,6 @@ public class NotNullSequenceSet<E> extends NotNullSet<E> implements SequencedSet
      */
     public NotNullSequenceSet(@NotNull SequencedSet<E> setImplementation, @NotNull Collection<? extends E> collection) {
         super(setImplementation, collection);
-        Preconditions.checkNotNull(setImplementation, "The provided set cannot be null");
         wrappedSequencedSet = setImplementation;
     }
     

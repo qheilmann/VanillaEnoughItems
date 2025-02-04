@@ -13,6 +13,10 @@ import dev.jorel.commandapi.CommandAPIBukkitConfig;
 import me.qheilmann.vei.Command.CraftCommand;
 import me.qheilmann.vei.Command.TestCommand;
 import me.qheilmann.vei.Core.GUI.BaseGui;
+import me.qheilmann.vei.Core.Slot.GridSlot;
+import me.qheilmann.vei.Core.Slot.Slot;
+import me.qheilmann.vei.Core.Slot.Implementation.ChestSlot;
+import me.qheilmann.vei.Core.Slot.Implementation.MaxChestSlot;
 import me.qheilmann.vei.Core.Style.StyleManager;
 import me.qheilmann.vei.Listener.InventoryClickListener;
 import me.qheilmann.vei.Listener.InventoryDragListener;
@@ -106,6 +110,21 @@ public class VanillaEnoughItems extends JavaPlugin {
     private void temporaryTestMethode()
     {
         LOGGER.info("Test methode YoloBanza");
+        // Without CRTP this is much less complicated, and it's now more familiar
+        ChestSlot slot1 = new MaxChestSlot(0);                   // MaxChestSlot                         is a direct extend of ChestSlot
+        GridSlot  slot2 = new MaxChestSlot(0);                   // MaxChestSlot>ChestSlot               is a direct extend of GridSlot
+        Slot      slot3 = new MaxChestSlot(0);                   // MaxChestSlot>ChestSlot>GridSlot      is a direct extend of Slot
+        Object    slot4 = new MaxChestSlot(0);                   // MaxChestSlot>ChestSlot>GridSlot>Slot is a direct extend of Object
+
+
+
+
+        slot1.setIndex(0);
+        slot2.setIndex(0);
+        slot3.setIndex(0);
+        slot4.equals(slot4);
+
+
 
         InventoryShadow<Inventory> inventory = new InventoryShadow<Inventory>(getServer().createInventory(null, 9,  Component.text("Test")));
         inventory.setItem(0, new ItemStack(Material.DIAMOND));

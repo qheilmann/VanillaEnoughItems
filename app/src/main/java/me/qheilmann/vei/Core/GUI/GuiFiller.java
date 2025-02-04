@@ -29,7 +29,7 @@ import me.qheilmann.vei.Core.Slot.GridSlot;
  * 
  * @author Most original part come from Triumph GUI <a href="https://github.com/TriumphTeam/triumph-gui">TriumphTeam</a>
  */
-public final class GuiFiller<G extends BaseGui<G, S>, S extends GridSlot<S>> {
+public final class GuiFiller<G extends BaseGui<G, S>, S extends GridSlot> {
 
     private final BaseGui<G, S> gui;
 
