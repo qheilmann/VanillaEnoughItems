@@ -9,13 +9,13 @@ import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.util.function.IntFunction;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.jetbrains.annotations.NotNull;
 
 import com.google.common.base.Preconditions;
 import me.qheilmann.vei.Core.Slot.GridSlot;
+import me.qheilmann.vei.Core.Slot.Slot;
 
 /**
  * Defines a range of slots within a grid, specified by two corner slots.
@@ -60,11 +60,7 @@ public class SlotRange<T extends GridSlot<T>> extends SlotSequence<T> {
      */
     @NotNull
     public T getTopLeftSlot() {
-        T newInstance = topLeftSlot.getSupplier().get();
-        Preconditions.checkNotNull(newInstance, "The slot supplier must not return null");
-        newInstance.setX(topLeftSlot.getX());
-        newInstance.setY(topLeftSlot.getY());
-        return newInstance;
+        return Slot.cloneSlot(topLeftSlot);
     }
 
     /**
@@ -74,11 +70,7 @@ public class SlotRange<T extends GridSlot<T>> extends SlotSequence<T> {
      */
     @NotNull
     public T getBottomRightSlot() {
-        T newInstance = bottomRightSlot.getSupplier().get();
-        Preconditions.checkNotNull(newInstance, "The slot supplier must not return null");
-        newInstance.setX(bottomRightSlot.getX());
-        newInstance.setY(bottomRightSlot.getY());
-        return newInstance;
+        return Slot.cloneSlot(bottomRightSlot);
     }
 
     /**
@@ -123,12 +115,12 @@ public class SlotRange<T extends GridSlot<T>> extends SlotSequence<T> {
     }
 
     @Override
-    public void addFirst(@NotNull T element) {
+    public void addFirst(T element) {
         throw new UnsupportedOperationException("Cannot add slots to a SlotRange");
     }
 
     @Override
-    public void addLast(@NotNull T element) {
+    public void addLast(T element) {
         throw new UnsupportedOperationException("Cannot add slots to a SlotRange");
     }
 
@@ -141,6 +133,7 @@ public class SlotRange<T extends GridSlot<T>> extends SlotSequence<T> {
      * Returns an iterator over a copy of slots described by this SlotRange.
      */
     @Override
+    @NotNull
     public Iterator<T> iterator() {
         T[] slotArray = toArray();
         return Arrays.asList(slotArray).iterator();
@@ -167,32 +160,28 @@ public class SlotRange<T extends GridSlot<T>> extends SlotSequence<T> {
      *
      * @return an array containing a copy of each GridSlot in this range
      */
+    @NotNull
     @Override
     @SuppressWarnings("unchecked")
-    public T[] toArray() {
-        Supplier<T> slotSupplier = bottomRightSlot.getSupplier();      
+    public T[] toArray() {    
         T[] slotsArray = (T[]) java.lang.reflect.Array.newInstance(bottomRightSlot.getClass(), size());
-
         Iterator<T> iterator = super.iterator();
         int index = 0;
         while (iterator.hasNext()) {
             T slot = iterator.next();
-            T newSlot = slotSupplier.get();
-            Preconditions.checkNotNull(newSlot, "The slot supplier must not return null");
-            newSlot.setX(slot.getX());
-            newSlot.setY(slot.getY());
-            slotsArray[index++] = newSlot;
+            T clonedSlot = Slot.cloneSlot(slot);
+            slotsArray[index++] = clonedSlot;
         }
 
         return slotsArray;
     }
 
     /**
-     * Returns an array containing a copy of all GridSlot in this range; the runtime 
-     * type of the returned array is that of the specified array. If the set 
-     * fits in the specified array, it is returned therein. Otherwise, a new 
-     * array is allocated with the runtime type of the specified array and the 
-     * size of this set.
+     * Returns an array containing a copy of all GridSlot in this range; the 
+     * runtime type of the returned array is that of the specified array. If 
+     * the set fits in the specified array, it is returned therein. Otherwise, 
+     * a new array is allocated with the runtime type of the specified array 
+     * and the size of this set.
      * 
      * If this set fits in the specified array with room to spare (i.e., the 
      * array has more elements than this set), the element in the array 
@@ -200,63 +189,72 @@ public class SlotRange<T extends GridSlot<T>> extends SlotSequence<T> {
      * in determining the length of this set only if the caller knows that this 
      * set does not contain any null elements.)
      */
+    @NotNull
     @SuppressWarnings("unchecked")
-    public <U extends GridSlot<T>> U[] toArray(U[] array) {
-        Supplier<T> slotSupplier = bottomRightSlot.getSupplier();
+    public <U extends GridSlot<T>> U[] toArray(@NotNull U[] array) {
         U[] slotsArray = prepareArray(array, this.size());
 
         Iterator<T> iterator = super.iterator();
         int index = 0;
         while (iterator.hasNext()) {
             T slot = iterator.next();
-            T newSlot = slotSupplier.get();
-            Preconditions.checkNotNull(newSlot, "The slot supplier must not return null");
-            newSlot.setX(slot.getX());
-            newSlot.setY(slot.getY());
+            T clonedSlot = Slot.cloneSlot(slot);
             try {
-                slotsArray[index++] = (U) newSlot;
+                slotsArray[index++] = (U) clonedSlot;
             } catch (ArrayStoreException | ClassCastException e) {
-                throw new ArrayStoreException("Cannot store a " + newSlot.getClass().getName() + " in an array of " + array.getClass().getComponentType().getName());
+                throw new ClassCastException("Cannot store the cloned slot of " + clonedSlot.getClass().getName() + " in the array of " + array.getClass().getName());
             }
         }
         return slotsArray;
     }
 
+    /**
+     * Returns an array containing a copy of all GridSlot in this range; the 
+     * runtime type of the returned array is that of the specified generator. 
+     * If the set fits in the array, it is returned therein. Otherwise, 
+     * a new array is allocated with the runtime type of the specified array 
+     * and the size of this set.
+     * 
+     * If this set fits in the specified array with room to spare (i.e., the 
+     * array has more elements than this set), the element in the array 
+     * immediately following the end of the set is set to null. (This is useful 
+     * in determining the length of this set only if the caller knows that this 
+     * set does not contain any null elements.)
+     */
+    @NotNull
     @Override
-    public <U> U[] toArray(IntFunction<U[]> generator) {
+    public <U> U[] toArray(@NotNull IntFunction<U[]> generator) {
+        Preconditions.checkNotNull(generator, "generator cannot be null");
         return this.toArray(generator.apply(this.size()));
     }
 
+    @NotNull
     @Override
-    public void forEach(Consumer<? super T> action) {
-        Supplier<T> slotSupplier = bottomRightSlot.getSupplier();
+    public void forEach(@NotNull Consumer<? super T> action) {
+        Preconditions.checkNotNull(action, "action cannot be null");
         for (T slot : this) {
-            T newSlot = slotSupplier.get();
-            Preconditions.checkNotNull(newSlot, "The slot supplier must not return null");
-            newSlot.setX(slot.getX());
-            newSlot.setY(slot.getY());
-            action.accept(newSlot);
+            T clonedSlot = Slot.cloneSlot(slot);
+            action.accept(clonedSlot);
         }
     }
 
+    /**
+     * Get a copy of the first slot in the range
+     */
+    @NotNull
     @Override
     public T getFirst() {
         T first = super.getFirst();
-        T newSlot = bottomRightSlot.getSupplier().get();
-        Preconditions.checkNotNull(newSlot, "The slot supplier must not return null");
-        newSlot.setX(first.getX());
-        newSlot.setY(first.getY());
-        return newSlot;
+        return Slot.cloneSlot(first);
     }
 
+    /**
+     * Get a copy of the last slot in the range
+     */
     @Override
     public T getLast() {
         T last = super.getLast();
-        T newSlot = bottomRightSlot.getSupplier().get();
-        Preconditions.checkNotNull(newSlot, "The slot supplier must not return null");
-        newSlot.setX(last.getX());
-        newSlot.setY(last.getY());
-        return newSlot;
+        return Slot.cloneSlot(last);
     }
 
     /**
@@ -323,12 +321,14 @@ public class SlotRange<T extends GridSlot<T>> extends SlotSequence<T> {
         T bottomRightSlot = getBottomRightSlot(cornerA, cornerB);
 
         ArrayList<T> slots = new ArrayList<>();
-        for (int y = topLeftSlot.getY(); y <= bottomRightSlot.getY(); y++) {
-            for (int x = topLeftSlot.getX(); x <= bottomRightSlot.getX(); x++) {
-                T slot = validateAndSupplySlot(cornerA.getSupplier());
-                slot.setX(x);
-                slot.setY(y);
-                slots.add(slot);
+        int bottomRightX = bottomRightSlot.getX();
+        int bottomRightY = bottomRightSlot.getY();
+        for (int y = topLeftSlot.getY(); y <= bottomRightY; y++) {
+            for (int x = topLeftSlot.getX(); x <= bottomRightX; x++) {
+                T clonedSlot = Slot.cloneSlot(cornerA);
+                clonedSlot.setX(x);
+                clonedSlot.setY(y);
+                slots.add(clonedSlot);
             }
         }
         return slots;
@@ -339,10 +339,10 @@ public class SlotRange<T extends GridSlot<T>> extends SlotSequence<T> {
         int minXCoord = Math.min(cornerA.getX(), cornerB.getX());
         int minYCoord = Math.min(cornerA.getY(), cornerB.getY());
 
-        T newSlot = validateAndSupplySlot(cornerA.getSupplier());
-        newSlot.setX(minXCoord);
-        newSlot.setY(minYCoord);
-        return newSlot;
+        T clonedSlot = Slot.cloneSlot(cornerA);
+        clonedSlot.setX(minXCoord);
+        clonedSlot.setY(minYCoord);
+        return clonedSlot;
     }
 
     @NotNull
@@ -350,20 +350,11 @@ public class SlotRange<T extends GridSlot<T>> extends SlotSequence<T> {
         int maxXCoord = Math.max(cornerA.getX(), cornerB.getX());
         int maxYCoord = Math.max(cornerA.getY(), cornerB.getY());
 
-        T newSlot = validateAndSupplySlot(cornerA.getSupplier());
-        newSlot.setX(maxXCoord);
-        newSlot.setY(maxYCoord);
-        return newSlot;
+        T clonedSlot = Slot.cloneSlot(cornerA);
+        clonedSlot.setX(maxXCoord);
+        clonedSlot.setY(maxYCoord);
+        return clonedSlot;
     }
-
-    @NotNull
-    private static <T extends GridSlot<T>> T validateAndSupplySlot(@NotNull Supplier<T> specifiqueSlotSupplier) {
-        Preconditions.checkNotNull(specifiqueSlotSupplier, "specifiqueSlotSupplier cannot be null");
-        T slot = specifiqueSlotSupplier.get();
-        Preconditions.checkNotNull(slot, "The slot supplier must not return null");
-        return slot;
-    }
-
     
     /**
      * Prepares the array for {@link SlotRange#toArray(U[])} implementation.
@@ -376,6 +367,7 @@ public class SlotRange<T extends GridSlot<T>> extends SlotSequence<T> {
      */
     @SuppressWarnings("unchecked")
     private <U extends GridSlot<T>> U[] prepareArray(@NotNull U[] array, int setSize) {
+        Preconditions.checkNotNull(array, "array cannot be null");
         if (array.length < setSize) {
             return (U[]) java.lang.reflect.Array
                     .newInstance(array.getClass().getComponentType(), setSize);

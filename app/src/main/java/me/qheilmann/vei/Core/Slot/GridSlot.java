@@ -1,7 +1,5 @@
 package me.qheilmann.vei.Core.Slot;
 
-import java.util.function.Supplier;
-
 import org.jetbrains.annotations.NotNull;
 import org.joml.Vector2i;
 
@@ -24,11 +22,13 @@ public abstract class GridSlot<T extends GridSlot<T>> extends Slot<T> {
      * @param rowCount The number of rows in the grid
      */
     public GridSlot(int index, int columnCount, int rowCount) {
-        checkColumnCount(columnCount);
-        checkRowCount(rowCount);
-        checkIndex(index, columnCount, rowCount);
-
-        this.index = index;
+        super(
+            checkIndex(
+                index, 
+                checkColumnCount(columnCount), 
+                checkRowCount(rowCount)
+            )
+        );
         this.columnCount = columnCount;
         this.rowCount = rowCount;
     }
@@ -54,6 +54,19 @@ public abstract class GridSlot<T extends GridSlot<T>> extends Slot<T> {
             rowCount
         );
     }
+
+    /**
+     * Copy constructor
+     */
+    public GridSlot(@NotNull GridSlot<T> slot) {
+        super(slot);
+        this.columnCount = slot.getColumnCount();
+        this.rowCount = slot.getRowCount();
+    }
+
+    @Override
+    @NotNull
+    public abstract GridSlot<T> clone();
 
     @Override
     public void setIndex(int index) {
@@ -147,44 +160,44 @@ public abstract class GridSlot<T extends GridSlot<T>> extends Slot<T> {
      * Get the first slot in the first row of the grid
      */
     @NotNull
-    public static <T extends GridSlot<T>> T getTopLeft(@NotNull Supplier<T> specifiqueSlotSupplier) {
-        T slot = validateAndSupplySlot(specifiqueSlotSupplier);
-        slot.setX(0);
-        slot.setY(0);
-        return slot;
+    public static <T extends GridSlot<T>> T getTopLeft(@NotNull T slotTypeReference) {
+        T topLeft = Slot.cloneSlot(slotTypeReference);
+        topLeft.setX(0);
+        topLeft.setY(0);
+        return topLeft;
     }
 
     /**
      * Get the last slot in the first row of the grid
      */
     @NotNull
-    public static <T extends GridSlot<T>> T getTopRight(@NotNull Supplier<T> specifiqueSlotSupplier) {
-        T slot = validateAndSupplySlot(specifiqueSlotSupplier);
-        slot.setX(slot.getColumnCount() - 1);
-        slot.setY(0);
-        return slot;
+    public static <T extends GridSlot<T>> T getTopRight(@NotNull T slotTypeReference) {
+        T topRight = Slot.cloneSlot(slotTypeReference);
+        topRight.setX(topRight.getColumnCount() - 1);
+        topRight.setY(0);
+        return topRight;
     }
 
     /**
      * Get the first slot in the last row of the grid
      */
     @NotNull
-    public static <T extends GridSlot<T>> T getBottomLeft(@NotNull Supplier<T> specifiqueSlotSupplier) {
-        T slot = validateAndSupplySlot(specifiqueSlotSupplier);
-        slot.setX(0);
-        slot.setY(slot.getRowCount() - 1);
-        return slot;
+    public static <T extends GridSlot<T>> T getBottomLeft(@NotNull T slotTypeReference) {
+        T bottomLeft = Slot.cloneSlot(slotTypeReference);
+        bottomLeft.setX(0);
+        bottomLeft.setY(bottomLeft.getRowCount() - 1);
+        return bottomLeft;
     }
 
     /**
      * Get the last slot in the last row of the grid
      */
     @NotNull
-    public static <T extends GridSlot<T>> T getBottomRight(@NotNull Supplier<T> specifiqueSlotSupplier) {
-        T slot = validateAndSupplySlot(specifiqueSlotSupplier);
-        slot.setX(slot.getColumnCount() - 1);
-        slot.setY(slot.getRowCount() - 1);
-        return slot;
+    public static <T extends GridSlot<T>> T getBottomRight(@NotNull T slotTypeReference) {
+        T bottomRight = Slot.cloneSlot(slotTypeReference);
+        bottomRight.setX(bottomRight.getColumnCount() - 1);
+        bottomRight.setY(bottomRight.getRowCount() - 1);
+        return bottomRight;
     }
 
     // All slots
@@ -193,9 +206,9 @@ public abstract class GridSlot<T extends GridSlot<T>> extends Slot<T> {
      * Get all the slots in the grid
      */
     @NotNull
-    public static <T extends GridSlot<T>> SlotRange<T> getAllSlots(@NotNull Supplier<T> specifiqueSlotSupplier) {
-        T topLeft = getTopLeft(specifiqueSlotSupplier);
-        T bottomRight = getBottomRight(specifiqueSlotSupplier);
+    public static <T extends GridSlot<T>> SlotRange<T> getAllSlots(@NotNull T slotTypeReference) {
+        T topLeft = getTopLeft(slotTypeReference);
+        T bottomRight = getBottomRight(slotTypeReference);
 
         return new SlotRange<T>(topLeft, bottomRight);
     }
@@ -206,9 +219,9 @@ public abstract class GridSlot<T extends GridSlot<T>> extends Slot<T> {
      * Get all the slots in the first row of the grid
      */
     @NotNull
-    public static <T extends GridSlot<T>> SlotRange<T> getTopRow(@NotNull Supplier<T> specifiqueSlotSupplier) {
-        T topLeft = getTopLeft(specifiqueSlotSupplier);
-        T topRight = getTopRight(specifiqueSlotSupplier);
+    public static <T extends GridSlot<T>> SlotRange<T> getTopRow(@NotNull T slotTypeReference) {
+        T topLeft = getTopLeft(slotTypeReference);
+        T topRight = getTopRight(slotTypeReference);
 
         return new SlotRange<T>(topLeft, topRight);
     }
@@ -217,9 +230,9 @@ public abstract class GridSlot<T extends GridSlot<T>> extends Slot<T> {
      * Get all the slots in the last row of the grid
      */
     @NotNull
-    public static <T extends GridSlot<T>> SlotRange<T> getBottomRow(@NotNull Supplier<T> specifiqueSlotSupplier) {
-        T bottomLeft = getBottomLeft(specifiqueSlotSupplier);
-        T bottomRight = getBottomRight(specifiqueSlotSupplier);
+    public static <T extends GridSlot<T>> SlotRange<T> getBottomRow(@NotNull T slotTypeReference) {
+        T bottomLeft = getBottomLeft(slotTypeReference);
+        T bottomRight = getBottomRight(slotTypeReference);
 
         return new SlotRange<T>(bottomLeft, bottomRight);
     }
@@ -230,12 +243,12 @@ public abstract class GridSlot<T extends GridSlot<T>> extends Slot<T> {
      * @param row The row number, starting from 0
      */
     @NotNull
-    public static <T extends GridSlot<T>> SlotRange<T> getRow(int row, @NotNull Supplier<T> specifiqueSlotSupplier) {
-        T left = validateAndSupplySlot(specifiqueSlotSupplier);
+    public static <T extends GridSlot<T>> SlotRange<T> getRow(int row, @NotNull T slotTypeReference) {
+        T left = Slot.cloneSlot(slotTypeReference);
         left.setX(0);
         left.setY(row);
 
-        T right = validateAndSupplySlot(specifiqueSlotSupplier);
+        T right = Slot.cloneSlot(slotTypeReference);
         right.setX(right.getColumnCount() - 1);
         right.setY(row);
 
@@ -248,9 +261,9 @@ public abstract class GridSlot<T extends GridSlot<T>> extends Slot<T> {
      * Get all the slots in the first column of the grid
      */
     @NotNull
-    public static <T extends GridSlot<T>> SlotRange<T> getLeftColumn(@NotNull Supplier<T> specifiqueSlotSupplier) {
-        T topLeft = getTopLeft(specifiqueSlotSupplier);
-        T bottomLeft = getBottomLeft(specifiqueSlotSupplier);
+    public static <T extends GridSlot<T>> SlotRange<T> getLeftColumn(@NotNull T slotTypeReference) {
+        T topLeft = getTopLeft(slotTypeReference);
+        T bottomLeft = getBottomLeft(slotTypeReference);
 
         return new SlotRange<T>(topLeft, bottomLeft);
     }
@@ -259,9 +272,9 @@ public abstract class GridSlot<T extends GridSlot<T>> extends Slot<T> {
      * Get all the slots in the last column of the grid
      */
     @NotNull
-    public static <T extends GridSlot<T>> SlotRange<T> getRightColumn(@NotNull Supplier<T> specifiqueSlotSupplier) {
-        T topRight = getTopRight(specifiqueSlotSupplier);
-        T bottomRight = getBottomRight(specifiqueSlotSupplier);
+    public static <T extends GridSlot<T>> SlotRange<T> getRightColumn(@NotNull T slotTypeReference) {
+        T topRight = getTopRight(slotTypeReference);
+        T bottomRight = getBottomRight(slotTypeReference);
 
         return new SlotRange<T>(topRight, bottomRight);
     }
@@ -272,23 +285,23 @@ public abstract class GridSlot<T extends GridSlot<T>> extends Slot<T> {
      * @param column The column number, starting from 0
      */
     @NotNull
-    public static <T extends GridSlot<T>> SlotRange<T> getColumn(int column, @NotNull Supplier<T> specifiqueSlotSupplier) {
-        T top = validateAndSupplySlot(specifiqueSlotSupplier);
+    public static <T extends GridSlot<T>> SlotRange<T> getColumn(int column, @NotNull T slotTypeReference) {
+        T top = Slot.cloneSlot(slotTypeReference);
         top.setX(column);
         top.setY(0);
 
-        T bottom = validateAndSupplySlot(specifiqueSlotSupplier);
+        T bottom = Slot.cloneSlot(slotTypeReference);
         bottom.setX(column);
         bottom.setY(bottom.getRowCount() - 1);
 
         return new SlotRange<T>(top, bottom);
     }
     
-    // Check methods
-
     protected static int calcIndex(int x, int y, int columnCount) {
         return y * columnCount + x;
     }
+    
+    // Check methods
 
     private static int checkX(int x, int columnCount) {
         Preconditions.checkArgument(x >= 0 && x < columnCount, "x must be between 0 and %d, current value: %d", columnCount, x);
@@ -313,13 +326,5 @@ public abstract class GridSlot<T extends GridSlot<T>> extends Slot<T> {
     private static int checkIndex(int index, int columnCount, int rowCount) {
         Preconditions.checkArgument(index >= 0 && index < columnCount * rowCount, "index must be between 0 and %d, current value: %d", columnCount * rowCount, index);
         return index;
-    }
-
-    @NotNull
-    private static <T extends GridSlot<T>> T validateAndSupplySlot(@NotNull Supplier<T> specifiqueSlotSupplier) {
-        Preconditions.checkNotNull(specifiqueSlotSupplier, "specifiqueSlotSupplier cannot be null");
-        T slot = specifiqueSlotSupplier.get();
-        Preconditions.checkNotNull(slot, "The slot supplier must not return null");
-        return slot;
     }
 }

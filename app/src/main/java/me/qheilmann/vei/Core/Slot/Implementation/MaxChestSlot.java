@@ -19,6 +19,16 @@ public class MaxChestSlot extends ChestSlot{
         super(x, y, ROW_COUNT);
     }
 
+    public MaxChestSlot(MaxChestSlot slot) {
+        super(slot);
+    }
+
+    @Override
+    @NotNull
+    public ChestSlot clone() {
+        return new MaxChestSlot(this);
+    }
+
     @Override
     @NotNull
     public Supplier<ChestSlot> getSupplier() { // TODO repalce to MaxChestSlot
