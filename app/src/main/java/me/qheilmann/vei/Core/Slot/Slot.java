@@ -46,10 +46,10 @@ public abstract class Slot {
      */
     public void setIndex(int index) {
         this.index = index;
-        }
+    }
 
-        @Override
-        public boolean equals(Object obj) {
+    @Override
+    public boolean equals(Object obj) {
         if (this == obj) return true;
         if (obj == null || !(obj instanceof Slot)) return false;
         Slot slot = (Slot) obj;

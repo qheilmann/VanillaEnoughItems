@@ -69,7 +69,10 @@ public abstract class BaseGui<G extends BaseGui<G, S>, S extends Slot> implement
     // Gui filler.
     // private final GuiFiller<G, S> filler = new GuiFiller<G, S>(this); // old filler
     // Actions for specific slots.
-    private final Map<Integer, GuiAction<InventoryClickEvent, G>> slotActions; // TODO replace this with Slot map
+    private final Map<S, GuiAction<InventoryClickEvent, G>> slotActions;
+    // Dummy slot action, this element is the slot action access interface
+    // It can change index each time an action slot is accessed with a index
+    private S dummyActionSlot = null;
     // Interaction modifiers.
     private final Set<InteractionModifier> interactionModifiers;
     // title
@@ -256,7 +259,10 @@ public abstract class BaseGui<G extends BaseGui<G, S>, S extends Slot> implement
      * @param slotAction The {@link GuiAction} to execute when the specified slot is clicked.
      */
     protected void setSlotAction(final S slot, @Nullable final GuiAction<InventoryClickEvent, G> slotAction) {
-        slotActions.put(slot.getIndex(), slotAction);
+        if (dummyActionSlot == null) {
+            dummyActionSlot = slot;
+        }
+        slotActions.put(slot, slotAction);
     }
 
     /**
@@ -812,12 +818,27 @@ public abstract class BaseGui<G extends BaseGui<G, S>, S extends Slot> implement
     }
 
     /**
+     * Gets the action for the specified slot. If there is no action defined at 
+     * this slot or if no slot action has been defined, it will return null.
+     *
+     * @param slot The slot clicked.
+     * @return The action for the specified slot or null if no action is defined.
+     * @throws IllegalArgumentException If the slot index is not valid.
+     */
+    @Nullable
+    protected GuiAction<InventoryClickEvent, G> getSlotAction(final int slot) {
+        if (dummyActionSlot == null) return null; // if no slot action has been defined
+        dummyActionSlot.setIndex(slot);
+        return slotActions.get(dummyActionSlot);
+    }
+
+    /**
      * Gets the action for the specified slot.
      *
      * @param slot The slot clicked.
      */
     @Nullable
-    protected GuiAction<InventoryClickEvent, G> getSlotAction(final int slot) { // TODO replace this with slot or index
+    protected GuiAction<InventoryClickEvent, G> getSlotAction(final S slot) {
         return slotActions.get(slot);
     }
 
