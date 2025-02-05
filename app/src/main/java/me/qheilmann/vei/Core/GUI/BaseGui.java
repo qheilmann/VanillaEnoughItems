@@ -66,8 +66,6 @@ public abstract class BaseGui<G extends BaseGui<G, S>, S extends Slot> implement
 
     // Main inventory who also holds the GuiItems
     private InventoryShadow<Inventory> inventory;
-    // Gui filler.
-    // private final GuiFiller<G, S> filler = new GuiFiller<G, S>(this); // old filler
     // Actions for specific slots.
     private final Map<S, GuiAction<InventoryClickEvent, G>> slotActions;
     // Dummy slot action, this element is the slot action access interface
@@ -231,6 +229,60 @@ public abstract class BaseGui<G extends BaseGui<G, S>, S extends Slot> implement
      */
     protected void removeSlot(final S slot) {
         inventory.setItem(slot.getIndex(), null);
+    }
+
+    /**
+     * Replace all the items matching the pattern item with the new item.
+     *
+     * @param patternItem The item to replace.
+     * @param newItem     The new item to replace with.
+     */
+    protected void replaceItem(@Nullable final GuiItem<G> patternItem, @NotNull final GuiItem<G> newItem) {
+        for (int i = 0; i < inventory.getSize(); i++) {
+            replaceItemInSlot(i, patternItem, newItem);
+        }
+    }
+
+    /**
+     * Replace all the items matching the pattern item which are in the slots sequence with the new item.
+     *
+     * @param slots       The slots to search for the pattern item.
+     * @param patternItem The item to replace.
+     * @param newItem     The new item to replace with.
+     */
+    protected void replaceItem(@NotNull final SlotSequence<S> slots, @Nullable final GuiItem<G> patternItem, @NotNull final GuiItem<G> newItem) {
+        Preconditions.checkNotNull(slots, "Slots cannot be null.");
+
+        for (final S slot : slots) {
+            replaceItemInSlot(slot.getIndex(), patternItem, newItem);
+        }
+    }
+
+    private void replaceItemInSlot(int index, @Nullable GuiItem<G> patternItem, @NotNull GuiItem<G> newItem) {
+        boolean shouldReplaceNull = patternItem == null;
+        ItemStack oldItem = inventory.getItem(index);
+        if ((shouldReplaceNull && oldItem == null) || (oldItem != null && oldItem.equals(patternItem))) {
+            inventory.setItem(index, newItem);
+        }
+    }
+
+    /**
+     * Fills all the empty slots with the given item.
+     *
+     * @param guiItem The item to fill the empty slots with.
+     */
+    protected void fillEmpty(@Nullable final GuiItem<G> guiItem) {
+        replaceItem(null, guiItem);
+    }
+
+    /**
+     * Fills all the empty slots in the given sequence with the given item.
+     *
+     * @param slots   The slots to fill with the item.
+     * @param guiItem The item to fill the empty slots with.
+     */
+    protected void fillEmpty(@NotNull final SlotSequence<S> slots, @NotNull final GuiItem<G> guiItem) {
+        replaceItem(slots, null, guiItem);
     }
 
     /**
@@ -622,17 +674,6 @@ public abstract class BaseGui<G extends BaseGui<G, S>, S extends Slot> implement
     protected boolean canDoOtherActions() {
         return !interactionModifiers.contains(InteractionModifier.PREVENT_OTHER_ACTIONS);
     }
-
-    /**
-     * Gets the {@link GuiFiller} that it's used for filling up the GUI in specific ways.
-     *
-     * @return The {@link GuiFiller}.
-     */
-    // TODO old filler
-    // @NotNull
-    // protected GuiFiller<G, S> getFiller() {
-    //     return filler;
-    // }
 
     /**
      * Gets an view {@link Map} of all the GUI items.

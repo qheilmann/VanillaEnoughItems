@@ -146,7 +146,7 @@ public class InventoryShadow<T extends Inventory> implements Inventory {
      * slot is empty.
      */
     @Override
-    public @Nullable ItemStack @NotNull [] getStorageContents() {
+    public @NotNull ItemStack @Nullable [] getStorageContents() {
         int size = itemMap.size();
         ItemStack[] contents = new ItemStack[size];
 

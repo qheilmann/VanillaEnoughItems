@@ -11,11 +11,9 @@ import me.qheilmann.vei.Core.Utils.NotNullSequenceSet;
  * A specialized set implementation for managing Slot objects.
  * This class ensures no duplicate elements, as defined by the
  * {@link Slot#equals(Object)} method, and guarantees that no null elements
- * are added. Unlike {@link SlotSet}, this class maintains the order of
- * elements as they were added.
+ * are added.
  *
  * @param <T> the type of Slot elements maintained by this set
- * @see SlotSet
  */
 public class SlotSequence<T extends Slot> extends NotNullSequenceSet<T> {
 

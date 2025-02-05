@@ -6,6 +6,7 @@ import org.joml.Vector2i;
 import com.google.common.base.Preconditions;
 
 import me.qheilmann.vei.Core.Slot.Collection.SlotRange;
+import me.qheilmann.vei.Core.Slot.Collection.SlotSequence;
 
 /**
  * Defines a slot in a grid inventory (like a chest, dispenser, etc.)
@@ -158,6 +159,9 @@ public abstract class GridSlot extends Slot {
 
     /**
      * Get the first slot in the first row of the grid
+     * 
+     * @param slotTypeReference A reference to the slot type, only the type is
+     * relevant
      */
     @NotNull
     public static <T extends GridSlot> T getTopLeft(@NotNull T slotTypeReference) {
@@ -169,6 +173,9 @@ public abstract class GridSlot extends Slot {
 
     /**
      * Get the last slot in the first row of the grid
+     * 
+     * @param slotTypeReference A reference to the slot type, only the type is
+     * relevant
      */
     @NotNull
     public static <T extends GridSlot> T getTopRight(@NotNull T slotTypeReference) {
@@ -180,6 +187,9 @@ public abstract class GridSlot extends Slot {
 
     /**
      * Get the first slot in the last row of the grid
+     * 
+     * @param slotTypeReference A reference to the slot type, only the type is
+     * relevant
      */
     @NotNull
     public static <T extends GridSlot> T getBottomLeft(@NotNull T slotTypeReference) {
@@ -191,6 +201,9 @@ public abstract class GridSlot extends Slot {
 
     /**
      * Get the last slot in the last row of the grid
+     * 
+     * @param slotTypeReference A reference to the slot type, only the type is
+     * relevant
      */
     @NotNull
     public static <T extends GridSlot> T getBottomRight(@NotNull T slotTypeReference) {
@@ -204,46 +217,58 @@ public abstract class GridSlot extends Slot {
 
     /**
      * Get all the slots in the grid
+     * 
+     * @param slotTypeReference A reference to the slot type, only the type is
+     * relevant
      */
     @NotNull
-    public static <T extends GridSlot> SlotRange<T> getAllSlots(@NotNull T slotTypeReference) {
+    public static <T extends GridSlot> SlotSequence<T> getAllSlots(@NotNull T slotTypeReference) {
         T topLeft = getTopLeft(slotTypeReference);
         T bottomRight = getBottomRight(slotTypeReference);
 
-        return new SlotRange<T>(topLeft, bottomRight);
+        return new SlotSequence<>(new SlotRange<>(topLeft, bottomRight));
     }
 
     // Row slots
 
     /**
      * Get all the slots in the first row of the grid
+     * 
+     * @param slotTypeReference A reference to the slot type, only the type is
+     * relevant
      */
     @NotNull
-    public static <T extends GridSlot> SlotRange<T> getTopRow(@NotNull T slotTypeReference) {
+    public static <T extends GridSlot> SlotSequence<T> getTopRow(@NotNull T slotTypeReference) {
         T topLeft = getTopLeft(slotTypeReference);
         T topRight = getTopRight(slotTypeReference);
 
-        return new SlotRange<T>(topLeft, topRight);
+        return new SlotSequence<>(new SlotRange<>(topLeft, topRight));
     }
 
     /**
      * Get all the slots in the last row of the grid
+     * 
+     * @param slotTypeReference A reference to the slot type, only the type is
+     * relevant
      */
     @NotNull
-    public static <T extends GridSlot> SlotRange<T> getBottomRow(@NotNull T slotTypeReference) {
+    public static <T extends GridSlot> SlotSequence<T> getBottomRow(@NotNull T slotTypeReference) {
         T bottomLeft = getBottomLeft(slotTypeReference);
         T bottomRight = getBottomRight(slotTypeReference);
 
-        return new SlotRange<T>(bottomLeft, bottomRight);
+        return new SlotSequence<>(new SlotRange<>(bottomLeft, bottomRight));
     }
 
     /**
      * Get all the slots in a specific row of the grid
      * 
      * @param row The row number, starting from 0
+     * @param slotTypeReference A reference to the slot type, only the type is
+     * relevant
      */
     @NotNull
-    public static <T extends GridSlot> SlotRange<T> getRow(int row, @NotNull T slotTypeReference) {
+    public static <T extends GridSlot> SlotSequence<T> getRow(int row, @NotNull T slotTypeReference) {
+        Preconditions.checkArgument(row >= 0 && row < slotTypeReference.getRowCount(), "row must be between 0 and %d, current value: %d", slotTypeReference.getRowCount(), row);
         T left = Slot.cloneSlot(slotTypeReference);
         left.setX(0);
         left.setY(row);
@@ -252,40 +277,49 @@ public abstract class GridSlot extends Slot {
         right.setX(right.getColumnCount() - 1);
         right.setY(row);
 
-        return new SlotRange<T>(left, right);
+        return new SlotSequence<>(new SlotRange<>(left, right));
     }
 
     // Column slots
 
     /**
      * Get all the slots in the first column of the grid
+     * 
+     * @param slotTypeReference A reference to the slot type, only the type is
+     * relevant
      */
     @NotNull
-    public static <T extends GridSlot> SlotRange<T> getLeftColumn(@NotNull T slotTypeReference) {
+    public static <T extends GridSlot> SlotSequence<T> getLeftColumn(@NotNull T slotTypeReference) {
         T topLeft = getTopLeft(slotTypeReference);
         T bottomLeft = getBottomLeft(slotTypeReference);
 
-        return new SlotRange<T>(topLeft, bottomLeft);
+        return new SlotSequence<>(new SlotRange<>(topLeft, bottomLeft));
     }
 
     /**
      * Get all the slots in the last column of the grid
+     * 
+     * @param slotTypeReference A reference to the slot type, only the type is
+     * relevant
      */
     @NotNull
-    public static <T extends GridSlot> SlotRange<T> getRightColumn(@NotNull T slotTypeReference) {
+    public static <T extends GridSlot> SlotSequence<T> getRightColumn(@NotNull T slotTypeReference) {
         T topRight = getTopRight(slotTypeReference);
         T bottomRight = getBottomRight(slotTypeReference);
 
-        return new SlotRange<T>(topRight, bottomRight);
+        return new SlotSequence<>(new SlotRange<>(topRight, bottomRight));
     }
 
     /**
      * Get all the slots in a specific column of the grid
      * 
      * @param column The column number, starting from 0
+     * @param slotTypeReference A reference to the slot type, only the type is
+     * relevant
      */
     @NotNull
-    public static <T extends GridSlot> SlotRange<T> getColumn(int column, @NotNull T slotTypeReference) {
+    public static <T extends GridSlot> SlotSequence<T> getColumn(int column, @NotNull T slotTypeReference) {
+        Preconditions.checkArgument(column >= 0 && column < slotTypeReference.getColumnCount(), "column must be between 0 and %d, current value: %d", slotTypeReference.getColumnCount(), column);
         T top = Slot.cloneSlot(slotTypeReference);
         top.setX(column);
         top.setY(0);
@@ -294,11 +328,91 @@ public abstract class GridSlot extends Slot {
         bottom.setX(column);
         bottom.setY(bottom.getRowCount() - 1);
 
-        return new SlotRange<T>(top, bottom);
+        return new SlotSequence<>(new SlotRange<>(top, bottom));
+    }
+
+    /**
+     * Get all the slots between two corners of the grid
+     * 
+     * @param cornerA The first corner
+     * @param cornerB The second corner
+     */
+    @NotNull
+    public static <T extends GridSlot> SlotSequence<T> getSlotsBetween(@NotNull T cornerA, @NotNull T cornerB) {
+        return new SlotSequence<>(new SlotRange<>(cornerA, cornerB));
     }
     
     protected static int calcIndex(int x, int y, int columnCount) {
         return y * columnCount + x;
+    }
+
+    /**
+     * Get all the slots on the border of the grid between two corners
+     * 
+     * @param cornerA The first corner
+     * @param cornerB The second corner
+     * @return A SlotSequence containing all the slots on the border between 
+     * the two corners
+     */
+    public static <T extends GridSlot> SlotSequence<T> getSlotsBorderBetween(@NotNull T cornerA, @NotNull T cornerB) {
+        T topLeft = getTopLeftSlot(cornerA, cornerB);
+        T bottomRight = getBottomRightSlot(cornerA, cornerB);
+        int zoneRowCount = cornerB.getY() - cornerA.getY();
+        int zoneColumnCount = cornerB.getX() - cornerA.getX();
+
+        // If the zone is too small, return all slots
+        if (zoneRowCount <= 2 || zoneColumnCount <= 2) {
+            return getSlotsBetween(cornerA, cornerB);
+        }
+
+        GridSlot topLeftInner = topLeft.clone();
+        GridSlot bottomRightInner = bottomRight.clone();
+        topLeftInner.setCoord(topLeftInner.getCoord().add(1, 1));
+        bottomRightInner.setCoord(bottomRightInner.getCoord().sub(1, 1));
+
+        SlotSequence<T> borderSlots = getSlotsBetween(topLeft, bottomRight); // all slots inside the zone
+        SlotSequence<GridSlot> allInnerSlots = new SlotSequence<GridSlot>(new SlotRange<GridSlot>(topLeftInner, bottomRightInner));
+        borderSlots.removeAll(allInnerSlots);
+        
+        return new SlotSequence<>(borderSlots);
+    }
+
+    /**
+     * Get all the slots on the border of the grid
+     * 
+     * @param slotTypeReference A reference to the slot type, only the type is
+     * relevant
+     * @return A SlotSequence containing all the slots on the border of the grid
+     */
+    public static <T extends GridSlot> SlotSequence<T> getSlotsBorder(@NotNull T slotTypeReference) {
+        T topLeft = getTopLeft(slotTypeReference);
+        T bottomRight = getBottomRight(slotTypeReference);
+
+        return getSlotsBorderBetween(topLeft, bottomRight);
+    }
+
+    // Private
+
+    @NotNull
+    protected static <T extends GridSlot> T getTopLeftSlot(@NotNull T cornerA, @NotNull T cornerB) {
+        int minXCoord = Math.min(cornerA.getX(), cornerB.getX());
+        int minYCoord = Math.min(cornerA.getY(), cornerB.getY());
+
+        T clonedSlot = Slot.cloneSlot(cornerA);
+        clonedSlot.setX(minXCoord);
+        clonedSlot.setY(minYCoord);
+        return clonedSlot;
+    }
+
+    @NotNull
+    protected static <T extends GridSlot> T getBottomRightSlot(@NotNull T cornerA, @NotNull T cornerB) {
+        int maxXCoord = Math.max(cornerA.getX(), cornerB.getX());
+        int maxYCoord = Math.max(cornerA.getY(), cornerB.getY());
+
+        T clonedSlot = Slot.cloneSlot(cornerA);
+        clonedSlot.setX(maxXCoord);
+        clonedSlot.setY(maxYCoord);
+        return clonedSlot;
     }
     
     // Check methods

@@ -336,7 +336,7 @@ public class SlotRange<T extends GridSlot> extends SlotSequence<T> {
     }
 
     @NotNull
-    private static <T extends GridSlot> T getTopLeftSlot(@NotNull T cornerA, @NotNull T cornerB) {
+    protected static <T extends GridSlot> T getTopLeftSlot(@NotNull T cornerA, @NotNull T cornerB) {
         int minXCoord = Math.min(cornerA.getX(), cornerB.getX());
         int minYCoord = Math.min(cornerA.getY(), cornerB.getY());
 
@@ -347,7 +347,7 @@ public class SlotRange<T extends GridSlot> extends SlotSequence<T> {
     }
 
     @NotNull
-    private static <T extends GridSlot> T getBottomRightSlot(@NotNull T cornerA, @NotNull T cornerB) {
+    protected static <T extends GridSlot> T getBottomRightSlot(@NotNull T cornerA, @NotNull T cornerB) {
         int maxXCoord = Math.max(cornerA.getX(), cornerB.getX());
         int maxYCoord = Math.max(cornerA.getY(), cornerB.getY());
 
