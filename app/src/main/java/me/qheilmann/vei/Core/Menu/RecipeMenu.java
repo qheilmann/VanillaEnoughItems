@@ -8,6 +8,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import dev.triumphteam.gui.components.InteractionModifier;
 import me.qheilmann.vei.Core.GUI.BaseGui;
 import me.qheilmann.vei.Core.GUI.GuiItem;
+import me.qheilmann.vei.Core.Slot.GridSlot;
 import me.qheilmann.vei.Core.Slot.Collection.SlotRange;
 import me.qheilmann.vei.Core.Slot.Implementation.MaxChestSlot;
 import me.qheilmann.vei.Core.Style.ButtonType.VeiButtonType;
@@ -246,6 +247,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         meta.setMaxStackSize(1);
         meta.setHideTooltip(true);
         padding.setItemMeta(meta);
+        setItem(GridSlot.getAllSlots(new MaxChestSlot(0)), padding);
         // this.getFiller().fill(padding); // TODO old filler
     }
 }

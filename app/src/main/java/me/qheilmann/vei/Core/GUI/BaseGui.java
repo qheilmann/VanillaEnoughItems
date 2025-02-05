@@ -35,7 +35,7 @@ import dev.triumphteam.gui.components.exception.GuiException;
 import dev.triumphteam.gui.components.util.VersionHelper;
 import dev.triumphteam.gui.guis.InteractionModifierListener;
 import me.qheilmann.vei.Core.Slot.Slot;
-import me.qheilmann.vei.Core.Slot.Collection.SlotSet;
+import me.qheilmann.vei.Core.Slot.Collection.SlotSequence;
 import me.qheilmann.vei.Menu.InventoryShadow;
 
 import net.kyori.adventure.text.Component;
@@ -201,7 +201,7 @@ public abstract class BaseGui<G extends BaseGui<G, S>, S extends Slot> implement
      * @param slots   The slots in which the item should go.
      * @param guiItem The {@link GuiItem} to add to the slots.
      */
-    protected void setItem(@NotNull final SlotSet<S> slots, @NotNull final GuiItem<G> guiItem) {
+    protected void setItem(@NotNull final SlotSequence<S> slots, @NotNull final GuiItem<G> guiItem) {
         Preconditions.checkArgument(slots != null, "Slots cannot be null.");
 
         for (final S slot : slots) {
@@ -279,7 +279,7 @@ public abstract class BaseGui<G extends BaseGui<G, S>, S extends Slot> implement
 
     @Nullable
     @SuppressWarnings("unchecked")
-    protected GuiItem<G> getGuiItem(final int slot) { // TODO see if I can add an getItem and then with getAction it's the same without the mystique cast
+    protected GuiItem<G> getGuiItem(final int slot) {
         ItemStack itemstack = inventory.getItem(slot);
 
         Class<GuiItem<G>> clazz = (Class<GuiItem<G>>) (Class<?>) GuiItem.class;
