@@ -4,10 +4,14 @@ import java.util.List;
 
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Recipe;
+import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
 import dev.triumphteam.gui.components.InteractionModifier;
 import me.qheilmann.vei.Core.GUI.BaseGui;
 import me.qheilmann.vei.Core.GUI.GuiItem;
+import me.qheilmann.vei.Core.RecipeView.RecipeView;
+import me.qheilmann.vei.Core.RecipeView.RecipeViewButtonType;
+import me.qheilmann.vei.Core.RecipeView.ShapedRecipeView;
 import me.qheilmann.vei.Core.Slot.Collection.SlotRange;
 import me.qheilmann.vei.Core.Slot.Implementation.MaxChestSlot;
 import me.qheilmann.vei.Core.Style.ButtonType.VeiButtonType;
@@ -40,34 +44,50 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
     private GuiItem<RecipeMenu> bookmarkListItem;
     private GuiItem<RecipeMenu> bookmarkServerListItem;
     private GuiItem<RecipeMenu> exitItem;
+    private GuiItem<RecipeMenu> nextRecipeItem;
+    private GuiItem<RecipeMenu> previousRecipeItem;
+    private GuiItem<RecipeMenu> forwardRecipeItem;
+    private GuiItem<RecipeMenu> backwardRecipeItem;
+    private GuiItem<RecipeMenu> moveIngredientsItem;
 
-    private final String bookmarkMessage       = "Bookmark";
-    // private final String unbookmarkMessage     = "Unbookmark";
-    private final String bookmarkLoreMessage   = "Add this recipe to your bookmark";
-    // private final String unbookmarkLoreMessage = "Remove this recipe from your bookmark";
+    private static final String bookmarkMessage       = "Bookmark";
+    // private static final String unbookmarkMessage     = "Unbookmark";
+    private static final String bookmarkLoreMessage   = "Add this recipe to your bookmark";
+    // private static final String unbookmarkLoreMessage = "Remove this recipe from your bookmark";
 
     private final Style style;
+    private RecipeView<? extends Recipe> recipeView;
 
     public RecipeMenu(Style style, Recipe recipe) {
         super(6, Component.text("Recipe Menu"), InteractionModifier.VALUES);
         this.style = style;
+        // TODO temp
+        this.recipeView = new ShapedRecipeView((ShapedRecipe) recipe);
 
         setDefaultClickAction((event, context) -> event.setCancelled(true)); // Cancel the event for the entire GUI
         
         // Prepare buttons
         setupQuickLinkButton();
         setupWorkbenchTypeScrollLeftButton();
-        setupScrollRightForWorkbenchType();
+        setupWorkbenchTypeScrollRightButton();
         setupInfoButton();
-        setupWorkbenchVariantScrollUpControl();
-        setupWorkbenchVariantScrollDownAction();
-        setupBookmarkRecipeToggleItem();
-        setupBookmarkListGuiItem();
-        setupBookmarkServerListItem();
+        setupWorkbenchVariantScrollUpButton();
+        setupWorkbenchVariantScrollDownButton();
+        setupBookmarkRecipeToggleButton();
+        setupBookmarkListButton();
+        setupBookmarkServerListButton();
         setupExitButton();
+        setupNextRecipeButton();
+        setupPreviousRecipeButton();
+        setupForwardRecipeButton();
+        setupBackwardRecipeButton();
+        setupMoveIngredientsButton();
         
         // Padding
         padEmptySlots();
+
+        // TEMP
+        this.recipeView.getRecipeContainer().getContainer().forEach((slot, item) -> setItem(slot.asMaxChestSlot(), item));
     }
 
     //#region Button setup
@@ -97,7 +117,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         setItem(WORKBENCH_TYPE_SCROLL_LEFT_SLOT, workbenchTypeScrollLeftItem);
     }
 
-    private void setupScrollRightForWorkbenchType() {
+    private void setupWorkbenchTypeScrollRightButton() {
         workbenchTypeScrollRightItem = new GuiItem<>(style.getButtonMaterial(VeiButtonType.RecipeMenu.WORKBENCH_TYPE_SCROLL_RIGHT));
         workbenchTypeScrollRightItem.editMeta(meta -> meta.displayName(
             Component.text("Scroll right").color(style.getPrimaryColor())
@@ -121,7 +141,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         setItem(INFO_SLOT, infoItem);
     }
 
-    private void setupWorkbenchVariantScrollUpControl() {
+    private void setupWorkbenchVariantScrollUpButton() {
         workbenchVariantScrollUpItem = new GuiItem<>(style.getButtonMaterial(VeiButtonType.RecipeMenu.WORKBENCH_VARIANT_SCROLL_UP));
         workbenchVariantScrollUpItem.editMeta(meta -> meta.displayName(
             Component.text("Scroll up").color(style.getPrimaryColor())
@@ -133,7 +153,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         setItem(WORKBENCH_VARIANT_SCROLL_UP_SLOT, workbenchVariantScrollUpItem);
     }
 
-    private void setupWorkbenchVariantScrollDownAction() {
+    private void setupWorkbenchVariantScrollDownButton() {
         workbenchVariantScrollDownItem = new GuiItem<>(style.getButtonMaterial(VeiButtonType.RecipeMenu.WORKBENCH_VARIANT_SCROLL_DOWN));
         workbenchVariantScrollDownItem.editMeta(meta -> meta.displayName(
             Component.text("Scroll down").color(style.getPrimaryColor())
@@ -145,7 +165,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         setItem(WORKBENCH_VARIANT_SCROLL_DOWN_SLOT, workbenchVariantScrollDownItem);
     }
 
-    private void setupBookmarkRecipeToggleItem() {
+    private void setupBookmarkRecipeToggleButton() {
         bookmarkThisRecipeItemToggle = new GuiItem<>(style.getButtonMaterial(VeiButtonType.RecipeMenu.BOOKMARK_THIS_RECIPE));
         bookmarkThisRecipeItemToggle.editMeta(meta -> meta.displayName(
             Component.text(bookmarkMessage).color(style.getPrimaryColor())
@@ -157,7 +177,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         setItem(BOOKMARK_THIS_RECIPE_TOGGLE_SLOT, bookmarkThisRecipeItemToggle);
     }
 
-    private void setupBookmarkListGuiItem() {
+    private void setupBookmarkListButton() {
         bookmarkListItem = new GuiItem<>(style.getButtonMaterial(VeiButtonType.RecipeMenu.BOOKMARK_LIST));
         bookmarkListItem.editMeta(meta -> meta.displayName(
             Component.text("Bookmark list").color(style.getPrimaryColor())
@@ -169,7 +189,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         setItem(BOOKMARK_LIST_SLOT, bookmarkListItem);
     }
 
-    private void setupBookmarkServerListItem() {
+    private void setupBookmarkServerListButton() {
         bookmarkServerListItem = new GuiItem<>(style.getButtonMaterial(VeiButtonType.RecipeMenu.BOOKMARK_SERVER_LIST));
         bookmarkServerListItem.editMeta(meta -> meta.displayName(
             Component.text("Bookmark server list").color(style.getPrimaryColor())
@@ -191,6 +211,67 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         )));
         exitItem.setAction(this::exitAction);
         setItem(EXIT_SLOT, exitItem);
+    }
+
+    private void setupNextRecipeButton() {
+        nextRecipeItem = new GuiItem<>(style.getButtonMaterial(VeiButtonType.RecipeMenu.NEXT_RECIPE));
+        nextRecipeItem.editMeta(meta -> meta.displayName(
+            Component.text("Next recipe").color(style.getPrimaryColor())
+        ));
+        nextRecipeItem.editMeta(meta -> meta.lore(List.of(
+            Component.text("See the next recipe").color(style.getSecondaryColor())
+        )));
+        nextRecipeItem.setAction(this::nextRecipeAction);
+        // TODO add to the RecipeView
+    }
+
+    private void setupPreviousRecipeButton() {
+        previousRecipeItem = new GuiItem<>(style.getButtonMaterial(VeiButtonType.RecipeMenu.PREVIOUS_RECIPE));
+        previousRecipeItem.editMeta(meta -> meta.displayName(
+            Component.text("Previous recipe").color(style.getPrimaryColor())
+        ));
+        previousRecipeItem.editMeta(meta -> meta.lore(List.of(
+            Component.text("See the previous recipe").color(style.getSecondaryColor())
+        )));
+        previousRecipeItem.setAction(this::previousRecipeAction);
+        recipeView.attachMenuButton(RecipeViewButtonType.PREVIOUS_RECIPE, previousRecipeItem);
+    }
+
+    private void setupForwardRecipeButton() {
+        forwardRecipeItem = new GuiItem<>(style.getButtonMaterial(VeiButtonType.RecipeMenu.FORWARD_RECIPE));
+        forwardRecipeItem.editMeta(meta -> meta.displayName(
+            Component.text("Forward recipe").color(style.getPrimaryColor())
+        ));
+        forwardRecipeItem.editMeta(meta -> meta.lore(List.of(
+            Component.text("Return to the following recipe in the history").color(style.getSecondaryColor())
+        )));
+        forwardRecipeItem.setAction(this::forwardRecipeAction);
+        recipeView.attachMenuButton(RecipeViewButtonType.FORWARD_RECIPE, forwardRecipeItem);
+    }
+    
+    private void setupBackwardRecipeButton() {
+        backwardRecipeItem = new GuiItem<>(style.getButtonMaterial(VeiButtonType.RecipeMenu.BACKWARD_RECIPE));
+        backwardRecipeItem.editMeta(meta -> meta.displayName(
+            Component.text("Backward recipe").color(style.getPrimaryColor())
+        ));
+        backwardRecipeItem.editMeta(meta -> meta.lore(List.of(
+            Component.text("Go back to the preceding recipe in the history").color(style.getSecondaryColor())
+        )));
+        backwardRecipeItem.setAction(this::backwardRecipeAction);
+        recipeView.attachMenuButton(RecipeViewButtonType.BACKWARD_RECIPE, backwardRecipeItem);
+    }
+
+    private void setupMoveIngredientsButton() {
+        moveIngredientsItem = new GuiItem<>(style.getButtonMaterial(VeiButtonType.RecipeMenu.MOVE_INGREDIENTS));
+        moveIngredientsItem.editMeta(meta -> meta.displayName(
+            Component.text("Move ingredients").color(style.getPrimaryColor())
+        ));
+        moveIngredientsItem.editMeta(meta -> meta.lore(List.of(
+            Component.text("Automatically move all the ingredients inside the workbench").color(style.getSecondaryColor()),
+            Component.text("This work only if a empty accessible workbench is around you").color(style.getSecondaryColor())
+        )));
+        moveIngredientsItem.setAction(this::moveIngredientsAction);
+        recipeView.attachMenuButton(RecipeViewButtonType.MOVE_INGREDIENTS, moveIngredientsItem);
     }
     
     //#endregion Button setup
@@ -235,6 +316,26 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
 
     private void exitAction(InventoryClickEvent event, RecipeMenu menu) {
         event.getWhoClicked().sendMessage("Exit action");
+    }
+
+    private void nextRecipeAction(InventoryClickEvent event, RecipeMenu menu) {
+        event.getWhoClicked().sendMessage("Next recipe action");
+    }
+
+    private void previousRecipeAction(InventoryClickEvent event, RecipeMenu menu) {
+        event.getWhoClicked().sendMessage("Previous recipe action");
+    }
+
+    private void forwardRecipeAction(InventoryClickEvent event, RecipeMenu menu) {
+        event.getWhoClicked().sendMessage("Forward recipe action");
+    }
+
+    private void backwardRecipeAction(InventoryClickEvent event, RecipeMenu menu) {
+        event.getWhoClicked().sendMessage("Backward recipe action");
+    }
+
+    private void moveIngredientsAction(InventoryClickEvent event, RecipeMenu menu) {
+        event.getWhoClicked().sendMessage("Move ingredients action");
     }
 
     //#endregion Button actions

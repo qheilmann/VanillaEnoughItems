@@ -6,7 +6,7 @@ import com.google.common.base.Preconditions;
 
 public class VeiButtonType implements ButtonType {
     public static class RecipeMenu {
-        public static final ButtonType BACK_RECIPE = new VeiButtonType("back_recipe");
+        public static final ButtonType BACKWARD_RECIPE = new VeiButtonType("backward_recipe");
         public static final ButtonType BOOKMARK_LIST = new VeiButtonType("bookmark_list");
         public static final ButtonType BOOKMARK_SERVER_LIST = new VeiButtonType("bookmark_server_list");
         public static final ButtonType BOOKMARK_THIS_RECIPE = new VeiButtonType("bookmark_this_recipe");

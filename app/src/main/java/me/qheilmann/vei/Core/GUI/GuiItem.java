@@ -17,7 +17,7 @@ import me.qheilmann.vei.Core.Item.PersistentDataType.UuidPdt;
  *
  * @author Most original part come from Triumph GUI <a href="https://github.com/TriumphTeam/triumph-gui">TriumphTeam</a>
  */
-public class GuiItem<G extends BaseGui<G, ?>> extends ItemStack {
+public class GuiItem<G extends BaseGui<G, ?>> extends ItemStack { // TODO maybe convert this to agregation instead of inheritance
 
     private static final @NotNull String UUID_KEY_STRING = "gui_item_uuid";
     public static final @NotNull NamespacedKey UUID_KEY = new NamespacedKey(VanillaEnoughItems.NAMESPACE, UUID_KEY_STRING);

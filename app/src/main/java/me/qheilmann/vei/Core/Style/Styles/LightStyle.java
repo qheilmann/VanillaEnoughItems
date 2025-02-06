@@ -45,7 +45,7 @@ public class LightStyle extends Style{
 
         buttonSkins.put(VeiButtonType.Generic.EXIT, CustomHeadFactory.QUARTZ_X);
         buttonSkins.put(VeiButtonType.Generic.INFO, CustomHeadFactory.QUARTZ_REVERSE_EXCLAMATION_MARK);
-        buttonSkins.put(VeiButtonType.RecipeMenu.BACK_RECIPE, CustomHeadFactory.QUARTZ_BACKWARD_II);
+        buttonSkins.put(VeiButtonType.RecipeMenu.BACKWARD_RECIPE, CustomHeadFactory.QUARTZ_BACKWARD_II);
         buttonSkins.put(VeiButtonType.RecipeMenu.BOOKMARK_LIST, CustomHeadFactory.FIREWORK_STAR_CYAN);
         buttonSkins.put(VeiButtonType.RecipeMenu.BOOKMARK_SERVER_LIST, CustomHeadFactory.FIREWORK_STAR_GREEN);
         buttonSkins.put(VeiButtonType.RecipeMenu.BOOKMARK_THIS_RECIPE, new ItemStack(Material.WHITE_CANDLE));

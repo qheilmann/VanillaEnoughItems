@@ -170,10 +170,10 @@ public class RecipeInventory implements InventoryHolder, IOwnedByMenu {
      * This method is needed to update and retrieve items from the RecipeViewContainer inside the Menu inventory after a recipe change/update.
      */
     private void updateRecipeViewPart() {
-        for (var slot : recipeView.getRecipeContainer().getSlots()) {
-            int index = menuCoordAsMenuIndex(viewCoordAsMenuCoord(slot.getCoord()));
-            inventory.setItem(index, slot.getCurrentItemStack());
-        }
+        // for (var slot : recipeView.getRecipeContainer().getContainer()) {
+        //     int index = menuCoordAsMenuIndex(viewCoordAsMenuCoord(slot.getCoord()));
+        //     inventory.setItem(index, slot.getCurrentItemStack());
+        // }
     }
 
     private void updateCycle() {
