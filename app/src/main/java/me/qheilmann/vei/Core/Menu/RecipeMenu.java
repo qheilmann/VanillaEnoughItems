@@ -6,11 +6,11 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
+
 import dev.triumphteam.gui.components.InteractionModifier;
 import me.qheilmann.vei.Core.GUI.BaseGui;
 import me.qheilmann.vei.Core.GUI.GuiItem;
 import me.qheilmann.vei.Core.RecipeView.RecipeView;
-import me.qheilmann.vei.Core.RecipeView.RecipeViewButtonType;
 import me.qheilmann.vei.Core.RecipeView.ShapedRecipeView;
 import me.qheilmann.vei.Core.Slot.Collection.SlotRange;
 import me.qheilmann.vei.Core.Slot.Implementation.MaxChestSlot;
@@ -50,10 +50,10 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
     private GuiItem<RecipeMenu> backwardRecipeItem;
     private GuiItem<RecipeMenu> moveIngredientsItem;
 
-    private static final String bookmarkMessage       = "Bookmark";
-    // private static final String unbookmarkMessage     = "Unbookmark";
-    private static final String bookmarkLoreMessage   = "Add this recipe to your bookmark";
-    // private static final String unbookmarkLoreMessage = "Remove this recipe from your bookmark";
+    private static final String BOOKMARK_MESSAGE       = "Bookmark";
+    // private static final String UNBOOKMARK_MESSAGE     = "Unbookmark";
+    private static final String BOOKMARK_LORE_MESSAGE   = "Add this recipe to your bookmark";
+    // private static final String UNBOOKMARK_LORE_MESSAGE = "Remove this recipe from your bookmark";
 
     private final Style style;
     private RecipeView<? extends Recipe> recipeView;
@@ -86,8 +86,8 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         // Padding
         padEmptySlots();
 
-        // TEMP
-        this.recipeView.getRecipeContainer().getContainer().forEach((slot, item) -> setItem(slot.asMaxChestSlot(), item));
+        // TODO TEMP (populate)
+        this.recipeView.getContentView(RecipeView.SlotType.ALL).forEach((slot, item) -> setItem(slot.asMaxChestSlot(), item));
     }
 
     //#region Button setup
@@ -168,10 +168,10 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
     private void setupBookmarkRecipeToggleButton() {
         bookmarkThisRecipeItemToggle = new GuiItem<>(style.getButtonMaterial(VeiButtonType.RecipeMenu.BOOKMARK_THIS_RECIPE));
         bookmarkThisRecipeItemToggle.editMeta(meta -> meta.displayName(
-            Component.text(bookmarkMessage).color(style.getPrimaryColor())
+            Component.text(BOOKMARK_MESSAGE).color(style.getPrimaryColor())
         ));
         bookmarkThisRecipeItemToggle.editMeta(meta -> meta.lore(
-            List.of(Component.text(bookmarkLoreMessage).color(style.getSecondaryColor())
+            List.of(Component.text(BOOKMARK_LORE_MESSAGE).color(style.getSecondaryColor())
         )));
         bookmarkThisRecipeItemToggle.setAction(this::bookmarkRecipeToggleAction);
         setItem(BOOKMARK_THIS_RECIPE_TOGGLE_SLOT, bookmarkThisRecipeItemToggle);
@@ -222,7 +222,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
             Component.text("See the next recipe").color(style.getSecondaryColor())
         )));
         nextRecipeItem.setAction(this::nextRecipeAction);
-        // TODO add to the RecipeView
+        recipeView.attachMenuButton(RecipeView.ButtonType.NEXT_RECIPE, nextRecipeItem);
     }
 
     private void setupPreviousRecipeButton() {
@@ -234,7 +234,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
             Component.text("See the previous recipe").color(style.getSecondaryColor())
         )));
         previousRecipeItem.setAction(this::previousRecipeAction);
-        recipeView.attachMenuButton(RecipeViewButtonType.PREVIOUS_RECIPE, previousRecipeItem);
+        recipeView.attachMenuButton(RecipeView.ButtonType.PREVIOUS_RECIPE, previousRecipeItem);
     }
 
     private void setupForwardRecipeButton() {
@@ -246,7 +246,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
             Component.text("Return to the following recipe in the history").color(style.getSecondaryColor())
         )));
         forwardRecipeItem.setAction(this::forwardRecipeAction);
-        recipeView.attachMenuButton(RecipeViewButtonType.FORWARD_RECIPE, forwardRecipeItem);
+        recipeView.attachMenuButton(RecipeView.ButtonType.FORWARD_RECIPE, forwardRecipeItem);
     }
     
     private void setupBackwardRecipeButton() {
@@ -258,7 +258,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
             Component.text("Go back to the preceding recipe in the history").color(style.getSecondaryColor())
         )));
         backwardRecipeItem.setAction(this::backwardRecipeAction);
-        recipeView.attachMenuButton(RecipeViewButtonType.BACKWARD_RECIPE, backwardRecipeItem);
+        recipeView.attachMenuButton(RecipeView.ButtonType.BACKWARD_RECIPE, backwardRecipeItem);
     }
 
     private void setupMoveIngredientsButton() {
@@ -271,7 +271,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
             Component.text("This work only if a empty accessible workbench is around you").color(style.getSecondaryColor())
         )));
         moveIngredientsItem.setAction(this::moveIngredientsAction);
-        recipeView.attachMenuButton(RecipeViewButtonType.MOVE_INGREDIENTS, moveIngredientsItem);
+        recipeView.attachMenuButton(RecipeView.ButtonType.MOVE_INGREDIENTS, moveIngredientsItem);
     }
     
     //#endregion Button setup

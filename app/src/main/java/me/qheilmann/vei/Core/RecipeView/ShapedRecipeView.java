@@ -1,18 +1,18 @@
 package me.qheilmann.vei.Core.RecipeView;
 
-import java.util.Collection;
-import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
-
+import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.inventory.ShapedRecipe;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
-import me.qheilmann.vei.VanillaEnoughItems;
 import me.qheilmann.vei.Core.GUI.GuiItem;
 import me.qheilmann.vei.Core.Menu.RecipeMenu;
-import me.qheilmann.vei.Menu.RecipeView.RecipeViewContainer;
+import me.qheilmann.vei.Core.Slot.Collection.SlotRange;
 import me.qheilmann.vei.foundation.gui.GuiItemService;
+import net.kyori.adventure.text.Component;
 
 /**
  * <h1>ShapedRecipeView</h1>
@@ -49,75 +49,31 @@ public class ShapedRecipeView extends RecipeView<ShapedRecipe> {
     public static final RecipeViewSlot BACKWARD_RECIPE_SLOT = new RecipeViewSlot(1, 4);
     public static final RecipeViewSlot MOVE_INGREDIENTS_SLOT = new RecipeViewSlot(5, 3);
 
-    public static final RecipeViewSlot INPUTS_ORGIGIN_COORDS = new RecipeViewSlot(1, 1);
-    public static final RecipeViewSlot OUTPUTS_COORDS = new RecipeViewSlot(5, 2);
+    public static final SlotRange<RecipeViewSlot> INGREDIENTS_SLOT_RANGE = new SlotRange<>(new RecipeViewSlot(1, 1), new RecipeViewSlot(3, 3));
+    public static final RecipeViewSlot RESULT_COORDS = new RecipeViewSlot(5, 2);
     public static final RecipeViewSlot WORKBENCH_COORDS = new RecipeViewSlot(4, 2);
 
-    private RecipeViewContainer recipeViewContainer;
     private ShapedRecipe shapedRecipe;
-    private boolean hasRecipeChanged = true;
+    private static final Material WORKBENCH_DISPLAY_MATERIAL = Material.CRAFTING_TABLE;
 
     public ShapedRecipeView(@NotNull ShapedRecipe recipe) {
         super(recipe);
         
-        // TEMPS
+        // TODO TEMPORARY here we have double recipe and shapedRecipe (protected recipe and always cast (mprivate methode))
         shapedRecipe = recipe;
-        recipeViewContainer = new RecipeViewContainer();
-        initInventory();
+        placeWorkbench();
+        reloadView();
     }
 
     @Override
     public void setRecipe(@NotNull ShapedRecipe recipe) {
         super.setRecipe(recipe); // TODO recipe and shapedRecipe doublon
         shapedRecipe = recipe;
-        hasRecipeChanged = true;
-    }
-
-    @Override
-    public void clearRecipe() {
-
-        for (int y = 0; y < 3; y++) {
-            for (int x = 0; x < 3; x++) {
-                recipeViewContainer.setViewSlot(new RecipeViewSlot(7+1+x+y), new GuiItem<>(ItemStack.empty()));
-            }
-        }
-
-        recipeViewContainer.setViewSlot(new RecipeViewSlot(19), new GuiItem<>(ItemStack.empty()));
-    }
-
-    @Override
-    public void refresh() {
-        if(!hasRecipeChanged) {
-            return;
-        }
-        
-        reloadView();
-    }
-
-    @Override
-    public RecipeViewContainer getRecipeContainer() {
-        VanillaEnoughItems.LOGGER.info("[LOG123]2]: " + shapedRecipe);
-        refresh();
-        return recipeViewContainer;
-    }
-
-    @Override
-    public @NotNull Collection<ItemStack> getResults() {
-        return Collections.singletonList(shapedRecipe.getResult());
-    }
-
-    @Override
-    public @NotNull Collection<RecipeChoice> getIngredients() {
-        return shapedRecipe.getChoiceMap().values();
-    }
-
-    private void initInventory() {
-        // TODO
     }
 
     private void reloadView() {
         
-        clearRecipe();
+        clear();
         RecipeChoice[][] recipeMatrix = getRecipe3by3Matrix(shapedRecipe);
 
         // Inputs (crafting grid)
@@ -128,18 +84,17 @@ public class ShapedRecipeView extends RecipeView<ShapedRecipe> {
                     continue;
                 }
                 if (recipeChoice instanceof RecipeChoice.MaterialChoice materialChoice) {
-                    recipeViewContainer.setViewSlot(new RecipeViewSlot(7+1+x+y), new GuiItem<RecipeMenu>(materialChoice.getItemStack()));
+                    recipeViewSlots.put(new RecipeViewSlot(x+1,y+1), new GuiItem<RecipeMenu>(materialChoice.getItemStack()));
                 }
                 else {
+                    // TODO remove the use a deprecated method for generating the warning item
                     new GuiItemService().CreateWarningItem("Conversion of the RecipeChoice type to %s is not supported".formatted(recipeChoice.getClass().getName()));
                 }
             }
         }
 
         // Result
-        recipeViewContainer.setViewSlot(new RecipeViewSlot(19), new GuiItem<>(shapedRecipe.getResult()));
-
-        hasRecipeChanged = false; // reset the flag
+        recipeViewSlots.put(new RecipeViewSlot(19), new GuiItem<>(shapedRecipe.getResult()));
     }
 
     /**
@@ -184,45 +139,101 @@ public class ShapedRecipeView extends RecipeView<ShapedRecipe> {
         return recipeMatrix;
     }
 
-    @Override
-    public void clearRecipeSlot() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'clearRecipeSlot'");
+    @Override // TODO split this to each slot type and push this to super class (derived class can override each slot type)
+    public void clear(EnumSet<SlotType> slotTypes) {
+
+        if (slotTypes.contains(SlotType.INGREDIENTS)) {
+            for (RecipeViewSlot slot : INGREDIENTS_SLOT_RANGE) {
+                recipeViewSlots.put(slot, new GuiItem<>(ItemStack.empty()));
+            }
+        }
+
+        // No consumables in shaped recipes
+
+        if (slotTypes.contains(SlotType.RESULTS)) {
+            recipeViewSlots.put(RESULT_COORDS, new GuiItem<>(ItemStack.empty()));
+        }
+
+        if (slotTypes.contains(SlotType.WORKBENCH)) {
+            recipeViewSlots.put(WORKBENCH_COORDS, new GuiItem<>(ItemStack.empty()));
+        }
+
+        if (slotTypes.contains(SlotType.BUTTONS)) {
+            recipeViewSlots.put(NEXT_RECIPE_SLOT, new GuiItem<>(ItemStack.empty()));
+            recipeViewSlots.put(PREVIOUS_RECIPE_SLOT, new GuiItem<>(ItemStack.empty()));
+            recipeViewSlots.put(FORWARD_RECIPE_SLOT, new GuiItem<>(ItemStack.empty()));
+            recipeViewSlots.put(BACKWARD_RECIPE_SLOT, new GuiItem<>(ItemStack.empty()));
+            recipeViewSlots.put(MOVE_INGREDIENTS_SLOT, new GuiItem<>(ItemStack.empty()));
+        }
+
+        // No other slots in shaped recipes (except padding) // TODO what about padding?
     }
 
     @Override
-    public HashMap<RecipeViewSlot, GuiItem<RecipeMenu>> getLastContent() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getLastContent'");
-    }
-
-    @Override
-    public void cycle() {
+    public void cycle(EnumSet<SlotType> slotTypes) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'cycle'");
     }
 
     @Override
-    public void attachMenuButton(RecipeViewButtonType buttonType, GuiItem<RecipeMenu> parentButton) {
+    public HashMap<RecipeViewSlot, GuiItem<RecipeMenu>> getContentView(EnumSet<SlotType> slotTypes) {
+        HashMap<RecipeViewSlot, GuiItem<RecipeMenu>> contentView = new HashMap<>();
+        if (slotTypes.contains(SlotType.INGREDIENTS)) {
+            for (RecipeViewSlot slot : INGREDIENTS_SLOT_RANGE) {
+                contentView.put(slot, recipeViewSlots.get(slot));
+            }
+        }
+
+        if (slotTypes.contains(SlotType.RESULTS)) {
+            contentView.put(RESULT_COORDS, recipeViewSlots.get(RESULT_COORDS));
+        }
+
+        if (slotTypes.contains(SlotType.WORKBENCH)) {
+            contentView.put(WORKBENCH_COORDS, recipeViewSlots.get(WORKBENCH_COORDS));
+        }
+
+        if (slotTypes.contains(SlotType.BUTTONS)) {
+            contentView.put(NEXT_RECIPE_SLOT, recipeViewSlots.get(NEXT_RECIPE_SLOT));
+            contentView.put(PREVIOUS_RECIPE_SLOT, recipeViewSlots.get(PREVIOUS_RECIPE_SLOT));
+            contentView.put(FORWARD_RECIPE_SLOT, recipeViewSlots.get(FORWARD_RECIPE_SLOT));
+            contentView.put(BACKWARD_RECIPE_SLOT, recipeViewSlots.get(BACKWARD_RECIPE_SLOT));
+            contentView.put(MOVE_INGREDIENTS_SLOT, recipeViewSlots.get(MOVE_INGREDIENTS_SLOT));
+        }
+
+        return contentView;
+    }
+
+    @Override
+    public void attachMenuButton(ButtonType buttonType, GuiItem<RecipeMenu> parentButton) {
         switch (buttonType) {
             case NEXT_RECIPE:
-                recipeViewContainer.setViewSlot(NEXT_RECIPE_SLOT, parentButton);
+                recipeViewSlots.put(NEXT_RECIPE_SLOT, parentButton);
                 break;
             case PREVIOUS_RECIPE:
-                recipeViewContainer.setViewSlot(PREVIOUS_RECIPE_SLOT, parentButton);
+                recipeViewSlots.put(PREVIOUS_RECIPE_SLOT, parentButton);
                 break;
             case BACKWARD_RECIPE:
-                recipeViewContainer.setViewSlot(BACKWARD_RECIPE_SLOT, parentButton);
+                recipeViewSlots.put(BACKWARD_RECIPE_SLOT, parentButton);
                 break;
             case FORWARD_RECIPE:
-                recipeViewContainer.setViewSlot(FORWARD_RECIPE_SLOT, parentButton);
+                recipeViewSlots.put(FORWARD_RECIPE_SLOT, parentButton);
                 break;
             case MOVE_INGREDIENTS:
-                recipeViewContainer.setViewSlot(MOVE_INGREDIENTS_SLOT, parentButton);
+                recipeViewSlots.put(MOVE_INGREDIENTS_SLOT, parentButton);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown button type: " + buttonType);
         }
+    }
+
+    private void placeWorkbench() {
+        GuiItem<RecipeMenu> workbenchDisplayItem = new GuiItem<>(WORKBENCH_DISPLAY_MATERIAL);
+        ItemMeta meta = workbenchDisplayItem.getItemMeta();
+        meta.displayName(Component.empty());
+        meta.setMaxStackSize(1);
+        meta.setHideTooltip(true);
+        workbenchDisplayItem.setItemMeta(meta);
+        recipeViewSlots.put(WORKBENCH_COORDS, workbenchDisplayItem);
     }
 }
 
