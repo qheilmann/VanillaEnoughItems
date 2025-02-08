@@ -1,5 +1,6 @@
 package me.qheilmann.vei.Core.Menu;
 
+import java.util.EnumSet;
 import java.util.List;
 
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -82,12 +83,14 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         setupForwardRecipeButton();
         setupBackwardRecipeButton();
         setupMoveIngredientsButton();
+
+        // TODO populate the outer menu part (not inside the setupMethodes)
         
         // Padding
         padEmptySlots();
 
-        // TODO TEMP (populate)
-        this.recipeView.getContentView(RecipeView.SlotType.ALL).forEach((slot, item) -> setItem(slot.asMaxChestSlot(), item));
+        // Populate the recipe view
+        populateRecipeView();
     }
 
     //#region Button setup
@@ -348,5 +351,13 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         meta.setHideTooltip(true);
         padding.setItemMeta(meta);
         fillEmpty(padding);
+    }
+
+    protected void populateRecipeView(){
+        populateRecipeView(RecipeView.SlotType.ALL);
+    }
+
+    protected void populateRecipeView(EnumSet<RecipeView.SlotType> slotType){
+        recipeView.getContentView(slotType).forEach((slot, item) -> setItem(slot.asMaxChestSlot(), item));
     }
 }
