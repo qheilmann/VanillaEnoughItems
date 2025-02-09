@@ -19,6 +19,44 @@ import me.qheilmann.vei.Core.Style.ButtonType.VeiButtonType;
 import me.qheilmann.vei.Core.Style.Styles.Style;
 import net.kyori.adventure.text.Component;
 
+/**
+ * <h1>RecipeMenu</h1>
+ * This class is used to display the recipe menu (9x6) in a GUI.
+ * <p>
+ * GUI representation (with ShapedRecipeView):
+ * <pre>
+ *-> x 0  1  2  3  4  5  6  7  8
+ * y +---------------------------+
+ * 0 | #  <  t  t  t        >  i |
+ * 1 | ^  1           2          |
+ * 2 | a     g  g  g           b |
+ * 3 | a     g  g  g  w  o     l |
+ * 4 |       g  g  g     +     s |
+ * 5 | v     3     4           e |
+ *   +---------------------------+
+ * </pre>
+ * <ul>
+ * <li>#: quick link to crafting</li>
+ * <li><, >: workbench type scroll</li>
+ * <li>t: workbench type</li>
+ * <li>^, v: workbench variant scroll</li>
+ * <li>i: info</li>
+ * <li>a: workbench variant</li>
+ * <li>b: bookmark this recipe</li>
+ * <li>l: bookmark list</li>
+ * <li>s: bookmark server list</li>
+ * <li>e: exit</li>
+ * </ul>
+ * Recipeview example (ShapedRecipeView):
+ * <ul>
+ * <li>g: inputs (crafting grid)</li>
+ * <li>o: outputs</li>
+ * <li>w: workbench</li>
+ * <li>1, 2: next/previous recipe</li>
+ * <li>3, 4: back/forward recipe</li>
+ * <li>+: move ingredients</li>
+ * </ul>
+ */
 public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
     private static final MaxChestSlot QUICK_LINK_SLOT                    = new MaxChestSlot(0, 0);
     private static final MaxChestSlot WORKBENCH_TYPE_SCROLL_LEFT_SLOT    = new MaxChestSlot(1, 0);
