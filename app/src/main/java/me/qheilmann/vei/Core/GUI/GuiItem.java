@@ -96,7 +96,7 @@ public class GuiItem<G extends BaseGui<G, ?>> extends ItemStack { // TODO maybe 
 
     public GuiItem<G> clone() {
         try {
-            GuiItem<G> cloned = new GuiItem<>(super.clone());
+            GuiItem<G> cloned = new GuiItem<>(super.clone()); // TODO convert this to a full copy constructor (with a boolean to choose if we clone the uuid or not)
             cloned.setUuid(this.getUuid());
             cloned.setAction(this.getAction());
             return cloned;

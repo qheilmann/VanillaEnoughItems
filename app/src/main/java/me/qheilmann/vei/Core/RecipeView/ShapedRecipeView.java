@@ -1,18 +1,19 @@
 package me.qheilmann.vei.Core.RecipeView;
 
 import java.util.EnumSet;
-import java.util.HashMap;
+import java.util.List;
+
+import javax.annotation.Nullable;
+
 import org.bukkit.Material;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.inventory.ShapedRecipe;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 import me.qheilmann.vei.Core.GUI.GuiItem;
 import me.qheilmann.vei.Core.Menu.RecipeMenu;
 import me.qheilmann.vei.Core.Slot.Collection.SlotRange;
+import me.qheilmann.vei.Core.Slot.Collection.SlotSequence;
 import me.qheilmann.vei.foundation.gui.GuiItemService;
-import net.kyori.adventure.text.Component;
 
 /**
  * <h1>ShapedRecipeView</h1>
@@ -66,9 +67,59 @@ public class ShapedRecipeView extends RecipeView<ShapedRecipe> {
     }
 
     @Override
+    @Nullable
+    protected RecipeViewSlot getNextRecipeSlot() {
+        return NEXT_RECIPE_SLOT;
+    }
+
+    @Override
+    @Nullable
+    protected RecipeViewSlot getPreviousRecipeSlot() {
+        return PREVIOUS_RECIPE_SLOT;
+    }
+
+    @Override
+    @Nullable
+    protected RecipeViewSlot getForwardRecipeSlot() {
+        return FORWARD_RECIPE_SLOT;
+    }
+
+    @Override
+    @Nullable
+    protected RecipeViewSlot getBackwardRecipeSlot() {
+        return BACKWARD_RECIPE_SLOT;
+    }
+
+    @Override
+    @Nullable
+    protected RecipeViewSlot getMoveIngredientsSlot() {
+        return MOVE_INGREDIENTS_SLOT;
+    }
+
+    @Override
+    protected @NotNull SlotSequence<RecipeViewSlot> getIngredientsSlotRange() {
+        return INGREDIENTS_SLOT_RANGE;
+    }
+
+    @Override
+    protected @NotNull SlotSequence<RecipeViewSlot> getResultsSlotRange() {
+        return new SlotSequence<RecipeViewSlot>(List.of(RESULT_COORDS));
+    }
+
+    private void placeWorkbench() {
+        this.addNoTooltipItem(WORKBENCH_DISPLAY_MATERIAL, WORKBENCH_COORDS);
+    }
+
+    @Override
     public void setRecipe(@NotNull ShapedRecipe recipe) {
         super.setRecipe(recipe); // TODO recipe and shapedRecipe doublon
         shapedRecipe = recipe;
+    }
+
+    @Override
+    public void cycle(EnumSet<SlotType> slotTypes) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'cycle'");
     }
 
     private void reloadView() {
@@ -137,103 +188,6 @@ public class ShapedRecipeView extends RecipeView<ShapedRecipe> {
         }
 
         return recipeMatrix;
-    }
-
-    @Override // TODO split this to each slot type and push this to super class (derived class can override each slot type)
-    public void clear(EnumSet<SlotType> slotTypes) {
-
-        if (slotTypes.contains(SlotType.INGREDIENTS)) {
-            for (RecipeViewSlot slot : INGREDIENTS_SLOT_RANGE) {
-                recipeViewSlots.put(slot, new GuiItem<>(ItemStack.empty()));
-            }
-        }
-
-        // No consumables in shaped recipes
-
-        if (slotTypes.contains(SlotType.RESULTS)) {
-            recipeViewSlots.put(RESULT_COORDS, new GuiItem<>(ItemStack.empty()));
-        }
-
-        if (slotTypes.contains(SlotType.WORKBENCH)) {
-            recipeViewSlots.put(WORKBENCH_COORDS, new GuiItem<>(ItemStack.empty()));
-        }
-
-        if (slotTypes.contains(SlotType.BUTTONS)) {
-            recipeViewSlots.put(NEXT_RECIPE_SLOT, new GuiItem<>(ItemStack.empty()));
-            recipeViewSlots.put(PREVIOUS_RECIPE_SLOT, new GuiItem<>(ItemStack.empty()));
-            recipeViewSlots.put(FORWARD_RECIPE_SLOT, new GuiItem<>(ItemStack.empty()));
-            recipeViewSlots.put(BACKWARD_RECIPE_SLOT, new GuiItem<>(ItemStack.empty()));
-            recipeViewSlots.put(MOVE_INGREDIENTS_SLOT, new GuiItem<>(ItemStack.empty()));
-        }
-
-        // No other slots in shaped recipes (except padding) // TODO what about padding?
-    }
-
-    @Override
-    public void cycle(EnumSet<SlotType> slotTypes) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'cycle'");
-    }
-
-    @Override
-    public HashMap<RecipeViewSlot, GuiItem<RecipeMenu>> getContentView(EnumSet<SlotType> slotTypes) {
-        HashMap<RecipeViewSlot, GuiItem<RecipeMenu>> contentView = new HashMap<>();
-        if (slotTypes.contains(SlotType.INGREDIENTS)) {
-            for (RecipeViewSlot slot : INGREDIENTS_SLOT_RANGE) {
-                contentView.put(slot, recipeViewSlots.get(slot));
-            }
-        }
-
-        if (slotTypes.contains(SlotType.RESULTS)) {
-            contentView.put(RESULT_COORDS, recipeViewSlots.get(RESULT_COORDS));
-        }
-
-        if (slotTypes.contains(SlotType.WORKBENCH)) {
-            contentView.put(WORKBENCH_COORDS, recipeViewSlots.get(WORKBENCH_COORDS));
-        }
-
-        if (slotTypes.contains(SlotType.BUTTONS)) {
-            contentView.put(NEXT_RECIPE_SLOT, recipeViewSlots.get(NEXT_RECIPE_SLOT));
-            contentView.put(PREVIOUS_RECIPE_SLOT, recipeViewSlots.get(PREVIOUS_RECIPE_SLOT));
-            contentView.put(FORWARD_RECIPE_SLOT, recipeViewSlots.get(FORWARD_RECIPE_SLOT));
-            contentView.put(BACKWARD_RECIPE_SLOT, recipeViewSlots.get(BACKWARD_RECIPE_SLOT));
-            contentView.put(MOVE_INGREDIENTS_SLOT, recipeViewSlots.get(MOVE_INGREDIENTS_SLOT));
-        }
-
-        return contentView;
-    }
-
-    @Override
-    public void attachMenuButton(ButtonType buttonType, GuiItem<RecipeMenu> parentButton) {
-        switch (buttonType) {
-            case NEXT_RECIPE:
-                recipeViewSlots.put(NEXT_RECIPE_SLOT, parentButton);
-                break;
-            case PREVIOUS_RECIPE:
-                recipeViewSlots.put(PREVIOUS_RECIPE_SLOT, parentButton);
-                break;
-            case BACKWARD_RECIPE:
-                recipeViewSlots.put(BACKWARD_RECIPE_SLOT, parentButton);
-                break;
-            case FORWARD_RECIPE:
-                recipeViewSlots.put(FORWARD_RECIPE_SLOT, parentButton);
-                break;
-            case MOVE_INGREDIENTS:
-                recipeViewSlots.put(MOVE_INGREDIENTS_SLOT, parentButton);
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown button type: " + buttonType);
-        }
-    }
-
-    private void placeWorkbench() {
-        GuiItem<RecipeMenu> workbenchDisplayItem = new GuiItem<>(WORKBENCH_DISPLAY_MATERIAL);
-        ItemMeta meta = workbenchDisplayItem.getItemMeta();
-        meta.displayName(Component.empty());
-        meta.setMaxStackSize(1);
-        meta.setHideTooltip(true);
-        workbenchDisplayItem.setItemMeta(meta);
-        recipeViewSlots.put(WORKBENCH_COORDS, workbenchDisplayItem);
     }
 }
 
