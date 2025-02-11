@@ -1,4 +1,4 @@
-package me.qheilmann.vei.Core.RecipeView;
+package me.qheilmann.vei.Core.RecipeView.Views;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -12,6 +12,8 @@ import org.jetbrains.annotations.NotNull;
 
 import me.qheilmann.vei.Core.GUI.GuiItem;
 import me.qheilmann.vei.Core.Menu.RecipeMenu;
+import me.qheilmann.vei.Core.RecipeView.RecipeView;
+import me.qheilmann.vei.Core.RecipeView.RecipeViewSlot;
 import me.qheilmann.vei.Core.Slot.Collection.SlotRange;
 import me.qheilmann.vei.Core.Slot.Collection.SlotSequence;
 import me.qheilmann.vei.foundation.gui.GuiItemService;
@@ -49,15 +51,14 @@ public class ShapedRecipeView extends RecipeView<ShapedRecipe> {
     public static final RecipeViewSlot MOVE_INGREDIENTS_SLOT = new RecipeViewSlot(5, 3);
 
     public static final SlotRange<RecipeViewSlot> INGREDIENTS_SLOT_RANGE = new SlotRange<>(new RecipeViewSlot(1, 1), new RecipeViewSlot(3, 3));
-    public static final RecipeViewSlot RESULT_COORDS = new RecipeViewSlot(5, 2);
-    public static final RecipeViewSlot WORKBENCH_COORDS = new RecipeViewSlot(4, 2);
+    public static final RecipeViewSlot RESULT_SLOT = new RecipeViewSlot(5, 2);
+    public static final RecipeViewSlot WORKBENCH_SLOT = new RecipeViewSlot(4, 2);
 
     private static final Material WORKBENCH_DISPLAY_MATERIAL = Material.CRAFTING_TABLE;
 
     public ShapedRecipeView(@NotNull ShapedRecipe recipe) {
         super(recipe);
         placeWorkbench();
-        populateCraftingSlots();
     }
 
     @Override
@@ -91,24 +92,35 @@ public class ShapedRecipeView extends RecipeView<ShapedRecipe> {
     }
 
     @Override
-    protected @NotNull SlotSequence<RecipeViewSlot> getIngredientsSlotRange() {
+    protected @NotNull SlotSequence<RecipeViewSlot> getIngredientsSlotSequence() {
         return INGREDIENTS_SLOT_RANGE;
     }
 
     @Override
-    protected @NotNull SlotSequence<RecipeViewSlot> getResultsSlotRange() {
-        return new SlotSequence<RecipeViewSlot>(List.of(RESULT_COORDS));
+    protected @NotNull SlotSequence<RecipeViewSlot> getResultsSlotSequence() {
+        return new SlotSequence<RecipeViewSlot>(List.of(RESULT_SLOT));
     }
 
-    private void placeWorkbench() {
-        GuiItem<RecipeMenu> noTooltipWorkbench = GuiItem.buildNoTooltipGuiItem(WORKBENCH_DISPLAY_MATERIAL);
-        recipeViewSlots.put(WORKBENCH_COORDS, noTooltipWorkbench);
+    @Override
+    protected @NotNull SlotSequence<RecipeViewSlot> getConsumablesSlotSequence() {
+        return new SlotSequence<RecipeViewSlot>(List.of());
+    }
+
+    @Override
+    @Nullable
+    protected Material getWorkbenchMaterial() {
+        return WORKBENCH_DISPLAY_MATERIAL;
+    }
+
+    @Override
+    @Nullable
+    protected RecipeViewSlot getWorkbenchSlot() {
+        return WORKBENCH_SLOT;
     }
 
     @Override
     public void setRecipe(@NotNull ShapedRecipe recipe) {
         super.setRecipe(recipe);
-        populateCraftingSlots();
     }
 
     @Override
@@ -116,12 +128,18 @@ public class ShapedRecipeView extends RecipeView<ShapedRecipe> {
         // TODO implement the cycle method
     }
 
-    private void populateCraftingSlots() {
+    private void placeWorkbench() {
+        GuiItem<RecipeMenu> noTooltipWorkbench = GuiItem.buildNoTooltipGuiItem(WORKBENCH_DISPLAY_MATERIAL);
+        recipeViewSlots.put(WORKBENCH_SLOT, noTooltipWorkbench);
+    }
+
+    @Override
+    protected void populateCraftingSlots() {
         
         clear();
         RecipeChoice[][] recipeMatrix = getRecipe3by3Matrix(getRecipe());
 
-        // Inputs (crafting grid)
+        // Inputs (crafting grid) // TODO replace with the slotSequence foreach
         for(int y = 0; y < 3; y++) {
             for(int x = 0; x < 3; x++) {
                 RecipeChoice recipeChoice = recipeMatrix[y][x];
@@ -139,7 +157,7 @@ public class ShapedRecipeView extends RecipeView<ShapedRecipe> {
         }
 
         // Result
-        recipeViewSlots.put(RESULT_COORDS, new GuiItem<>(getRecipe().getResult()));
+        recipeViewSlots.put(RESULT_SLOT, new GuiItem<>(getRecipe().getResult()));
     }
 
     /**

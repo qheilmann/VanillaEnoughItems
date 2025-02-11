@@ -15,8 +15,6 @@ import me.qheilmann.vei.Core.GUI.GuiItem;
 import me.qheilmann.vei.Core.Menu.RecipeMenu;
 import me.qheilmann.vei.Core.Slot.Collection.SlotSequence;
 
-
-
 /**
  * Abstract class representing a view for a recipe.
  * 
@@ -24,8 +22,10 @@ import me.qheilmann.vei.Core.Slot.Collection.SlotSequence;
  * 
  * To extend this class, you need to:
  * 1. Implement the abstract methods:
- *    - {@link #getContentView(EnumSet<SlotType> slotTypes)}
- *    - {@link #clear(EnumSet<SlotType> slotTypes)}
+ *    - {@link #getIngredientsSlotSequence()}
+ *    - {@link #getResultsSlotSequence()}
+ *    - {@link #getConsumablesSlotSequence()}
+ *    - {@link #populateCraftingSlots()}
  *    - {@link #cycle(EnumSet<SlotType> slotTypes)}
  * 2. Optionally override the following methods to customize button slots:
  *    - {@link #getNextRecipeSlot()}
@@ -46,7 +46,6 @@ public abstract class RecipeView<T extends Recipe> {
     private static final RecipeViewSlot DEFAULT_FORWARD_RECIPE_SLOT   = new RecipeViewSlot(3, 4);
     private static final RecipeViewSlot DEFAULT_BACKWARD_RECIPE_SLOT  = new RecipeViewSlot(1, 4);
     private static final RecipeViewSlot DEFAULT_MOVE_INGREDIENTS_SLOT = new RecipeViewSlot(5, 3);
-    private static final RecipeViewSlot DEFAULT_WORKBENCH_SLOT        = new RecipeViewSlot(4, 2);
     private static final Material DEFAULT_WORKBENCH_MATERIAL         = Material.CRAFTING_TABLE;
     
     
@@ -56,24 +55,29 @@ public abstract class RecipeView<T extends Recipe> {
 
     public RecipeView(@NotNull T recipe, int variante) { // TODO change to WorkbenchRecipeSet with variante
         Preconditions.checkNotNull(recipe, "recipe cannot be null");
-        this.recipe = recipe;
         this.recipeViewSlots = new HashMap<>();
-        // TODO depending on the recipe type populate the recipeViewSlots
+        setRecipe(recipe);
     }
 
     public abstract void cycle(EnumSet<SlotType> slotTypes);
     
     @NotNull
-    protected abstract SlotSequence<RecipeViewSlot> getIngredientsSlotRange();
+    protected abstract SlotSequence<RecipeViewSlot> getIngredientsSlotSequence();
 
     @NotNull
-    protected abstract SlotSequence<RecipeViewSlot> getResultsSlotRange();
+    protected abstract SlotSequence<RecipeViewSlot> getResultsSlotSequence();
+
+    @NotNull
+    protected abstract SlotSequence<RecipeViewSlot> getConsumablesSlotSequence();
+
+    protected abstract void populateCraftingSlots(); 
+
 
     /**
      * Returns the slot for the next recipe button or null if not present.
      * Override this method to change the button's position.
      */
-    @Nullable
+    @NotNull
     protected RecipeViewSlot getNextRecipeSlot() {
         return RecipeView.DEFAULT_NEXT_RECIPE_SLOT;
     }
@@ -82,7 +86,7 @@ public abstract class RecipeView<T extends Recipe> {
      * Returns the slot for the previous recipe button or null if not present.
      * Override this method to change the button's position.
      */
-    @Nullable
+    @NotNull
     protected RecipeViewSlot getPreviousRecipeSlot() {
         return RecipeView.DEFAULT_PREVIOUS_RECIPE_SLOT;
     }
@@ -91,7 +95,7 @@ public abstract class RecipeView<T extends Recipe> {
      * Get the slot for the forward recipe button or null if not present
      * Override this method to change the button's position
      */
-    @Nullable
+    @NotNull
     protected RecipeViewSlot getForwardRecipeSlot() {
         return RecipeView.DEFAULT_FORWARD_RECIPE_SLOT;
     }
@@ -100,7 +104,7 @@ public abstract class RecipeView<T extends Recipe> {
      * Get the slot for the backward recipe button or null if not present
      * Override this method to change the button's position
      */
-    @Nullable
+    @NotNull
     protected RecipeViewSlot getBackwardRecipeSlot() {
         return RecipeView.DEFAULT_BACKWARD_RECIPE_SLOT;
     }
@@ -109,7 +113,7 @@ public abstract class RecipeView<T extends Recipe> {
      * Get the slot for the move ingredients button or null if not present
      * Override this method to change the button's position
      */
-    @Nullable
+    @NotNull
     protected RecipeViewSlot getMoveIngredientsSlot() {
         return RecipeView.DEFAULT_MOVE_INGREDIENTS_SLOT;
     }
@@ -120,7 +124,7 @@ public abstract class RecipeView<T extends Recipe> {
      */
     @Nullable
     protected RecipeViewSlot getWorkbenchSlot() {
-        return RecipeView.DEFAULT_WORKBENCH_SLOT;
+        return null;
     }
 
     /**
@@ -139,6 +143,7 @@ public abstract class RecipeView<T extends Recipe> {
     public void setRecipe(@NotNull T recipe, int variante) { // TODO change to WorkbenchRecipeSet with variante
         Preconditions.checkNotNull(recipe, "recipe cannot be null");
         this.recipe = recipe;
+        populateCraftingSlots();
     }
 
     public T getRecipe() {
@@ -174,13 +179,19 @@ public abstract class RecipeView<T extends Recipe> {
     public HashMap<RecipeViewSlot, GuiItem<RecipeMenu>> getContentView(EnumSet<SlotType> slotTypes) {
         HashMap<RecipeViewSlot, GuiItem<RecipeMenu>> contentView = new HashMap<>();
         if (slotTypes.contains(SlotType.INGREDIENTS)) {
-            for (RecipeViewSlot slot : getIngredientsSlotRange()) {
+            for (RecipeViewSlot slot : getIngredientsSlotSequence()) {
                 contentView.put(slot, recipeViewSlots.get(slot));
             }
         }
 
         if (slotTypes.contains(SlotType.RESULTS)) {
-            for (RecipeViewSlot slot : getResultsSlotRange()) {
+            for (RecipeViewSlot slot : getResultsSlotSequence()) {
+                contentView.put(slot, recipeViewSlots.get(slot));
+            }
+        }
+
+        if (slotTypes.contains(SlotType.CONSUMABLES)) {
+            for (RecipeViewSlot slot : getConsumablesSlotSequence()) {
                 contentView.put(slot, recipeViewSlots.get(slot));
             }
         }
@@ -207,15 +218,19 @@ public abstract class RecipeView<T extends Recipe> {
     public void clear(EnumSet<SlotType> slotTypes) {
 
         if (slotTypes.contains(SlotType.INGREDIENTS)) {
-            for (RecipeViewSlot slot : getIngredientsSlotRange()) {
+            for (RecipeViewSlot slot : getIngredientsSlotSequence()) {
                 recipeViewSlots.put(slot, new GuiItem<>(ItemStack.empty()));
             }
         }
 
-        // No consumables in shaped recipes
-
         if (slotTypes.contains(SlotType.RESULTS)) {
-            for (RecipeViewSlot slot : getResultsSlotRange()) {
+            for (RecipeViewSlot slot : getResultsSlotSequence()) {
+                recipeViewSlots.put(slot, new GuiItem<>(ItemStack.empty()));
+            }
+        }
+
+        if (slotTypes.contains(SlotType.CONSUMABLES)) {
+            for (RecipeViewSlot slot : getConsumablesSlotSequence()) {
                 recipeViewSlots.put(slot, new GuiItem<>(ItemStack.empty()));
             }
         }

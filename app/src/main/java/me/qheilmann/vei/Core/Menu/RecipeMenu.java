@@ -4,6 +4,7 @@ import java.util.EnumSet;
 import java.util.List;
 
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.inventory.FurnaceRecipe;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -12,7 +13,8 @@ import dev.triumphteam.gui.components.InteractionModifier;
 import me.qheilmann.vei.Core.GUI.BaseGui;
 import me.qheilmann.vei.Core.GUI.GuiItem;
 import me.qheilmann.vei.Core.RecipeView.RecipeView;
-import me.qheilmann.vei.Core.RecipeView.ShapedRecipeView;
+import me.qheilmann.vei.Core.RecipeView.Views.ShapedRecipeView;
+import me.qheilmann.vei.Core.RecipeView.Views.FurnaceRecipeView;
 import me.qheilmann.vei.Core.Slot.Collection.SlotRange;
 import me.qheilmann.vei.Core.Slot.Implementation.MaxChestSlot;
 import me.qheilmann.vei.Core.Style.ButtonType.VeiButtonType;
@@ -100,8 +102,15 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
     public RecipeMenu(Style style, Recipe recipe) {
         super(6, Component.text("Recipe Menu"), InteractionModifier.VALUES);
         this.style = style;
-        // TODO temp
-        this.recipeView = new ShapedRecipeView((ShapedRecipe) recipe);
+
+        // TODO place here a factory to create the right RecipeView
+        if (recipe instanceof ShapedRecipe shapedRecipe) {
+            recipeView = new ShapedRecipeView(shapedRecipe);
+        } else if (recipe instanceof FurnaceRecipe FurnaceRecipe) {
+            recipeView = new FurnaceRecipeView(FurnaceRecipe);
+        } else {
+            throw new IllegalArgumentException("Unsupported recipe type: " + recipe.getClass().getSimpleName());
+        }
 
         setDefaultClickAction((event, context) -> event.setCancelled(true)); // Cancel the event for the entire GUI
         
