@@ -11,13 +11,18 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import me.qheilmann.vei.VanillaEnoughItems;
+import me.qheilmann.vei.Core.Item.ItemBuilder;
 import me.qheilmann.vei.Core.Item.PersistentDataType.UuidPdt;
 
+// TODO
+// initlale: maybe convert this to agregation instead of inheritance
+// update1:an other day, fianly not needed ?, why i need this to be an agregation ? this will break every where i put a GuiItem instead of an ItemStack
+// update2: but does anywere inside this code base use of GuiItem as an ItemStack ? no ? so i can convert this to an agregation
 /*
  *
  * @author Most original part come from Triumph GUI <a href="https://github.com/TriumphTeam/triumph-gui">TriumphTeam</a>
  */
-public class GuiItem<G extends BaseGui<G, ?>> extends ItemStack { // TODO maybe convert this to agregation instead of inheritance
+public class GuiItem<G extends BaseGui<G, ?>> extends ItemStack {
 
     private static final @NotNull String UUID_KEY_STRING = "gui_item_uuid";
     public static final @NotNull NamespacedKey UUID_KEY = new NamespacedKey(VanillaEnoughItems.NAMESPACE, UUID_KEY_STRING);
@@ -27,6 +32,26 @@ public class GuiItem<G extends BaseGui<G, ?>> extends ItemStack { // TODO maybe 
 
     // Random UUID to identify the item when clicking
     private UUID uuid;
+
+    /**
+     * Build a new {@link GuiItem} with no tooltip
+     *
+     * @param item The item
+     * @return The new item instance
+     */
+    public static <G extends BaseGui<G, ?>> GuiItem<G> buildNoTooltipGuiItem(Material material) {
+        return new GuiItem<>(ItemBuilder.buildNoTooltipItem(material));
+    }
+
+    /**
+     * Build a new {@link GuiItem} with no tooltip
+     *
+     * @param item The item
+     * @return The new item instance
+     */
+    public static <G extends BaseGui<G, ?>> GuiItem<G> buildNoTooltipGuiItem(ItemStack item) {
+        return new GuiItem<>(ItemBuilder.buildNoTooltipItem(item));
+    }
 
     /**
      * Main constructor of the GuiItem

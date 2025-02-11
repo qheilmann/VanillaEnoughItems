@@ -12,7 +12,6 @@ import org.jetbrains.annotations.NotNull;
 import com.google.common.base.Preconditions;
 
 import me.qheilmann.vei.Core.GUI.GuiItem;
-import me.qheilmann.vei.Core.Item.ItemBuilder;
 import me.qheilmann.vei.Core.Menu.RecipeMenu;
 import me.qheilmann.vei.Core.Slot.Collection.SlotSequence;
 
@@ -264,19 +263,5 @@ public abstract class RecipeView<T extends Recipe> {
         public static EnumSet<SlotType> ALL = EnumSet.allOf(SlotType.class);
         public static EnumSet<SlotType> RECIPE = EnumSet.of(SlotType.INGREDIENTS, SlotType.CONSUMABLES, SlotType.RESULTS);
         // CHANGED, // TODO add changed slot types (how can i save the change the change here and be ablse to track change for other classes modifing the map)
-    }
-
-
-    // Internal
-
-    /**
-     * Place an item with no tooltip on the view
-     * @param material
-     * @param coord
-     */
-    protected void addNoTooltipItem(Material material, RecipeViewSlot coord) {
-        ItemStack noTooltipItem = ItemBuilder.buildNoTooltipItem(material);
-        GuiItem<RecipeMenu> workbenchDisplayItem = new GuiItem<>(noTooltipItem);
-        recipeViewSlots.put(coord, workbenchDisplayItem);
     }
 }

@@ -9,6 +9,7 @@ import org.bukkit.Material;
 import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.inventory.ShapedRecipe;
 import org.jetbrains.annotations.NotNull;
+
 import me.qheilmann.vei.Core.GUI.GuiItem;
 import me.qheilmann.vei.Core.Menu.RecipeMenu;
 import me.qheilmann.vei.Core.Slot.Collection.SlotRange;
@@ -39,9 +40,6 @@ import me.qheilmann.vei.foundation.gui.GuiItemService;
  * <li>+: move ingredients</li>
  * </ul>
  */
-
-// TODO temporary implementation of the ShapelessRecipeView maybe not use of this container
-
 public class ShapedRecipeView extends RecipeView<ShapedRecipe> {
 
     public static final RecipeViewSlot NEXT_RECIPE_SLOT = new RecipeViewSlot(3 , 0);
@@ -54,16 +52,12 @@ public class ShapedRecipeView extends RecipeView<ShapedRecipe> {
     public static final RecipeViewSlot RESULT_COORDS = new RecipeViewSlot(5, 2);
     public static final RecipeViewSlot WORKBENCH_COORDS = new RecipeViewSlot(4, 2);
 
-    private ShapedRecipe shapedRecipe;
     private static final Material WORKBENCH_DISPLAY_MATERIAL = Material.CRAFTING_TABLE;
 
     public ShapedRecipeView(@NotNull ShapedRecipe recipe) {
         super(recipe);
-        
-        // TODO TEMPORARY here we have double recipe and shapedRecipe (protected recipe and always cast (mprivate methode))
-        shapedRecipe = recipe;
         placeWorkbench();
-        reloadView();
+        populateCraftingSlots();
     }
 
     @Override
@@ -107,25 +101,25 @@ public class ShapedRecipeView extends RecipeView<ShapedRecipe> {
     }
 
     private void placeWorkbench() {
-        this.addNoTooltipItem(WORKBENCH_DISPLAY_MATERIAL, WORKBENCH_COORDS);
+        GuiItem<RecipeMenu> noTooltipWorkbench = GuiItem.buildNoTooltipGuiItem(WORKBENCH_DISPLAY_MATERIAL);
+        recipeViewSlots.put(WORKBENCH_COORDS, noTooltipWorkbench);
     }
 
     @Override
     public void setRecipe(@NotNull ShapedRecipe recipe) {
-        super.setRecipe(recipe); // TODO recipe and shapedRecipe doublon
-        shapedRecipe = recipe;
+        super.setRecipe(recipe);
+        populateCraftingSlots();
     }
 
     @Override
     public void cycle(EnumSet<SlotType> slotTypes) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'cycle'");
+        // TODO implement the cycle method
     }
 
-    private void reloadView() {
+    private void populateCraftingSlots() {
         
         clear();
-        RecipeChoice[][] recipeMatrix = getRecipe3by3Matrix(shapedRecipe);
+        RecipeChoice[][] recipeMatrix = getRecipe3by3Matrix(getRecipe());
 
         // Inputs (crafting grid)
         for(int y = 0; y < 3; y++) {
@@ -145,7 +139,7 @@ public class ShapedRecipeView extends RecipeView<ShapedRecipe> {
         }
 
         // Result
-        recipeViewSlots.put(new RecipeViewSlot(19), new GuiItem<>(shapedRecipe.getResult()));
+        recipeViewSlots.put(RESULT_COORDS, new GuiItem<>(getRecipe().getResult()));
     }
 
     /**

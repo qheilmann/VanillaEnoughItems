@@ -233,6 +233,7 @@ public abstract class BaseGui<G extends BaseGui<G, S>, S extends Slot> implement
 
     /**
      * Replace all the items matching the pattern item with the new item.
+     * The pattern can be null to replace all the empty slots.
      *
      * @param patternItem The item to replace.
      * @param newItem     The new item to replace with.
@@ -244,7 +245,8 @@ public abstract class BaseGui<G extends BaseGui<G, S>, S extends Slot> implement
     }
 
     /**
-     * Replace all the items matching the pattern item which are in the slots sequence with the new item.
+     * Replace all the items matching the pattern which are in the slots sequence
+     * with the new item. The pattern can be null to replace all the empty slots.
      *
      * @param slots       The slots to search for the pattern item.
      * @param patternItem The item to replace.
