@@ -58,7 +58,7 @@ public class TestMenu extends BaseGui<TestMenu, MaxChestSlot> { // TODO check pk
         });
 
         // Example Slot action
-        this.setSlotAction(new MaxChestSlot(5, 8), (event, context) -> {
+        this.setSlotAction(new MaxChestSlot(8, 5), (event, context) -> {
             context.getInventory().clear(); // Clear the inventory if clicked on the last slot
         });
 
