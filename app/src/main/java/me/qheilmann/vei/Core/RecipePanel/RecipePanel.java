@@ -13,7 +13,7 @@ import com.google.common.base.Preconditions;
 
 import me.qheilmann.vei.Core.GUI.GuiItem;
 import me.qheilmann.vei.Core.Menu.RecipeMenu;
-import me.qheilmann.vei.Core.RecipePanel.Panels.ShapedPanelView;
+import me.qheilmann.vei.Core.RecipePanel.Panels.ShapedRecipePanel;
 import me.qheilmann.vei.Core.Slot.Collection.SlotSequence;
 
 /**
@@ -44,7 +44,7 @@ import me.qheilmann.vei.Core.Slot.Collection.SlotSequence;
  *     <li>{@link #getWorkbenchMaterial()}</li>
  * </ul>
  * <p>
- * @see {@link ShapedPanelView}
+ * @see {@link ShapedRecipePanel}
  * @param <T> The type of recipe this view handles.
  */
 public abstract class RecipePanel<T extends Recipe> {

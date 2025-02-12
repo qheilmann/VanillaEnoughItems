@@ -13,8 +13,8 @@ import dev.triumphteam.gui.components.InteractionModifier;
 import me.qheilmann.vei.Core.GUI.BaseGui;
 import me.qheilmann.vei.Core.GUI.GuiItem;
 import me.qheilmann.vei.Core.RecipePanel.RecipePanel;
-import me.qheilmann.vei.Core.RecipePanel.Panels.FurnacePanelView;
-import me.qheilmann.vei.Core.RecipePanel.Panels.ShapedPanelView;
+import me.qheilmann.vei.Core.RecipePanel.Panels.FurnaceRecipePanel;
+import me.qheilmann.vei.Core.RecipePanel.Panels.ShapedRecipePanel;
 import me.qheilmann.vei.Core.Slot.Collection.SlotRange;
 import me.qheilmann.vei.Core.Slot.Implementation.MaxChestSlot;
 import me.qheilmann.vei.Core.Style.ButtonType.VeiButtonType;
@@ -105,9 +105,9 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
 
         // TODO place here a factory to create the right RecipeView
         if (recipe instanceof ShapedRecipe shapedRecipe) {
-            recipeView = new ShapedPanelView(shapedRecipe);
+            recipeView = new ShapedRecipePanel(shapedRecipe);
         } else if (recipe instanceof FurnaceRecipe FurnaceRecipe) {
-            recipeView = new FurnacePanelView(FurnaceRecipe);
+            recipeView = new FurnaceRecipePanel(FurnaceRecipe);
         } else {
             throw new IllegalArgumentException("Unsupported recipe type: " + recipe.getClass().getSimpleName());
         }

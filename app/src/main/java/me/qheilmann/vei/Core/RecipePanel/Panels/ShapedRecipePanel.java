@@ -42,7 +42,7 @@ import me.qheilmann.vei.foundation.gui.GuiItemService;
  * <li>+: move ingredients</li>
  * </ul>
  */
-public class ShapedPanelView extends RecipePanel<ShapedRecipe> {
+public class ShapedRecipePanel extends RecipePanel<ShapedRecipe> {
 
     public static final RecipePanelSlot NEXT_RECIPE_SLOT = new RecipePanelSlot(3 , 0);
     public static final RecipePanelSlot PREVIOUS_RECIPE_SLOT = new RecipePanelSlot(1, 0);
@@ -56,7 +56,7 @@ public class ShapedPanelView extends RecipePanel<ShapedRecipe> {
 
     private static final Material WORKBENCH_DISPLAY_MATERIAL = Material.CRAFTING_TABLE;
 
-    public ShapedPanelView(@NotNull ShapedRecipe recipe) {
+    public ShapedRecipePanel(@NotNull ShapedRecipe recipe) {
         super(recipe);
         placeWorkbench();
     }

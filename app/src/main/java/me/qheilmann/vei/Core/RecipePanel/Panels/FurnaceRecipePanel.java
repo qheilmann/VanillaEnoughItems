@@ -16,7 +16,7 @@ import me.qheilmann.vei.Core.RecipePanel.RecipePanel;
 import me.qheilmann.vei.Core.RecipePanel.RecipePanelSlot;
 import me.qheilmann.vei.Core.Slot.Collection.SlotSequence;
 
-public class FurnacePanelView extends RecipePanel<FurnaceRecipe> {
+public class FurnaceRecipePanel extends RecipePanel<FurnaceRecipe> {
     public static final RecipePanelSlot NEXT_RECIPE_SLOT = new RecipePanelSlot(3 , 0);
     public static final RecipePanelSlot PREVIOUS_RECIPE_SLOT = new RecipePanelSlot(1, 0);
     public static final RecipePanelSlot FORWARD_RECIPE_SLOT = new RecipePanelSlot(3, 4);
@@ -30,7 +30,7 @@ public class FurnacePanelView extends RecipePanel<FurnaceRecipe> {
 
     private static final Material WORKBENCH_DISPLAY_MATERIAL = Material.FURNACE;
 
-    public FurnacePanelView(@NotNull FurnaceRecipe recipe) {
+    public FurnaceRecipePanel(@NotNull FurnaceRecipe recipe) {
         super(recipe);
         placeWorkbench();
     }
