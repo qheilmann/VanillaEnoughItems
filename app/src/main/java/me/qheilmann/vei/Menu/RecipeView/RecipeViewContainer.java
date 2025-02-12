@@ -4,17 +4,17 @@ import java.util.HashMap;
 import org.jetbrains.annotations.NotNull;
 import me.qheilmann.vei.Core.GUI.GuiItem;
 import me.qheilmann.vei.Core.Menu.RecipeMenu;
-import me.qheilmann.vei.Core.RecipeView.RecipeViewSlot;
+import me.qheilmann.vei.Core.RecipePanel.RecipePanelSlot;
 import me.qheilmann.vei.Menu.RecipeView.ViewSlot.ViewSlot.Cycle;
 
 public class RecipeViewContainer {
-    private HashMap<RecipeViewSlot, GuiItem<RecipeMenu>> recipeViewSlots;
+    private HashMap<RecipePanelSlot, GuiItem<RecipeMenu>> recipeViewSlots;
 
     public RecipeViewContainer() {
         recipeViewSlots = new HashMap<>();
     }
 
-    public void setViewSlot(@NotNull RecipeViewSlot slot, @NotNull GuiItem<RecipeMenu> guiItem) {
+    public void setViewSlot(@NotNull RecipePanelSlot slot, @NotNull GuiItem<RecipeMenu> guiItem) {
         recipeViewSlots.put(slot, guiItem);
     }
 
@@ -30,11 +30,11 @@ public class RecipeViewContainer {
         // }
     }
 
-    public HashMap<RecipeViewSlot, GuiItem<RecipeMenu>> getContainer() {
+    public HashMap<RecipePanelSlot, GuiItem<RecipeMenu>> getContainer() {
         return recipeViewSlots;
     }
 
-    public GuiItem<RecipeMenu> getGuiItem(@NotNull RecipeViewSlot slot) {
+    public GuiItem<RecipeMenu> getGuiItem(@NotNull RecipePanelSlot slot) {
         return recipeViewSlots.get(slot);
     }
 }

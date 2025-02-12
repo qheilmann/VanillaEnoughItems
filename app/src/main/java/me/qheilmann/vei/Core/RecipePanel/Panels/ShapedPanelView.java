@@ -1,4 +1,4 @@
-package me.qheilmann.vei.Core.RecipeView.Views;
+package me.qheilmann.vei.Core.RecipePanel.Panels;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -12,8 +12,8 @@ import org.jetbrains.annotations.NotNull;
 
 import me.qheilmann.vei.Core.GUI.GuiItem;
 import me.qheilmann.vei.Core.Menu.RecipeMenu;
-import me.qheilmann.vei.Core.RecipeView.RecipeView;
-import me.qheilmann.vei.Core.RecipeView.RecipeViewSlot;
+import me.qheilmann.vei.Core.RecipePanel.RecipePanel;
+import me.qheilmann.vei.Core.RecipePanel.RecipePanelSlot;
 import me.qheilmann.vei.Core.Slot.Collection.SlotRange;
 import me.qheilmann.vei.Core.Slot.Collection.SlotSequence;
 import me.qheilmann.vei.foundation.gui.GuiItemService;
@@ -42,68 +42,68 @@ import me.qheilmann.vei.foundation.gui.GuiItemService;
  * <li>+: move ingredients</li>
  * </ul>
  */
-public class ShapedRecipeView extends RecipeView<ShapedRecipe> {
+public class ShapedPanelView extends RecipePanel<ShapedRecipe> {
 
-    public static final RecipeViewSlot NEXT_RECIPE_SLOT = new RecipeViewSlot(3 , 0);
-    public static final RecipeViewSlot PREVIOUS_RECIPE_SLOT = new RecipeViewSlot(1, 0);
-    public static final RecipeViewSlot FORWARD_RECIPE_SLOT = new RecipeViewSlot(3, 4);
-    public static final RecipeViewSlot BACKWARD_RECIPE_SLOT = new RecipeViewSlot(1, 4);
-    public static final RecipeViewSlot MOVE_INGREDIENTS_SLOT = new RecipeViewSlot(5, 3);
+    public static final RecipePanelSlot NEXT_RECIPE_SLOT = new RecipePanelSlot(3 , 0);
+    public static final RecipePanelSlot PREVIOUS_RECIPE_SLOT = new RecipePanelSlot(1, 0);
+    public static final RecipePanelSlot FORWARD_RECIPE_SLOT = new RecipePanelSlot(3, 4);
+    public static final RecipePanelSlot BACKWARD_RECIPE_SLOT = new RecipePanelSlot(1, 4);
+    public static final RecipePanelSlot MOVE_INGREDIENTS_SLOT = new RecipePanelSlot(5, 3);
 
-    public static final SlotRange<RecipeViewSlot> INGREDIENTS_SLOT_RANGE = new SlotRange<>(new RecipeViewSlot(1, 1), new RecipeViewSlot(3, 3));
-    public static final RecipeViewSlot RESULT_SLOT = new RecipeViewSlot(5, 2);
-    public static final RecipeViewSlot WORKBENCH_SLOT = new RecipeViewSlot(4, 2);
+    public static final SlotRange<RecipePanelSlot> INGREDIENTS_SLOT_RANGE = new SlotRange<>(new RecipePanelSlot(1, 1), new RecipePanelSlot(3, 3));
+    public static final RecipePanelSlot RESULT_SLOT = new RecipePanelSlot(5, 2);
+    public static final RecipePanelSlot WORKBENCH_SLOT = new RecipePanelSlot(4, 2);
 
     private static final Material WORKBENCH_DISPLAY_MATERIAL = Material.CRAFTING_TABLE;
 
-    public ShapedRecipeView(@NotNull ShapedRecipe recipe) {
+    public ShapedPanelView(@NotNull ShapedRecipe recipe) {
         super(recipe);
         placeWorkbench();
     }
 
     @Override
     @Nullable
-    protected RecipeViewSlot getNextRecipeSlot() {
+    protected RecipePanelSlot getNextRecipeSlot() {
         return NEXT_RECIPE_SLOT;
     }
 
     @Override
     @Nullable
-    protected RecipeViewSlot getPreviousRecipeSlot() {
+    protected RecipePanelSlot getPreviousRecipeSlot() {
         return PREVIOUS_RECIPE_SLOT;
     }
 
     @Override
     @Nullable
-    protected RecipeViewSlot getForwardRecipeSlot() {
+    protected RecipePanelSlot getForwardRecipeSlot() {
         return FORWARD_RECIPE_SLOT;
     }
 
     @Override
     @Nullable
-    protected RecipeViewSlot getBackwardRecipeSlot() {
+    protected RecipePanelSlot getBackwardRecipeSlot() {
         return BACKWARD_RECIPE_SLOT;
     }
 
     @Override
     @Nullable
-    protected RecipeViewSlot getMoveIngredientsSlot() {
+    protected RecipePanelSlot getMoveIngredientsSlot() {
         return MOVE_INGREDIENTS_SLOT;
     }
 
     @Override
-    protected @NotNull SlotSequence<RecipeViewSlot> getIngredientsSlotSequence() {
+    protected @NotNull SlotSequence<RecipePanelSlot> getIngredients() {
         return INGREDIENTS_SLOT_RANGE;
     }
 
     @Override
-    protected @NotNull SlotSequence<RecipeViewSlot> getResultsSlotSequence() {
-        return new SlotSequence<RecipeViewSlot>(List.of(RESULT_SLOT));
+    protected @NotNull SlotSequence<RecipePanelSlot> getResults() {
+        return new SlotSequence<RecipePanelSlot>(List.of(RESULT_SLOT));
     }
 
     @Override
-    protected @NotNull SlotSequence<RecipeViewSlot> getConsumablesSlotSequence() {
-        return new SlotSequence<RecipeViewSlot>(List.of());
+    protected @NotNull SlotSequence<RecipePanelSlot> getConsumables() {
+        return new SlotSequence<RecipePanelSlot>(List.of());
     }
 
     @Override
@@ -114,7 +114,7 @@ public class ShapedRecipeView extends RecipeView<ShapedRecipe> {
 
     @Override
     @Nullable
-    protected RecipeViewSlot getWorkbenchSlot() {
+    protected RecipePanelSlot getWorkbenchSlot() {
         return WORKBENCH_SLOT;
     }
 
@@ -147,7 +147,7 @@ public class ShapedRecipeView extends RecipeView<ShapedRecipe> {
                     continue;
                 }
                 if (recipeChoice instanceof RecipeChoice.MaterialChoice materialChoice) {
-                    recipeViewSlots.put(new RecipeViewSlot(x+1,y+1), new GuiItem<RecipeMenu>(materialChoice.getItemStack()));
+                    recipeViewSlots.put(new RecipePanelSlot(x+1,y+1), new GuiItem<RecipeMenu>(materialChoice.getItemStack()));
                 }
                 else {
                     // TODO remove the use a deprecated method for generating the warning item
