@@ -3,7 +3,6 @@ package me.qheilmann.vei.Menu.RecipeView.SpecifiqueRecipeView;
 import java.util.Collection;
 import java.util.Collections;
 
-import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.inventory.ShapedRecipe;
@@ -14,17 +13,9 @@ import com.google.common.base.Preconditions;
 
 import me.qheilmann.vei.Menu.IMenu;
 import me.qheilmann.vei.Menu.MenuManager;
-import me.qheilmann.vei.Menu.Button.RecipeMenu.BackRecipeButton;
-import me.qheilmann.vei.Menu.Button.RecipeMenu.ForwardRecipeButton;
-import me.qheilmann.vei.Menu.Button.RecipeMenu.MoveIngredientsButton;
-import me.qheilmann.vei.Menu.Button.RecipeMenu.NextRecipeButton;
-import me.qheilmann.vei.Menu.Button.RecipeMenu.PreviousRecipeButton;
 import me.qheilmann.vei.Menu.RecipeView.IRecipeView;
 import me.qheilmann.vei.Menu.RecipeView.RecipeViewContainer;
-import me.qheilmann.vei.Menu.RecipeView.ViewSlot.IngredientViewSlot;
-import me.qheilmann.vei.Menu.RecipeView.ViewSlot.StaticViewSlot;
 import me.qheilmann.vei.foundation.gui.GuiItemService;
-import me.qheilmann.vei.foundation.gui.VeiStyle;
 
 /**
  * <h1>ShapedRecipeView</h1>

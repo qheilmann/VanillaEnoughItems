@@ -3,7 +3,7 @@ package me.qheilmann.vei.Core.Menu;
 import dev.triumphteam.gui.components.InteractionModifier;
 import me.qheilmann.vei.Core.GUI.BaseGui;
 import me.qheilmann.vei.Core.GUI.GuiItem;
-import me.qheilmann.vei.Core.Slot.Implementation.ChestSlot;
+import me.qheilmann.vei.Core.Slot.Implementation.MaxChestSlot;
 import net.kyori.adventure.text.Component;
 
 import java.util.HashMap;
@@ -14,14 +14,14 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
-public class TestMenu extends BaseGui<TestMenu, ChestSlot> { // TODO check pk le MaxChestSlot marche pas
+public class TestMenu extends BaseGui<TestMenu, MaxChestSlot> { // TODO check pk le MaxChestSlot marche pas
 
     private GuiItem<TestMenu> goldBlock;
     private GuiItem<TestMenu> ironBlock;
     private GuiItem<TestMenu> lapisBlock;
 
     public TestMenu() {
-        super(6, Component.text("Test"), InteractionModifier.VALUES); // Call the BaseGui constructor
+        super((owner) -> BaseGui.plugin.getServer().createInventory(owner, 6*9, Component.text("Test")), InteractionModifier.VALUES); // Call the BaseGui constructor
 
         // Example click action for the entire GUI
         this.setDefaultClickAction((event, context) -> event.setCancelled(true)); // Cancel the event for the entire GUI
@@ -58,7 +58,7 @@ public class TestMenu extends BaseGui<TestMenu, ChestSlot> { // TODO check pk le
         });
 
         // Example Slot action
-        this.setSlotAction(new ChestSlot(5, 8, 6), (event, context) -> {
+        this.setSlotAction(new MaxChestSlot(5, 8), (event, context) -> {
             context.getInventory().clear(); // Clear the inventory if clicked on the last slot
         });
 
@@ -96,7 +96,7 @@ public class TestMenu extends BaseGui<TestMenu, ChestSlot> { // TODO check pk le
         lapisBlock.lore(List.of(Component.text("Click me to add a lapis block here")));
         lapisBlock.setAction(this::handleLapisBlockClick);
 
-    setItem(new ChestSlot(0, 5, 6), lapisBlock);
+    setItem(new MaxChestSlot(0, 5), lapisBlock);
     }
 
     @Override

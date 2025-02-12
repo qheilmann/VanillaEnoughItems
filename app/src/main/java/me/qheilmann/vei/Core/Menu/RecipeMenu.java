@@ -100,7 +100,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
     private RecipePanel<? extends Recipe> recipeView;
 
     public RecipeMenu(Style style, Recipe recipe) {
-        super(6, Component.text("Recipe Menu"), InteractionModifier.VALUES);
+        super((owner) -> BaseGui.plugin.getServer().createInventory(owner, 6*9, Component.text("Recipe Menu")), InteractionModifier.VALUES);
         this.style = style;
 
         // TODO place here a factory to create the right RecipeView

@@ -12,7 +12,7 @@ import dev.jorel.commandapi.CommandPermission;
 import dev.jorel.commandapi.arguments.ArgumentSuggestions;
 import dev.jorel.commandapi.arguments.StringArgument;
 import dev.triumphteam.gui.components.InteractionModifier;
-import me.qheilmann.vei.Core.GUI.Gui;
+import me.qheilmann.vei.Core.GUI.SimpleChestGui;
 import me.qheilmann.vei.Core.GUI.GuiItem;
 import me.qheilmann.vei.Core.Menu.TestMenu;
 import me.qheilmann.vei.Core.Slot.Implementation.ChestSlot;
@@ -71,56 +71,57 @@ public class TestCommand implements ICommand{
 
     private void innerGui(Player player) {
         Set<InteractionModifier> interactionModifiers = Set.of(InteractionModifier.PREVENT_ITEM_PLACE);
-        Gui gui = new Gui(6, Component.text("Test"), interactionModifiers);
+        SimpleChestGui gui = new SimpleChestGui(Component.text("Test"), 6, interactionModifiers);
         
-        GuiItem<Gui> diams = new GuiItem<>(Material.DIAMOND);
+        GuiItem<SimpleChestGui> diams = new GuiItem<>(Material.DIAMOND);
         diams.lore(List.of(Component.text("Diamonds (no action)")));
         
-        GuiItem<Gui> redstoneDust = new GuiItem<>(Material.REDSTONE);
+        GuiItem<SimpleChestGui> redstoneDust = new GuiItem<>(Material.REDSTONE);
         redstoneDust.lore(List.of(Component.text("Click me (send message)")));
         redstoneDust.setAction((event, contextGui) -> {
             event.setCancelled(true);
             player.sendMessage("You clicked the item");
         });
 
-        GuiItem<Gui> lapiz = new GuiItem<>(Material.LAPIS_LAZULI);
+        GuiItem<SimpleChestGui> lapiz = new GuiItem<>(Material.LAPIS_LAZULI);
         lapiz.lore(List.of(Component.text("Click me (random gold)")));
         lapiz.setAction((event, contextGui) -> {
             event.setCancelled(true);
             int randomStack = 1 + (int) (Math.random() * 64);
             ItemStack item = new ItemStack(Material.GOLD_INGOT, randomStack);
-            GuiItem<Gui> gold = new GuiItem<>(item);
+            GuiItem<SimpleChestGui> gold = new GuiItem<>(item);
             contextGui.setItem(new ChestSlot(2, 1, 6), gold);
         });
 
-        GuiItem<Gui> emerald = new GuiItem<>(Material.EMERALD);
+        GuiItem<SimpleChestGui> emerald = new GuiItem<>(Material.EMERALD);
         emerald.lore(List.of(Component.text("Click me (add item to inventory)")));
         emerald.setAction((event, contextGui) -> {
             event.setCancelled(true);
-            contextGui.addItem(List.of(new GuiItem<Gui>(Material.DIAMOND)));
+            contextGui.addItem(List.of(new GuiItem<SimpleChestGui>(Material.DIAMOND)));
         });
 
-        GuiItem<Gui> coal = new GuiItem<>(Material.COAL);
+        GuiItem<SimpleChestGui> coal = new GuiItem<>(Material.COAL);
         coal.lore(List.of(Component.text("Click me (remove item from inventory)")));
         coal.setAction((event, contextGui) -> {
             event.setCancelled(true);
-            contextGui.removeItem(List.of(new GuiItem<Gui>(Material.DIAMOND)));
+            contextGui.removeItem(List.of(new GuiItem<SimpleChestGui>(Material.DIAMOND)));
         });
 
-        GuiItem<Gui> iron = new GuiItem<>(Material.IRON_INGOT);
+        GuiItem<SimpleChestGui> iron = new GuiItem<>(Material.IRON_INGOT);
         iron.lore(List.of(Component.text("Click me (add other GuiItem) final lapis")));
         iron.setAction((event, contextGui) -> {
             event.setCancelled(true);
             contextGui.addItem(List.of(lapiz)); // work only because lapiz is a final ref
         });
 
-        GuiItem<Gui> lapisBlock = new GuiItem<>(Material.LAPIS_BLOCK);
-        gui.lapizGui = lapisBlock;
-        GuiItem<Gui> ironBlock = new GuiItem<>(Material.IRON_BLOCK);
-        ironBlock.lore(List.of(Component.text("Click me (add other GuiItem) ref lapis")));
+        // GuiItem<SimpleChestGui> lapisBlock = new GuiItem<>(Material.LAPIS_BLOCK);
+        // gui.lapizGui = lapisBlock;
+        GuiItem<SimpleChestGui> ironBlock = new GuiItem<>(Material.IRON_BLOCK);
+        ironBlock.lore(List.of(Component.text("Click me (add other GuiItem) ref lapis"),
+            Component.text("This will not work because we use the SimpleChestGui class")));
         ironBlock.setAction((event, contextGui) -> {
             event.setCancelled(true);
-            contextGui.addItem(List.of(contextGui.lapizGui)); // work only because lapizGui is inside the Gui class
+            // contextGui.addItem(List.of(contextGui.lapizGui)); // You can't get or set stats of the Gui with the SimpleChestGui class
         });
         
         gui.setItem(new ChestSlot(0, 0, 6), diams);

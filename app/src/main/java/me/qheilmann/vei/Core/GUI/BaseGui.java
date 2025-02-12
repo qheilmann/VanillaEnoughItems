@@ -9,7 +9,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
@@ -37,7 +36,6 @@ import dev.triumphteam.gui.guis.InteractionModifierListener;
 import me.qheilmann.vei.Core.Slot.Slot;
 import me.qheilmann.vei.Core.Slot.Collection.SlotSequence;
 import me.qheilmann.vei.Menu.InventoryShadow;
-
 import net.kyori.adventure.text.Component;
 
 /*
@@ -48,7 +46,7 @@ import net.kyori.adventure.text.Component;
 public abstract class BaseGui<G extends BaseGui<G, S>, S extends Slot> implements InventoryHolder {
 
     // The plugin instance for the close delay.
-    private static Plugin plugin = null;
+    protected static Plugin plugin = null;
     private static boolean isEnabled;
 
     private static Method GET_SCHEDULER_METHOD = null;
@@ -66,6 +64,8 @@ public abstract class BaseGui<G extends BaseGui<G, S>, S extends Slot> implement
 
     // Main inventory who also holds the GuiItems
     private InventoryShadow<Inventory> inventory;
+    // inventory provider
+    private final GuiInventoryProvider<G> inventoryProvider;
     // Actions for specific slots.
     private final Map<S, GuiAction<InventoryClickEvent, G>> slotActions;
     // Dummy slot action, this element is the slot action access interface
@@ -100,48 +100,23 @@ public abstract class BaseGui<G extends BaseGui<G, S>, S extends Slot> implement
     private boolean runOpenAction = true;
 
     /**
-     * The main constructor (Chest with x rows).
+     * Creates a BaseGui with the wrapped inventory and the selected
+     * interaction modifiers.
      *
-     * @param rows                 The amount of rows to use.
-     * @param title                The GUI title.
+     * @param wrappedInventoryProvider The supplier for the wrapped inventory.
      * @param interactionModifiers Modifiers to select which interactions are allowed.
-     * @since 3.0.0.
      */
-    protected BaseGui(final int rows, @NotNull final Component title, @NotNull final Set<@NotNull InteractionModifier> interactionModifiers) {
-        this(GuiType.CHEST, title, interactionModifiers, rows);
-    }
-
-    /**
-     * Alternative constructor that takes {@link GuiType} instead of rows number.
-     *
-     * @param guiType              The {@link GuiType} to use.
-     * @param title                The GUI title.
-     * @param interactionModifiers Modifiers to select which interactions are allowed.
-     * @since 3.0.0
-     */
-    protected BaseGui(@NotNull final GuiType guiType, @NotNull final Component title, @NotNull final Set<@NotNull InteractionModifier> interactionModifiers) {
-        this(guiType, title, interactionModifiers, 6);
-    }
-
-    private BaseGui(@NotNull final GuiType guiType, @NotNull final Component title, @NotNull final Set<@NotNull InteractionModifier> interactionModifiers, int rows) {
+    @SuppressWarnings("unchecked")
+    protected BaseGui(final @NotNull GuiInventoryProvider<G> wrappedInventoryProvider, @NotNull final Set<@NotNull InteractionModifier> interactionModifiers) {
         if(!isEnabled) {
             throw new GuiException("The BaseGui is not enabled. Use BaseGui.onEnable(Plugin) to enable it before creating a GUI instance.");
         }
-        
-        int inventorySize;
-        if(guiType == GuiType.CHEST) {
-            this.rows = (rows >= 1 && rows <= 6) ? rows : 1;
-            inventorySize = this.rows * 9;
-        } else {
-            rows = 0;
-            inventorySize = guiType.getLimit();
-        }
 
-        this.guiType = guiType;
         this.interactionModifiers = safeCopyOf(interactionModifiers);
-        this.title = title;
-        this.inventory = new InventoryShadow<Inventory>(Bukkit.createInventory(this, inventorySize, title));
-        this.slotActions = new LinkedHashMap<>(inventorySize);
+        this.inventoryProvider = wrappedInventoryProvider;
+        Inventory wrappedInventory = this.inventoryProvider.create((G)this); // safe because of CRTP
+        this.inventory = new InventoryShadow<Inventory>(wrappedInventory);
+        this.slotActions = new LinkedHashMap<>(wrappedInventory.getSize());
     }
 
     public static void onEnable(@NotNull final Plugin plugin) {
@@ -438,12 +413,13 @@ public abstract class BaseGui<G extends BaseGui<G, S>, S extends Slot> implement
      */
     @Contract("_ -> this")
     @NotNull
+    @SuppressWarnings("unchecked")
     protected BaseGui<G, S> updateTitle(@NotNull final Component title) {
         updating = true;
 
         final List<HumanEntity> viewers = new ArrayList<>(inventory.getViewers());
 
-        inventory = new InventoryShadow<Inventory>(Bukkit.createInventory(this, inventory.getSize(), title));
+        inventory = new InventoryShadow<Inventory>(inventoryProvider.create((G)this)); // safe because of CRTP
 
         for (final HumanEntity humanEntity : viewers) {
             open(humanEntity);
