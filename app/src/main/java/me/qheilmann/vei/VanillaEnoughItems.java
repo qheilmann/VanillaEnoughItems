@@ -61,6 +61,8 @@ public class VanillaEnoughItems extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        CommandAPI.onDisable();
+        BaseGui.onDisable();
         LOGGER.info(NAME + " has been disabled!");
     }
 

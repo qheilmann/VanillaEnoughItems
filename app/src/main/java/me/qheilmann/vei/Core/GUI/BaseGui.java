@@ -119,6 +119,11 @@ public abstract class BaseGui<G extends BaseGui<G, S>, S extends Slot> implement
         this.slotActions = new LinkedHashMap<>(wrappedInventory.getSize());
     }
 
+    /**
+     * Enables the GUI, registering the listener.
+     *
+     * @param wrappedInventoryProvider The supplier for the wrapped inventory.
+     */
     public static void onEnable(@NotNull final Plugin plugin) {
         Preconditions.checkArgument(plugin != null, "Plugin cannot be null.");
 
@@ -126,6 +131,20 @@ public abstract class BaseGui<G extends BaseGui<G, S>, S extends Slot> implement
         BaseGui.registerListener(BaseGui.plugin);
 
         isEnabled = true;
+    }
+
+    /**
+     * Disables the GUI, unregistering the listener.
+     */
+    public static void onDisable() {
+        // Force close all the GUIs, to prevent player to take items from the GUI when the listener is disabled.
+        for (HumanEntity viewer : Bukkit.getOnlinePlayers()) {
+            if (viewer.getOpenInventory().getTopInventory().getHolder() instanceof BaseGui) {
+                viewer.closeInventory();
+            }
+        }
+        BaseGui.unregisterListener();
+        isEnabled = false;
     }
 
     /**
@@ -146,6 +165,16 @@ public abstract class BaseGui<G extends BaseGui<G, S>, S extends Slot> implement
 
         Bukkit.getPluginManager().registerEvents(new GuiListener<>(), plugin);
         Bukkit.getPluginManager().registerEvents(new InteractionModifierListener(), plugin);
+    }
+
+    /**
+     * Unregisters the listener for the GUI.
+     */
+    private static void unregisterListener() {
+        InventoryClickEvent.getHandlerList().unregister(new GuiListener<>());
+        InventoryDragEvent.getHandlerList().unregister(new GuiListener<>());
+        InventoryCloseEvent.getHandlerList().unregister(new GuiListener<>());
+        InventoryOpenEvent.getHandlerList().unregister(new GuiListener<>());
     }
 
     /**
