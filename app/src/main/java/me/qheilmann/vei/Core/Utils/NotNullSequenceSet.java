@@ -80,11 +80,13 @@ public class NotNullSequenceSet<E> extends NotNullSet<E> implements SequencedSet
     }
 
     @Override
+    @NotNull
     public E removeFirst() {
         return wrappedSequencedSet.removeFirst();
     }
 
     @Override
+    @NotNull
     public E removeLast() {
         return wrappedSequencedSet.removeLast();
     }

@@ -163,8 +163,8 @@ public abstract class BaseGui<G extends BaseGui<G, S>, S extends Slot> implement
     private static void registerListener(@NotNull final Plugin plugin) {
         Preconditions.checkState(plugin != null, "Plugin cannot be null.");
 
-        Bukkit.getPluginManager().registerEvents(new GuiListener<>(), plugin);
-        Bukkit.getPluginManager().registerEvents(new InteractionModifierListener(), plugin);
+        plugin.getServer().getPluginManager().registerEvents(new GuiListener<>(), plugin);
+        plugin.getServer().getPluginManager().registerEvents(new InteractionModifierListener(), plugin);
     }
 
     /**

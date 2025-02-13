@@ -1,18 +1,32 @@
 package me.qheilmann.vei;
 
+import java.util.List;
 import java.util.logging.Logger;
 
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.inventory.BlastingRecipe;
+import org.bukkit.inventory.CampfireRecipe;
+import org.bukkit.inventory.FurnaceRecipe;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapedRecipe;
+import org.bukkit.inventory.ShapelessRecipe;
+import org.bukkit.inventory.SmithingRecipe;
+import org.bukkit.inventory.SmithingTransformRecipe;
+import org.bukkit.inventory.SmithingTrimRecipe;
+import org.bukkit.inventory.SmokingRecipe;
+import org.bukkit.inventory.StonecuttingRecipe;
 import org.bukkit.plugin.java.JavaPlugin;
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPIBukkitConfig;
 import me.qheilmann.vei.Command.CraftCommand;
 import me.qheilmann.vei.Command.TestCommand;
 import me.qheilmann.vei.Core.GUI.BaseGui;
+import me.qheilmann.vei.Core.Recipe.AllRecipeMap;
+import me.qheilmann.vei.Core.Recipe.ItemRecipeMap;
+import me.qheilmann.vei.Core.Recipe.WorkbenchRecipeSet;
 import me.qheilmann.vei.Core.Slot.GridSlot;
 import me.qheilmann.vei.Core.Slot.Slot;
 import me.qheilmann.vei.Core.Slot.Implementation.ChestSlot;
@@ -50,11 +64,16 @@ public class VanillaEnoughItems extends JavaPlugin {
     public void onEnable() {
         CommandAPI.onEnable();
         BaseGui.onEnable(this);
+        
+
+
+
         getServer().getPluginManager().registerEvents(new InventoryClickListener(menuManager), this);
         getServer().getPluginManager().registerEvents(new InventoryDragListener(this), this);
 
         temporaryRecipe();
         temporaryTestMethode();
+        fillRecipeMap();
 
         LOGGER.info(NAME+ " has been enabled!");
     }
@@ -68,7 +87,10 @@ public class VanillaEnoughItems extends JavaPlugin {
 
     // TEMP: Remove this method (temporary recipe)
     private void temporaryRecipe() {
-        NamespacedKey key = new NamespacedKey(NAMESPACE, "warriorsword");
+
+        // Custom recipe 1 (minecraft item with a new recipe)
+
+        NamespacedKey key = new NamespacedKey(NAMESPACE, "second_diamond_swore");
         ItemStack item = new ItemStack(Material.DIAMOND_SWORD);
 
         ShapedRecipe recipe = new ShapedRecipe(key, item);
@@ -78,6 +100,22 @@ public class VanillaEnoughItems extends JavaPlugin {
 
         getServer().addRecipe(recipe, true);
 
+        // Custom recipe 2 (custom item with a new recipe = here juste a rename diamond sword)
+
+        NamespacedKey key2 = new NamespacedKey(NAMESPACE, "warrior_sword");
+        ItemStack item2 = new ItemStack(Material.DIAMOND_SWORD);
+        item2.editMeta(meta -> meta.displayName(Component.text("Warrior Sword")));
+        item2.editMeta(meta -> meta.lore(List.of(Component.text("A sword for the bravest warriors"))));
+        item2.editMeta(meta -> meta.setEnchantmentGlintOverride(true));
+        // item2.editMeta(meta -> meta.setCustomModelData(1));
+
+        ShapedRecipe recipe2 = new ShapedRecipe(key2, item2);
+        recipe2.shape("AAA", "AAA", " B ");
+        recipe2.setIngredient('A', Material.GOLD_INGOT);
+        recipe2.setIngredient('B', Material.STICK);
+
+        getServer().addRecipe(recipe2, true);
+
         // BrewingStandFuelEvent
         // BrewingRecipe brewingRecipe = new BrewingRecipe(key, item);
         
@@ -85,6 +123,7 @@ public class VanillaEnoughItems extends JavaPlugin {
         // Check the recipe/methodes
         var recipeIterator = getServer().recipeIterator();
         var recipes = getServer().getRecipesFor(item);
+        var recipes2 = getServer().getRecipesFor(item2);
         var myRecipe = getServer().getRecipe(key);
 
         LOGGER.info("My custom recipe:");
@@ -93,8 +132,14 @@ public class VanillaEnoughItems extends JavaPlugin {
             LOGGER.info("Recipe: " + myShapedRecipe.getResult() + " " + myShapedRecipe.getClass().getName() + " " + myShapedRecipe.getChoiceMap());
         }
 
-        LOGGER.info("Recipe for diamond sword:");
+        LOGGER.info("[**Recipe for diamond sword:**]");
         for (var recipeItem : recipes)
+        {
+            LOGGER.info("Recipe: " + recipeItem.getResult() + " " + recipeItem.getClass().getName() + " " + ((ShapedRecipe)recipeItem).getChoiceMap());
+        }
+
+        LOGGER.info("[**Recipe for warrior sword:**]");
+        for (var recipeItem : recipes2)
         {
             LOGGER.info("Recipe: " + recipeItem.getResult() + " " + recipeItem.getClass().getName() + " " + ((ShapedRecipe)recipeItem).getChoiceMap());
         }
@@ -191,4 +236,90 @@ public class VanillaEnoughItems extends JavaPlugin {
             LOGGER.info("Result4: " + result4.getClass());
         }
     }
+
+    @SuppressWarnings("null")
+    private void fillRecipeMap() {
+        AllRecipeMap allRecipesMap = new AllRecipeMap();
+
+        // Get all recipes
+        var recipeIterator = getServer().recipeIterator();
+        while (recipeIterator.hasNext()) {
+            Recipe recipe = recipeIterator.next();
+            ItemStack result = recipe.getResult();
+            Material workbench = recipeToWorkBenchConverter(recipe);
+
+            if (result == null) {
+                continue;
+            }
+
+            // Get/set the recipe map
+            ItemRecipeMap itemRecipeMap;
+            if (allRecipesMap.containsItem(result)) {
+                itemRecipeMap = allRecipesMap.getItemRecipeMap(result);
+            } else {
+                itemRecipeMap = new ItemRecipeMap();
+                allRecipesMap.putItemRecipeMap(result, itemRecipeMap);
+            }
+
+            // Get/set the workbench recipe set
+            WorkbenchRecipeSet workbenchRecipeSet;
+            if (itemRecipeMap.containsWorkbench(workbench)) {
+                workbenchRecipeSet = itemRecipeMap.getWorkbenchRecipeSet(workbench);
+            } else {
+                workbenchRecipeSet = new WorkbenchRecipeSet();
+                itemRecipeMap.putWorkbenchRecipeSet(workbench, workbenchRecipeSet);
+            }
+
+            // Add the recipe to the workbench recipe set
+            workbenchRecipeSet.add(recipe);
+        }
+
+        // Check the recipe map
+        LOGGER.info("[***]Recipe map[***]: " + allRecipesMap.size());
+        for (ItemStack item : allRecipesMap.getItems()) {
+            LOGGER.info("[Item]: " + item.toString());
+            ItemRecipeMap itemRecipeMap = allRecipesMap.getItemRecipeMap(item);
+            for (Material workbench : itemRecipeMap.workbenchSet()) {
+                LOGGER.info("Workbench: " + workbench);
+                WorkbenchRecipeSet workbenchRecipeSet = itemRecipeMap.getWorkbenchRecipeSet(workbench);
+                for (Recipe recipe : workbenchRecipeSet.toArray()) {
+                    String str = "Recipe: " + recipe.getResult() + " " + recipe.getClass().getName() + " ";
+                    if (recipe instanceof ShapedRecipe shapedRecipe) {
+                        str += shapedRecipe.getChoiceMap();
+                    }
+                    LOGGER.info(str);
+                }
+            }
+            LOGGER.info("\n\n");
+        }
+    }
+
+    private Material recipeToWorkBenchConverter(Recipe recipe) {
+        if        (recipe instanceof ShapedRecipe) {
+            return Material.CRAFTING_TABLE;
+        } else if (recipe instanceof ShapelessRecipe) {
+            return Material.CRAFTER;
+        // } else if (recipe instanceof TransmuteRecipe) {
+        //     return Material.SMITHING_TABLE;
+        } else if (recipe instanceof BlastingRecipe) {
+            return Material.BLAST_FURNACE;
+        } else if (recipe instanceof SmokingRecipe) { 
+            return Material.SMOKER;
+        } else if (recipe instanceof CampfireRecipe) {
+            return Material.CAMPFIRE;
+        } else if (recipe instanceof FurnaceRecipe) { // Must be after BlastingRecipe and SmokingRecipe (same superclass)
+            return Material.FURNACE;
+        } else if (recipe instanceof SmithingTransformRecipe) {
+            return Material.CARTOGRAPHY_TABLE;
+        } else if (recipe instanceof SmithingTrimRecipe) {
+            return Material.LOOM;
+        } else if (recipe instanceof SmithingRecipe) { // Must be after SmithingTransformRecipe and SmithingTrimRecipe (same superclass)
+            return Material.SMITHING_TABLE;
+        } else if (recipe instanceof StonecuttingRecipe) {
+            return Material.STONECUTTER;
+        } else {
+            return Material.STONE;
+        }
+    }
 }
+

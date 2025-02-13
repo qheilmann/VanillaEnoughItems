@@ -6,6 +6,8 @@ import java.util.Iterator;
 import java.util.Objects;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.jetbrains.annotations.NotNull;
 
 import com.google.common.base.Preconditions;
@@ -134,12 +136,12 @@ public class NotNullSet<E>  implements Set<E> {
     }
 
     @Override
-    public boolean contains(Object object) {
+    public boolean contains(@NotNull Object object) {
         return wrappedSet.contains(object);
     }
 
     @Override
-    public boolean containsAll(Collection<?> collection) {
+    public boolean containsAll(@NotNull Collection<?> collection) {
         return wrappedSet.containsAll(collection);
     }
 
@@ -154,17 +156,17 @@ public class NotNullSet<E>  implements Set<E> {
     }
 
     @Override
-    public boolean remove(Object object) {
+    public boolean remove(@NotNull Object object) {
         return wrappedSet.remove(object);
     }
 
     @Override
-    public boolean removeAll(Collection<?> collection) {
+    public boolean removeAll(@NotNull Collection<?> collection) {
         return wrappedSet.removeAll(collection);
     }
 
     @Override
-    public boolean retainAll(Collection<?> collection) {
+    public boolean retainAll(@NotNull Collection<?> collection) {
         return wrappedSet.retainAll(collection);
     }
 
@@ -174,27 +176,31 @@ public class NotNullSet<E>  implements Set<E> {
     }
 
     @Override
+    @NotNull
     public Iterator<E> iterator() {
         return Collections.unmodifiableSet(wrappedSet).iterator();
     }
 
     @Override
+    @NotNull
     public Object[] toArray() {
         return wrappedSet.toArray();
     }
 
     @Override
-    public <T> T[] toArray(T[] a) {
+    @NotNull
+    public <T> T[] toArray(@NotNull T[] a) {
         return wrappedSet.toArray(a);
     }
 
     @Override
+    @NotNull
     public String toString() {
         return wrappedSet.toString();
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         return wrappedSet.equals(obj);
     }
 
