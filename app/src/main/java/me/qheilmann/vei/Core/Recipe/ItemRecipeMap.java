@@ -8,31 +8,31 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import org.bukkit.Material;
 import org.jetbrains.annotations.NotNull;
 
 import me.qheilmann.vei.Core.Utils.NotNullMap;
+import me.qheilmann.vei.Core.Process.Process;
 
 /**
  * Contains all recipes for an item, including all variants and different
- * workbenches for a specific item.
+ * processes for a specific item.
  */
 public class ItemRecipeMap {
     
-    private final NotNullMap<Material, WorkbenchRecipeSet> recipes;
+    private final NotNullMap<Process<?>, ProcessRecipeSet> recipes;
 
     public ItemRecipeMap() {
         this(Collections.emptyMap());
     }
 
-    public ItemRecipeMap(@NotNull Map<? extends Material, ? extends WorkbenchRecipeSet> recipeCollection) {
+    public ItemRecipeMap(@NotNull Map<? extends Process<?>, ? extends ProcessRecipeSet> recipeCollection) {
         this.recipes = new NotNullMap<>(new HashMap<>(), recipeCollection);
     }
 
     // Add methods to delegate to the wrapped NotNullMap
 
     /**
-     * Returns the number of different workbenches used to craft the item.
+     * Returns the number of different processes used to craft the item.
      * 
      * @return the number of recipes in the map
      */
@@ -41,7 +41,7 @@ public class ItemRecipeMap {
     }
     
     /**
-     * Returns true if the map contains workbench recipes.
+     * Returns true if the map don't contains recipes.
      * 
      * @return true if the map contains no recipes
      */
@@ -50,53 +50,53 @@ public class ItemRecipeMap {
     }
     
     /**
-     * Returns true if the map contains the specified workbench.
+     * Returns true if the map contains the specified process.
      * 
-     * @param workbench the workbench to check for
-     * @return true if the map contains the specified workbench
+     * @param process the process to check for
+     * @return true if the map contains the specified process
      */
-    public boolean containsWorkbench(@NotNull Object workbench) {
-        return recipes.containsKey(workbench);
+    public boolean containsProcess(@NotNull Object process) {
+        return recipes.containsKey(process);
     }
 
     /**
-     * Returns the recipe set associated with the specified workbench.
+     * Returns the recipe set associated with the specified process.
      * 
-     * @param workbench the workbench to get the recipe set for
-     * @return the recipe set associated with the specified workbench
+     * @param process the process to get the recipe set for
+     * @return the recipe set associated with the specified process
      */
     @Nullable
-    public WorkbenchRecipeSet getWorkbenchRecipeSet(@NotNull Object workbench) {
-        return recipes.get(workbench);
+    public ProcessRecipeSet getProcessRecipeSet(@NotNull Object process) {
+        return recipes.get(process);
     }
 
     /**
-     * Adds a new recipe set with the specified workbench to the map.
+     * Adds a new recipe set with the specified process to the map.
      * 
-     * @param workbench the workbench to add
+     * @param process the process to add
      * @param recipeSet the recipe set to add
-     * @return the previous value associated with the workbench, or null if there
-     * was no mapping for the workbench
+     * @return the previous value associated with the process, or null if there
+     * was no mapping for the process
      */
     @Nullable
-    public WorkbenchRecipeSet putWorkbenchRecipeSet(@NotNull Material workbench, @NotNull WorkbenchRecipeSet recipeSet) {
-        return recipes.put(workbench, recipeSet);
+    public ProcessRecipeSet putProcessRecipeSet(@NotNull Process<?> process, @NotNull ProcessRecipeSet recipeSet) {
+        return recipes.put(process, recipeSet);
     }
 
     /**
-     * Removes the recipe set associated with the specified workbench from the map.
+     * Removes the recipe set associated with the specified process from the map.
      * 
-     * @param workbench the workbench to remove
-     * @return the recipe set previously associated with the workbench, or null if
-     * there was no mapping for the workbench
+     * @param process the process to remove
+     * @return the recipe set previously associated with the process, or null if
+     * there was no mapping for the process
      */
     @Nullable
-    public WorkbenchRecipeSet removeWorkbenchRecipeSet(@Nullable Object workbench) {
-        return recipes.remove(workbench);
+    public ProcessRecipeSet removeProcessRecipeSet(@Nullable Object process) {
+        return recipes.remove(process);
     }
 
     /**
-     * Removes all workbenches and their associated recipe sets from the map.
+     * Removes all processes and their associated recipe sets from the map.
      */
     public void clear() {
         recipes.clear();
@@ -108,17 +108,17 @@ public class ItemRecipeMap {
      * @return an unmodifiable view of the map
      */
     @NotNull
-    public Map<Material, WorkbenchRecipeSet> asMap() {
+    public Map<Process<?>, ProcessRecipeSet> asMap() {
         return Collections.unmodifiableMap(recipes);
     }
 
     /**
-     * Returns a set view of the workbenches contained in the map.
+     * Returns a set view of the processes contained in the map.
      * 
-     * @return a set view of the workbenches contained in the map
+     * @return a set view of the processes contained in the map
      */
     @NotNull
-    public Set<Material> workbenchSet() {
+    public Set<Process<?>> ProcessSet() {
         return recipes.keySet();
     }
 
@@ -128,7 +128,7 @@ public class ItemRecipeMap {
      * @return a collection view of the recipe sets contained in the map
      */
     @NotNull
-    public Collection<WorkbenchRecipeSet> recipeSet() {
+    public Collection<ProcessRecipeSet> recipeSet() {
         return recipes.values();
     }
 
@@ -138,7 +138,7 @@ public class ItemRecipeMap {
      * @return a set view of the mappings contained in the map
      */
     @NotNull
-    public Set<Map.Entry<Material, WorkbenchRecipeSet>> entrySet() {
+    public Set<Map.Entry<Process<?>, ProcessRecipeSet>> entrySet() {
         return recipes.entrySet();
     }
 

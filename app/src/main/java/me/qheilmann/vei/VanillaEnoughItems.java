@@ -24,9 +24,13 @@ import dev.jorel.commandapi.CommandAPIBukkitConfig;
 import me.qheilmann.vei.Command.CraftCommand;
 import me.qheilmann.vei.Command.TestCommand;
 import me.qheilmann.vei.Core.GUI.BaseGui;
+import me.qheilmann.vei.Core.Process.CraftingProcess;
+import me.qheilmann.vei.Core.Process.DummyProcess;
+import me.qheilmann.vei.Core.Process.Process;
+import me.qheilmann.vei.Core.Process.SmeltingProcess;
 import me.qheilmann.vei.Core.Recipe.AllRecipeMap;
 import me.qheilmann.vei.Core.Recipe.ItemRecipeMap;
-import me.qheilmann.vei.Core.Recipe.WorkbenchRecipeSet;
+import me.qheilmann.vei.Core.Recipe.ProcessRecipeSet;
 import me.qheilmann.vei.Core.Slot.GridSlot;
 import me.qheilmann.vei.Core.Slot.Slot;
 import me.qheilmann.vei.Core.Slot.Implementation.ChestSlot;
@@ -246,7 +250,7 @@ public class VanillaEnoughItems extends JavaPlugin {
         while (recipeIterator.hasNext()) {
             Recipe recipe = recipeIterator.next();
             ItemStack result = recipe.getResult();
-            Material workbench = recipeToWorkBenchConverter(recipe);
+            Process<?> process = recipeToProcessConverter(recipe);
 
             if (result == null) {
                 continue;
@@ -261,17 +265,17 @@ public class VanillaEnoughItems extends JavaPlugin {
                 allRecipesMap.putItemRecipeMap(result, itemRecipeMap);
             }
 
-            // Get/set the workbench recipe set
-            WorkbenchRecipeSet workbenchRecipeSet;
-            if (itemRecipeMap.containsWorkbench(workbench)) {
-                workbenchRecipeSet = itemRecipeMap.getWorkbenchRecipeSet(workbench);
+            // Get/set the process recipe set
+            ProcessRecipeSet processRecipeSet;
+            if (itemRecipeMap.containsProcess(process)) {
+                processRecipeSet = itemRecipeMap.getProcessRecipeSet(process);
             } else {
-                workbenchRecipeSet = new WorkbenchRecipeSet();
-                itemRecipeMap.putWorkbenchRecipeSet(workbench, workbenchRecipeSet);
+                processRecipeSet = new ProcessRecipeSet();
+                itemRecipeMap.putProcessRecipeSet(process, processRecipeSet);
             }
 
-            // Add the recipe to the workbench recipe set
-            workbenchRecipeSet.add(recipe);
+            // Add the recipe to the process recipe set
+            processRecipeSet.add(recipe);
         }
 
         // Check the recipe map
@@ -279,10 +283,10 @@ public class VanillaEnoughItems extends JavaPlugin {
         for (ItemStack item : allRecipesMap.getItems()) {
             LOGGER.info("[Item]: " + item.toString());
             ItemRecipeMap itemRecipeMap = allRecipesMap.getItemRecipeMap(item);
-            for (Material workbench : itemRecipeMap.workbenchSet()) {
-                LOGGER.info("Workbench: " + workbench);
-                WorkbenchRecipeSet workbenchRecipeSet = itemRecipeMap.getWorkbenchRecipeSet(workbench);
-                for (Recipe recipe : workbenchRecipeSet.toArray()) {
+            for (Process<?> process : itemRecipeMap.ProcessSet()) {
+                LOGGER.info("Process: " + process);
+                ProcessRecipeSet processRecipeSet = itemRecipeMap.getProcessRecipeSet(process);
+                for (Recipe recipe : processRecipeSet.toArray()) {
                     String str = "Recipe: " + recipe.getResult() + " " + recipe.getClass().getName() + " ";
                     if (recipe instanceof ShapedRecipe shapedRecipe) {
                         str += shapedRecipe.getChoiceMap();
@@ -294,31 +298,31 @@ public class VanillaEnoughItems extends JavaPlugin {
         }
     }
 
-    private Material recipeToWorkBenchConverter(Recipe recipe) {
+    private Process<?> recipeToProcessConverter(Recipe recipe) {
         if        (recipe instanceof ShapedRecipe) {
-            return Material.CRAFTING_TABLE;
+            return new CraftingProcess();
         } else if (recipe instanceof ShapelessRecipe) {
-            return Material.CRAFTER;
+            return new CraftingProcess();
         // } else if (recipe instanceof TransmuteRecipe) {
         //     return Material.SMITHING_TABLE;
         } else if (recipe instanceof BlastingRecipe) {
-            return Material.BLAST_FURNACE;
+            return new DummyProcess();
         } else if (recipe instanceof SmokingRecipe) { 
-            return Material.SMOKER;
+            return new DummyProcess();
         } else if (recipe instanceof CampfireRecipe) {
-            return Material.CAMPFIRE;
+            return new DummyProcess();
         } else if (recipe instanceof FurnaceRecipe) { // Must be after BlastingRecipe and SmokingRecipe (same superclass)
-            return Material.FURNACE;
+            return new SmeltingProcess();
         } else if (recipe instanceof SmithingTransformRecipe) {
-            return Material.CARTOGRAPHY_TABLE;
+            return new DummyProcess();
         } else if (recipe instanceof SmithingTrimRecipe) {
-            return Material.LOOM;
+            return new DummyProcess();
         } else if (recipe instanceof SmithingRecipe) { // Must be after SmithingTransformRecipe and SmithingTrimRecipe (same superclass)
-            return Material.SMITHING_TABLE;
+            return new DummyProcess();
         } else if (recipe instanceof StonecuttingRecipe) {
-            return Material.STONECUTTER;
+            return new DummyProcess();
         } else {
-            return Material.STONE;
+            return new DummyProcess();
         }
     }
 }

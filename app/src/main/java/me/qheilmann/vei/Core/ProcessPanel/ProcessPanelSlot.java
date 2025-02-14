@@ -1,4 +1,4 @@
-package me.qheilmann.vei.Core.RecipePanel;
+package me.qheilmann.vei.Core.ProcessPanel;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -10,26 +10,26 @@ import me.qheilmann.vei.Core.Slot.Implementation.MaxChestSlot;
  * <p>
  * The recipe panel slot is a grid slot with a fixed size of 7x5.
  */
-public class RecipePanelSlot extends GridSlot {
+public class ProcessPanelSlot extends GridSlot {
     public static final int ROW_COUNT = 5;
     public static final int COLUMN_COUNT = 7;
 
-    public RecipePanelSlot(int x, int y) {
+    public ProcessPanelSlot(int x, int y) {
         super(x, y, COLUMN_COUNT, ROW_COUNT);
     }
 
-    public RecipePanelSlot(int index) {
+    public ProcessPanelSlot(int index) {
         super(index, COLUMN_COUNT, ROW_COUNT);
     }
 
-    public RecipePanelSlot(RecipePanelSlot slot) {
+    public ProcessPanelSlot(ProcessPanelSlot slot) {
         super(slot);
     }
 
     @Override
     @NotNull
-    public RecipePanelSlot clone() {
-        return new RecipePanelSlot(this);
+    public ProcessPanelSlot clone() {
+        return new ProcessPanelSlot(this);
     }
 
     /**

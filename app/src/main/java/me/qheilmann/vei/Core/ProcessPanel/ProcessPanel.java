@@ -1,4 +1,4 @@
-package me.qheilmann.vei.Core.RecipePanel;
+package me.qheilmann.vei.Core.ProcessPanel;
 
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -13,7 +13,7 @@ import com.google.common.base.Preconditions;
 
 import me.qheilmann.vei.Core.GUI.GuiItem;
 import me.qheilmann.vei.Core.Menu.RecipeMenu;
-import me.qheilmann.vei.Core.RecipePanel.Panels.ShapedRecipePanel;
+import me.qheilmann.vei.Core.ProcessPanel.Panels.CraftingProcessPanel;
 import me.qheilmann.vei.Core.Slot.Collection.SlotSequence;
 
 /**
@@ -44,26 +44,26 @@ import me.qheilmann.vei.Core.Slot.Collection.SlotSequence;
  *     <li>{@link #getWorkbenchMaterial()}</li>
  * </ul>
  * <p>
- * @see {@link ShapedRecipePanel}
+ * @see {@link CraftingProcessPanel}
  * @param <T> The type of recipe this view handles.
  */
-public abstract class RecipePanel<T extends Recipe> {
+public abstract class ProcessPanel<T extends Recipe> {
     
     private T recipe;
-    protected HashMap<RecipePanelSlot, GuiItem<RecipeMenu>> recipeViewSlots;
+    protected HashMap<ProcessPanelSlot, GuiItem<RecipeMenu>> recipeViewSlots;
 
-    private static final RecipePanelSlot DEFAULT_NEXT_RECIPE_SLOT      = new RecipePanelSlot(3, 0);
-    private static final RecipePanelSlot DEFAULT_PREVIOUS_RECIPE_SLOT  = new RecipePanelSlot(1, 0);
-    private static final RecipePanelSlot DEFAULT_FORWARD_RECIPE_SLOT   = new RecipePanelSlot(3, 4);
-    private static final RecipePanelSlot DEFAULT_BACKWARD_RECIPE_SLOT  = new RecipePanelSlot(1, 4);
-    private static final RecipePanelSlot DEFAULT_MOVE_INGREDIENTS_SLOT = new RecipePanelSlot(5, 3);
+    private static final ProcessPanelSlot DEFAULT_NEXT_RECIPE_SLOT      = new ProcessPanelSlot(3, 0);
+    private static final ProcessPanelSlot DEFAULT_PREVIOUS_RECIPE_SLOT  = new ProcessPanelSlot(1, 0);
+    private static final ProcessPanelSlot DEFAULT_FORWARD_RECIPE_SLOT   = new ProcessPanelSlot(3, 4);
+    private static final ProcessPanelSlot DEFAULT_BACKWARD_RECIPE_SLOT  = new ProcessPanelSlot(1, 4);
+    private static final ProcessPanelSlot DEFAULT_MOVE_INGREDIENTS_SLOT = new ProcessPanelSlot(5, 3);
     private static final Material DEFAULT_WORKBENCH_MATERIAL         = Material.CRAFTING_TABLE;
     
     /**
      * Create a new recipe view for the given recipe.
      * @param recipe The recipe to display.
      */
-    public RecipePanel(@NotNull T recipe) { // TODO change to WorkbenchRecipeSet with variante
+    public ProcessPanel(@NotNull T recipe) { // TODO change to WorkbenchRecipeSet with variante
         this(recipe, 0);
     }
 
@@ -72,7 +72,7 @@ public abstract class RecipePanel<T extends Recipe> {
      * @param recipe The recipe to display.
      * @param variante The variante index of the recipe to display.
      */
-    public RecipePanel(@NotNull T recipe, int variante) { // TODO change to WorkbenchRecipeSet with variante
+    public ProcessPanel(@NotNull T recipe, int variante) { // TODO change to WorkbenchRecipeSet with variante
         Preconditions.checkNotNull(recipe, "recipe cannot be null");
         this.recipeViewSlots = new HashMap<>();
         setRecipe(recipe);
@@ -90,19 +90,19 @@ public abstract class RecipePanel<T extends Recipe> {
      * Get a SlotSequence of all the slots that contain the recipe's ingredients.
      */
     @NotNull
-    protected abstract SlotSequence<RecipePanelSlot> getIngredients();
+    protected abstract SlotSequence<ProcessPanelSlot> getIngredients();
 
     /**
      * Get a SlotSequence of all the slots that contain the recipe's results.
      */
     @NotNull
-    protected abstract SlotSequence<RecipePanelSlot> getResults();
+    protected abstract SlotSequence<ProcessPanelSlot> getResults();
 
     /**
      * Get a SlotSequence of all the slots that contain the recipe's consumables.
      */
     @NotNull
-    protected abstract SlotSequence<RecipePanelSlot> getConsumables();
+    protected abstract SlotSequence<ProcessPanelSlot> getConsumables();
 
     /**
      * Populate the crafting slots with the recipe's ingredients, results, etc.
@@ -114,8 +114,8 @@ public abstract class RecipePanel<T extends Recipe> {
      * Override this method to change the button's position.
      */
     @NotNull
-    protected RecipePanelSlot getNextRecipeSlot() {
-        return RecipePanel.DEFAULT_NEXT_RECIPE_SLOT;
+    protected ProcessPanelSlot getNextRecipeSlot() {
+        return ProcessPanel.DEFAULT_NEXT_RECIPE_SLOT;
     }
 
     /**
@@ -123,8 +123,8 @@ public abstract class RecipePanel<T extends Recipe> {
      * Override this method to change the button's position.
      */
     @NotNull
-    protected RecipePanelSlot getPreviousRecipeSlot() {
-        return RecipePanel.DEFAULT_PREVIOUS_RECIPE_SLOT;
+    protected ProcessPanelSlot getPreviousRecipeSlot() {
+        return ProcessPanel.DEFAULT_PREVIOUS_RECIPE_SLOT;
     }
 
     /**
@@ -132,8 +132,8 @@ public abstract class RecipePanel<T extends Recipe> {
      * Override this method to change the button's position
      */
     @NotNull
-    protected RecipePanelSlot getForwardRecipeSlot() {
-        return RecipePanel.DEFAULT_FORWARD_RECIPE_SLOT;
+    protected ProcessPanelSlot getForwardRecipeSlot() {
+        return ProcessPanel.DEFAULT_FORWARD_RECIPE_SLOT;
     }
 
     /**
@@ -141,8 +141,8 @@ public abstract class RecipePanel<T extends Recipe> {
      * Override this method to change the button's position
      */
     @NotNull
-    protected RecipePanelSlot getBackwardRecipeSlot() {
-        return RecipePanel.DEFAULT_BACKWARD_RECIPE_SLOT;
+    protected ProcessPanelSlot getBackwardRecipeSlot() {
+        return ProcessPanel.DEFAULT_BACKWARD_RECIPE_SLOT;
     }
 
     /**
@@ -150,8 +150,8 @@ public abstract class RecipePanel<T extends Recipe> {
      * Override this method to change the button's position
      */
     @Nullable
-    protected RecipePanelSlot getMoveIngredientsSlot() {
-        return RecipePanel.DEFAULT_MOVE_INGREDIENTS_SLOT;
+    protected ProcessPanelSlot getMoveIngredientsSlot() {
+        return ProcessPanel.DEFAULT_MOVE_INGREDIENTS_SLOT;
     }
 
     /**
@@ -159,7 +159,7 @@ public abstract class RecipePanel<T extends Recipe> {
      * Override this method to change the workbench's position
      */
     @Nullable
-    protected RecipePanelSlot getWorkbenchSlot() {
+    protected ProcessPanelSlot getWorkbenchSlot() {
         return null;
     }
 
@@ -169,7 +169,7 @@ public abstract class RecipePanel<T extends Recipe> {
      */
     @Nullable
     protected Material getWorkbenchMaterial() {
-        return RecipePanel.DEFAULT_WORKBENCH_MATERIAL;
+        return ProcessPanel.DEFAULT_WORKBENCH_MATERIAL;
     }
 
     /**
@@ -231,28 +231,28 @@ public abstract class RecipePanel<T extends Recipe> {
      * @param slotTypes The slot types to get the content for.
      * @return A map of slot to item instance for the given slot types.
      */
-    public HashMap<RecipePanelSlot, GuiItem<RecipeMenu>> getContentView(EnumSet<SlotType> slotTypes) {
-        HashMap<RecipePanelSlot, GuiItem<RecipeMenu>> contentView = new HashMap<>();
+    public HashMap<ProcessPanelSlot, GuiItem<RecipeMenu>> getContentView(EnumSet<SlotType> slotTypes) {
+        HashMap<ProcessPanelSlot, GuiItem<RecipeMenu>> contentView = new HashMap<>();
         if (slotTypes.contains(SlotType.INGREDIENTS)) {
-            for (RecipePanelSlot slot : getIngredients()) {
+            for (ProcessPanelSlot slot : getIngredients()) {
                 contentView.put(slot, recipeViewSlots.get(slot));
             }
         }
 
         if (slotTypes.contains(SlotType.RESULTS)) {
-            for (RecipePanelSlot slot : getResults()) {
+            for (ProcessPanelSlot slot : getResults()) {
                 contentView.put(slot, recipeViewSlots.get(slot));
             }
         }
 
         if (slotTypes.contains(SlotType.CONSUMABLES)) {
-            for (RecipePanelSlot slot : getConsumables()) {
+            for (ProcessPanelSlot slot : getConsumables()) {
                 contentView.put(slot, recipeViewSlots.get(slot));
             }
         }
 
         if (slotTypes.contains(SlotType.WORKBENCH)) {
-            RecipePanelSlot workbenchSlot = getWorkbenchSlot();
+            ProcessPanelSlot workbenchSlot = getWorkbenchSlot();
             if (workbenchSlot != null) {
                 contentView.put(getWorkbenchSlot(), recipeViewSlots.get(getWorkbenchSlot()));
             }
@@ -287,19 +287,19 @@ public abstract class RecipePanel<T extends Recipe> {
     public void clear(EnumSet<SlotType> slotTypes) {
 
         if (slotTypes.contains(SlotType.INGREDIENTS)) {
-            for (RecipePanelSlot slot : getIngredients()) {
+            for (ProcessPanelSlot slot : getIngredients()) {
                 recipeViewSlots.put(slot, new GuiItem<>(ItemStack.empty()));
             }
         }
 
         if (slotTypes.contains(SlotType.RESULTS)) {
-            for (RecipePanelSlot slot : getResults()) {
+            for (ProcessPanelSlot slot : getResults()) {
                 recipeViewSlots.put(slot, new GuiItem<>(ItemStack.empty()));
             }
         }
 
         if (slotTypes.contains(SlotType.CONSUMABLES)) {
-            for (RecipePanelSlot slot : getConsumables()) {
+            for (ProcessPanelSlot slot : getConsumables()) {
                 recipeViewSlots.put(slot, new GuiItem<>(ItemStack.empty()));
             }
         }
@@ -323,7 +323,7 @@ public abstract class RecipePanel<T extends Recipe> {
         }
     }
 
-    private void putSlotIfNotNull(RecipePanelSlot coord, GuiItem<RecipeMenu> parentButton) {
+    private void putSlotIfNotNull(ProcessPanelSlot coord, GuiItem<RecipeMenu> parentButton) {
         if(coord != null) {
             recipeViewSlots.put(coord, parentButton);
         }

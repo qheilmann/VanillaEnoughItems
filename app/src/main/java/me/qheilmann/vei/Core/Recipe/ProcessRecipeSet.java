@@ -11,19 +11,19 @@ import org.jetbrains.annotations.NotNull;
 import me.qheilmann.vei.Core.Utils.NotNullSet;
 
 /**
- * Contains all workbench recipes for an item. Includes all recipe variants 
- * within a specific workbench for a particular item.
+ * Contains all process recipes for an item. Includes all recipe variants 
+ * within a specific process for a particular item.
  */
-public class WorkbenchRecipeSet {
+public class ProcessRecipeSet {
     
     private final NotNullSet<Recipe> recipes;
 
-    public WorkbenchRecipeSet() {
+    public ProcessRecipeSet() {
         this(Collections.emptyList());
     }
 
-    public WorkbenchRecipeSet(Collection<? extends Recipe> workbenchRecipeCollection) {
-        this.recipes = new NotNullSet<>(new HashSet<>(), workbenchRecipeCollection);
+    public ProcessRecipeSet(Collection<? extends Recipe> ProcessRecipeCollection) {
+        this.recipes = new NotNullSet<>(new HashSet<>(), ProcessRecipeCollection);
     }
 
     // Add methods to delegate to the wrapped NotNullSet
