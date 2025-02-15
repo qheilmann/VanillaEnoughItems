@@ -17,11 +17,11 @@ public class AllRecipeMap {
     private final NotNullMap<ItemStack, ItemRecipeMap> recipes;
 
     public AllRecipeMap() {
-        this(Collections.emptyMap());
+        this.recipes = new NotNullMap<>(new HashMap<>());
     }
 
-    public AllRecipeMap(@NotNull Map<? extends ItemStack, ? extends ItemRecipeMap> itemWorkbenchRecipeCollection) {
-        this.recipes = new NotNullMap<>(new HashMap<>(), itemWorkbenchRecipeCollection);
+    public AllRecipeMap(@NotNull AllRecipeMap itemWorkbenchRecipeCollection) {
+        this.recipes = new NotNullMap<>(new HashMap<>(), itemWorkbenchRecipeCollection.recipes);
     }
 
     // Add methods to delegate to the wrapped NotNullMap
@@ -47,7 +47,12 @@ public class AllRecipeMap {
      * @return true if the map contains the specified item
      */
     public boolean containsItem(@Nullable Object item) {
-        return recipes.containsKey(item);
+        ItemStack singleItem = getSingleItem(item);
+        if (singleItem == null) {
+            return false;
+        }
+
+        return recipes.containsKey(singleItem);
     }
 
     /**
@@ -58,7 +63,11 @@ public class AllRecipeMap {
      */
     @Nullable
     public ItemRecipeMap getItemRecipeMap(@Nullable Object key) {
-        return recipes.get(key);
+        ItemStack singleItem = getSingleItem(key);
+        if (singleItem == null) {
+            return null;
+        }
+        return recipes.get(singleItem);
     }
 
     /**
@@ -70,7 +79,12 @@ public class AllRecipeMap {
      */    
     @Nullable
     public ItemRecipeMap putItemRecipeMap(@NotNull ItemStack item, @NotNull ItemRecipeMap recipeMap) {
-        return recipes.put(item, recipeMap);
+        ItemStack singleItem = getSingleItem(item);
+        if (singleItem == null) {
+            return null;
+        }
+        
+        return recipes.put(singleItem, recipeMap);
     }
 
     /**
@@ -81,7 +95,12 @@ public class AllRecipeMap {
      */
     @Nullable
     public ItemRecipeMap remove(@Nullable Object item) {
-        return recipes.remove(item);
+        ItemStack singleItem = getSingleItem(item);
+        if (singleItem == null) {
+            return null;
+        }
+        
+        return recipes.remove(singleItem);
     }
 
     /**
@@ -90,8 +109,8 @@ public class AllRecipeMap {
      * @param c the collection of recipe maps to add
      * @return true if the set was modified
      */
-    public void putAllItemRecipeMap(@NotNull Map<? extends ItemStack, ? extends ItemRecipeMap> c) {
-        recipes.putAll(c);
+    public void putAllRecipeMap(@NotNull AllRecipeMap c) {
+        recipes.putAll(c.recipes);
     }
 
     /**
@@ -153,5 +172,22 @@ public class AllRecipeMap {
     @NotNull
     public String toString() {
         return recipes.toString();
+    }
+
+    /**
+     * Returns a single item stack from the specified object or null if the 
+     * object is null or not an item stack.
+     * 
+     * @param item the object to get the item stack from
+     * @return the single item stack
+     */
+    private ItemStack getSingleItem(@Nullable Object item) {
+        if (item == null || !(item instanceof ItemStack itemStack)) {
+            return null;
+        }
+        
+        ItemStack singleItem = itemStack.clone();
+        singleItem.setAmount(1);
+        return singleItem;
     }
 }

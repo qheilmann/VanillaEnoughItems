@@ -15,7 +15,7 @@ import me.qheilmann.vei.Core.Utils.NotNullSet;
  * <li>A process can have multiple recipe types (e.g., ShapedRecipe,
  * ShapelessRecipe for Crafting, SmithingTrimRecipe, SmithingTransformRecipe
  * for Smithing).</li>
- * <li>It can be used by various workbenches (e.g., Crafting table /
+ * <li>It can be used by various workbenches (e.g., Crafting table,
  * Crafter for Crafting).</li>
  * <li>It can be represented by a block, item, or entity.</li>
  * </ul>
@@ -39,7 +39,7 @@ public abstract class Process<T extends ProcessPanel<?>> {
      * @return the recipe panel.
      */
     @Nullable
-    public abstract ProcessPanel<Recipe> getRecipePanel();
+    public abstract T getRecipePanel();
 
     /**
      * Gets the set of different recipe classes that are made inside the same process 

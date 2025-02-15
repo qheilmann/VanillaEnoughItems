@@ -91,7 +91,7 @@ public class VanillaEnoughItems extends JavaPlugin {
 
     // TEMP: Remove this method (temporary recipe)
     private void temporaryRecipe() {
-
+        LOGGER.info("[123_A] Temporary recipe\n");
         // Custom recipe 1 (minecraft item with a new recipe)
 
         NamespacedKey key = new NamespacedKey(NAMESPACE, "second_diamond_swore");
@@ -160,7 +160,7 @@ public class VanillaEnoughItems extends JavaPlugin {
 
     private void temporaryTestMethode()
     {
-        LOGGER.info("Test methode YoloBanza");
+        LOGGER.info("[123_B] Test methode YoloBanza\n");
         // Without CRTP this is much less complicated, and it's now more familiar
         ChestSlot slot1 = new MaxChestSlot(0);                   // MaxChestSlot                         is a direct extend of ChestSlot
         GridSlot  slot2 = new MaxChestSlot(0);                   // MaxChestSlot>ChestSlot               is a direct extend of GridSlot
@@ -243,6 +243,8 @@ public class VanillaEnoughItems extends JavaPlugin {
 
     @SuppressWarnings("null")
     private void fillRecipeMap() {
+        LOGGER.info("[123_C] Fill the recipe map\n");
+
         AllRecipeMap allRecipesMap = new AllRecipeMap();
 
         // Get all recipes
@@ -255,6 +257,15 @@ public class VanillaEnoughItems extends JavaPlugin {
             if (result == null) {
                 continue;
             }
+
+            // Skip non-iron ingot recipes for check only this one
+            if(result.getType() != Material.IRON_INGOT) {
+                continue;
+            }
+
+            // Logs some information
+            LOGGER.info("Recipe: " + result + " " + recipe.getClass().getName());
+            LOGGER.info("Process: " + process);
 
             // Get/set the recipe map
             ItemRecipeMap itemRecipeMap;
