@@ -14,6 +14,7 @@ import me.qheilmann.vei.Core.GUI.GuiItem;
 import me.qheilmann.vei.Core.Menu.RecipeMenu;
 import me.qheilmann.vei.Core.ProcessPanel.ProcessPanel;
 import me.qheilmann.vei.Core.ProcessPanel.ProcessPanelSlot;
+import me.qheilmann.vei.Core.Recipe.ProcessRecipeSet;
 import me.qheilmann.vei.Core.Slot.Collection.SlotSequence;
 
 public class SmeltingProcessPanel extends ProcessPanel<FurnaceRecipe> {
@@ -29,10 +30,15 @@ public class SmeltingProcessPanel extends ProcessPanel<FurnaceRecipe> {
     public static final ProcessPanelSlot RESULT_SLOT = new ProcessPanelSlot(5, 2);
 
     private static final Material WORKBENCH_DISPLAY_MATERIAL = Material.FURNACE;
+    
+    private boolean initialized = false;
 
-    public SmeltingProcessPanel(@NotNull FurnaceRecipe recipe) {
-        super(recipe);
-        placeWorkbench();
+    public SmeltingProcessPanel(@NotNull ProcessRecipeSet<FurnaceRecipe> recipes, int variant) {
+        super(recipes, variant);
+    }
+
+    public SmeltingProcessPanel(@NotNull ProcessRecipeSet<FurnaceRecipe> recipes) {
+        super(recipes);
     }
 
     @Override
@@ -66,17 +72,17 @@ public class SmeltingProcessPanel extends ProcessPanel<FurnaceRecipe> {
     }
 
     @Override
-    protected @NotNull SlotSequence<ProcessPanelSlot> getIngredients() {
+    protected @NotNull SlotSequence<ProcessPanelSlot> getIngredientSlots() {
         return new SlotSequence<ProcessPanelSlot>(List.of(INGREDIENT_SLOT));
     }
 
     @Override
-    protected @NotNull SlotSequence<ProcessPanelSlot> getResults() {
+    protected @NotNull SlotSequence<ProcessPanelSlot> getResultSlots() {
         return new SlotSequence<ProcessPanelSlot>(List.of(RESULT_SLOT));
     }
 
     @Override
-    protected @NotNull SlotSequence<ProcessPanelSlot> getConsumables() {
+    protected @NotNull SlotSequence<ProcessPanelSlot> getConsumableSlots() {
         return new SlotSequence<ProcessPanelSlot>(List.of(COMBUSTIBLE_SLOT));
     }
 
@@ -99,20 +105,23 @@ public class SmeltingProcessPanel extends ProcessPanel<FurnaceRecipe> {
 
     @Override
     protected void populateCraftingSlots() {
-        FurnaceRecipe recipe = getRecipe();
+        if (!initialized) {
+            placeWorkbench();
+        }
+
+        FurnaceRecipe recipe = getCurrentRecipe();
 
         RecipeChoice recipeChoice = recipe.getInputChoice();
         if (recipeChoice instanceof RecipeChoice.MaterialChoice materialChoice) {
-            recipeViewSlots.put(INGREDIENT_SLOT, new GuiItem<RecipeMenu>(materialChoice.getItemStack()));
+            recipePanelSlots.put(INGREDIENT_SLOT, new GuiItem<RecipeMenu>(materialChoice.getItemStack()));
         }
 
-        recipeViewSlots.put(COMBUSTIBLE_SLOT, new GuiItem<RecipeMenu>(Material.COAL));
-        recipeViewSlots.put(RESULT_SLOT, new GuiItem<RecipeMenu>(recipe.getResult()));
-
+        recipePanelSlots.put(COMBUSTIBLE_SLOT, new GuiItem<RecipeMenu>(Material.COAL));
+        recipePanelSlots.put(RESULT_SLOT, new GuiItem<RecipeMenu>(recipe.getResult()));
     }
 
     private void placeWorkbench() {
         GuiItem<RecipeMenu> noTooltipWorkbench = GuiItem.buildNoTooltipGuiItem(WORKBENCH_DISPLAY_MATERIAL);
-        recipeViewSlots.put(WORKBENCH_SLOT, noTooltipWorkbench);
+        recipePanelSlots.put(WORKBENCH_SLOT, noTooltipWorkbench);
     }
 }

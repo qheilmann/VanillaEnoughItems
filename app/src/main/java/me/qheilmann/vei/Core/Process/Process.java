@@ -3,26 +3,25 @@ package me.qheilmann.vei.Core.Process;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import me.qheilmann.vei.Core.ProcessPanel.ProcessPanel;
+import me.qheilmann.vei.Core.Recipe.ProcessRecipeSet;
 import me.qheilmann.vei.Core.Utils.NotNullSet;
 
 /**
- * Abstract base class for item creation processes using recipes.
- * A process is a way to create items with or without other items.
+ * Abstract class for item creation using recipes in a certain way 
+ * (e.g., Crafting, Smelting, Smithing). This way is represented by a process.
  * <ul>
  * <li>A process can have multiple recipe types (e.g., ShapedRecipe,
  * ShapelessRecipe for Crafting, SmithingTrimRecipe, SmithingTransformRecipe
  * for Smithing).</li>
- * <li>It can be used by various workbenches (e.g., Crafting table,
+ * <li>It can be used by various workbenches (e.g., Crafting table /
  * Crafter for Crafting).</li>
  * <li>It can be represented by a block, item, or entity.</li>
  * </ul>
  */
-public abstract class Process<T extends ProcessPanel<?>> {
+public abstract class Process<R extends Recipe> {
 
-    private NotNullSet<Class<Recipe>> recipeClasses;
+    private NotNullSet<Class<R>> recipeClasses;
     private NotNullSet<ItemStack> workbenchOptions;
 
     /**
@@ -34,12 +33,20 @@ public abstract class Process<T extends ProcessPanel<?>> {
     public abstract String getProcessName();
 
     /**
+     * Gets the item stack that represents the process.
+     * 
+     * @return the item stack.
+     */
+    @NotNull
+    public abstract ItemStack getProcessIcon();
+
+    /**
      * Gets the recipe panel for the process.
      * 
      * @return the recipe panel.
      */
-    @Nullable
-    public abstract T getRecipePanel();
+    @NotNull
+    public abstract ProcessPanel<R> generateProcessPanel(@NotNull ProcessRecipeSet<R> processRecipeSet, int variant);
 
     /**
      * Gets the set of different recipe classes that are made inside the same process 
@@ -48,7 +55,7 @@ public abstract class Process<T extends ProcessPanel<?>> {
      * @return the set of recipe classes.
      */
     @NotNull
-    public NotNullSet<Class<Recipe>> getRecipeClasses() {
+    public NotNullSet<Class<R>> getRecipeClasses() {
         return recipeClasses;
     }
 
@@ -57,7 +64,7 @@ public abstract class Process<T extends ProcessPanel<?>> {
      * 
      * @param recipeClass the recipe class to add.
      */
-    public void addRecipeClass(@NotNull Class<Recipe> recipeClass) {
+    public void addRecipeClass(@NotNull Class<R> recipeClass) {
         this.recipeClasses.add(recipeClass);
     }
 

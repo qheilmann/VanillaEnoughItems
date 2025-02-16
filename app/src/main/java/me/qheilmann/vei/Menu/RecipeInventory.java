@@ -9,7 +9,6 @@ import java.util.UUID;
 
 import javax.annotation.Nullable;
 
-import org.apache.commons.lang3.Validate;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
@@ -182,12 +181,12 @@ public class RecipeInventory implements InventoryHolder, IOwnedByMenu {
         return;
     }
 
-    static private Vector2i viewCoordAsMenuCoord(Vector2i coord) {
-        Validate.inclusiveBetween(0, 6, coord.x, "x must be between 0 and 6");
-        Validate.inclusiveBetween(0, 4, coord.y, "y must be between 0 and 4");
+    // static private Vector2i viewCoordAsMenuCoord(Vector2i coord) {
+    //     Validate.inclusiveBetween(0, 6, coord.x, "x must be between 0 and 6");
+    //     Validate.inclusiveBetween(0, 4, coord.y, "y must be between 0 and 4");
 
-        return new Vector2i(coord.x + 1, coord.y + 1);
-    }
+    //     return new Vector2i(coord.x + 1, coord.y + 1);
+    // }
 
     static private int menuCoordAsMenuIndex(Vector2i coord) {
         return coord.x + coord.y * 9;

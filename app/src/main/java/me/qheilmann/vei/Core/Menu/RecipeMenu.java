@@ -2,19 +2,20 @@ package me.qheilmann.vei.Core.Menu;
 
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Objects;
 
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.inventory.FurnaceRecipe;
 import org.bukkit.inventory.Recipe;
-import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.jetbrains.annotations.NotNull;
 
 import dev.triumphteam.gui.components.InteractionModifier;
 import me.qheilmann.vei.Core.GUI.BaseGui;
 import me.qheilmann.vei.Core.GUI.GuiItem;
 import me.qheilmann.vei.Core.ProcessPanel.ProcessPanel;
-import me.qheilmann.vei.Core.ProcessPanel.Panels.SmeltingProcessPanel;
-import me.qheilmann.vei.Core.ProcessPanel.Panels.CraftingProcessPanel;
+import me.qheilmann.vei.Core.Recipe.ItemRecipeMap;
+import me.qheilmann.vei.Core.Recipe.ProcessRecipeSet;
+import me.qheilmann.vei.Core.Process.Process;
 import me.qheilmann.vei.Core.Slot.Collection.SlotRange;
 import me.qheilmann.vei.Core.Slot.Implementation.MaxChestSlot;
 import me.qheilmann.vei.Core.Style.ButtonType.VeiButtonType;
@@ -25,7 +26,7 @@ import net.kyori.adventure.text.Component;
  * <h1>RecipeMenu</h1>
  * This class is used to display the recipe menu (9x6) in a GUI.
  * <p>
- * GUI representation (with ShapedRecipeView):
+ * GUI representation (with ShapedRecipePanel):
  * <pre>
  *-> x 0  1  2  3  4  5  6  7  8
  * y +---------------------------+
@@ -49,7 +50,7 @@ import net.kyori.adventure.text.Component;
  * <li>s: bookmark server list</li>
  * <li>e: exit</li>
  * </ul>
- * Recipeview example (ShapedRecipeView):
+ * RecipePanel example (ShapedRecipePanel):
  * <ul>
  * <li>g: inputs (crafting grid)</li>
  * <li>o: outputs</li>
@@ -73,7 +74,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
 
     private static final SlotRange<MaxChestSlot> WORKBENCH_SLOT_RANGE         = new SlotRange<>(new MaxChestSlot(2, 0), new MaxChestSlot(6, 0));
     private static final SlotRange<MaxChestSlot> WORKBENCH_VARIANT_SLOT_RANGE = new SlotRange<>(new MaxChestSlot(0, 2), new MaxChestSlot(0, 4));
-    private static final SlotRange<MaxChestSlot> RECIPE_VIEW_SLOT_RANGE       = new SlotRange<>(new MaxChestSlot(1, 1), new MaxChestSlot(7, 5));
+    private static final SlotRange<MaxChestSlot> RECIPE_PANEL_SLOT_RANGE       = new SlotRange<>(new MaxChestSlot(1, 1), new MaxChestSlot(7, 5));
 
     private GuiItem<RecipeMenu> quickLinkItem;
     private GuiItem<RecipeMenu> workbenchTypeScrollLeftItem;
@@ -97,20 +98,40 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
     // private static final String UNBOOKMARK_LORE_MESSAGE = "Remove this recipe from your bookmark";
 
     private final Style style;
-    private ProcessPanel<? extends Recipe> recipeView;
+    private ProcessPanel<?> recipePanel;
 
-    public RecipeMenu(Style style, Recipe recipe) {
+    public RecipeMenu(@NotNull Style style, @NotNull ItemRecipeMap itemRecipeMap) {
+        this(style, itemRecipeMap, itemRecipeMap.getAllProcess().iterator().next());
+    }
+
+    public RecipeMenu(@NotNull Style style, @NotNull ItemRecipeMap itemRecipeMap, Process<?> process) {
+        this(style, itemRecipeMap, process, 0);
+    }
+
+    public <R extends Recipe> RecipeMenu(@NotNull Style style, @NotNull ItemRecipeMap itemRecipeMap, Process<R> process, int variant) {
         super((owner) -> BaseGui.plugin.getServer().createInventory(owner, 6*9, Component.text("Recipe Menu")), InteractionModifier.VALUES);
+        Objects.requireNonNull(style, "style cannot be null");
+        Objects.requireNonNull(itemRecipeMap, "itemRecipeMap cannot be null");
         this.style = style;
 
-        // TODO place here a factory to create the right RecipeView
-        if (recipe instanceof ShapedRecipe shapedRecipe) {
-            recipeView = new CraftingProcessPanel(shapedRecipe);
-        } else if (recipe instanceof FurnaceRecipe FurnaceRecipe) {
-            recipeView = new SmeltingProcessPanel(FurnaceRecipe);
-        } else {
-            throw new IllegalArgumentException("Unsupported recipe type: " + recipe.getClass().getSimpleName());
+        ProcessRecipeSet<R> processRecipeSet = itemRecipeMap.getProcessRecipeSet(process);
+        if (processRecipeSet == null) {
+            throw new IllegalArgumentException("No recipe set found for process: " + process);
         }
+        Recipe recipe = processRecipeSet.getVariant(variant);
+        if (recipe == null) {
+            throw new IllegalArgumentException("No variant " + variant + " inside the recipe set for process: " + process);
+        }
+        this.recipePanel = process.generateProcessPanel(processRecipeSet, variant);
+        
+
+        // if (itemRecipeMap instanceof ShapedRecipe shapedRecipe) {
+        //     recipePanel = new CraftingProcessPanel(shapedRecipe);
+        // } else if (itemRecipeMap instanceof FurnaceRecipe FurnaceRecipe) {
+        //     recipePanel = new SmeltingProcessPanel(FurnaceRecipe);
+        // } else {
+        //     throw new IllegalArgumentException("Unsupported recipe type: " + itemRecipeMap.getClass().getSimpleName());
+        // }
 
         setDefaultClickAction((event, context) -> event.setCancelled(true)); // Cancel the event for the entire GUI
         
@@ -136,8 +157,8 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         // Padding
         padEmptySlots();
 
-        // Populate the recipe view
-        populateRecipeView();
+        // Populate the recipe panel
+        populateRecipePanel();
     }
 
     //#region Button setup
@@ -272,7 +293,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
             Component.text("See the next recipe").color(style.getSecondaryColor())
         )));
         nextRecipeItem.setAction(this::nextRecipeAction);
-        recipeView.attachMenuButton(ProcessPanel.ButtonType.NEXT_RECIPE, nextRecipeItem);
+        recipePanel.attachMenuButton(ProcessPanel.ButtonType.NEXT_RECIPE, nextRecipeItem);
     }
 
     private void setupPreviousRecipeButton() {
@@ -284,7 +305,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
             Component.text("See the previous recipe").color(style.getSecondaryColor())
         )));
         previousRecipeItem.setAction(this::previousRecipeAction);
-        recipeView.attachMenuButton(ProcessPanel.ButtonType.PREVIOUS_RECIPE, previousRecipeItem);
+        recipePanel.attachMenuButton(ProcessPanel.ButtonType.PREVIOUS_RECIPE, previousRecipeItem);
     }
 
     private void setupForwardRecipeButton() {
@@ -296,7 +317,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
             Component.text("Return to the following recipe in the history").color(style.getSecondaryColor())
         )));
         forwardRecipeItem.setAction(this::forwardRecipeAction);
-        recipeView.attachMenuButton(ProcessPanel.ButtonType.FORWARD_RECIPE, forwardRecipeItem);
+        recipePanel.attachMenuButton(ProcessPanel.ButtonType.FORWARD_RECIPE, forwardRecipeItem);
     }
     
     private void setupBackwardRecipeButton() {
@@ -308,7 +329,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
             Component.text("Go back to the preceding recipe in the history").color(style.getSecondaryColor())
         )));
         backwardRecipeItem.setAction(this::backwardRecipeAction);
-        recipeView.attachMenuButton(ProcessPanel.ButtonType.BACKWARD_RECIPE, backwardRecipeItem);
+        recipePanel.attachMenuButton(ProcessPanel.ButtonType.BACKWARD_RECIPE, backwardRecipeItem);
     }
 
     private void setupMoveIngredientsButton() {
@@ -321,7 +342,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
             Component.text("This work only if a empty accessible workbench is around you").color(style.getSecondaryColor())
         )));
         moveIngredientsItem.setAction(this::moveIngredientsAction);
-        recipeView.attachMenuButton(ProcessPanel.ButtonType.MOVE_INGREDIENTS, moveIngredientsItem);
+        recipePanel.attachMenuButton(ProcessPanel.ButtonType.MOVE_INGREDIENTS, moveIngredientsItem);
     }
     
     //#endregion Button setup
@@ -400,11 +421,11 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         fillEmpty(padding);
     }
 
-    protected void populateRecipeView(){
-        populateRecipeView(ProcessPanel.SlotType.ALL);
+    protected void populateRecipePanel(){
+        populateRecipePanel(ProcessPanel.SlotType.ALL);
     }
 
-    protected void populateRecipeView(EnumSet<ProcessPanel.SlotType> slotType){
-        recipeView.getContentView(slotType).forEach((slot, item) -> setItem(slot.asMaxChestSlot(), item));
+    protected void populateRecipePanel(EnumSet<ProcessPanel.SlotType> slotType){
+        recipePanel.getContentPanel(slotType).forEach((slot, item) -> setItem(slot.asMaxChestSlot(), item));
     }
 }

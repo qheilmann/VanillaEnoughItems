@@ -20,8 +20,8 @@ public class AllRecipeMap {
         this.recipes = new NotNullMap<>(new HashMap<>());
     }
 
-    public AllRecipeMap(@NotNull AllRecipeMap itemWorkbenchRecipeCollection) {
-        this.recipes = new NotNullMap<>(new HashMap<>(), itemWorkbenchRecipeCollection.recipes);
+    public AllRecipeMap(@NotNull AllRecipeMap AllRecipeMap) {
+        this.recipes = new NotNullMap<>(new HashMap<>(), AllRecipeMap.recipes);
     }
 
     // Add methods to delegate to the wrapped NotNullMap
@@ -58,12 +58,12 @@ public class AllRecipeMap {
     /**
      * Returns the recipes for the specified item.
      * 
-     * @param key the item to get the recipes for
+     * @param item the item to get the recipes for
      * @return the recipes map for the specified item
      */
     @Nullable
-    public ItemRecipeMap getItemRecipeMap(@Nullable Object key) {
-        ItemStack singleItem = getSingleItem(key);
+    public ItemRecipeMap getItemRecipeMap(@Nullable ItemStack item) {
+        ItemStack singleItem = getSingleItem(item);
         if (singleItem == null) {
             return null;
         }
@@ -186,8 +186,6 @@ public class AllRecipeMap {
             return null;
         }
         
-        ItemStack singleItem = itemStack.clone();
-        singleItem.setAmount(1);
-        return singleItem;
+        return itemStack.asOne();
     }
 }

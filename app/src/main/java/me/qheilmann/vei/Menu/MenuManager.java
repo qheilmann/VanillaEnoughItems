@@ -6,6 +6,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import me.qheilmann.vei.VanillaEnoughItems;
 import me.qheilmann.vei.Core.Menu.RecipeMenu;
 import me.qheilmann.vei.Core.Style.Styles.Style;
 
@@ -26,7 +27,7 @@ public class MenuManager {
      * which will run the task on the next tick.
      */
     public void openRecipeMenu(Player player, Recipe recipe) {
-        RecipeMenu recipeMenu = new RecipeMenu(style, recipe);
+        RecipeMenu recipeMenu = new RecipeMenu(style, VanillaEnoughItems.allRecipesMap.getItemRecipeMap(recipe.getResult()));
         recipeMenu.open(player);
     }
 

@@ -53,6 +53,8 @@ public class VanillaEnoughItems extends JavaPlugin {
 
     private MenuManager menuManager;
 
+    public static final AllRecipeMap allRecipesMap = new AllRecipeMap();
+
     @Override
     public void onLoad() {
         CommandAPI.onLoad(new CommandAPIBukkitConfig(this));
@@ -245,12 +247,10 @@ public class VanillaEnoughItems extends JavaPlugin {
     private void fillRecipeMap() {
         LOGGER.info("[123_C] Fill the recipe map\n");
 
-        AllRecipeMap allRecipesMap = new AllRecipeMap();
-
         // Get all recipes
         var recipeIterator = getServer().recipeIterator();
         while (recipeIterator.hasNext()) {
-            Recipe recipe = recipeIterator.next();
+            Recipe recipe =  recipeIterator.next();
             ItemStack result = recipe.getResult();
             Process<?> process = recipeToProcessConverter(recipe);
 
@@ -258,16 +258,16 @@ public class VanillaEnoughItems extends JavaPlugin {
                 continue;
             }
 
-            // Skip non-iron ingot recipes for check only this one
-            if(result.getType() != Material.IRON_INGOT) {
-                continue;
-            }
+            // // Skip non-iron ingot recipes for check only this one
+            // if(result.getType() != Material.IRON_INGOT) {
+            //     continue;
+            // }
 
             // Logs some information
-            LOGGER.info("Recipe: " + result + " " + recipe.getClass().getName());
-            LOGGER.info("Process: " + process);
+            // LOGGER.info("Recipe: " + result + " " + recipe.getClass().getName());
+            // LOGGER.info("Process: " + process);
 
-            // Get/set the recipe map
+            // Get/create the item recipe map
             ItemRecipeMap itemRecipeMap;
             if (allRecipesMap.containsItem(result)) {
                 itemRecipeMap = allRecipesMap.getItemRecipeMap(result);
@@ -276,28 +276,32 @@ public class VanillaEnoughItems extends JavaPlugin {
                 allRecipesMap.putItemRecipeMap(result, itemRecipeMap);
             }
 
-            // Get/set the process recipe set
-            ProcessRecipeSet processRecipeSet;
+            // Get/create the process recipe set
+            ProcessRecipeSet<?> processRecipeSet;
             if (itemRecipeMap.containsProcess(process)) {
                 processRecipeSet = itemRecipeMap.getProcessRecipeSet(process);
             } else {
-                processRecipeSet = new ProcessRecipeSet();
-                itemRecipeMap.putProcessRecipeSet(process, processRecipeSet);
+                processRecipeSet = new ProcessRecipeSet<>();
+                itemRecipeMap.unsafePutProcessRecipeSet(process, processRecipeSet);
             }
 
             // Add the recipe to the process recipe set
-            processRecipeSet.add(recipe);
+            if (!processRecipeSet.tryAdd(recipe) && !processRecipeSet.contains(recipe)) {
+                throw new IllegalStateException("Recipe cannot be added to the process recipe set, the recipe type is not the same as the process recipe set type");
+            }
         }
 
         // Check the recipe map
         LOGGER.info("[***]Recipe map[***]: " + allRecipesMap.size());
         for (ItemStack item : allRecipesMap.getItems()) {
+
             LOGGER.info("[Item]: " + item.toString());
             ItemRecipeMap itemRecipeMap = allRecipesMap.getItemRecipeMap(item);
-            for (Process<?> process : itemRecipeMap.ProcessSet()) {
-                LOGGER.info("Process: " + process);
-                ProcessRecipeSet processRecipeSet = itemRecipeMap.getProcessRecipeSet(process);
+            for (Process<?> process : itemRecipeMap.getAllProcess()) {
+
+                ProcessRecipeSet<?> processRecipeSet = itemRecipeMap.getProcessRecipeSet(process);
                 for (Recipe recipe : processRecipeSet.toArray()) {
+
                     String str = "Recipe: " + recipe.getResult() + " " + recipe.getClass().getName() + " ";
                     if (recipe instanceof ShapedRecipe shapedRecipe) {
                         str += shapedRecipe.getChoiceMap();
