@@ -60,7 +60,7 @@ public class VanillaEnoughItems extends JavaPlugin {
         CommandAPI.onLoad(new CommandAPIBukkitConfig(this));
         menuManager = new MenuManager(this, StyleManager.DEFAULT_STYLE);
         
-        new CraftCommand(this, menuManager).register();
+        new CraftCommand(menuManager).register();
         new TestCommand().register();
 
         LOGGER.info(NAME + " has been loaded!");

@@ -1,15 +1,10 @@
 package me.qheilmann.vei.Command;
 
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ComplexRecipe;
-import org.bukkit.inventory.Recipe;
-import org.bukkit.inventory.ShapedRecipe;
-import org.bukkit.plugin.java.JavaPlugin;
-
+import org.bukkit.inventory.ItemStack;
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.CommandPermission;
-import dev.jorel.commandapi.arguments.MultiLiteralArgument;
-import dev.jorel.commandapi.arguments.RecipeArgument;
+import dev.jorel.commandapi.arguments.ItemStackArgument;
 import me.qheilmann.vei.Menu.MenuManager;
 
 public class CraftCommand implements ICommand{
@@ -24,11 +19,9 @@ public class CraftCommand implements ICommand{
                                         /craft <recipe>
                                         """;
 
-    private JavaPlugin plugin;
     private MenuManager menuManager;
 
-    public CraftCommand(JavaPlugin plugin, MenuManager menuManager) {
-        this.plugin = plugin;
+    public CraftCommand(MenuManager menuManager) {
         this.menuManager = menuManager;
     }
 
@@ -38,65 +31,17 @@ public class CraftCommand implements ICommand{
             .withAliases(ALIASES)
             .withPermission(PERMISSION)
             .withHelp(SHORT_DESCRIPTION, LONG_DESCRIPTION)
-            .withArguments(new MultiLiteralArgument("type", "old", "new"))
-            .withArguments(new RecipeArgument("recipe"))
+            .withArguments(new ItemStackArgument("item"))
             .executesPlayer((player, args) -> {
-                String type = (String) args.get("type");
-                Recipe recipe = fixComplexRecipe((Recipe) args.get("recipe"));
-                openRecipeAction(player, type, recipe);
+                ItemStack itemStack = (ItemStack) args.get("item");
+                openRecipe(player, itemStack);
             })
             .register();
     }
 
-    // Command action
-    // Must:
-    // - Be suffixed with "Action"
-    // - Perform the command backend API (Manager calls, API etc), no business logic here
-    // Can:
-    // - Verify and convert command arguments
-    // - Send feedback messages
-    // - Call other cosmetic methods (particles, sounds, etc.)
-
-    private void openRecipeAction(Player player, String type, Recipe recipe) {
-        switch (type) {
-            case "old":
-                openOldRecipe(player, recipe);
-                break;
-            case "new":
-                openNewRecipe(player, recipe);
-                break;
-            default:
-                player.sendMessage("Invalid type"); // Not necessary
-            break;
-        }
-    }
-
     // Utils
 
-    private void openOldRecipe(Player player, Recipe recipe) {
-        if(!(recipe instanceof ShapedRecipe shapedRecipe)) {
-            player.sendMessage("Recipe other than ShapedRecipe are not supported yet (" + recipe.getClass().getName() + ")");
-            return;
-        }
-        menuManager.openRecipeMenuOld(player, shapedRecipe);
-    }
-
-    private void openNewRecipe(Player player, Recipe recipe) {
-        menuManager.openRecipeMenu(player, recipe);
-    }
-
-    /**
-     * Convert a complex recipe to a possible simple recipe
-     * If the original recipe is a simple recipe, it will return the same object
-     * This can be use with the RecipeArgument, this class always return a ComplexRecipe even if the recipe is an other implementation of Recipe
-     * @param recipe
-     * @return Recipe implementation
-     */
-    private Recipe fixComplexRecipe(Recipe recipe) {
-        if(!(recipe instanceof ComplexRecipe complexRecipe)) {
-            return recipe;
-        }
-
-        return plugin.getServer().getRecipe(complexRecipe.getKey());
+    private void openRecipe(Player player, ItemStack item) {
+        menuManager.openRecipeMenu(player, item);
     }
 }

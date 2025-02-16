@@ -3,12 +3,16 @@ package me.qheilmann.vei.Menu;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import me.qheilmann.vei.VanillaEnoughItems;
 import me.qheilmann.vei.Core.Menu.RecipeMenu;
+import me.qheilmann.vei.Core.Recipe.ItemRecipeMap;
 import me.qheilmann.vei.Core.Style.Styles.Style;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextColor;
 
 public class MenuManager {
 
@@ -26,8 +30,13 @@ public class MenuManager {
      * schedule a task using BukkitScheduler.runTask(Plugin, Runnable), 
      * which will run the task on the next tick.
      */
-    public void openRecipeMenu(Player player, Recipe recipe) {
-        RecipeMenu recipeMenu = new RecipeMenu(style, VanillaEnoughItems.allRecipesMap.getItemRecipeMap(recipe.getResult()));
+    public void openRecipeMenu(Player player, ItemStack item) {
+        ItemRecipeMap itemRecipeMap = VanillaEnoughItems.allRecipesMap.getItemRecipeMap(item);
+        if (itemRecipeMap == null) {
+            player.sendMessage(Component.text("No recipe found for this item").color(TextColor.color(0xFB5454)));
+            return;
+        }
+        RecipeMenu recipeMenu = new RecipeMenu(style, itemRecipeMap);
         recipeMenu.open(player);
     }
 
