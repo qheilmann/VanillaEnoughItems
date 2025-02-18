@@ -127,6 +127,7 @@ def orderedPipeline(taskList) {
 // --------------------------------------------------
 // Pipeline sub tasks
 // --------------------------------------------------
+
 def syncWarningComment = " This will be updated by the Gradle task; modify in the gradle.properties file if changes are needed."
 
 ext {

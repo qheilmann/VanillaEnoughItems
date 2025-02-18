@@ -295,6 +295,11 @@ public class VanillaEnoughItems extends JavaPlugin {
         LOGGER.info("[***]Recipe map[***]: " + allRecipesMap.size());
         for (ItemStack item : allRecipesMap.getItems()) {
 
+            // log only iron_ingot recipe or all
+            if(item.getType() != Material.IRON_INGOT) {
+                continue;
+            }
+
             LOGGER.info("[Item]: " + item.toString());
             ItemRecipeMap itemRecipeMap = allRecipesMap.getItemRecipeMap(item);
             for (Process<?> process : itemRecipeMap.getAllProcess()) {
