@@ -123,16 +123,8 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
             throw new IllegalArgumentException("No variant " + variant + " inside the recipe set for process: " + process);
         }
         this.recipePanel = process.generateProcessPanel(processRecipeSet, variant);
+
         
-
-        // if (itemRecipeMap instanceof ShapedRecipe shapedRecipe) {
-        //     recipePanel = new CraftingProcessPanel(shapedRecipe);
-        // } else if (itemRecipeMap instanceof FurnaceRecipe FurnaceRecipe) {
-        //     recipePanel = new SmeltingProcessPanel(FurnaceRecipe);
-        // } else {
-        //     throw new IllegalArgumentException("Unsupported recipe type: " + itemRecipeMap.getClass().getSimpleName());
-        // }
-
         setDefaultClickAction((event, context) -> event.setCancelled(true)); // Cancel the event for the entire GUI
         
         // Prepare buttons
@@ -152,12 +144,27 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         setupBackwardRecipeButton();
         setupMoveIngredientsButton();
 
-        // TODO populate the outer menu part (not inside the setupMethodes)
+        // Populate the GUI
+        setItem(QUICK_LINK_SLOT, quickLinkItem);
+        setItem(WORKBENCH_TYPE_SCROLL_LEFT_SLOT, workbenchTypeScrollLeftItem);
+        setItem(WORKBENCH_TYPE_SCROLL_RIGHT_SLOT, workbenchTypeScrollRightItem);
+        setItem(INFO_SLOT, infoItem);
+        setItem(WORKBENCH_VARIANT_SCROLL_UP_SLOT, workbenchVariantScrollUpItem);
+        setItem(WORKBENCH_VARIANT_SCROLL_DOWN_SLOT, workbenchVariantScrollDownItem);
+        setItem(BOOKMARK_THIS_RECIPE_TOGGLE_SLOT, bookmarkThisRecipeItemToggle);
+        setItem(BOOKMARK_LIST_SLOT, bookmarkListItem);
+        setItem(BOOKMARK_SERVER_LIST_SLOT, bookmarkServerListItem);
+        setItem(EXIT_SLOT, exitItem);
         
-        // Padding
+        // Padding empty slots
         padEmptySlots();
-
+        
         // Populate the recipe panel
+        this.recipePanel.attachMenuButton(ProcessPanel.ButtonType.NEXT_RECIPE, nextRecipeItem);
+        this.recipePanel.attachMenuButton(ProcessPanel.ButtonType.PREVIOUS_RECIPE, previousRecipeItem);
+        this.recipePanel.attachMenuButton(ProcessPanel.ButtonType.FORWARD_RECIPE, forwardRecipeItem);
+        this.recipePanel.attachMenuButton(ProcessPanel.ButtonType.BACKWARD_RECIPE, backwardRecipeItem);
+        this.recipePanel.attachMenuButton(ProcessPanel.ButtonType.MOVE_INGREDIENTS, moveIngredientsItem);
         populateRecipePanel();
     }
 
@@ -173,7 +180,6 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
             Component.text("/recipe <myRecipe> <category>").color(style.getSecondaryColor())
         )));
         quickLinkItem.setAction(this::quickLinkAction);
-        setItem(QUICK_LINK_SLOT, quickLinkItem);
     }
 
     private void setupWorkbenchTypeScrollLeftButton() {
@@ -185,7 +191,6 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
             Component.text("See previous workbench type").color(style.getSecondaryColor())
         )));
         workbenchTypeScrollLeftItem.setAction(this::workbenchTypeScrollLeftAction);
-        setItem(WORKBENCH_TYPE_SCROLL_LEFT_SLOT, workbenchTypeScrollLeftItem);
     }
 
     private void setupWorkbenchTypeScrollRightButton() {
@@ -197,7 +202,6 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
             Component.text("See next workbench type").color(style.getSecondaryColor())
         )));
         workbenchTypeScrollRightItem.setAction(this::workbenchTypeScrollRightAction);
-        setItem(WORKBENCH_TYPE_SCROLL_RIGHT_SLOT, workbenchTypeScrollRightItem);
     }
 
     private void setupInfoButton() {
@@ -209,7 +213,6 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
             Component.text("See VEI info").color(style.getSecondaryColor())
         )));
         infoItem.setAction(this::infoAction);
-        setItem(INFO_SLOT, infoItem);
     }
 
     private void setupWorkbenchVariantScrollUpButton() {
@@ -221,7 +224,6 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
             Component.text("See previous workbench variant").color(style.getSecondaryColor())
         )));
         workbenchVariantScrollUpItem.setAction(this::workbenchVariantScrollUpAction);
-        setItem(WORKBENCH_VARIANT_SCROLL_UP_SLOT, workbenchVariantScrollUpItem);
     }
 
     private void setupWorkbenchVariantScrollDownButton() {
@@ -233,7 +235,6 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
             Component.text("See next workbench variant").color(style.getSecondaryColor())
         )));
         workbenchVariantScrollDownItem.setAction(this::workbenchVariantScrollDownAction);
-        setItem(WORKBENCH_VARIANT_SCROLL_DOWN_SLOT, workbenchVariantScrollDownItem);
     }
 
     private void setupBookmarkRecipeToggleButton() {
@@ -245,7 +246,6 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
             List.of(Component.text(BOOKMARK_LORE_MESSAGE).color(style.getSecondaryColor())
         )));
         bookmarkThisRecipeItemToggle.setAction(this::bookmarkRecipeToggleAction);
-        setItem(BOOKMARK_THIS_RECIPE_TOGGLE_SLOT, bookmarkThisRecipeItemToggle);
     }
 
     private void setupBookmarkListButton() {
@@ -257,7 +257,6 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
             Component.text("See your bookmarked recipes").color(style.getSecondaryColor())
         )));
         bookmarkListItem.setAction(this::bookmarkListAction);
-        setItem(BOOKMARK_LIST_SLOT, bookmarkListItem);
     }
 
     private void setupBookmarkServerListButton() {
@@ -269,7 +268,6 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
             Component.text("See the server bookmarked recipes").color(style.getSecondaryColor())
         )));
         bookmarkServerListItem.setAction(this::bookmarkServerListAction);
-        setItem(BOOKMARK_SERVER_LIST_SLOT, bookmarkServerListItem);
     }
 
     private void setupExitButton() {
@@ -281,7 +279,6 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
             Component.text("Exit the recipe menu").color(style.getSecondaryColor())
         )));
         exitItem.setAction(this::exitAction);
-        setItem(EXIT_SLOT, exitItem);
     }
 
     private void setupNextRecipeButton() {
@@ -293,7 +290,6 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
             Component.text("See the next recipe").color(style.getSecondaryColor())
         )));
         nextRecipeItem.setAction(this::nextRecipeAction);
-        recipePanel.attachMenuButton(ProcessPanel.ButtonType.NEXT_RECIPE, nextRecipeItem);
     }
 
     private void setupPreviousRecipeButton() {
@@ -305,7 +301,6 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
             Component.text("See the previous recipe").color(style.getSecondaryColor())
         )));
         previousRecipeItem.setAction(this::previousRecipeAction);
-        recipePanel.attachMenuButton(ProcessPanel.ButtonType.PREVIOUS_RECIPE, previousRecipeItem);
     }
 
     private void setupForwardRecipeButton() {
@@ -317,7 +312,6 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
             Component.text("Return to the following recipe in the history").color(style.getSecondaryColor())
         )));
         forwardRecipeItem.setAction(this::forwardRecipeAction);
-        recipePanel.attachMenuButton(ProcessPanel.ButtonType.FORWARD_RECIPE, forwardRecipeItem);
     }
     
     private void setupBackwardRecipeButton() {
@@ -329,7 +323,6 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
             Component.text("Go back to the preceding recipe in the history").color(style.getSecondaryColor())
         )));
         backwardRecipeItem.setAction(this::backwardRecipeAction);
-        recipePanel.attachMenuButton(ProcessPanel.ButtonType.BACKWARD_RECIPE, backwardRecipeItem);
     }
 
     private void setupMoveIngredientsButton() {
@@ -342,7 +335,6 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
             Component.text("This work only if a empty accessible workbench is around you").color(style.getSecondaryColor())
         )));
         moveIngredientsItem.setAction(this::moveIngredientsAction);
-        recipePanel.attachMenuButton(ProcessPanel.ButtonType.MOVE_INGREDIENTS, moveIngredientsItem);
     }
     
     //#endregion Button setup
