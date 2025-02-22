@@ -2,7 +2,6 @@ package me.qheilmann.vei.Core.ProcessPanel.Panels;
 
 import java.util.EnumSet;
 import java.util.List;
-
 import javax.annotation.Nullable;
 
 import org.bukkit.Material;
@@ -11,6 +10,7 @@ import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.inventory.ShapedRecipe;
 import org.jetbrains.annotations.NotNull;
 
+import me.qheilmann.vei.VanillaEnoughItems;
 import me.qheilmann.vei.Core.GUI.GuiItem;
 import me.qheilmann.vei.Core.Menu.RecipeMenu;
 import me.qheilmann.vei.Core.ProcessPanel.ProcessPanel;
@@ -128,6 +128,7 @@ public class CraftingProcessPanel extends ProcessPanel<CraftingRecipe> {
     @Override
     public void cycle(EnumSet<SlotType> slotTypes) {
         // TODO implement the cycle method
+        VanillaEnoughItems.LOGGER.info("Simulated cycle method called");
     }
 
     private void placeWorkbench() {

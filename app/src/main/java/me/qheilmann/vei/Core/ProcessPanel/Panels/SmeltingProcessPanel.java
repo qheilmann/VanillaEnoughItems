@@ -10,6 +10,7 @@ import org.bukkit.inventory.FurnaceRecipe;
 import org.bukkit.inventory.RecipeChoice;
 import org.jetbrains.annotations.NotNull;
 
+import me.qheilmann.vei.VanillaEnoughItems;
 import me.qheilmann.vei.Core.GUI.GuiItem;
 import me.qheilmann.vei.Core.Menu.RecipeMenu;
 import me.qheilmann.vei.Core.ProcessPanel.ProcessPanel;
@@ -101,6 +102,7 @@ public class SmeltingProcessPanel extends ProcessPanel<FurnaceRecipe> {
     @Override
     public void cycle(EnumSet<SlotType> slotTypes) {
         // TODO implement cycle
+        VanillaEnoughItems.LOGGER.info("Simple cycle method called");
     }
 
     @Override
