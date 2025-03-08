@@ -8,7 +8,6 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.BlastingRecipe;
 import org.bukkit.inventory.CampfireRecipe;
 import org.bukkit.inventory.FurnaceRecipe;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapedRecipe;
@@ -31,18 +30,10 @@ import me.qheilmann.vei.Core.Process.SmeltingProcess;
 import me.qheilmann.vei.Core.Recipe.AllRecipeMap;
 import me.qheilmann.vei.Core.Recipe.ItemRecipeMap;
 import me.qheilmann.vei.Core.Recipe.ProcessRecipeSet;
-import me.qheilmann.vei.Core.Slot.GridSlot;
-import me.qheilmann.vei.Core.Slot.Slot;
-import me.qheilmann.vei.Core.Slot.Implementation.ChestSlot;
-import me.qheilmann.vei.Core.Slot.Implementation.MaxChestSlot;
 import me.qheilmann.vei.Core.Style.StyleManager;
 import me.qheilmann.vei.Listener.InventoryClickListener;
 import me.qheilmann.vei.Listener.InventoryDragListener;
-import me.qheilmann.vei.Menu.InventoryShadow;
 import me.qheilmann.vei.Menu.MenuManager;
-import me.qheilmann.vei.Menu.RecipeMenuOld;
-import me.qheilmann.vei.Menu.Button.RecipeMenu.QuickLinkButton;
-import me.qheilmann.vei.foundation.gui.VeiStyle;
 import net.kyori.adventure.text.Component;
 
 public class VanillaEnoughItems extends JavaPlugin {
@@ -70,15 +61,11 @@ public class VanillaEnoughItems extends JavaPlugin {
     public void onEnable() {
         CommandAPI.onEnable();
         BaseGui.onEnable(this);
-        
-
-
 
         getServer().getPluginManager().registerEvents(new InventoryClickListener(menuManager), this);
         getServer().getPluginManager().registerEvents(new InventoryDragListener(this), this);
 
-        temporaryRecipe();
-        temporaryTestMethode();
+        addTemporaryRecipe();
         fillRecipeMap();
 
         LOGGER.info(NAME+ " has been enabled!");
@@ -92,155 +79,33 @@ public class VanillaEnoughItems extends JavaPlugin {
     }
 
     // TEMP: Remove this method (temporary recipe)
-    private void temporaryRecipe() {
+    private void addTemporaryRecipe() {
         LOGGER.info("[123_A] Temporary recipe\n");
-        // Custom recipe 1 (minecraft item with a new recipe)
 
+        // Custom recipe 1 (minecraft item with a new recipe)
         NamespacedKey key = new NamespacedKey(NAMESPACE, "second_diamond_swore");
         ItemStack item = new ItemStack(Material.DIAMOND_SWORD);
 
-        ShapedRecipe recipe = new ShapedRecipe(key, item);
-        recipe.shape(" A ", "AAA", " B ");
-        recipe.setIngredient('A', Material.DIAMOND);
-        recipe.setIngredient('B', Material.STICK);
+        ShapedRecipe secondDiamondSwordRecipe = new ShapedRecipe(key, item);
+        secondDiamondSwordRecipe.shape(" A ", "AAA", " B ");
+        secondDiamondSwordRecipe.setIngredient('A', Material.DIAMOND);
+        secondDiamondSwordRecipe.setIngredient('B', Material.STICK);
 
-        getServer().addRecipe(recipe, true);
+        getServer().addRecipe(secondDiamondSwordRecipe, true);
 
         // Custom recipe 2 (custom item with a new recipe = here juste a rename diamond sword)
-
         NamespacedKey key2 = new NamespacedKey(NAMESPACE, "warrior_sword");
         ItemStack item2 = new ItemStack(Material.DIAMOND_SWORD);
         item2.editMeta(meta -> meta.displayName(Component.text("Warrior Sword")));
         item2.editMeta(meta -> meta.lore(List.of(Component.text("A sword for the bravest warriors"))));
         item2.editMeta(meta -> meta.setEnchantmentGlintOverride(true));
-        // item2.editMeta(meta -> meta.setCustomModelData(1));
 
-        ShapedRecipe recipe2 = new ShapedRecipe(key2, item2);
-        recipe2.shape("AAA", "AAA", " B ");
-        recipe2.setIngredient('A', Material.GOLD_INGOT);
-        recipe2.setIngredient('B', Material.STICK);
+        ShapedRecipe warriorSwordRecipe = new ShapedRecipe(key2, item2);
+        warriorSwordRecipe.shape("AAA", "AAA", " B ");
+        warriorSwordRecipe.setIngredient('A', Material.GOLD_INGOT);
+        warriorSwordRecipe.setIngredient('B', Material.STICK);
 
-        getServer().addRecipe(recipe2, true);
-
-        // BrewingStandFuelEvent
-        // BrewingRecipe brewingRecipe = new BrewingRecipe(key, item);
-        
-
-        // Check the recipe/methodes
-        var recipeIterator = getServer().recipeIterator();
-        var recipes = getServer().getRecipesFor(item);
-        var recipes2 = getServer().getRecipesFor(item2);
-        var myRecipe = getServer().getRecipe(key);
-
-        LOGGER.info("My custom recipe:");
-        if (myRecipe instanceof ShapedRecipe myShapedRecipe)
-        {
-            LOGGER.info("Recipe: " + myShapedRecipe.getResult() + " " + myShapedRecipe.getClass().getName() + " " + myShapedRecipe.getChoiceMap());
-        }
-
-        LOGGER.info("[**Recipe for diamond sword:**]");
-        for (var recipeItem : recipes)
-        {
-            LOGGER.info("Recipe: " + recipeItem.getResult() + " " + recipeItem.getClass().getName() + " " + ((ShapedRecipe)recipeItem).getChoiceMap());
-        }
-
-        LOGGER.info("[**Recipe for warrior sword:**]");
-        for (var recipeItem : recipes2)
-        {
-            LOGGER.info("Recipe: " + recipeItem.getResult() + " " + recipeItem.getClass().getName() + " " + ((ShapedRecipe)recipeItem).getChoiceMap());
-        }
-
-        LOGGER.info("RecipeIterator:");
-        int maxIteration = 0;
-        while (recipeIterator.hasNext() && maxIteration < 30)
-        {
-            var recipeItem = recipeIterator.next();
-            LOGGER.info("Recipe: " + recipeItem.getResult() + " " + recipeItem.getClass().getName());
-            maxIteration++;
-        }
-    }
-
-    private void temporaryTestMethode()
-    {
-        LOGGER.info("[123_B] Test methode YoloBanza\n");
-        // Without CRTP this is much less complicated, and it's now more familiar
-        ChestSlot slot1 = new MaxChestSlot(0);                   // MaxChestSlot                         is a direct extend of ChestSlot
-        GridSlot  slot2 = new MaxChestSlot(0);                   // MaxChestSlot>ChestSlot               is a direct extend of GridSlot
-        Slot      slot3 = new MaxChestSlot(0);                   // MaxChestSlot>ChestSlot>GridSlot      is a direct extend of Slot
-        Object    slot4 = new MaxChestSlot(0);                   // MaxChestSlot>ChestSlot>GridSlot>Slot is a direct extend of Object
-
-
-
-
-        slot1.setIndex(0);
-        slot2.setIndex(0);
-        slot3.setIndex(0);
-        slot4.equals(slot4);
-
-
-
-        InventoryShadow<Inventory> inventory = new InventoryShadow<Inventory>(getServer().createInventory(null, 9,  Component.text("Test")));
-        inventory.setItem(0, new ItemStack(Material.DIAMOND));
-        inventory.setItem(1, new QuickLinkButton(VeiStyle.LIGHT, new RecipeMenuOld(this, menuManager), menuManager));
-
-        LOGGER.info("Inventory[1]: " + inventory.getItem(0).getType());
-        LOGGER.info("Inventory[2]: " + inventory.getItem(1).getType());
-
-        ItemStack result1 = inventory.getItem(0);
-        ItemStack result2 = inventory.getItem(1);
-
-        if(result1 instanceof ItemStack)
-        {
-            LOGGER.info("Result1 is an ItemStack");
-            LOGGER.info("Result1: " + result1.getClass());
-        }
-        else
-        {
-            LOGGER.info("Result1 is not an ItemStack");
-            LOGGER.info("Result4: " + result1.getClass());
-        }
-
-        if(result2 instanceof QuickLinkButton)
-        {
-            LOGGER.info("Result2 is a QuickLinkButton");
-            LOGGER.info("Result2: " + result2.getClass());
-        }
-        else
-        {
-            LOGGER.info("Result2 is not a QuickLinkButton");
-            LOGGER.info("Result4: " + result2.getClass());
-        }
-
-        Inventory inventory2 = getServer().createInventory(null, 9,  Component.text("Test"));
-        inventory2.setItem(0, new ItemStack(Material.DIAMOND));
-        inventory2.setItem(1, new QuickLinkButton(VeiStyle.LIGHT, new RecipeMenuOld(this, menuManager), menuManager));
-
-        LOGGER.info("Inventory2[1]: " + inventory2.getItem(0).getType());
-        LOGGER.info("Inventory2[2]: " + inventory2.getItem(1).getType());
-
-        ItemStack result3 = inventory2.getItem(0);
-        ItemStack result4 = inventory2.getItem(1);
-
-        if(result3 instanceof ItemStack)
-        {
-            LOGGER.info("Result3 is an ItemStack");
-            LOGGER.info("Result3: " + result3.getClass());
-        }
-        else
-        {
-            LOGGER.info("Result3 is not an ItemStack");
-        }
-
-        if(result4 instanceof QuickLinkButton)
-        {
-            LOGGER.info("Result4 is a QuickLinkButton");
-            LOGGER.info("Result4: " + result4.getClass());
-        }
-        else
-        {
-            LOGGER.info("Result4 is not a QuickLinkButton");
-            LOGGER.info("Result4: " + result4.getClass());
-        }
+        getServer().addRecipe(warriorSwordRecipe, true);
     }
 
     @SuppressWarnings("null")
@@ -257,15 +122,6 @@ public class VanillaEnoughItems extends JavaPlugin {
             if (result == null) {
                 continue;
             }
-
-            // // Skip non-iron ingot recipes for check only this one
-            // if(result.getType() != Material.IRON_INGOT) {
-            //     continue;
-            // }
-
-            // Logs some information
-            // LOGGER.info("Recipe: " + result + " " + recipe.getClass().getName());
-            // LOGGER.info("Process: " + process);
 
             // Get/create the item recipe map
             ItemRecipeMap itemRecipeMap;
@@ -292,30 +148,30 @@ public class VanillaEnoughItems extends JavaPlugin {
         }
 
         // Check the recipe map
-        LOGGER.info("[***]Recipe map[***]: " + allRecipesMap.size());
-        for (ItemStack item : allRecipesMap.getItems()) {
+        // LOGGER.info("[***]Recipe map[***]: " + allRecipesMap.size());
+        // for (ItemStack item : allRecipesMap.getItems()) {
 
-            // log only iron_ingot recipe or all
-            if(item.getType() != Material.IRON_INGOT) {
-                continue;
-            }
+        //     // log only iron_ingot recipe or all
+        //     if(item.getType() != Material.IRON_INGOT) {
+        //         continue;
+        //     }
 
-            LOGGER.info("[Item]: " + item.toString());
-            ItemRecipeMap itemRecipeMap = allRecipesMap.getItemRecipeMap(item);
-            for (Process<?> process : itemRecipeMap.getAllProcess()) {
+        //     LOGGER.info("[Item]: " + item.toString());
+        //     ItemRecipeMap itemRecipeMap = allRecipesMap.getItemRecipeMap(item);
+        //     for (Process<?> process : itemRecipeMap.getAllProcess()) {
 
-                ProcessRecipeSet<?> processRecipeSet = itemRecipeMap.getProcessRecipeSet(process);
-                for (Recipe recipe : processRecipeSet.toArray()) {
+        //         ProcessRecipeSet<?> processRecipeSet = itemRecipeMap.getProcessRecipeSet(process);
+        //         for (Recipe recipe : processRecipeSet.toArray()) {
 
-                    String str = "Recipe: " + recipe.getResult() + " " + recipe.getClass().getName() + " ";
-                    if (recipe instanceof ShapedRecipe shapedRecipe) {
-                        str += shapedRecipe.getChoiceMap();
-                    }
-                    LOGGER.info(str);
-                }
-            }
-            LOGGER.info("\n\n");
-        }
+        //             String str = "Recipe: " + recipe.getResult() + " " + recipe.getClass().getName() + " ";
+        //             if (recipe instanceof ShapedRecipe shapedRecipe) {
+        //                 str += shapedRecipe.getChoiceMap();
+        //             }
+        //             LOGGER.info(str);
+        //         }
+        //     }
+        //     LOGGER.info("\n\n");
+        // }
     }
 
     private Process<?> recipeToProcessConverter(Recipe recipe) {
@@ -347,3 +203,57 @@ public class VanillaEnoughItems extends JavaPlugin {
     }
 }
 
+// Manager
+// Handler
+// Event
+// Listener
+// Factory
+// Service
+// API
+// Core
+// Menu
+// Utils
+// Config
+
+
+// Java
+// add version with date for minor changes
+// ajouter des tests unitaires
+// test https://github.com/sladkoff/minecraft-prometheus-exporter?tab=readme-ov-file > Minecraft > Prometheus > Grafana
+// json file inside ressource folder / plugin folder for custom recipes (other than API)
+// Replace concat string inside precondition with internal formatting like this Preconditions.checkArgument(y >= 0 && y < rowCount, "y must be between 0 and %d, current value: %d", rowCount, y);
+
+// fast
+// replace precondition with Preconditions.checkArgument(0 != 0, "%s cannot be null", RecipeMenu.class);
+// getRecipeFor(ItemStack) inside Server class
+// TODO set the style of the GuiItemService inside the ctor
+// TODO check si quand je crée un itemStack avec un autre item stack (copy ctor), s'il garde les pcd, displayname, lore, etc
+// TODO when the Gui item is remove by a player click (not canceled), the GuiListener throw an warning, (fix it ?, check with debug prrint)
+// TODO For the moment the AllRecipeMap override workbench when they are the same supertype (eg: material.crafting table and material.crafter)
+// TODO add Shapeless to the crafting process panel
+// TODO we can use @implSpec and @throws IndexOutOfBoundsException {@inheritDoc}
+
+
+// [Command]
+// /craft " " (server craft list) or (player if server not existe)
+// /craft player_bookmark (player craft list) pb
+// /craft server_bookmark (server craft list) sb
+// /craft itemStack
+
+// [Addon de craft possibles]
+// Shears sur un blocs pour le changé (+ actual recipe like carved pumpkin)
+// Rayon beacon
+// Cauldron
+
+// [Extra process]
+// drop view (like the drop item when we break a block (eg sapling) https://jd.papermc.io/paper/1.21.4/org/bukkit/block/Block.html#getDrops ...)
+// workbench usage (eg campfire we can see all the recipe that can be done with the campfire, see JEI all usage, composter, fuel etc)
+// enchantment table (see all the enchantment that can be done with the item)
+
+// [Extra recipe information]
+// if the item is not consumed (like bucket in cake, add a lore to indicate that the item is not consumed)
+// inside the workbench item (eg: furnace) we can see the time to be smelted the xp generated and other information
+
+// [Other ideas]
+// Idea: look how work JEI addon, modepack for creating new reicpe, and how they are implemented in the game by JEI
+// maybe we can make in sort of simply reuse jei addon and add it to our plugin on the same way

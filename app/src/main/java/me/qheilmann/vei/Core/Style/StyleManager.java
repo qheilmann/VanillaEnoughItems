@@ -1,5 +1,6 @@
 package me.qheilmann.vei.Core.Style;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -42,7 +43,7 @@ public class StyleManager {
     }
 
     @NotNull
-    public Style[] getAllStyle() {
-        return styles.values().toArray(new Style[0]);
+    public Map<NamespacedKey,Style> getAllStyle() {
+        return Collections.unmodifiableMap(styles);
     }
 }

@@ -12,8 +12,15 @@ import me.qheilmann.vei.Core.Slot.Slot;
 public class IndexSlotComparator implements Comparator<Slot> {
     @Override
     public int compare(@NotNull Slot slot1, @NotNull Slot slot2) {
-        // A method like this should not really check for null values each 
-        // time, so here we don't check for null values
+        if (slot1 == null && slot2 == null) {
+            return 0;
+        }
+        if (slot1 == null) {
+            return -1;
+        }
+        if (slot2 == null) {
+            return 1;
+        }
         return Integer.compare(slot1.getIndex(), slot2.getIndex());
     }
 }

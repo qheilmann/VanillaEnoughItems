@@ -14,7 +14,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
-public class TestMenu extends BaseGui<TestMenu, MaxChestSlot> { // TODO check pk le MaxChestSlot marche pas
+public class TestMenu extends BaseGui<TestMenu, MaxChestSlot> {
 
     private GuiItem<TestMenu> goldBlock;
     private GuiItem<TestMenu> ironBlock;
