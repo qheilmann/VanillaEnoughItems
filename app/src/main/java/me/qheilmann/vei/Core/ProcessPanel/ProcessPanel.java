@@ -53,7 +53,7 @@ import me.qheilmann.vei.Core.Slot.Collection.SlotSequence;
 public abstract class ProcessPanel<T extends Recipe> {
     
     private ProcessRecipeSet<T> processRecipeSet;
-    private int currentIndex;
+    private int variantIndex;
     
     protected HashMap<ProcessPanelSlot, GuiItem<RecipeMenu>> recipePanelSlots;
 
@@ -75,14 +75,14 @@ public abstract class ProcessPanel<T extends Recipe> {
     /**
      * Create a new recipe panel for the given recipe.
      * @param processRecipeSet The recipe to display.
-     * @param variant The variante index of the recipe to display.
+     * @param variantIndex The variante index of the recipe to display.
      */
-    public ProcessPanel(@NotNull ProcessRecipeSet<T> processRecipeSet, int variant) {
+    public ProcessPanel(@NotNull ProcessRecipeSet<T> processRecipeSet, int variantIndex) {
         Preconditions.checkNotNull(processRecipeSet, "recipe cannot be null");
         this.recipePanelSlots = new HashMap<>();
-        this.currentIndex = variant;
+        this.variantIndex = variantIndex;
         this.processRecipeSet = processRecipeSet;
-        setRecipVariant(currentIndex);
+        setRecipVariantIndex(variantIndex);
     }
 
     /**
@@ -182,12 +182,16 @@ public abstract class ProcessPanel<T extends Recipe> {
     /**
      * Set the recipe to display in the panel.
      * @param processRecipeSet The recipe to display.
-     * @param variant The variant index of the recipe to display.
+     * @param variantIndex The variant index of the recipe to display.
      */
-    public void setRecipVariant(int variant) {
-        Preconditions.checkArgument(variant >= 0 && variant < processRecipeSet.size(), "Invalid variant index, must be between 0 and %s", processRecipeSet.size());
-        this.currentIndex = variant;
+    public void setRecipVariantIndex(int variantIndex) {
+        Preconditions.checkArgument(variantIndex >= 0 && variantIndex < processRecipeSet.size(), "Invalid variant index, must be between 0 and %s (actual: %s)", processRecipeSet.size(), variantIndex);
+        this.variantIndex = variantIndex;
         populateCraftingSlots();
+    }
+
+    public int getCurrentVariantIndex() {
+        return variantIndex;
     }
 
     /**
@@ -196,7 +200,7 @@ public abstract class ProcessPanel<T extends Recipe> {
      */
     @NotNull
     public T getCurrentRecipe() {
-        return processRecipeSet.getVariant(currentIndex);
+        return processRecipeSet.getVariant(variantIndex);
     }
 
     /**

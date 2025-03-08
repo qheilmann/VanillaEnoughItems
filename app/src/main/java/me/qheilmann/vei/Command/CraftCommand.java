@@ -61,14 +61,14 @@ public class CraftCommand implements ICommand{
             ))
             .executesPlayer((player, args) -> {
                 ItemStack itemStack = (ItemStack) args.get("item");
-                openRecipe(player, itemStack);
+                openRecipeAction(player, itemStack);
             })
             .register();
     }
 
     // Utils
 
-    private void openRecipe(Player player, ItemStack item) {
+    private void openRecipeAction(Player player, ItemStack item) {
         menuManager.openRecipeMenu(player, item);
     }
 }

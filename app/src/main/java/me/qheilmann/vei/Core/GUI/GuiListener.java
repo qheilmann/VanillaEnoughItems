@@ -1,10 +1,10 @@
 package me.qheilmann.vei.Core.GUI;
 
 import java.util.UUID;
+import java.util.logging.Level;
 
 import javax.annotation.Nullable;
 
-import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -19,6 +19,8 @@ import org.bukkit.inventory.ItemStack;
 import io.papermc.paper.persistence.PersistentDataContainerView;
 import me.qheilmann.vei.VanillaEnoughItems;
 import me.qheilmann.vei.Core.Item.PersistentDataType.UuidPdt;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 
 /**
  * The listener for all GUI events.
@@ -167,15 +169,26 @@ public class GuiListener<G extends BaseGui<G, ?>> implements Listener {
      * @param gui        The GUI sent to the action.
      * @param actionType The type of action being executed.
      */
-    private <E extends Event> void executeAction(GuiAction<E, G> action, E event, G gui, String actionType) {
+    private <E extends InventoryEvent> void executeAction(GuiAction<E, G> action, E event, G gui, String actionType) {
         try {
             action.execute(event, gui);
         } catch (Exception e) {
-            VanillaEnoughItems.LOGGER.warning(
+            // Make a utility method for this (input: LOGGER + commonMessage + player message + log message + exception > output: server message + log message + logID + red color)
+            String logID = UUID.randomUUID().toString().substring(0, 8);
+            event.getView().getPlayer().sendMessage(Component.text(
                 String.format(
-                    "An error occurred while executing the %s action for %s%nMessage: %s%nCause: %s%nStacktrace: %s",
-                    actionType, gui.getClass().getSimpleName(), e.getMessage(), e.getCause(), e.getStackTrace()
-                )
+                    "An error occurred while executing the %s action (#%s). Please contact the server administrator.",
+                    actionType, logID
+                ),
+                NamedTextColor.RED
+            ));
+            VanillaEnoughItems.LOGGER.log(
+                Level.WARNING,
+                String.format(
+                    "An error occurred while executing the %s action (#%s) for %s",
+                    actionType, logID, gui.getClass().getSimpleName()
+                ),
+                e
             );
         }
     }

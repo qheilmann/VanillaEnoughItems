@@ -382,11 +382,29 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
     }
 
     private void nextRecipeAction(InventoryClickEvent event, RecipeMenu menu) {
-        event.getWhoClicked().sendMessage("Next recipe action");
+        int nextVariantIndex = recipePanel.getCurrentVariantIndex() + 1;
+        int maxVariantIndex = recipePanel.getProcessRecipeSet().size() - 1;
+
+        // cycle if overflow
+        if (nextVariantIndex > maxVariantIndex) {
+            nextVariantIndex = 0;
+        }
+        
+        recipePanel.setRecipVariantIndex(nextVariantIndex);
+        populateRecipePanel();
     }
 
     private void previousRecipeAction(InventoryClickEvent event, RecipeMenu menu) {
-        event.getWhoClicked().sendMessage("Previous recipe action");
+        int previousVariantIndex = recipePanel.getCurrentVariantIndex() - 1;
+        int maxVariantIndex = recipePanel.getProcessRecipeSet().size() - 1;
+
+        // cycle if underflow
+        if (previousVariantIndex < 0) {
+            previousVariantIndex = maxVariantIndex;
+        }
+
+        recipePanel.setRecipVariantIndex(previousVariantIndex);
+        populateRecipePanel();
     }
 
     private void forwardRecipeAction(InventoryClickEvent event, RecipeMenu menu) {
