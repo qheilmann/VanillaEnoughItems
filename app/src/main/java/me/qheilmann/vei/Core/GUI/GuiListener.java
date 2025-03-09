@@ -1,8 +1,6 @@
 package me.qheilmann.vei.Core.GUI;
 
 import java.util.UUID;
-import java.util.logging.Level;
-
 import javax.annotation.Nullable;
 
 import org.bukkit.event.EventHandler;
@@ -81,7 +79,7 @@ public class GuiListener<G extends BaseGui<G, ?>> implements Listener {
 
         // Checks if the current item clicked is the same as the item in the slot
         if (!isIdenticalItem(event.getCurrentItem(), guiItem)){
-            VanillaEnoughItems.LOGGER.warning("The item clicked is not the same as the item in the same slot inside the GUI, (skip action)");
+            VanillaEnoughItems.LOGGER.warn("The item clicked is not the same as the item in the same slot inside the GUI, (no-op)");
             return;
         }
 
@@ -173,7 +171,7 @@ public class GuiListener<G extends BaseGui<G, ?>> implements Listener {
         try {
             action.execute(event, gui);
         } catch (Exception e) {
-            // Make a utility method for this (input: LOGGER + commonMessage + player message + log message + exception > output: server message + log message + logID + red color)
+            // TODO Make a utility method for this (input: LOGGER + commonMessage + player message + log message + exception > output: server message + log message + logID + red color)
             String logID = UUID.randomUUID().toString().substring(0, 8);
             event.getView().getPlayer().sendMessage(Component.text(
                 String.format(
@@ -182,11 +180,8 @@ public class GuiListener<G extends BaseGui<G, ?>> implements Listener {
                 ),
                 NamedTextColor.RED
             ));
-            VanillaEnoughItems.LOGGER.log(
-                Level.WARNING,
-                String.format(
-                    "An error occurred while executing the %s action (#%s) for %s",
-                    actionType, logID, gui.getClass().getSimpleName()
+            VanillaEnoughItems.LOGGER.warn("An error occurred while executing the %s action (#%s) for %s".formatted(
+                     actionType, logID, gui.getClass().getSimpleName()
                 ),
                 e
             );

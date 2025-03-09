@@ -35,12 +35,13 @@ import me.qheilmann.vei.Listener.InventoryClickListener;
 import me.qheilmann.vei.Listener.InventoryDragListener;
 import me.qheilmann.vei.Menu.MenuManager;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.logger.slf4j.ComponentLogger;
 
 public class VanillaEnoughItems extends JavaPlugin {
     
     public static final String NAME = VanillaEnoughItems.class.getSimpleName();
     public static final String NAMESPACE = "vei";
-    public static final Logger LOGGER = Logger.getLogger(NAME);
+    public static final ComponentLogger LOGGER = ComponentLogger.logger(NAME);
 
     private MenuManager menuManager;
 

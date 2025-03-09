@@ -13,7 +13,6 @@ import org.jetbrains.annotations.Nullable;
 import com.google.common.base.Preconditions;
 
 import me.qheilmann.vei.VanillaEnoughItems;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -522,7 +521,7 @@ public class InventoryShadow<T extends Inventory> implements Inventory {
                 /* TEMP */ //This is a temporary test to prevent infinite loops in case of a mal implementation, can be removed later
                 /* TEMP */  if(maxIteration++ >= 54)
                 /* TEMP */  {
-                /* TEMP */      VanillaEnoughItems.LOGGER.warning("Infinite loop detected in addItem method%nItem: " + item + " toAdd: " + toAdd);
+                /* TEMP */      VanillaEnoughItems.LOGGER.warn("Infinite loop detected in addItem method%nItem: " + item + " toAdd: " + toAdd);
                 /* TEMP */      throwIfInventoryIsNotSame();
                 /* TEMP */      throw new IllegalStateException("Inventores are the same but infinite loop detected in addItem method");
                 /* TEMP */  }
@@ -691,7 +690,7 @@ public class InventoryShadow<T extends Inventory> implements Inventory {
      * Throws an IllegalStateException if the original inventory is not the same
      * as the InventoryShadow. This method is used to check if the 
      * InventoryShadow was correctly implemented and it's used for debugging 
-     * temporarily.
+     * temporarily. (TODO need to be converted to unit tests)
      */
     @Deprecated(forRemoval = true)
     protected void throwIfInventoryIsNotSame() {
@@ -700,7 +699,7 @@ public class InventoryShadow<T extends Inventory> implements Inventory {
 
         if (originalSize != itemMapSize) {
             String message = "The InventoryShadow was not correctly implemented, the original inventory size is not the same as the InventoryShadow size, please check the implementation";
-            VanillaEnoughItems.LOGGER.warning(message);
+            VanillaEnoughItems.LOGGER.warn(message);
             throw new IllegalStateException(message);
         }
 
@@ -710,19 +709,19 @@ public class InventoryShadow<T extends Inventory> implements Inventory {
 
             if (!Objects.equals(originalItem, mapItem)) {
                 String introMessage = "The InventoryShadow was not correctly implemented, the original inventory is not the same as the InventoryShadow, please check the implementation";
-                VanillaEnoughItems.LOGGER.warning(introMessage);
+                VanillaEnoughItems.LOGGER.warn(introMessage);
                 
-                VanillaEnoughItems.LOGGER.warning("Different Item at slot: %d%n".formatted(i));
-                VanillaEnoughItems.LOGGER.warning("Slot %d: %n%s%n != %n%s%n%n".formatted(i, originalItem, mapItem));
+                VanillaEnoughItems.LOGGER.warn("Different Item at slot: %d%n".formatted(i));
+                VanillaEnoughItems.LOGGER.warn("Slot %d: %n%s%n != %n%s%n%n".formatted(i, originalItem, mapItem));
 
-                VanillaEnoughItems.LOGGER.warning("Original Inventory:%n");
+                VanillaEnoughItems.LOGGER.warn("Original Inventory:%n");
                 for (int j = 0; j < originalSize; j++) {
-                    VanillaEnoughItems.LOGGER.warning("OriginalSlot[%d]: %s%n".formatted(j, originalInventory.getItem(j)));
+                    VanillaEnoughItems.LOGGER.warn("OriginalSlot[%d]: %s%n".formatted(j, originalInventory.getItem(j)));
                 }
 
-                VanillaEnoughItems.LOGGER.warning("%nItem Map Inventory:%n");
+                VanillaEnoughItems.LOGGER.warn("%nItem Map Inventory:%n");
                 for (int j = 0; j < itemMapSize; j++) {
-                    VanillaEnoughItems.LOGGER.warning("ItemMapSlot[%d]: %s%n".formatted(j, itemMap.get(j)));
+                    VanillaEnoughItems.LOGGER.warn("ItemMapSlot[%d]: %s%n".formatted(j, itemMap.get(j)));
                 }
 
                 throw new IllegalStateException(introMessage);
@@ -737,16 +736,16 @@ public class InventoryShadow<T extends Inventory> implements Inventory {
      * implemented and it's used for debugging temporarily.
      * @param referenceItemStack the reference ItemStack to compare
      * @param originalInventoryIndex the index of the ItemStack in the original
-     * inventory to compare
+     * inventory to compare (TODO need to be converted to unit tests)
      */
     @Deprecated(forRemoval = true)
     private void throwIfItemStackMismatch(ItemStack referenceItemStack, int originalInventoryIndex) {
         ItemStack originalItem = originalInventory.getItem(originalInventoryIndex);
         if (originalItem != null && !originalItem.equals(referenceItemStack)) {
             String message = "The inventoryShadow was not correctly implemented, the original inventory will not be the same as the itemMap, please check the implementation";
-            VanillaEnoughItems.LOGGER.warning(message);
-            VanillaEnoughItems.LOGGER.warning("Different Item at slot %d".formatted(originalInventoryIndex));
-            VanillaEnoughItems.LOGGER.warning("Slot %d: %n%s%n != %n%s%n".formatted(originalInventoryIndex, originalItem, referenceItemStack));
+            VanillaEnoughItems.LOGGER.warn(message);
+            VanillaEnoughItems.LOGGER.warn("Different Item at slot %d".formatted(originalInventoryIndex));
+            VanillaEnoughItems.LOGGER.warn("Slot %d: %n%s%n != %n%s%n".formatted(originalInventoryIndex, originalItem, referenceItemStack));
             throw new IllegalStateException(message);
         }
     }
