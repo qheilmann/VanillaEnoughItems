@@ -19,6 +19,8 @@ import me.qheilmann.vei.VanillaEnoughItems;
 import me.qheilmann.vei.Core.Item.PersistentDataType.UuidPdt;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 
 /**
  * The listener for all GUI events.
@@ -74,19 +76,26 @@ public class GuiListener<G extends BaseGui<G, ?>> implements Listener {
             executeAction(slotAction, event, gui, "slot click");
         }
 
-        GuiItem<G> guiItem = gui.getGuiItem(event.getSlot());
-        if(guiItem == null) return;
-
-        // Checks if the current item clicked is the same as the item in the slot
-        if (!isIdenticalItem(event.getCurrentItem(), guiItem)){
-            VanillaEnoughItems.LOGGER.warn("The item clicked is not the same as the item in the same slot inside the GUI, (no-op)");
-            return;
-        }
-
         // GuiItem click action
-        final GuiAction<InventoryClickEvent, G> itemAction = guiItem.getAction();
-        if (itemAction != null) {
-            executeAction(itemAction, event, gui, "item click");
+        if (clickedInventoryType != InventoryType.PLAYER) {
+            GuiItem<G> guiItem = gui.getGuiItem(event.getSlot());
+            if(guiItem == null) return;
+            
+            // Checks if the current item clicked is the same as the item in the slot
+            if (!isIdenticalItem(event.getCurrentItem(), guiItem)){
+                    VanillaEnoughItems.LOGGER.warn(
+                        Component.text("The item clicked is not the same as the item in the same slot inside the GUI, (no-op)").appendNewline()
+                        .append(Component.text("Item clicked: %s".formatted(event.getCurrentItem()), TextColor.color(0xFFFF99), TextDecoration.BOLD)).appendNewline()
+                        .append(Component.text("Item in slot: %s".formatted(guiItem), TextColor.color(0xFFFF99), TextDecoration.BOLD))
+                        );
+                return;
+            }
+            
+            // GuiItem click action
+            final GuiAction<InventoryClickEvent, G> itemAction = guiItem.getAction();
+            if (itemAction != null) {
+                executeAction(itemAction, event, gui, "item click");
+            }
         }
     }
 
