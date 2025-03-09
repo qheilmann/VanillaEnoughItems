@@ -8,6 +8,7 @@ import org.bukkit.Material;
 import org.bukkit.inventory.CraftingRecipe;
 import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.inventory.ShapedRecipe;
+import org.bukkit.inventory.ShapelessRecipe;
 import org.jetbrains.annotations.NotNull;
 
 import me.qheilmann.vei.VanillaEnoughItems;
@@ -146,10 +147,15 @@ public class CraftingProcessPanel extends ProcessPanel<CraftingRecipe> {
         
         clear();
 
-        if (!(getCurrentRecipe() instanceof ShapedRecipe shapedRecipe)) { // TODO generalize to all crafting recipes
-            throw new IllegalArgumentException("This recipe is not a ShapedRecipe, it cannot be displayed in the CraftingProcessPanel for the moment.");
+        CraftingRecipe currentRecipe = getCurrentRecipe();
+        if (currentRecipe instanceof ShapedRecipe shapedRecipe) {
+            populateShapedRecipeCraftingsSlot(shapedRecipe);
+        } else if (currentRecipe instanceof ShapelessRecipe shapelessRecipe) {
+            populateShapelessRecipeCraftingsSlot(shapelessRecipe);
         }
+    }
 
+    private void populateShapedRecipeCraftingsSlot(ShapedRecipe shapedRecipe) {
         RecipeChoice[][] recipeMatrix = getRecipe3by3Matrix(shapedRecipe);
 
         // Inputs (crafting grid) // TODO replace with the slotSequence foreach
@@ -160,7 +166,7 @@ public class CraftingProcessPanel extends ProcessPanel<CraftingRecipe> {
                     continue;
                 }
                 if (recipeChoice instanceof RecipeChoice.MaterialChoice materialChoice) {
-                    recipePanelSlots.put(new ProcessPanelSlot(x+1,y+1), new GuiItem<RecipeMenu>(materialChoice.getItemStack()));
+                    recipePanelSlots.put(new ProcessPanelSlot(x+1,y+1), new GuiItem<RecipeMenu>(materialChoice.getItemStack())); // +1 +1 is because of the crafting grid offset
                 }
                 else {
                     // TODO remove the use a deprecated method for generating the warning item
@@ -171,6 +177,38 @@ public class CraftingProcessPanel extends ProcessPanel<CraftingRecipe> {
 
         // Result
         recipePanelSlots.put(RESULT_SLOT, new GuiItem<>(shapedRecipe.getResult()));
+    }
+
+    private void populateShapelessRecipeCraftingsSlot(ShapelessRecipe shapelessRecipe) {
+        List<RecipeChoice> recipeChoices = shapelessRecipe.getChoiceList();
+
+        // If the recipe can be made inside made in a 2x2 crafting grid, we will display it in a 2x2 grid
+        // so the player can better understand he can make it direclty in is inventory crafting grid
+        boolean isMax2Col = false;
+        if (recipeChoices.size() <= 4) {
+            isMax2Col = true;
+        }
+
+        // Inputs (crafting grid)
+        int x = 0;
+        int y = 0;
+        for(RecipeChoice recipeChoice : recipeChoices) {
+            if(recipeChoice instanceof RecipeChoice.MaterialChoice materialChoice) {
+                recipePanelSlots.put(new ProcessPanelSlot(x+1, y+1), new GuiItem<RecipeMenu>(materialChoice.getItemStack())); // +1 +1 is because of the crafting grid offset
+            }
+            else {
+                // TODO remove the use a deprecated method for generating the warning item
+                new GuiItemService().CreateWarningItem("Conversion of the RecipeChoice type to %s is not supported".formatted(recipeChoice.getClass().getName()));
+            }
+            x++;
+            if((!isMax2Col && x > 2) || (isMax2Col && x > 1)) {
+                x = 0;
+                y++;
+            }
+        }
+
+        // Result
+        recipePanelSlots.put(RESULT_SLOT, new GuiItem<>(shapelessRecipe.getResult()));
     }
 
     /**
@@ -190,12 +228,15 @@ public class CraftingProcessPanel extends ProcessPanel<CraftingRecipe> {
         int craftingIndex = 0; // index of the crafting grid
 
         // If the recipe is 1 large, center horizontally the recipe in the crafting grid (eg: sword)
-        if(recipeWidth == 1)
+        if(recipeWidth == 1) {
             craftingIndex++;
+        }
 
         // If the recipe is 1 tall, center vertically the recipe in the crafting grid (eg: slab)
-        if(recipeHeight == 1)
+        // If the recipe is 2 tall, aligne the recipe to the bottom of the crafting grid (eg: repeater)
+        if(recipeHeight == 1 || recipeHeight == 2) {
             craftingIndex += 3;
+        }
 
         for(int i = 0; i < recipeHeight; i++) {
             for(int j = 0; j < recipeWidth; j++) {

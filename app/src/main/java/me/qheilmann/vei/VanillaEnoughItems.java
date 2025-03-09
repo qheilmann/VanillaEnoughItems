@@ -1,8 +1,6 @@
 package me.qheilmann.vei;
 
 import java.util.List;
-import java.util.logging.Logger;
-
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.BlastingRecipe;
@@ -88,7 +86,7 @@ public class VanillaEnoughItems extends JavaPlugin {
         ItemStack item = new ItemStack(Material.DIAMOND_SWORD);
 
         ShapedRecipe secondDiamondSwordRecipe = new ShapedRecipe(key, item);
-        secondDiamondSwordRecipe.shape(" A ", "AAA", " B ");
+        secondDiamondSwordRecipe.shape(" A", "AA", " B");
         secondDiamondSwordRecipe.setIngredient('A', Material.DIAMOND);
         secondDiamondSwordRecipe.setIngredient('B', Material.STICK);
 
