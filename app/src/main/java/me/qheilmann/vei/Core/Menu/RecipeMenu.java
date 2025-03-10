@@ -410,27 +410,13 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
     }
 
     private void nextRecipeAction(InventoryClickEvent event, RecipeMenu menu) {
-        int nextVariantIndex = recipePanel.getCurrentVariantIndex() + 1;
-        int maxVariantIndex = recipePanel.getProcessRecipeSet().size() - 1;
-
-        // cycle if overflow
-        if (nextVariantIndex > maxVariantIndex) {
-            nextVariantIndex = 0;
-        }
-        
+        int nextVariantIndex = calcNextVariantIndex();
         recipePanel.setRecipVariantIndex(nextVariantIndex);
         render();
     }
 
     private void previousRecipeAction(InventoryClickEvent event, RecipeMenu menu) {
-        int previousVariantIndex = recipePanel.getCurrentVariantIndex() - 1;
-        int maxVariantIndex = recipePanel.getProcessRecipeSet().size() - 1;
-
-        // cycle if underflow
-        if (previousVariantIndex < 0) {
-            previousVariantIndex = maxVariantIndex;
-        }
-
+        int previousVariantIndex = calcPreviousVariantIndex();
         recipePanel.setRecipVariantIndex(previousVariantIndex);
         render();
     }
@@ -450,28 +436,30 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
     //#endregion Button actions
 
     public void render() {
-        // Show/hide buttons
+
+        // Update visibility
+        updateNextPreviousRecipeVisibility();
+
+        // Apply visibility
         setItemOnVisibility(PROCESS_SCROLL_LEFT_SLOT, processScrollLeftItem, isProcessScrollLeftVisible);
         setItemOnVisibility(PROCESS_SCROLL_RIGHT_SLOT, processScrollRightItem, isProcessScrollRightVisible);
         setItemOnVisibility(WORKBENCH_SCROLL_UP_SLOT, workbenchScrollUpItem, isWorkbenchScrollUpVisible);
         setItemOnVisibility(WORKBENCH_SCROLL_DOWN_SLOT, workbenchScrollDownItem, isWorkbenchScrollDownVisible);
-
-        // Always visible buttons don't need to be re rendered (in the constructor)
+        // Always visible buttons don't need to be re rendered (render once in the constructor)
         
-        // Recipe panel
+        // Apply visibility for the recipe panel
         attachMenuButtonOnVisibility(ProcessPanel.ButtonType.NEXT_RECIPE, nextRecipeItem, isNextRecipeVisible);
         attachMenuButtonOnVisibility(ProcessPanel.ButtonType.PREVIOUS_RECIPE, previousRecipeItem, isPreviousRecipeVisible);
         attachMenuButtonOnVisibility(ProcessPanel.ButtonType.FORWARD_RECIPE, forwardRecipeItem, isForwardRecipeVisible);
         attachMenuButtonOnVisibility(ProcessPanel.ButtonType.BACKWARD_RECIPE, backwardRecipeItem, isBackwardRecipeVisible);
         attachMenuButtonOnVisibility(ProcessPanel.ButtonType.MOVE_INGREDIENTS, moveIngredientsItem, isMoveIngredientsVisible);
 
+        // Render recipe panel
         renderRecipePanel();
+
+        // Padding empty slots (except valide air slot in the recipe panel)
         padEmptySlots();
         fixOverPadding();
-
-        // Padding empty slots
-        // todo reredender after action next recipe
-        // dont fill reicpe panel
     }
 
     private void setItemOnVisibility(MaxChestSlot slot, GuiItem<RecipeMenu> item, boolean isVisible) {
@@ -512,5 +500,43 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
 
     protected void renderRecipePanel(EnumSet<ProcessPanel.SlotType> slotType){
         recipePanel.getContentPanel(slotType).forEach((slot, item) -> setItem(slot.asMaxChestSlot(), item));
+    }
+
+    private int calcNextVariantIndex() {
+        int nextVariantIndex = recipePanel.getCurrentVariantIndex() + 1;
+        int maxVariantIndex = recipePanel.getProcessRecipeSet().size() - 1;
+
+        if (nextVariantIndex <= maxVariantIndex) {
+            return nextVariantIndex;
+        } else { // invalide case
+            return 0;
+        }
+    }
+
+    private int calcPreviousVariantIndex() {
+        int previousVariantIndex = recipePanel.getCurrentVariantIndex() - 1;
+
+        if (previousVariantIndex >= 0) {
+            return previousVariantIndex;
+        } else { // invalide case
+            return 0;
+        }
+    }
+
+    private void updateNextPreviousRecipeVisibility() {
+        int variantIndex = recipePanel.getCurrentVariantIndex();
+        int maxVariantIndex = recipePanel.getProcessRecipeSet().size() - 1;
+
+        if (variantIndex >= maxVariantIndex) {
+            isNextRecipeVisible = false;
+        } else {
+            isNextRecipeVisible = true;
+        }
+
+        if (variantIndex <= 0) {
+            isPreviousRecipeVisible = false;
+        } else {
+            isPreviousRecipeVisible = true;
+        }
     }
 }
