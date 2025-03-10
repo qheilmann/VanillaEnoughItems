@@ -174,6 +174,8 @@ public class VanillaEnoughItems extends JavaPlugin {
     }
 
     private Process<?> recipeToProcessConverter(Recipe recipe) {
+        // TODO convert this to static instance, it's not necessary to create a new instance each time it's just the map key (or Clazz, but not acces to methode ?)
+        // TODO add a way to add process type by API (first before vanilla in case of derivate class, add a comment to add them in right way in case of sub sub process of client process)
         if        (recipe instanceof ShapedRecipe) {
             return new CraftingProcess();
         } else if (recipe instanceof ShapelessRecipe) {

@@ -28,8 +28,7 @@ public class GuiItem<G extends BaseGui<G, ?>> extends ItemStack {
     public static final @NotNull NamespacedKey UUID_KEY = new NamespacedKey(VanillaEnoughItems.NAMESPACE, UUID_KEY_STRING);
 
     // Action to do when clicking on the item
-    GuiAction<InventoryClickEvent, G> action;
-
+    private GuiAction<InventoryClickEvent, G> action;
     // Random UUID to identify the item when clicking
     private UUID uuid;
 

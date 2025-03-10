@@ -203,7 +203,7 @@ public abstract class BaseGui<G extends BaseGui<G, S>, S extends Slot> implement
      * @param slots   The slots in which the item should go.
      * @param guiItem The {@link GuiItem} to add to the slots.
      */
-    protected void setItem(@NotNull final SlotSequence<S> slots, @NotNull final GuiItem<G> guiItem) {
+    protected void setItem(@NotNull final SlotSequence<S> slots, @Nullable final GuiItem<G> guiItem) {
         Preconditions.checkArgument(slots != null, "Slots cannot be null.");
 
         for (final S slot : slots) {
@@ -374,7 +374,7 @@ public abstract class BaseGui<G extends BaseGui<G, S>, S extends Slot> implement
      */
     @Nullable
     public InventoryView open(@NotNull final HumanEntity humanEntity) {
-        Preconditions.checkArgument(humanEntity != null, "Player cannot be null.");
+        Preconditions.checkArgument(humanEntity != null, "humanEntity cannot be null.");
 
         if (humanEntity.isSleeping())
             return null;
@@ -423,9 +423,12 @@ public abstract class BaseGui<G extends BaseGui<G, S>, S extends Slot> implement
     }
 
     /**
-     * Updates the GUI for all the {@link Inventory} views.
+     * Forces an update of the current GUI's internal inventory for each {@link Inventory} viewer.
+     * <p>
+     * This method does not necessarily redraw the GUI; it simply synchronizes the viewers with the server in case of a desync.
+     * <p>
      */
-    public void update() {
+    public void forceUpdateInventory() {
         for (HumanEntity viewer : new ArrayList<>(inventory.getViewers())) {
             if (viewer instanceof Player player) {
                 player.updateInventory();
@@ -898,3 +901,18 @@ public abstract class BaseGui<G extends BaseGui<G, S>, S extends Slot> implement
         return runOpenAction;
     }
 }
+
+// This library can be globally rewritten
+// - Make a pane system (multiple layer index with a background etc, (thinks about empty case over background (null vs ItemStack(air:Empty))), no necessarely at the size of the board, adn can be move on the board)
+// - Add a system with board (like infinite board) then each viewer can have a different view of a part of the board (max 9x6 chest)
+// - Remove the CRTP of the BaseGUI, idk why I need it originally
+// - Also support other inventory type like hopper, enchanting table (without infite grid idk), etc
+// - Save the guiItem completely indendently of the inventory (so no more need of the shadow inventory)
+// - Add a inner pagination system (like onglet on an excel board ?)
+// - Rotable / Flipable pane
+// - Save/Restore player inv so we can also use the player inv as a GUI
+// - Maybe we can open InventoryView with two different GUI (like a chest and a hopper and no player inv)
+// Inpiration from the library:
+// - https://github.com/TriumphTeam/triumph-gui
+// - https://github.com/stefvanschie/IF/
+// - also see https://github.com/DevNatan/inventory-framework

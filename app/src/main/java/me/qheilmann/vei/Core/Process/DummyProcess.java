@@ -31,7 +31,7 @@ public class DummyProcess extends Process<FurnaceRecipe> {
 
     @Override
     public @Nullable SmeltingProcessPanel generateProcessPanel(@NotNull ProcessRecipeSet<FurnaceRecipe> processRecipeSet, int variant) {
-        return new SmeltingProcessPanel(processRecipeSet, variant);
+        return new SmeltingProcessPanel(processRecipeSet, variant); // TODO replace with custom process panel
     }
 
     private static ItemStack generateIcon(){

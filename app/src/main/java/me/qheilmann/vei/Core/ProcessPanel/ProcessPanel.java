@@ -214,24 +214,24 @@ public abstract class ProcessPanel<T extends Recipe> {
     /**
      * Attach a button to the panel.
      * @param buttonType The type of button to attach.
-     * @param parentButton The button to attach.
+     * @param attachedButton The button to attach.
      */
-    public void attachMenuButton(ButtonType buttonType, GuiItem<RecipeMenu> parentButton) {
+    public void attachMenuButton(ButtonType buttonType, GuiItem<RecipeMenu> attachedButton) {
         switch (buttonType) {
             case NEXT_RECIPE:
-                putSlotIfNotNull(getNextRecipeSlot(), parentButton);
+                putSlotIfNotNull(getNextRecipeSlot(), attachedButton);
                 break;
             case PREVIOUS_RECIPE:
-                putSlotIfNotNull(getPreviousRecipeSlot(), parentButton);
+                putSlotIfNotNull(getPreviousRecipeSlot(), attachedButton);
                 break;
             case BACKWARD_RECIPE:
-                putSlotIfNotNull(getBackwardRecipeSlot(), parentButton);
+                putSlotIfNotNull(getBackwardRecipeSlot(), attachedButton);
                 break;
             case FORWARD_RECIPE:
-                putSlotIfNotNull(getForwardRecipeSlot(), parentButton);
+                putSlotIfNotNull(getForwardRecipeSlot(), attachedButton);
                 break;
             case MOVE_INGREDIENTS:
-                putSlotIfNotNull(getMoveIngredientsSlot(), parentButton);
+                putSlotIfNotNull(getMoveIngredientsSlot(), attachedButton);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown button type: " + buttonType);
