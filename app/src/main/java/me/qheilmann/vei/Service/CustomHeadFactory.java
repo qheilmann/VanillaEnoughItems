@@ -79,7 +79,7 @@ public class CustomHeadFactory {
         UUID uuid = UUID.nameUUIDFromBytes(URIString.getBytes());
         PlayerProfile profile = Bukkit.createProfile(uuid);
         PlayerTextures playerTextures = profile.getTextures();
-        playerTextures.setSkin(url);
+        playerTextures.setSkin(url); // TODO maybe change this to https://discord.com/channels/289587909051416579/555462289851940864/1348967070213079091
         profile.setTextures(playerTextures);
 
         ItemStack head = new ItemStack(Material.PLAYER_HEAD);
