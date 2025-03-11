@@ -89,6 +89,8 @@ public abstract class Process<R extends Recipe> {
     }
 }
 
+// TODO process can be a singleton or completly static
+
 // Process represent un moyen permettant de créer des item d'une manière (example avec d'autre item lors d'un craft)
 // OK Un process peut avoir plusieurs recipe pour un item (ex: iron ingot avec un block de fer ou avec 9 lingots de fer)
 // OK Un process peut avoir plusieur type de recipe (ex: shaped, shapeless or bien SmithingTrim, SmithingTransform)

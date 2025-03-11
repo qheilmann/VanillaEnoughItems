@@ -13,6 +13,8 @@ import org.bukkit.inventory.Recipe;
 import org.jetbrains.annotations.NotNull;
 
 import me.qheilmann.vei.Core.Utils.NotNullMap;
+import me.qheilmann.vei.Core.Process.CraftingProcess;
+import me.qheilmann.vei.Core.Process.DummyProcess;
 import me.qheilmann.vei.Core.Process.Process;
 
 /**
@@ -180,7 +182,8 @@ public class ItemRecipeMap {
     }
 
     /**
-     * Returns a custom comparator for ordering processes.
+     * Provides a custom comparator for ordering processes.
+     * The CraftingProcess is prioritized first, followed by all other processes in lexicographical order, and finally the DummyProcess.
      * 
      * @return a comparator for ordering processes
      */
@@ -188,12 +191,17 @@ public class ItemRecipeMap {
         return new Comparator<Process<?>>() {
             @Override
             public int compare(Process<?> p1, Process<?> p2) {
-                // if (p1.getProcessName().equals("Crafting")) {
-                //     return -1;
-                // } else if (p2.getProcessName().equals("Crafting")) {
-                //     return 1;
-                // } TODO fix this the crafting must be first but dont break the equals method
-                return p1.getProcessName().compareTo(p2.getProcessName());
+                if (p1.getProcessName().equals(CraftingProcess.PROCESS_NAME) && !p2.getProcessName().equals(CraftingProcess.PROCESS_NAME)) {
+                    return -1;
+                } else if (!p1.getProcessName().equals(CraftingProcess.PROCESS_NAME) && p2.getProcessName().equals(CraftingProcess.PROCESS_NAME)) {
+                    return 1;
+                } else if (p1.getProcessName().equals(DummyProcess.PROCESS_NAME) && !p2.getProcessName().equals(DummyProcess.PROCESS_NAME)) {
+                    return 1;
+                } else if (!p1.getProcessName().equals(DummyProcess.PROCESS_NAME) && p2.getProcessName().equals(DummyProcess.PROCESS_NAME)) {
+                    return -1;
+                } else {
+                    return p1.getProcessName().compareTo(p2.getProcessName());
+                }
             }
         };
     }

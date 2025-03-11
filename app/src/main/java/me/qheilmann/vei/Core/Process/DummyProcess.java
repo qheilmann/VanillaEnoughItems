@@ -12,8 +12,8 @@ import net.kyori.adventure.text.Component;
 
 public class DummyProcess extends Process<Recipe> {
     
-    protected static final String PROCESS_NAME = "Undefined";
-    protected static final ItemStack PROCESS_ICON = generateIcon();
+    public static final String PROCESS_NAME = "Undefined";
+    private static final ItemStack PROCESS_ICON = generateIcon();
     
     public DummyProcess() {
         super();

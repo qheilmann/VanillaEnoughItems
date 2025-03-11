@@ -11,7 +11,7 @@ import net.kyori.adventure.text.Component;
 
 public class SmeltingProcess extends Process<FurnaceRecipe> {
     
-    protected static final String PROCESS_NAME = "Smelting";
+    public static final String PROCESS_NAME = "Smelting";
     protected static final ItemStack PROCESS_ICON = generateIcon();
     
     public SmeltingProcess() {

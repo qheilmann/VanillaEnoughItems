@@ -12,8 +12,8 @@ import net.kyori.adventure.text.Component;
 
 public class CraftingProcess extends Process<CraftingRecipe> {
 
-    protected static final String PROCESS_NAME = "Crafting";
-    protected static final ItemStack PROCESS_ICON = generateIcon();
+    public static final String PROCESS_NAME = "Crafting";
+    public static final ItemStack PROCESS_ICON = generateIcon();
 
     public CraftingProcess() {
         super();
