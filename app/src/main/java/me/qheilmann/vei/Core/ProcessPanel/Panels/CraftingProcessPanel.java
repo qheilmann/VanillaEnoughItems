@@ -59,8 +59,6 @@ public class CraftingProcessPanel extends ProcessPanel<CraftingRecipe> {
 
     private static final Material WORKBENCH_DISPLAY_MATERIAL = Material.CRAFTING_TABLE;
 
-    private boolean initialized = false;
-
     public CraftingProcessPanel(@NotNull ProcessRecipeSet<CraftingRecipe> recipes, int variant) {
         super(recipes, variant);
     }
@@ -138,14 +136,11 @@ public class CraftingProcessPanel extends ProcessPanel<CraftingRecipe> {
     }
 
     @Override
-    protected void populateCraftingSlots() {
-
-        if (!initialized) {
-            placeWorkbench();
-            initialized = true;
-        }
+    public void render(EnumSet<AttachedButtonType> buttonsVisibility) {
         
         clear();
+
+        placeWorkbench();
 
         CraftingRecipe currentRecipe = getCurrentRecipe();
         if (currentRecipe instanceof ShapedRecipe shapedRecipe) {
@@ -153,6 +148,8 @@ public class CraftingProcessPanel extends ProcessPanel<CraftingRecipe> {
         } else if (currentRecipe instanceof ShapelessRecipe shapelessRecipe) {
             populateShapelessRecipeCraftingsSlot(shapelessRecipe);
         }
+
+        renderAttachedButtons(buttonsVisibility);
     }
 
     private void populateShapedRecipeCraftingsSlot(ShapedRecipe shapedRecipe) {

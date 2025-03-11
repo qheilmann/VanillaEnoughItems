@@ -12,7 +12,7 @@ import me.qheilmann.vei.Core.Utils.NotNullSet;
  * (e.g., Crafting, Smelting, Smithing). This way is represented by a process.
  * <ul>
  * <li>A process can have multiple recipe types (e.g., ShapedRecipe,
- * ShapelessRecipe for Crafting, SmithingTrimRecipe, SmithingTransformRecipe
+ * ShapelessRecipe for Crafting or SmithingTrimRecipe, SmithingTransformRecipe
  * for Smithing).</li>
  * <li>It can be used by various workbenches (e.g., Crafting table /
  * Crafter for Crafting).</li>

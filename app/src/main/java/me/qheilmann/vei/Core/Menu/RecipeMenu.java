@@ -3,7 +3,6 @@ package me.qheilmann.vei.Core.Menu;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
-
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -64,20 +63,20 @@ import net.kyori.adventure.text.Component;
 public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
 
     //#region Static Constants
-    private static final MaxChestSlot QUICK_LINK_SLOT                    = new MaxChestSlot(0, 0);
-    private static final MaxChestSlot PROCESS_SCROLL_LEFT_SLOT    = new MaxChestSlot(1, 0);
-    private static final MaxChestSlot PROCESS_SCROLL_RIGHT_SLOT   = new MaxChestSlot(7, 0);
-    private static final MaxChestSlot INFO_SLOT                          = new MaxChestSlot(8, 0);
-    private static final MaxChestSlot WORKBENCH_SCROLL_UP_SLOT   = new MaxChestSlot(0, 1);
-    private static final MaxChestSlot WORKBENCH_SCROLL_DOWN_SLOT = new MaxChestSlot(0, 5);
-    private static final MaxChestSlot BOOKMARK_THIS_RECIPE_TOGGLE_SLOT   = new MaxChestSlot(8, 2);
-    private static final MaxChestSlot BOOKMARK_LIST_SLOT                 = new MaxChestSlot(8, 3);
-    private static final MaxChestSlot BOOKMARK_SERVER_LIST_SLOT          = new MaxChestSlot(8, 4);
-    private static final MaxChestSlot EXIT_SLOT                          = new MaxChestSlot(8, 5);
+    private static final MaxChestSlot QUICK_LINK_SLOT                  = new MaxChestSlot(0, 0);
+    private static final MaxChestSlot PROCESS_SCROLL_LEFT_SLOT         = new MaxChestSlot(1, 0);
+    private static final MaxChestSlot PROCESS_SCROLL_RIGHT_SLOT        = new MaxChestSlot(7, 0);
+    private static final MaxChestSlot INFO_SLOT                        = new MaxChestSlot(8, 0);
+    private static final MaxChestSlot WORKBENCH_SCROLL_UP_SLOT         = new MaxChestSlot(0, 1);
+    private static final MaxChestSlot WORKBENCH_SCROLL_DOWN_SLOT       = new MaxChestSlot(0, 5);
+    private static final MaxChestSlot BOOKMARK_THIS_RECIPE_TOGGLE_SLOT = new MaxChestSlot(8, 2);
+    private static final MaxChestSlot BOOKMARK_LIST_SLOT               = new MaxChestSlot(8, 3);
+    private static final MaxChestSlot BOOKMARK_SERVER_LIST_SLOT        = new MaxChestSlot(8, 4);
+    private static final MaxChestSlot EXIT_SLOT                        = new MaxChestSlot(8, 5);
 
-    private static final SlotRange<MaxChestSlot> WORKBENCH_SLOT_RANGE         = new SlotRange<>(new MaxChestSlot(2, 0), new MaxChestSlot(6, 0));
-    private static final SlotRange<MaxChestSlot> WORKBENCH_VARIANT_SLOT_RANGE = new SlotRange<>(new MaxChestSlot(0, 2), new MaxChestSlot(0, 4));
-    private static final SlotRange<MaxChestSlot> RECIPE_PANEL_SLOT_RANGE       = new SlotRange<>(new MaxChestSlot(1, 1), new MaxChestSlot(7, 5));
+    private static final SlotRange<MaxChestSlot> PROCESS_SLOT_RANGE      = new SlotRange<>(new MaxChestSlot(2, 0), new MaxChestSlot(6, 0));
+    private static final SlotRange<MaxChestSlot> WORKBENCH_SLOT_RANGE    = new SlotRange<>(new MaxChestSlot(0, 2), new MaxChestSlot(0, 4));
+    private static final SlotRange<MaxChestSlot> RECIPE_PANEL_SLOT_RANGE = new SlotRange<>(new MaxChestSlot(1, 1), new MaxChestSlot(7, 5));
     //#endregion Static Constants
 
     //#region Instance variables
@@ -88,11 +87,6 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
     private ItemRecipeMap itemRecipeMap;
     private Process<?> currentProcess;
     private int currentVariant;
-
-    private static final String BOOKMARK_MESSAGE       = "Bookmark";
-    // private static final String UNBOOKMARK_MESSAGE     = "Unbookmark";
-    private static final String BOOKMARK_LORE_MESSAGE   = "Add this recipe to your bookmark";
-    // private static final String UNBOOKMARK_LORE_MESSAGE = "Remove this recipe from your bookmark";
 
     private GuiItem<RecipeMenu> quickLinkItem;
     private GuiItem<RecipeMenu> processScrollLeftItem;
@@ -123,9 +117,6 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
 
     public RecipeMenu(@NotNull Style style, @NotNull ItemRecipeMap itemRecipeMap) {
         this(style, itemRecipeMap, itemRecipeMap.getAllProcess().iterator().next());
-        for (Process<?> process : itemRecipeMap.getAllProcess()) {
-            VanillaEnoughItems.LOGGER.info("Process: " + process);
-        }
     }
 
     public RecipeMenu(@NotNull Style style, @NotNull ItemRecipeMap itemRecipeMap, Process<?> process) {
@@ -153,11 +144,11 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         this.recipePanel = process.generateProcessPanel(processRecipeSet, variant);
 
         // Menu configuration
-        initItemAction();
+        initAllItem();
         render();
     }
 
-    void initItemAction() {
+    void initAllItem() {
         // Global action
         setDefaultClickAction((event, context) -> event.setCancelled(true)); // Cancel the event for the entire GUI
 
@@ -185,42 +176,68 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         setItem(BOOKMARK_LIST_SLOT, bookmarkListItem);
         setItem(BOOKMARK_SERVER_LIST_SLOT, bookmarkServerListItem);
         setItem(EXIT_SLOT, exitItem);
+
+        // Initialize process panel
+        initProcessPanel();
     }
 
-    
+    private void initProcessPanel() {
+        // Attach action to the recipe panel
+        recipePanel.attachPannelButton(ProcessPanel.AttachedButtonType.NEXT_RECIPE, nextRecipeItem);
+        recipePanel.attachPannelButton(ProcessPanel.AttachedButtonType.PREVIOUS_RECIPE, previousRecipeItem);
+        recipePanel.attachPannelButton(ProcessPanel.AttachedButtonType.FORWARD_RECIPE, forwardRecipeItem);
+        recipePanel.attachPannelButton(ProcessPanel.AttachedButtonType.BACKWARD_RECIPE, backwardRecipeItem);
+        recipePanel.attachPannelButton(ProcessPanel.AttachedButtonType.MOVE_INGREDIENTS, moveIngredientsItem);
+    }
+
     public void render() {
 
-        // Update visibility
+        // Update visibility booleans
         updateNextPreviousRecipeVisibility();
 
-        // Apply visibility
+        // Apply menu button visibility
         setItemOnVisibility(PROCESS_SCROLL_LEFT_SLOT, processScrollLeftItem, isProcessScrollLeftVisible);
         setItemOnVisibility(PROCESS_SCROLL_RIGHT_SLOT, processScrollRightItem, isProcessScrollRightVisible);
         setItemOnVisibility(WORKBENCH_SCROLL_UP_SLOT, workbenchScrollUpItem, isWorkbenchScrollUpVisible);
         setItemOnVisibility(WORKBENCH_SCROLL_DOWN_SLOT, workbenchScrollDownItem, isWorkbenchScrollDownVisible);
         // Always visible buttons don't need to be re rendered (render once in the constructor)
-        
-        // Apply visibility for the recipe panel
-        attachMenuButtonOnVisibility(ProcessPanel.ButtonType.NEXT_RECIPE, nextRecipeItem, isNextRecipeVisible);
-        attachMenuButtonOnVisibility(ProcessPanel.ButtonType.PREVIOUS_RECIPE, previousRecipeItem, isPreviousRecipeVisible);
-        attachMenuButtonOnVisibility(ProcessPanel.ButtonType.FORWARD_RECIPE, forwardRecipeItem, isForwardRecipeVisible);
-        attachMenuButtonOnVisibility(ProcessPanel.ButtonType.BACKWARD_RECIPE, backwardRecipeItem, isBackwardRecipeVisible);
-        attachMenuButtonOnVisibility(ProcessPanel.ButtonType.MOVE_INGREDIENTS, moveIngredientsItem, isMoveIngredientsVisible);
 
-        // Render recipe panel
         renderRecipePanel();
+        renderWorkbenchRange();
 
         // Padding empty slots (except valide air slot in the recipe panel)
         padEmptySlots();
         fixOverPadding();
     }
 
-    protected void renderRecipePanel(){
-        renderRecipePanel(ProcessPanel.SlotType.ALL);
+    private void renderRecipePanel(){
+
+        // First clear completely the recipe panel area
+        for (MaxChestSlot slot : RECIPE_PANEL_SLOT_RANGE) {
+            setItem(slot, null);
+        }
+
+        // Calculate the new recipe panel, then place it in the GUI
+        recipePanel.render(getAllVisibleAttachedButtonsSet()); 
+        recipePanel.getContentPanel(ProcessPanel.SlotType.ALL).forEach((slot, item) -> setItem(slot.asMaxChestSlot(), item));
     }
 
-    protected void renderRecipePanel(EnumSet<ProcessPanel.SlotType> slotType){
-        recipePanel.getContentPanel(slotType).forEach((slot, item) -> setItem(slot.asMaxChestSlot(), item));
+    private void renderWorkbenchRange() {
+
+        MaxChestSlot[] processSlots = PROCESS_SLOT_RANGE.toArray();
+        Process<?>[] processes = itemRecipeMap.getAllProcess().toArray(new Process<?>[0]);
+
+        int totalIteration = Math.min(processSlots.length, processes.length);
+        if (processes.length > totalIteration) {
+            VanillaEnoughItems.LOGGER.warn("Not enough process slots to render all processes"); // TODO: Implement scroll page workbench type
+            return;
+        }
+
+        for (int i = 0; i < totalIteration ; i++) {
+            Process<?> process = processes[i];
+            MaxChestSlot slot = processSlots[i];
+            setItem(slot, buildChangeProcessButton(process));
+        }
     }
 
     //#region Button setup
@@ -228,184 +245,202 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
     private GuiItem<RecipeMenu> buildQuickLinkItem() {
         GuiItem<RecipeMenu> button;
         button = new GuiItem<>(style.getButtonMaterial(VeiButtonType.RecipeMenu.QUICK_LINK));
-        button.editMeta(meta -> meta.displayName(
-            Component.text("Quick link").color(style.getPrimaryColor())
-        ));
-        button.editMeta(meta -> meta.lore(List.of(
-            Component.text("click to get the command equivalent for go to this recipe").color(style.getSecondaryColor()),
-            Component.text("/recipe <myRecipe> <category>").color(style.getSecondaryColor())
-        )));
+        button.editMeta(meta -> {
+            meta.displayName(Component.text("Quick link").color(style.getPrimaryColor()));
+            meta.lore(List.of(
+                Component.text("click to get the command equivalent for go to this recipe").color(style.getSecondaryColor()),
+                Component.text("/recipe <myRecipe> <category>").color(style.getSecondaryColor())
+            ));
+        });
         button.setAction(this::quickLinkAction);
         return button;
     }
 
     private GuiItem<RecipeMenu> buildProcessScrollLeftButton() {
         GuiItem<RecipeMenu> button = new GuiItem<>(style.getButtonMaterial(VeiButtonType.RecipeMenu.WORKBENCH_TYPE_SCROLL_LEFT));
-        button.editMeta(meta -> meta.displayName(
-            Component.text("Scroll left").color(style.getPrimaryColor())
-        ));
-        button.editMeta(meta -> meta.lore(List.of(
-            Component.text("See previous workbench type").color(style.getSecondaryColor())
-        )));
+        button.editMeta(meta -> {
+            meta.displayName(Component.text("Scroll left").color(style.getPrimaryColor()));
+            meta.lore(List.of(
+                Component.text("See previous workbench type").color(style.getSecondaryColor())
+            ));
+        });
         button.setAction(this::processScrollLeftAction);
         return button;
     }
 
     private GuiItem<RecipeMenu> buildProcessScrollRightButton() {
         GuiItem<RecipeMenu> button = new GuiItem<>(style.getButtonMaterial(VeiButtonType.RecipeMenu.WORKBENCH_TYPE_SCROLL_RIGHT));
-        button.editMeta(meta -> meta.displayName(
-            Component.text("Scroll right").color(style.getPrimaryColor())
-        ));
-        button.editMeta(meta -> meta.lore(List.of(
-            Component.text("See next workbench type").color(style.getSecondaryColor())
-        )));
+        button.editMeta(meta -> {
+            meta.displayName(Component.text("Scroll right").color(style.getPrimaryColor()));
+            meta.lore(List.of(
+                Component.text("See next workbench type").color(style.getSecondaryColor())
+            ));
+        });
         button.setAction(this::processScrollRightAction);
         return button;
     }
 
     private GuiItem<RecipeMenu> buildInfoButton() {
         GuiItem<RecipeMenu> button = new GuiItem<>(style.getButtonMaterial(VeiButtonType.Generic.INFO));
-        button.editMeta(meta -> meta.displayName(
-            Component.text("Info").color(style.getPrimaryColor())
-        ));
-        button.editMeta(meta -> meta.lore(List.of(
-            Component.text("See VEI info").color(style.getSecondaryColor())
-        )));
+        button.editMeta(meta -> {
+            meta.displayName(Component.text("Info").color(style.getPrimaryColor()));
+            meta.lore(List.of(
+                Component.text("See VEI info").color(style.getSecondaryColor())
+            ));
+        });
         button.setAction(this::infoAction);
         return button;
     }
 
     private GuiItem<RecipeMenu> buildWorkbenchScrollUpButton() {
         GuiItem<RecipeMenu> button = new GuiItem<>(style.getButtonMaterial(VeiButtonType.RecipeMenu.WORKBENCH_VARIANT_SCROLL_UP));
-        button.editMeta(meta -> meta.displayName(
-            Component.text("Scroll up").color(style.getPrimaryColor())
-        ));
-        button.editMeta(meta -> meta.lore(List.of(
-            Component.text("See previous workbench variant").color(style.getSecondaryColor())
-        )));
+        button.editMeta(meta -> {
+            meta.displayName(Component.text("Scroll up").color(style.getPrimaryColor()));
+            meta.lore(List.of(
+                Component.text("See previous workbench variant").color(style.getSecondaryColor())
+            ));
+        });
         button.setAction(this::workbenchScrollUpAction);
         return button;
     }
 
     private GuiItem<RecipeMenu> buildWorkbenchScrollDownButton() {
         GuiItem<RecipeMenu> button = new GuiItem<>(style.getButtonMaterial(VeiButtonType.RecipeMenu.WORKBENCH_VARIANT_SCROLL_DOWN));
-        button.editMeta(meta -> meta.displayName(
-            Component.text("Scroll down").color(style.getPrimaryColor())
-        ));
-        button.editMeta(meta -> meta.lore(List.of(
-            Component.text("See next workbench variant").color(style.getSecondaryColor())
-        )));
+        button.editMeta(meta -> {
+            meta.displayName(Component.text("Scroll down").color(style.getPrimaryColor()));
+            meta.lore(List.of(
+                Component.text("See next workbench variant").color(style.getSecondaryColor())
+            ));
+        });
         button.setAction(this::workbenchDownAction);
         return button;
     }
 
     private GuiItem<RecipeMenu> buildBookmarkRecipeToggleButton() {
         GuiItem<RecipeMenu> button = new GuiItem<>(style.getButtonMaterial(VeiButtonType.RecipeMenu.BOOKMARK_THIS_RECIPE));
-        button.editMeta(meta -> meta.displayName(
-            Component.text(BOOKMARK_MESSAGE).color(style.getPrimaryColor())
-        ));
-        button.editMeta(meta -> meta.lore(
-            List.of(Component.text(BOOKMARK_LORE_MESSAGE).color(style.getSecondaryColor())
-        )));
+        button.editMeta(meta -> {
+            meta.displayName(Component.text("Bookmark").color(style.getPrimaryColor()));
+            meta.lore(List.of(
+                Component.text("Add this recipe to your bookmark").color(style.getSecondaryColor())
+            ));
+        });
         button.setAction(this::bookmarkRecipeToggleAction);
         return button;
     }
 
     private GuiItem<RecipeMenu> buildBookmarkListButton() {
         GuiItem<RecipeMenu> button = new GuiItem<>(style.getButtonMaterial(VeiButtonType.RecipeMenu.BOOKMARK_LIST));
-        button.editMeta(meta -> meta.displayName(
-            Component.text("Bookmark list").color(style.getPrimaryColor())
-        ));
-        button.editMeta(meta -> meta.lore(List.of(
-            Component.text("See your bookmarked recipes").color(style.getSecondaryColor())
-        )));
+        button.editMeta(meta -> {
+            meta.displayName(Component.text("Bookmark list").color(style.getPrimaryColor()));
+            meta.lore(List.of(
+                Component.text("See your bookmarked recipes").color(style.getSecondaryColor())
+            ));
+        });
         button.setAction(this::bookmarkListAction);
         return button;
     }
 
     private GuiItem<RecipeMenu> buildBookmarkServerListButton() {
         GuiItem<RecipeMenu> button = new GuiItem<>(style.getButtonMaterial(VeiButtonType.RecipeMenu.BOOKMARK_SERVER_LIST));
-        button.editMeta(meta -> meta.displayName(
-            Component.text("Bookmark server list").color(style.getPrimaryColor())
-        ));
-        button.editMeta(meta -> meta.lore(List.of(
-            Component.text("See the server bookmarked recipes").color(style.getSecondaryColor())
-        )));
+        button.editMeta(meta -> {
+            meta.displayName(Component.text("Bookmark server list").color(style.getPrimaryColor()));
+            meta.lore(List.of(
+                Component.text("See the server bookmarked recipes").color(style.getSecondaryColor())
+            ));
+        });
         button.setAction(this::bookmarkServerListAction);
         return button;
     }
 
     private GuiItem<RecipeMenu> buildExitButton() {
         GuiItem<RecipeMenu> button = new GuiItem<>(style.getButtonMaterial(VeiButtonType.Generic.EXIT));
-        button.editMeta(meta -> meta.displayName(
-            Component.text("Exit").color(style.getPrimaryColor())
-        ));
-        button.editMeta(meta -> meta.lore(List.of(
-            Component.text("Exit the recipe menu").color(style.getSecondaryColor())
-        )));
+        button.editMeta(meta -> {
+            meta.displayName(Component.text("Exit").color(style.getPrimaryColor()));
+            meta.lore(List.of(
+                Component.text("Exit the recipe menu").color(style.getSecondaryColor())
+            ));
+        });
         button.setAction(this::exitAction);
         return button;
     }
 
     private GuiItem<RecipeMenu> buildNextRecipeButton() {
         GuiItem<RecipeMenu> button = new GuiItem<>(style.getButtonMaterial(VeiButtonType.RecipeMenu.NEXT_RECIPE));
-        button.editMeta(meta -> meta.displayName(
-            Component.text("Next recipe").color(style.getPrimaryColor())
-        ));
-        button.editMeta(meta -> meta.lore(List.of(
-            Component.text("See the next recipe").color(style.getSecondaryColor())
-        )));
+        button.editMeta(meta -> {
+            meta.displayName(Component.text("Next recipe").color(style.getPrimaryColor()));
+            meta.lore(List.of(
+                Component.text("See the next recipe").color(style.getSecondaryColor())
+            ));
+        });
         button.setAction(this::nextRecipeAction);
         return button;
     }
 
     private GuiItem<RecipeMenu> buildPreviousRecipeButton() {
         GuiItem<RecipeMenu> button = new GuiItem<>(style.getButtonMaterial(VeiButtonType.RecipeMenu.PREVIOUS_RECIPE));
-        button.editMeta(meta -> meta.displayName(
-            Component.text("Previous recipe").color(style.getPrimaryColor())
-        ));
-        button.editMeta(meta -> meta.lore(List.of(
-            Component.text("See the previous recipe").color(style.getSecondaryColor())
-        )));
+        button.editMeta(meta -> {
+            meta.displayName(Component.text("Previous recipe").color(style.getPrimaryColor()));
+            meta.lore(List.of(
+                Component.text("See the previous recipe").color(style.getSecondaryColor())
+            ));
+        });
         button.setAction(this::previousRecipeAction);
         return button;
     }
 
     private GuiItem<RecipeMenu> buildForwardRecipeButton() {
         GuiItem<RecipeMenu> button = new GuiItem<>(style.getButtonMaterial(VeiButtonType.RecipeMenu.FORWARD_RECIPE));
-        button.editMeta(meta -> meta.displayName(
-            Component.text("Forward recipe").color(style.getPrimaryColor())
-        ));
-        button.editMeta(meta -> meta.lore(List.of(
-            Component.text("Return to the following recipe in the history").color(style.getSecondaryColor())
-        )));
+        button.editMeta(meta -> {
+            meta.displayName(Component.text("Forward recipe").color(style.getPrimaryColor()));
+            meta.lore(List.of(
+                Component.text("Return to the following recipe in the history").color(style.getSecondaryColor())
+            ));
+        });
         button.setAction(this::forwardRecipeAction);
         return button;
     }
-    
+        
     private GuiItem<RecipeMenu> buildBackwardRecipeButton() {
         GuiItem<RecipeMenu> button = new GuiItem<>(style.getButtonMaterial(VeiButtonType.RecipeMenu.BACKWARD_RECIPE));
-        button.editMeta(meta -> meta.displayName(
-            Component.text("Backward recipe").color(style.getPrimaryColor())
-        ));
-        button.editMeta(meta -> meta.lore(List.of(
-            Component.text("Go back to the preceding recipe in the history").color(style.getSecondaryColor())
-        )));
+        button.editMeta(meta -> {
+            meta.displayName(Component.text("Backward recipe").color(style.getPrimaryColor()));
+            meta.lore(List.of(
+                Component.text("Go back to the preceding recipe in the history").color(style.getSecondaryColor())
+            ));
+        });
         button.setAction(this::backwardRecipeAction);
         return button;
     }
 
     private GuiItem<RecipeMenu> buildMoveIngredientsButton() {
         GuiItem<RecipeMenu> button = new GuiItem<>(style.getButtonMaterial(VeiButtonType.RecipeMenu.MOVE_INGREDIENTS));
-        button.editMeta(meta -> meta.displayName(
-            Component.text("Move ingredients").color(style.getPrimaryColor())
-        ));
-        button.editMeta(meta -> meta.lore(List.of(
-            Component.text("Automatically move all the ingredients inside the workbench").color(style.getSecondaryColor()),
-            Component.text("This work only if a empty accessible workbench is around you").color(style.getSecondaryColor())
-        )));
+        button.editMeta(meta -> {
+            meta.displayName(Component.text("Move ingredients").color(style.getPrimaryColor()));
+            meta.lore(List.of(
+                Component.text("Automatically move all the ingredients inside the workbench").color(style.getSecondaryColor()),
+                Component.text("This work only if a empty accessible workbench is around you").color(style.getSecondaryColor())
+            ));
+        });
         button.setAction(this::moveIngredientsAction);
         return button;
+    }
+
+    private GuiItem<RecipeMenu> buildChangeProcessButton(Process<?> process) {
+        GuiItem<RecipeMenu> item = new GuiItem<>(process.getProcessIcon());
+
+        ItemMeta meta = item.getItemMeta();
+        meta.displayName(Component.text(process.getProcessName(), style.getPrimaryColor()));
+
+        if (process.equals(currentProcess)) {
+            meta.setEnchantmentGlintOverride(true);
+        }
+
+        item.setItemMeta(meta);
+
+        item.setAction((event, menu) -> {
+            changeProcessAction(event, menu, process);
+        });
+        return item;
     }
     
     //#endregion Button setup
@@ -476,14 +511,21 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         event.getWhoClicked().sendMessage("Move ingredients action");
     }
 
+    private <R extends Recipe> void changeProcessAction(InventoryClickEvent event, RecipeMenu menu, Process<R> process) {
+        currentProcess = process;
+        currentVariant = 0;
+
+        ProcessRecipeSet<R> processRecipeSet = itemRecipeMap.getProcessRecipeSet(process);
+        recipePanel = process.generateProcessPanel(processRecipeSet, currentVariant);
+        initProcessPanel();
+
+        render();
+    }
+
     //#endregion Button actions
 
     private void setItemOnVisibility(MaxChestSlot slot, GuiItem<RecipeMenu> item, boolean isVisible) {
         setItem(slot, isVisible ? item : null);
-    }
-
-    private void attachMenuButtonOnVisibility(ProcessPanel.ButtonType type, GuiItem<RecipeMenu> item, boolean isVisible) {
-        this.recipePanel.attachMenuButton(type, isVisible ? item : null);
     }
 
     protected void padEmptySlots(){
@@ -512,7 +554,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
 
     private int calcNextVariantIndex() {
         int nextVariantIndex = recipePanel.getCurrentVariantIndex() + 1;
-        int maxVariantIndex = recipePanel.getProcessRecipeSet().size() - 1;
+        int maxVariantIndex = recipePanel.getVariantCount() - 1;
 
         if (nextVariantIndex <= maxVariantIndex) {
             return nextVariantIndex;
@@ -533,7 +575,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
 
     private void updateNextPreviousRecipeVisibility() {
         int variantIndex = recipePanel.getCurrentVariantIndex();
-        int maxVariantIndex = recipePanel.getProcessRecipeSet().size() - 1;
+        int maxVariantIndex = recipePanel.getVariantCount() - 1;
 
         if (variantIndex >= maxVariantIndex) {
             isNextRecipeVisible = false;
@@ -546,5 +588,15 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         } else {
             isPreviousRecipeVisible = true;
         }
+    }
+
+    private EnumSet<ProcessPanel.AttachedButtonType> getAllVisibleAttachedButtonsSet() {
+        EnumSet<ProcessPanel.AttachedButtonType> set = EnumSet.noneOf(ProcessPanel.AttachedButtonType.class);
+        if (isNextRecipeVisible)      set.add(ProcessPanel.AttachedButtonType.NEXT_RECIPE);
+        if (isPreviousRecipeVisible)  set.add(ProcessPanel.AttachedButtonType.PREVIOUS_RECIPE);
+        if (isForwardRecipeVisible)   set.add(ProcessPanel.AttachedButtonType.FORWARD_RECIPE);
+        if (isBackwardRecipeVisible)  set.add(ProcessPanel.AttachedButtonType.BACKWARD_RECIPE);
+        if (isMoveIngredientsVisible) set.add(ProcessPanel.AttachedButtonType.MOVE_INGREDIENTS);
+        return set;
     }
 }

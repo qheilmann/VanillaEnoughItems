@@ -3,7 +3,6 @@ package me.qheilmann.vei.Core.ProcessPanel;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
-
 import javax.annotation.Nullable;
 
 import org.bukkit.Material;
@@ -20,12 +19,12 @@ import me.qheilmann.vei.Core.Recipe.ProcessRecipeSet;
 import me.qheilmann.vei.Core.Slot.Collection.SlotSequence;
 
 /**
- * <h1>RecipePanel</h1>
+ * <h1>ProcessPanel</h1>
  * Abstract class representing a panel for a recipe.
  * <p>
- * A recipe panel is a representation of a recipe in a GUI.
- * It is used to display the recipe's ingredients, results, consumables, etc
- * in a GUI. The size of the recipe panel is 7x5. In the bottom center is the 
+ * A process panel is a representation of a recipe in a GUI.
+ * It is used to display the recipe's ingredients, results, consumables, etc.
+ * in a GUI. The size of the process panel is 7x5. In the bottom center is the 
  * recipe menu.
  * <p>
  * To extend this class, you need to implement the abstract methods:
@@ -33,10 +32,10 @@ import me.qheilmann.vei.Core.Slot.Collection.SlotSequence;
  *     <li>{@link #getIngredientSlots()}</li>
  *     <li>{@link #getResultSlots()}</li>
  *     <li>{@link #getConsumableSlots()}</li>
- *     <li>{@link #populateCraftingSlots()}</li>
+ *     <li>{@link #render(EnumSet)}</li>
  *     <li>{@link #cycle(EnumSet)}</li>
  * </ul>
- * Optionally override the following methods to customize button slots:
+ * Optionally override the following methods to add more customization:
  * <ul>
  *     <li>{@link #getNextRecipeSlot()}</li>
  *     <li>{@link #getPreviousRecipeSlot()}</li>
@@ -51,11 +50,6 @@ import me.qheilmann.vei.Core.Slot.Collection.SlotSequence;
  * @param <T> The type of recipe this panel handles.
  */
 public abstract class ProcessPanel<T extends Recipe> {
-    
-    private ProcessRecipeSet<T> processRecipeSet;
-    private int variantIndex;
-    
-    protected HashMap<ProcessPanelSlot, GuiItem<RecipeMenu>> recipePanelSlots;
 
     private static final ProcessPanelSlot DEFAULT_NEXT_RECIPE_SLOT      = new ProcessPanelSlot(3, 0);
     private static final ProcessPanelSlot DEFAULT_PREVIOUS_RECIPE_SLOT  = new ProcessPanelSlot(1, 0);
@@ -63,6 +57,12 @@ public abstract class ProcessPanel<T extends Recipe> {
     private static final ProcessPanelSlot DEFAULT_BACKWARD_RECIPE_SLOT  = new ProcessPanelSlot(1, 4);
     private static final ProcessPanelSlot DEFAULT_MOVE_INGREDIENTS_SLOT = new ProcessPanelSlot(5, 3);
     private static final Material DEFAULT_WORKBENCH_MATERIAL            = Material.CRAFTING_TABLE;
+    
+    protected HashMap<ProcessPanelSlot, GuiItem<RecipeMenu>> recipePanelSlots;
+
+    private ProcessRecipeSet<T> processRecipeSet;
+    private int variantIndex;
+    protected Map<AttachedButtonType, GuiItem<RecipeMenu>> attachedButtons = new HashMap<>();
     
     /**
      * Create a new recipe panel for the given recipe.
@@ -112,9 +112,10 @@ public abstract class ProcessPanel<T extends Recipe> {
     protected abstract SlotSequence<ProcessPanelSlot> getConsumableSlots();
 
     /**
-     * Populate the crafting slots with the recipe's ingredients, results, etc.
+     * Populate the recipe panel with the recipe's ingredients, results, consumables, etc.
+     * @param visibleButtonTypes A set containing the types of each button that should be visible.
      */
-    protected abstract void populateCraftingSlots(); 
+    public abstract void render(EnumSet<AttachedButtonType> buttonsVisibility); 
 
     /**
      * Returns the slot for the next recipe button.
@@ -187,11 +188,14 @@ public abstract class ProcessPanel<T extends Recipe> {
     public void setRecipVariantIndex(int variantIndex) {
         Preconditions.checkArgument(variantIndex >= 0 && variantIndex < processRecipeSet.size(), "Invalid variant index, must be between 0 and %s (actual: %s)", processRecipeSet.size(), variantIndex);
         this.variantIndex = variantIndex;
-        populateCraftingSlots();
     }
 
     public int getCurrentVariantIndex() {
         return variantIndex;
+    }
+
+    public int getVariantCount() {
+        return processRecipeSet.size();
     }
 
     /**
@@ -204,37 +208,44 @@ public abstract class ProcessPanel<T extends Recipe> {
     }
 
     /**
-     * Get the current recipe displayed in the panel.
-     * @return The recipe displayed in the panel.
-     */
-    public ProcessRecipeSet<T> getProcessRecipeSet() {
-        return processRecipeSet;
-    }
-
-    /**
      * Attach a button to the panel.
      * @param buttonType The type of button to attach.
      * @param attachedButton The button to attach.
      */
-    public void attachMenuButton(ButtonType buttonType, GuiItem<RecipeMenu> attachedButton) {
+    public void attachPannelButton(AttachedButtonType buttonType, GuiItem<RecipeMenu> attachedButton) {
+        attachedButtons.put(buttonType, attachedButton);
+    }
+
+    protected void putAttachedButtons(AttachedButtonType buttonType, GuiItem<RecipeMenu> attachedButton) {
+        ProcessPanelSlot slot = null;
         switch (buttonType) {
             case NEXT_RECIPE:
-                putSlotIfNotNull(getNextRecipeSlot(), attachedButton);
+                slot = getNextRecipeSlot();
                 break;
             case PREVIOUS_RECIPE:
-                putSlotIfNotNull(getPreviousRecipeSlot(), attachedButton);
-                break;
-            case BACKWARD_RECIPE:
-                putSlotIfNotNull(getBackwardRecipeSlot(), attachedButton);
+                slot = getPreviousRecipeSlot();
                 break;
             case FORWARD_RECIPE:
-                putSlotIfNotNull(getForwardRecipeSlot(), attachedButton);
+                slot = getForwardRecipeSlot();
+                break;
+            case BACKWARD_RECIPE:
+                slot = getBackwardRecipeSlot();
                 break;
             case MOVE_INGREDIENTS:
-                putSlotIfNotNull(getMoveIngredientsSlot(), attachedButton);
+                slot = getMoveIngredientsSlot();
                 break;
             default:
-                throw new IllegalArgumentException("Unknown button type: " + buttonType);
+                throw new IllegalArgumentException("Unimplemented button type: " + buttonType);
+        }
+        recipePanelSlots.put(slot, attachedButton);
+    }
+
+    protected void renderAttachedButtons(EnumSet<AttachedButtonType> buttonsVisibility) {
+        for (AttachedButtonType buttonType : buttonsVisibility) {
+            GuiItem<RecipeMenu> attachedItem = attachedButtons.get(buttonType);
+            if (attachedItem == null) continue;
+            
+            putAttachedButtons(buttonType, attachedItem);
         }
     }
 
@@ -244,6 +255,11 @@ public abstract class ProcessPanel<T extends Recipe> {
      * @return A map of slot to item instance for the given slot types.
      */
     public Map<ProcessPanelSlot, GuiItem<RecipeMenu>> getContentPanel(EnumSet<SlotType> slotTypes) {
+
+        if (slotTypes.equals(SlotType.ALL)) {
+            return recipePanelSlots;
+        }
+
         HashMap<ProcessPanelSlot, GuiItem<RecipeMenu>> contentPanel = new HashMap<>();
         if (slotTypes.contains(SlotType.INGREDIENTS)) {
             for (ProcessPanelSlot slot : getIngredientSlots()) {
@@ -288,8 +304,12 @@ public abstract class ProcessPanel<T extends Recipe> {
     /**
      * Clear all items that are part of the recipe
      */
-    public void clear() {
+    public void clearRecipe() { // Rename to clear Recipe + make an empty to clear all
         clear(SlotType.RECIPE);
+    }
+
+    public void clear() {
+        clear(SlotType.ALL);
     }
 
     /**
@@ -297,6 +317,11 @@ public abstract class ProcessPanel<T extends Recipe> {
      * @param slotTypes The slot types to clear.
      */
     public void clear(EnumSet<SlotType> slotTypes) {
+
+        if (slotTypes.equals(SlotType.ALL)) {
+            recipePanelSlots.clear();
+            return;
+        }
 
         if (slotTypes.contains(SlotType.INGREDIENTS)) {
             for (ProcessPanelSlot slot : getIngredientSlots()) {
@@ -344,12 +369,15 @@ public abstract class ProcessPanel<T extends Recipe> {
     /**
      * The type of button that can be attached to the panel.
      */
-    public enum ButtonType {
+    public enum AttachedButtonType {
         NEXT_RECIPE,
         PREVIOUS_RECIPE,
         FORWARD_RECIPE,
         BACKWARD_RECIPE,
-        MOVE_INGREDIENTS
+        MOVE_INGREDIENTS;
+
+        public static EnumSet<AttachedButtonType> ALL = EnumSet.allOf(AttachedButtonType.class);
+        public static EnumSet<AttachedButtonType> NONE = EnumSet.noneOf(AttachedButtonType.class);
     }
 
     /**
@@ -365,6 +393,7 @@ public abstract class ProcessPanel<T extends Recipe> {
         OTHER;
         
         public static EnumSet<SlotType> ALL = EnumSet.allOf(SlotType.class);
+        public static EnumSet<SlotType> NONE = EnumSet.noneOf(SlotType.class);
 
         /**
          * The slot types that are part of a recipe. (INGREDIENTS, CONSUMABLES, RESULTS)

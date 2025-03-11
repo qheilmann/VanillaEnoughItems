@@ -2,7 +2,6 @@ package me.qheilmann.vei.Core.ProcessPanel.Panels;
 
 import java.util.EnumSet;
 import java.util.List;
-
 import javax.annotation.Nullable;
 
 import org.bukkit.Material;
@@ -32,8 +31,6 @@ public class SmeltingProcessPanel extends ProcessPanel<FurnaceRecipe> {
 
     private static final Material WORKBENCH_DISPLAY_MATERIAL = Material.FURNACE;
     
-    private boolean initialized = false;
-
     public SmeltingProcessPanel(@NotNull ProcessRecipeSet<FurnaceRecipe> recipes, int variant) {
         super(recipes, variant);
     }
@@ -106,13 +103,13 @@ public class SmeltingProcessPanel extends ProcessPanel<FurnaceRecipe> {
     }
 
     @Override
-    protected void populateCraftingSlots() {
-        if (!initialized) {
-            placeWorkbench();
-        }
+    public void render(EnumSet<AttachedButtonType> buttonsVisibility) {
+
+        clear();
+
+        placeWorkbench();
 
         FurnaceRecipe recipe = getCurrentRecipe();
-
         RecipeChoice recipeChoice = recipe.getInputChoice();
         if (recipeChoice instanceof RecipeChoice.MaterialChoice materialChoice) {
             recipePanelSlots.put(INGREDIENT_SLOT, new GuiItem<RecipeMenu>(materialChoice.getItemStack()));
@@ -120,6 +117,8 @@ public class SmeltingProcessPanel extends ProcessPanel<FurnaceRecipe> {
 
         recipePanelSlots.put(COMBUSTIBLE_SLOT, new GuiItem<RecipeMenu>(Material.COAL));
         recipePanelSlots.put(RESULT_SLOT, new GuiItem<RecipeMenu>(recipe.getResult()));
+        
+        renderAttachedButtons(buttonsVisibility);
     }
 
     private void placeWorkbench() {

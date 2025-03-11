@@ -910,6 +910,7 @@ public abstract class BaseGui<G extends BaseGui<G, S>, S extends Slot> implement
 // - Save the guiItem completely indendently of the inventory (so no more need of the shadow inventory)
 // - Add a inner pagination system (like onglet on an excel board ?)
 // - Rotable / Flipable pane
+// - Make a pane visible / invisible, a guiItem visible / invisible (+ by player ?) /!\ maybe this will perturb the user, if he can't see a guiItem ?
 // - Save/Restore player inv so we can also use the player inv as a GUI
 // - Maybe we can open InventoryView with two different GUI (like a chest and a hopper and no player inv)
 // Inpiration from the library:

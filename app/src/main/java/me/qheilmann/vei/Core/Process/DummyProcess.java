@@ -1,18 +1,18 @@
 package me.qheilmann.vei.Core.Process;
 
 import org.bukkit.Material;
-import org.bukkit.inventory.FurnaceRecipe;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.Recipe;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import me.qheilmann.vei.Core.ProcessPanel.Panels.SmeltingProcessPanel;
+import me.qheilmann.vei.Core.ProcessPanel.Panels.DummyProcessPanel;
 import me.qheilmann.vei.Core.Recipe.ProcessRecipeSet;
 import net.kyori.adventure.text.Component;
 
-public class DummyProcess extends Process<FurnaceRecipe> {
+public class DummyProcess extends Process<Recipe> {
     
-    protected static final String PROCESS_NAME = "Dummy";
+    protected static final String PROCESS_NAME = "Undefined";
     protected static final ItemStack PROCESS_ICON = generateIcon();
     
     public DummyProcess() {
@@ -21,7 +21,7 @@ public class DummyProcess extends Process<FurnaceRecipe> {
 
     @Override
     public String getProcessName() {
-        return "Dummy";
+        return PROCESS_NAME;
     }
     
     @Override
@@ -30,12 +30,12 @@ public class DummyProcess extends Process<FurnaceRecipe> {
     }
 
     @Override
-    public @Nullable SmeltingProcessPanel generateProcessPanel(@NotNull ProcessRecipeSet<FurnaceRecipe> processRecipeSet, int variant) {
-        return new SmeltingProcessPanel(processRecipeSet, variant); // TODO replace with custom process panel
+    public @Nullable DummyProcessPanel generateProcessPanel(@NotNull ProcessRecipeSet<Recipe> processRecipeSet, int variant) {
+        return new DummyProcessPanel(processRecipeSet, variant);
     }
 
     private static ItemStack generateIcon(){
-        ItemStack icon = new ItemStack(Material.STONE);
+        ItemStack icon = new ItemStack(Material.BARRIER);
         icon.editMeta(meta -> {
             meta.displayName(Component.text(PROCESS_NAME));
             meta.setMaxStackSize(1);

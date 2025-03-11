@@ -72,7 +72,7 @@ public final class SimpleChestGui extends BaseGui<SimpleChestGui, ChestSlot> {
     }
 
     @Override
-    public void setItem(@NotNull final SlotSequence<ChestSlot> slots, @NotNull final GuiItem<SimpleChestGui> guiItem) {
+    public void setItem(@NotNull final SlotSequence<ChestSlot> slots, @Nullable final GuiItem<SimpleChestGui> guiItem) {
         super.setItem(slots, guiItem);
     }
 
