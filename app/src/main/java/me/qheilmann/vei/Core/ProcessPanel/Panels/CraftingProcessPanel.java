@@ -181,6 +181,8 @@ public class CraftingProcessPanel extends ProcessPanel<CraftingRecipe> {
 
     private void populateShapelessRecipeCraftingsSlot(ShapelessRecipe shapelessRecipe) {
         List<RecipeChoice> recipeChoices = shapelessRecipe.getChoiceList();
+        int x = 0;
+        int y = 0;
 
         // If the recipe can be made inside made in a 2x2 crafting grid, we will display it in a 2x2 grid
         // so the player can better understand he can make it direclty in is inventory crafting grid
@@ -189,9 +191,13 @@ public class CraftingProcessPanel extends ProcessPanel<CraftingRecipe> {
             isMax2Col = true;
         }
 
-        // Inputs (crafting grid)
-        int x = 0;
-        int y = 0;
+        // If the recipe a single item, we will center it in the crafting grid
+        if (recipeChoices.size() == 1) {
+            x = 1;
+            y = 1;
+        }
+
+        // Crafting grid
         for(RecipeChoice recipeChoice : recipeChoices) {
             if(recipeChoice instanceof RecipeChoice.MaterialChoice materialChoice) {
                 recipePanelSlots.put(new ProcessPanelSlot(x+1, y+1), new GuiItem<RecipeMenu>(materialChoice.getItemStack())); // +1 +1 is because of the crafting grid offset
@@ -219,38 +225,55 @@ public class CraftingProcessPanel extends ProcessPanel<CraftingRecipe> {
      */
     private static RecipeChoice[][] getRecipe3by3Matrix(ShapedRecipe shapedRecipe) {
         RecipeChoice[][] recipeMatrix = new RecipeChoice[3][3];
+        RecipeChoice[] itemArray = shapedRecipe.getChoiceMap().values().toArray(new RecipeChoice[0]);
         
         int recipeWidth = shapedRecipe.getShape()[0].length();
         int recipeHeight = shapedRecipe.getShape().length;
-        RecipeChoice[] itemArray = shapedRecipe.getChoiceMap().values().toArray(new RecipeChoice[0]);
 
-        int recipeIndex = 0; // index of the recipe array
-        int craftingIndex = 0; // index of the crafting grid
+        // max, min item position in the crafting grid (for alignment)
+        int maxGridX = 2;
+        int maxGridY = 2;
+        int minGridX = 0;
+        int minGridY = 0;
 
+        // Horizontal alignment
         // If the recipe is 1 large, center horizontally the recipe in the crafting grid (eg: sword)
         if(recipeWidth == 1) {
-            craftingIndex++;
+            minGridX = 1;
+            maxGridX = 1;
+        }
+        // If the recipe is 2 large, aligne the recipe to the left of the crafting grid (eg: iron_door)
+        else if (recipeWidth == 2) {
+            minGridX = 0;
+            maxGridX = 1;
         }
 
+        // Vertical alignment
         // If the recipe is 1 tall, center vertically the recipe in the crafting grid (eg: slab)
-        // If the recipe is 2 tall, aligne the recipe to the bottom of the crafting grid (eg: repeater)
-        if(recipeHeight == 1 || recipeHeight == 2) {
-            craftingIndex += 3;
+        if (recipeHeight == 1) {
+            minGridY = 1;
+            maxGridY = 1;
+        }
+        // If the recipe is 2 tall and 3 large, aligne the recipe to the bottom of the crafting grid (eg: repeater)
+        else if (recipeHeight == 2 && recipeWidth == 3) {
+            minGridY = 1;
+            maxGridY = 2;
+        }
+        // If the recipe is 2 tall and 2 or 1 large, aligne the recipe to the top left of the crafting grid (eg: glowstone or stick)
+        // So the player can better understand he can make it direclty in is inventory crafting grid
+        else if (recipeHeight == 2 && recipeWidth < 3) {
+            minGridY = 0;
+            maxGridY = 1;
         }
 
-        for(int i = 0; i < recipeHeight; i++) {
-            for(int j = 0; j < recipeWidth; j++) {
-                RecipeChoice recipeChoice = itemArray[recipeIndex];
-                if(recipeChoice == null) {
-                    craftingIndex++;
-                    recipeIndex++;
-                    continue;
-                }
-                recipeMatrix[craftingIndex / 3][craftingIndex % 3] = recipeChoice;
-                craftingIndex++;
-                recipeIndex++;
+        // Formating the recipeMatrix
+        int recipeIndex = 0; 
+        for(int gridY = minGridY; gridY <= maxGridY; gridY++) {
+            for(int gridX = minGridX; gridX <= maxGridX; gridX++) {
+                RecipeChoice recipeChoice = itemArray[recipeIndex++];
+                if(recipeChoice == null) continue; // Recipe without a rectangular shape like stairs containe null recipeChoice
+                recipeMatrix[gridY][gridX] = recipeChoice;
             }
-            craftingIndex += 3 - recipeWidth; // got to the next crafting row
         }
 
         return recipeMatrix;
