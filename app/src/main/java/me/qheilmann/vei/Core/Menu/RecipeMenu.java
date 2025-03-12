@@ -484,7 +484,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
     }
 
     private void exitAction(InventoryClickEvent event, RecipeMenu menu) {
-        event.getWhoClicked().sendMessage("Exit action");
+        this.close(event.getWhoClicked());
     }
 
     private void nextRecipeAction(InventoryClickEvent event, RecipeMenu menu) {
