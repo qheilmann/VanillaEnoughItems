@@ -9,6 +9,7 @@ import java.util.TreeMap;
 
 import javax.annotation.Nullable;
 
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.jetbrains.annotations.NotNull;
 
@@ -32,6 +33,12 @@ public class ItemRecipeMap {
     public ItemRecipeMap(@NotNull Map<? extends Process<?>, ? extends ProcessRecipeSet<?>> recipeCollection) {
         Comparator<Process<?>> processComparator = getProcessOrderComparator();
         this.recipes = new NotNullMap<>(new TreeMap<>(processComparator), recipeCollection);
+    }
+
+    public ItemStack getItem() {
+        return recipes.values().iterator().next().getItem();
+        // TODO check during ctor and add if all processSet is each time for the same item
+        // then change here to return the item of this map
     }
 
     // Add methods to delegate to the wrapped NotNullMap

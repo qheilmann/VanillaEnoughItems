@@ -3,6 +3,12 @@ package me.qheilmann.vei.Core.Menu;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
+
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -10,6 +16,7 @@ import org.jetbrains.annotations.NotNull;
 
 import dev.triumphteam.gui.components.InteractionModifier;
 import me.qheilmann.vei.VanillaEnoughItems;
+import me.qheilmann.vei.Command.CraftCommand;
 import me.qheilmann.vei.Core.GUI.BaseGui;
 import me.qheilmann.vei.Core.GUI.GuiItem;
 import me.qheilmann.vei.Core.ProcessPanel.ProcessPanel;
@@ -21,6 +28,10 @@ import me.qheilmann.vei.Core.Slot.Implementation.MaxChestSlot;
 import me.qheilmann.vei.Core.Style.ButtonType.VeiButtonType;
 import me.qheilmann.vei.Core.Style.Styles.Style;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 
 /**
  * <h1>RecipeMenu</h1>
@@ -152,8 +163,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         // Global action
         setDefaultClickAction((event, context) -> event.setCancelled(true)); // Cancel the event for the entire GUI
 
-        // Initialize items
-        this.quickLinkItem                  = buildQuickLinkItem();
+        // Initialize static items
         this.processScrollLeftItem          = buildProcessScrollLeftButton();
         this.processScrollRightItem         = buildProcessScrollRightButton();
         this.infoItem                       = buildInfoButton();
@@ -204,6 +214,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
 
         renderRecipePanel();
         renderWorkbenchRange();
+        renderQuickLink();
 
         // Padding empty slots (except valide air slot in the recipe panel)
         padEmptySlots();
@@ -240,16 +251,19 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         }
     }
 
+    private void renderQuickLink() {
+        setItem(QUICK_LINK_SLOT, buildQuickLinkItem(getQuickLinkString()));
+    }
+
     //#region Button setup
 
-    private GuiItem<RecipeMenu> buildQuickLinkItem() {
+    private GuiItem<RecipeMenu> buildQuickLinkItem(String quickLink) {
         GuiItem<RecipeMenu> button;
         button = new GuiItem<>(style.getButtonMaterial(VeiButtonType.RecipeMenu.QUICK_LINK));
         button.editMeta(meta -> {
             meta.displayName(Component.text("Quick link").color(style.getPrimaryColor()));
             meta.lore(List.of(
-                Component.text("click to get the command equivalent for go to this recipe").color(style.getSecondaryColor()),
-                Component.text("/recipe <myRecipe> <category>").color(style.getSecondaryColor())
+                Component.text("Copy %s".formatted(quickLink)).color(style.getSecondaryColor())
             ));
         });
         button.setAction(this::quickLinkAction);
@@ -448,7 +462,23 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
     //#region Button actions
 
     private void quickLinkAction(InventoryClickEvent event, RecipeMenu menu) {
-        event.getWhoClicked().sendMessage("Quick link action");
+        HumanEntity humanEntity = event.getWhoClicked();
+        String quickLink = getQuickLinkString();
+        Component message = Component.text()
+            .color(NamedTextColor.GRAY)
+            .append(Component.text("Quick link "))
+            .append(Component
+                .text(quickLink)
+                .decorate(TextDecoration.UNDERLINED)
+                .hoverEvent(HoverEvent.showText(Component.text("Click to sugest")))
+                .clickEvent(ClickEvent.suggestCommand(quickLink))
+            )
+            .append(Component.text(" copied"))
+            .build();
+
+        this.close(humanEntity);
+        setClipBoard(getQuickLinkString());
+        humanEntity.sendMessage(message);
     }
 
     private void processScrollLeftAction(InventoryClickEvent event, RecipeMenu menu) {
@@ -598,5 +628,23 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         if (isBackwardRecipeVisible)  set.add(ProcessPanel.AttachedButtonType.BACKWARD_RECIPE);
         if (isMoveIngredientsVisible) set.add(ProcessPanel.AttachedButtonType.MOVE_INGREDIENTS);
         return set;
+    }
+
+    /**
+     * Get the quick link string to open the recipe menu with the current item, process and variant.
+     * @return the quick link string with something like "/craft minecraft:iron_ingot smelting 2"
+     */
+    private String getQuickLinkString() {
+        return "/" + CraftCommand.NAME + " " 
+            + itemRecipeMap.getItem().getType().getKey() + " " 
+            +  currentProcess.getProcessName().toLowerCase() + " " 
+            + (currentVariant + 1); // (Command is 1 based because of the final user)
+    }
+
+    private void setClipBoard(String str) {
+        Toolkit toolkit = Toolkit.getDefaultToolkit();
+        Clipboard clipboard = toolkit.getSystemClipboard();
+        StringSelection strSel = new StringSelection(str);
+        clipboard.setContents(strSel, null);
     }
 }

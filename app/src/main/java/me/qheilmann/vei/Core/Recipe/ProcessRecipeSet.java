@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.jetbrains.annotations.NotNull;
 
@@ -28,6 +29,12 @@ public class ProcessRecipeSet<T extends Recipe> {
     public ProcessRecipeSet(Collection<? extends T> ProcessRecipeCollection) {
         this.recipes = new NotNullSequenceSet<>(new LinkedHashSet<>(), ProcessRecipeCollection);
         recipeArray = new ArrayList<>(recipes);
+    }
+
+    public ItemStack getItem() {
+        return recipeArray.get(0).getResult();
+        // TODO check during ctor and add if all process return at any moment the item of this set (result can be a list so change the protoype with the item of this set)
+        // then change here to return the item of this set
     }
 
     // Add methods to delegate to the wrapped NotNullSet
