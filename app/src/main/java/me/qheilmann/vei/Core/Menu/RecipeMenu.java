@@ -4,6 +4,8 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 
+import javax.annotation.Nullable;
+
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
@@ -130,11 +132,11 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         this(style, itemRecipeMap, itemRecipeMap.getAllProcess().iterator().next());
     }
 
-    public RecipeMenu(@NotNull Style style, @NotNull ItemRecipeMap itemRecipeMap, Process<?> process) {
+    public RecipeMenu(@NotNull Style style, @NotNull ItemRecipeMap itemRecipeMap, @Nullable Process<?> process) {
         this(style, itemRecipeMap, process, 0);
     }
 
-    public <R extends Recipe> RecipeMenu(@NotNull Style style, @NotNull ItemRecipeMap itemRecipeMap, Process<R> process, int variant) {
+    public <R extends Recipe> RecipeMenu(@NotNull Style style, @NotNull ItemRecipeMap itemRecipeMap, @NotNull Process<R> process, int variant) {
         super((owner) -> BaseGui.plugin.getServer().createInventory(owner, 6*9, Component.text("Recipe Menu")), InteractionModifier.VALUES);
 
         // Validate and set fields

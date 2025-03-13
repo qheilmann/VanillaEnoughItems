@@ -20,7 +20,7 @@ import me.qheilmann.vei.Core.Utils.NotNullSequenceSet;
 public class ProcessRecipeSet<T extends Recipe> {
     
     private final NotNullSequenceSet<T> recipes;
-    private final ArrayList<T> recipeArray;
+    private final ArrayList<T> recipeArray; // TODO why not a Set
 
     public ProcessRecipeSet() {
         this(Collections.emptyList());

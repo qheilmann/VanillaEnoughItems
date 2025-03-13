@@ -1,11 +1,17 @@
 package me.qheilmann.vei.Command;
 
+import javax.annotation.Nullable;
+
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
+
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.CommandPermission;
+import dev.jorel.commandapi.arguments.IntegerArgument;
 import dev.jorel.commandapi.arguments.ItemStackArgument;
 import dev.jorel.commandapi.arguments.SafeSuggestions;
+import me.qheilmann.vei.Core.Process.Process;
 import me.qheilmann.vei.VanillaEnoughItems;
 import me.qheilmann.vei.Menu.MenuManager;
 
@@ -18,7 +24,7 @@ public class CraftCommand implements ICommand{
     public static final String USAGE = """
 
                                         Note: Command sender must be a player
-                                        /craft <recipe>
+                                        /craft <item> [<process>] [<variant>]
                                         """;
 
     private MenuManager menuManager;
@@ -59,16 +65,21 @@ public class CraftCommand implements ICommand{
                     ).toArray(ItemStack[]::new);
                 })
             ))
+            .withOptionalArguments(VEICommandArguments.processArgument("process"))
+            .withOptionalArguments(new IntegerArgument("variant"))
             .executesPlayer((player, args) -> {
                 ItemStack itemStack = (ItemStack) args.get("item");
-                openRecipeAction(player, itemStack);
+                Process<?> process = (Process<?>) args.get("process");
+                int variant = (int) args.getOrDefault("variant", 1) - 1; // only 1-based for the final user, otherwise it's 0-based
+                
+                openRecipeAction(player, itemStack, process, variant);
             })
             .register();
     }
 
     // Utils
 
-    private void openRecipeAction(Player player, ItemStack item) {
-        menuManager.openRecipeMenu(player, item);
+    private void openRecipeAction(@NotNull Player player, @NotNull ItemStack item, @Nullable Process<?> process, int variant) {
+        menuManager.openRecipeMenu(player, item, process, variant);
     }
 }

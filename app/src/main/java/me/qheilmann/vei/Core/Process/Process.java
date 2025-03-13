@@ -1,5 +1,7 @@
 package me.qheilmann.vei.Core.Process;
 
+import javax.annotation.Nullable;
+
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.jetbrains.annotations.NotNull;
@@ -23,6 +25,26 @@ public abstract class Process<R extends Recipe> {
 
     private NotNullSet<Class<R>> recipeClasses;
     private NotNullSet<ItemStack> workbenchOptions;
+    
+    // TODO make all process static/singleton and make a dynamic system (eg list of all register process)
+    /**
+     * Get a process by its process GetProcessName (e.g., Crafting, Smelting, Smithing).
+     * <p>
+     * Note: this is a temporary solution, it will be replaced by a more dynamic system
+     *
+     * @return the process or null if the process does not exist or was not implemented.
+     */
+    public static @Nullable Process<?> getProcess(@NotNull String processName) {
+        if (processName.equals(CraftingProcess.PROCESS_NAME.toLowerCase())) {
+            return new CraftingProcess();
+        } else if (processName.equals(SmeltingProcess.PROCESS_NAME.toLowerCase())) {
+            return new SmeltingProcess();
+        } else if (processName.equals(DummyProcess.PROCESS_NAME.toLowerCase())) {
+            return new DummyProcess();
+        }
+
+        return null;
+    }
 
     /**
      * Gets the process name (e.g., Crafting, Smelting, Smithing).

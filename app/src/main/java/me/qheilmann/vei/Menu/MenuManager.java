@@ -1,14 +1,18 @@
 package me.qheilmann.vei.Menu;
 
+import javax.annotation.Nullable;
+
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
 
 import me.qheilmann.vei.VanillaEnoughItems;
 import me.qheilmann.vei.Core.Menu.RecipeMenu;
+import me.qheilmann.vei.Core.Process.Process;
 import me.qheilmann.vei.Core.Recipe.ItemRecipeMap;
 import me.qheilmann.vei.Core.Style.Styles.Style;
 import net.kyori.adventure.text.Component;
@@ -30,13 +34,25 @@ public class MenuManager {
      * schedule a task using BukkitScheduler.runTask(Plugin, Runnable), 
      * which will run the task on the next tick.
      */
-    public void openRecipeMenu(Player player, ItemStack item) {
+    public void openRecipeMenu(@NotNull Player player, @NotNull ItemStack item, @Nullable Process<?> process, int variant) {
         ItemRecipeMap itemRecipeMap = VanillaEnoughItems.allRecipesMap.getItemRecipeMap(item);
         if (itemRecipeMap == null) {
             player.sendMessage(Component.text("No recipe found for this item").color(TextColor.color(0xFB5454)));
             return;
         }
-        RecipeMenu recipeMenu = new RecipeMenu(style, itemRecipeMap);
+
+        if (process != null) {
+            if (!itemRecipeMap.containsProcess(process)) {
+                player.sendMessage(Component.text("No recipe found for this process").color(TextColor.color(0xFB5454)));
+                return;
+            }
+        } else {
+            process = itemRecipeMap.getAllProcess().iterator().next();
+        }
+
+        // TODO check if the variant is valid
+
+        RecipeMenu recipeMenu = new RecipeMenu(style, itemRecipeMap, process, variant);
         recipeMenu.open(player);
     }
 
