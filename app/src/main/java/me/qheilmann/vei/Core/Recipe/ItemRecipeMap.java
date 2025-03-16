@@ -74,7 +74,8 @@ public class ItemRecipeMap {
      * Returns the recipe set associated with the specified process.
      * 
      * @param process the process to get the recipe set for
-     * @return the recipe set associated with the specified process
+     * @return the recipe set associated with the specified process or null if
+     * there is no mapping for the process
      */
     @Nullable
     @SuppressWarnings("unchecked")

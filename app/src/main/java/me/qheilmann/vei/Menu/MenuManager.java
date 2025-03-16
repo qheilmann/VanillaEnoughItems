@@ -14,6 +14,7 @@ import me.qheilmann.vei.VanillaEnoughItems;
 import me.qheilmann.vei.Core.Menu.RecipeMenu;
 import me.qheilmann.vei.Core.Process.Process;
 import me.qheilmann.vei.Core.Recipe.ItemRecipeMap;
+import me.qheilmann.vei.Core.Recipe.ProcessRecipeSet;
 import me.qheilmann.vei.Core.Style.Styles.Style;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
@@ -36,21 +37,31 @@ public class MenuManager {
      */
     public void openRecipeMenu(@NotNull Player player, @NotNull ItemStack item, @Nullable Process<?> process, int variant) {
         ItemRecipeMap itemRecipeMap = VanillaEnoughItems.allRecipesMap.getItemRecipeMap(item);
+        ProcessRecipeSet<?> processRecipeSet;
+
         if (itemRecipeMap == null) {
-            player.sendMessage(Component.text("No recipe found for this item").color(TextColor.color(0xFB5454)));
+            player.sendMessage(Component.text("No recipe found for this item %s".formatted(item.getType().name())).color(TextColor.color(0xFB5454)));
             return;
         }
 
         if (process != null) {
             if (!itemRecipeMap.containsProcess(process)) {
-                player.sendMessage(Component.text("No recipe found for this process").color(TextColor.color(0xFB5454)));
+                player.sendMessage(Component.text("The process %s does not exist for this item".formatted(process.getProcessName())).color(TextColor.color(0xFB5454)));
                 return;
             }
         } else {
             process = itemRecipeMap.getAllProcess().iterator().next();
         }
 
-        // TODO check if the variant is valid
+        processRecipeSet = itemRecipeMap.getProcessRecipeSet(process);
+        if (processRecipeSet == null) {
+            throw new RuntimeException("The processRecipeSet is null, it should not be null");
+        }
+        int nbVariant = processRecipeSet.size();
+        if (variant < 0 || variant >= nbVariant) {
+            player.sendMessage(Component.text("Recipe variant %d for this item and process does not exist".formatted(variant + 1)).color(TextColor.color(0xFB5454))); // 1-based index for user
+            return;
+        }
 
         RecipeMenu recipeMenu = new RecipeMenu(style, itemRecipeMap, process, variant);
         recipeMenu.open(player);

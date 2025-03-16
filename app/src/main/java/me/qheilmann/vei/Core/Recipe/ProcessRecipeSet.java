@@ -19,8 +19,15 @@ import me.qheilmann.vei.Core.Utils.NotNullSequenceSet;
  */
 public class ProcessRecipeSet<T extends Recipe> {
     
+    /**
+     * The set of recipes.
+     * The recipes and recipeArray are kept in sync to ensure consistency.
+     * Some methods require the use of a Set for operations like ensuring uniqueness,
+     * while others need a List for operations like maintaining order or accessing by index.
+     * Therefore, both collections are necessary.
+     */
     private final NotNullSequenceSet<T> recipes;
-    private final ArrayList<T> recipeArray; // TODO why not a Set
+    private final ArrayList<T> recipeArray;
 
     public ProcessRecipeSet() {
         this(Collections.emptyList());
