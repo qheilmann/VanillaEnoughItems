@@ -3,28 +3,17 @@ package me.qheilmann.vei;
 import java.util.List;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.inventory.BlastingRecipe;
-import org.bukkit.inventory.CampfireRecipe;
-import org.bukkit.inventory.FurnaceRecipe;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapedRecipe;
-import org.bukkit.inventory.ShapelessRecipe;
-import org.bukkit.inventory.SmithingRecipe;
-import org.bukkit.inventory.SmithingTransformRecipe;
-import org.bukkit.inventory.SmithingTrimRecipe;
-import org.bukkit.inventory.SmokingRecipe;
-import org.bukkit.inventory.StonecuttingRecipe;
 import org.bukkit.plugin.java.JavaPlugin;
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPIBukkitConfig;
 import me.qheilmann.vei.Command.CraftCommand;
 import me.qheilmann.vei.Command.TestCommand;
 import me.qheilmann.vei.Core.GUI.BaseGui;
-import me.qheilmann.vei.Core.Process.CraftingProcess;
-import me.qheilmann.vei.Core.Process.DummyProcess;
 import me.qheilmann.vei.Core.Process.Process;
-import me.qheilmann.vei.Core.Process.SmeltingProcess;
+import me.qheilmann.vei.Core.Process.VanillaProcesses;
 import me.qheilmann.vei.Core.Recipe.AllRecipeMap;
 import me.qheilmann.vei.Core.Recipe.ItemRecipeMap;
 import me.qheilmann.vei.Core.Recipe.ProcessRecipeSet;
@@ -65,6 +54,8 @@ public class VanillaEnoughItems extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new InventoryDragListener(this), this);
 
         addTemporaryRecipe();
+
+        Process.registerProcesses(VanillaProcesses.getAllVanillaProcesses());
         fillRecipeMap();
 
         LOGGER.info(NAME+ " has been enabled!");
@@ -116,7 +107,7 @@ public class VanillaEnoughItems extends JavaPlugin {
         while (recipeIterator.hasNext()) {
             Recipe recipe =  recipeIterator.next();
             ItemStack result = recipe.getResult();
-            Process<?> process = recipeToProcessConverter(recipe);
+            Process<?> process = Process.getProcesseByRecipe(recipe);
 
             if (result == null) {
                 continue;
@@ -171,36 +162,6 @@ public class VanillaEnoughItems extends JavaPlugin {
         //     }
         //     LOGGER.info("\n\n");
         // }
-    }
-
-    private Process<?> recipeToProcessConverter(Recipe recipe) {
-        // TODO convert this to static instance, it's not necessary to create a new instance each time it's just the map key (or Clazz, but not acces to methode ?)
-        // TODO add a way to add process type by API (first before vanilla in case of derivate class, add a comment to add them in right way in case of sub sub process of client process)
-        if        (recipe instanceof ShapedRecipe) {
-            return new CraftingProcess();
-        } else if (recipe instanceof ShapelessRecipe) {
-            return new CraftingProcess();
-        // } else if (recipe instanceof TransmuteRecipe) {
-        //     return Material.SMITHING_TABLE;
-        } else if (recipe instanceof BlastingRecipe) {
-            return new DummyProcess();
-        } else if (recipe instanceof SmokingRecipe) { 
-            return new DummyProcess();
-        } else if (recipe instanceof CampfireRecipe) {
-            return new DummyProcess();
-        } else if (recipe instanceof FurnaceRecipe) { // Must be after BlastingRecipe and SmokingRecipe (same superclass)
-            return new SmeltingProcess();
-        } else if (recipe instanceof SmithingTransformRecipe) {
-            return new DummyProcess();
-        } else if (recipe instanceof SmithingTrimRecipe) {
-            return new DummyProcess();
-        } else if (recipe instanceof SmithingRecipe) { // Must be after SmithingTransformRecipe and SmithingTrimRecipe (same superclass)
-            return new DummyProcess();
-        } else if (recipe instanceof StonecuttingRecipe) {
-            return new DummyProcess();
-        } else {
-            return new DummyProcess();
-        }
     }
 }
 

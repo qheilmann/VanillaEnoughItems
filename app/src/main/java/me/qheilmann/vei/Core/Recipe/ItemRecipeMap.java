@@ -14,9 +14,8 @@ import org.bukkit.inventory.Recipe;
 import org.jetbrains.annotations.NotNull;
 
 import me.qheilmann.vei.Core.Utils.NotNullMap;
-import me.qheilmann.vei.Core.Process.CraftingProcess;
-import me.qheilmann.vei.Core.Process.DummyProcess;
 import me.qheilmann.vei.Core.Process.Process;
+import me.qheilmann.vei.Core.Process.VanillaProcesses;
 
 /**
  * Contains all recipes for an item, including all variants and different
@@ -198,13 +197,13 @@ public class ItemRecipeMap {
         return new Comparator<Process<?>>() {
             @Override
             public int compare(Process<?> p1, Process<?> p2) {
-                if (p1.getProcessName().equals(CraftingProcess.PROCESS_NAME) && !p2.getProcessName().equals(CraftingProcess.PROCESS_NAME)) {
+                if (p1.getProcessName().equals(VanillaProcesses.CRAFTING_PROCESS_NAME) && !p2.getProcessName().equals(VanillaProcesses.CRAFTING_PROCESS_NAME)) {
                     return -1;
-                } else if (!p1.getProcessName().equals(CraftingProcess.PROCESS_NAME) && p2.getProcessName().equals(CraftingProcess.PROCESS_NAME)) {
+                } else if (!p1.getProcessName().equals(VanillaProcesses.CRAFTING_PROCESS_NAME) && p2.getProcessName().equals(VanillaProcesses.CRAFTING_PROCESS_NAME)) {
                     return 1;
-                } else if (p1.getProcessName().equals(DummyProcess.PROCESS_NAME) && !p2.getProcessName().equals(DummyProcess.PROCESS_NAME)) {
+                } else if (p1.getProcessName().equals(VanillaProcesses.DUMMY_PROCESS_NAME) && !p2.getProcessName().equals(VanillaProcesses.DUMMY_PROCESS_NAME)) {
                     return 1;
-                } else if (!p1.getProcessName().equals(DummyProcess.PROCESS_NAME) && p2.getProcessName().equals(DummyProcess.PROCESS_NAME)) {
+                } else if (!p1.getProcessName().equals(VanillaProcesses.DUMMY_PROCESS_NAME) && p2.getProcessName().equals(VanillaProcesses.DUMMY_PROCESS_NAME)) {
                     return -1;
                 } else {
                     return p1.getProcessName().compareTo(p2.getProcessName());

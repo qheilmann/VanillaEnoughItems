@@ -1,10 +1,16 @@
 package me.qheilmann.vei.Core.Process;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.function.BiFunction;
 import javax.annotation.Nullable;
 
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.jetbrains.annotations.NotNull;
+
 import me.qheilmann.vei.Core.ProcessPanel.ProcessPanel;
 import me.qheilmann.vei.Core.Recipe.ProcessRecipeSet;
 import me.qheilmann.vei.Core.Utils.NotNullSet;
@@ -21,29 +27,61 @@ import me.qheilmann.vei.Core.Utils.NotNullSet;
  * <li>It can be represented by a block, item, or entity.</li>
  * </ul>
  */
-public abstract class Process<R extends Recipe> {
+public class Process<R extends Recipe> {
 
-    private NotNullSet<Class<R>> recipeClasses;
-    private NotNullSet<ItemStack> workbenchOptions;
+    private static final NotNullSet<Process<?>> processRegistry = new NotNullSet<>(new LinkedHashSet<>());
+
+    private final String processName;
+    private final ItemStack processIcon;
+    private final NotNullSet<ItemStack> workbenchOptions;
+    private final NotNullSet<Class<? extends R>> recipeClasses;
+    private final BiFunction<ProcessRecipeSet<R>, Integer, ProcessPanel<R>> processPanelSupplier;
     
-    // TODO make all process static/singleton and make a dynamic system (eg list of all register process)
+    public static void registerProcesse(Process<?> process) {
+        processRegistry.add(process);
+    }
+
+    public static void registerProcesses(Collection<Process<?>> processes) {
+        processRegistry.addAll(processes);
+    }
+
     /**
-     * Get a process by its process GetProcessName (e.g., Crafting, Smelting, Smithing).
-     * <p>
-     * Note: this is a temporary solution, it will be replaced by a more dynamic system
+     * Get a process by its process name (e.g., Crafting, Smelting, Smithing).
      *
      * @return the process or null if the process does not exist or was not implemented.
      */
-    public static @Nullable Process<?> getProcess(@NotNull String processName) {
-        if (processName.equals(CraftingProcess.PROCESS_NAME.toLowerCase())) {
-            return new CraftingProcess();
-        } else if (processName.equals(SmeltingProcess.PROCESS_NAME.toLowerCase())) {
-            return new SmeltingProcess();
-        } else if (processName.equals(DummyProcess.PROCESS_NAME.toLowerCase())) {
-            return new DummyProcess();
+    public static @Nullable Process<?> getProcessByName(@NotNull String processName) {
+        for (Process<?> process : processRegistry) {
+            if (process.getProcessName().toLowerCase().equals(processName)) {
+                return process;
+            }
         }
 
         return null;
+    }
+
+    public static @NotNull Process<?> getProcesseByRecipe(Recipe recipe) {
+        for (Process<?> process : processRegistry) {
+            for (Class<? extends Recipe> recipeClass : process.getRecipeClasses()) {
+                if (recipeClass.isAssignableFrom(recipe.getClass())) {
+                    return process;
+                }
+            }
+        }
+
+        return VanillaProcesses.DUMMY_PROCESS;
+    }
+
+    public Process(@NotNull String processName,
+                    @NotNull ItemStack processIcon,
+                    @NotNull Collection<ItemStack> workbenchOptions,
+                    @NotNull Collection<Class<? extends R>> recipeClasses,
+                    @NotNull BiFunction<ProcessRecipeSet<R>, Integer, ProcessPanel<R>> processPanelSupplier ) {
+        this.processName = processName;
+        this.processIcon = processIcon;
+        this.recipeClasses = new NotNullSet<>(new LinkedHashSet<>(), recipeClasses);
+        this.workbenchOptions = new NotNullSet<>(new LinkedHashSet<>(), workbenchOptions);
+        this.processPanelSupplier = processPanelSupplier;
     }
 
     /**
@@ -52,7 +90,9 @@ public abstract class Process<R extends Recipe> {
      * @return the process name.
      */
     @NotNull
-    public abstract String getProcessName();
+    public String getProcessName() {
+        return processName;
+    }
 
     /**
      * Gets the item stack that represents the process.
@@ -60,7 +100,9 @@ public abstract class Process<R extends Recipe> {
      * @return the item stack.
      */
     @NotNull
-    public abstract ItemStack getProcessIcon();
+    public ItemStack getProcessIcon() {
+        return processIcon;
+    }
 
     /**
      * Gets the recipe panel for the process.
@@ -68,7 +110,9 @@ public abstract class Process<R extends Recipe> {
      * @return the recipe panel.
      */
     @NotNull
-    public abstract ProcessPanel<R> generateProcessPanel(@NotNull ProcessRecipeSet<R> processRecipeSet, int variant);
+    public ProcessPanel<R> generateProcessPanel(@NotNull ProcessRecipeSet<R> processRecipeSet, int variant) {
+        return processPanelSupplier.apply(processRecipeSet, variant);
+    }
 
     /**
      * Gets the set of different recipe classes that are made inside the same process 
@@ -77,8 +121,8 @@ public abstract class Process<R extends Recipe> {
      * @return the set of recipe classes.
      */
     @NotNull
-    public NotNullSet<Class<R>> getRecipeClasses() {
-        return recipeClasses;
+    public Set<Class<? extends R>> getRecipeClasses() {
+        return Collections.unmodifiableSet(recipeClasses);
     }
 
     /**
@@ -97,8 +141,8 @@ public abstract class Process<R extends Recipe> {
      * @return the set of process options.
      */
     @NotNull
-    public NotNullSet<ItemStack> getWorkbenchOptions() {
-        return workbenchOptions;
+    public Set<ItemStack> getWorkbenchOptions() {
+        return Collections.unmodifiableSet(workbenchOptions);
     }
 
     /**
