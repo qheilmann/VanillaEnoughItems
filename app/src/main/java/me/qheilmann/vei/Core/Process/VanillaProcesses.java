@@ -91,8 +91,7 @@ public class VanillaProcesses {
                 generateIcon(),
                 getWorkbenchOptions(),
                 getRecipeClasses(),
-                (recipeSet, variant) ->
-                    new SmeltingProcessPanel(recipeSet, variant)
+                (recipeSet, variant) -> new SmeltingProcessPanel(recipeSet, variant)
             );
         }
 
@@ -142,9 +141,7 @@ public class VanillaProcesses {
         }
 
         private static Collection<ItemStack> getWorkbenchOptions() {
-            return Arrays.asList(
-                new ItemStack(Material.BARRIER)
-            );
+            return Arrays.asList(); // empty list for the dummy process
         }
 
         private static Collection<Class<? extends Recipe>> getRecipeClasses() {

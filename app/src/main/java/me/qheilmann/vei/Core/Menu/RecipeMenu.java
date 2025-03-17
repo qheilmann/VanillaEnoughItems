@@ -1,9 +1,9 @@
 package me.qheilmann.vei.Core.Menu;
 
 import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
-
 import javax.annotation.Nullable;
 
 import java.awt.Toolkit;
@@ -12,6 +12,7 @@ import java.awt.datatransfer.StringSelection;
 
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
@@ -215,6 +216,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         // Always visible buttons don't need to be re rendered (render once in the constructor)
 
         renderRecipePanel();
+        renderProcessRange();
         renderWorkbenchRange();
         renderQuickLink();
 
@@ -235,21 +237,40 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         recipePanel.getContentPanel(ProcessPanel.SlotType.ALL).forEach((slot, item) -> setItem(slot.asMaxChestSlot(), item));
     }
 
-    private void renderWorkbenchRange() {
+    private void renderProcessRange() {
+        // no clear old process needed here
 
-        MaxChestSlot[] processSlots = PROCESS_SLOT_RANGE.toArray();
-        Process<?>[] processes = itemRecipeMap.getAllProcess().toArray(new Process<?>[0]);
-
-        int totalIteration = Math.min(processSlots.length, processes.length);
-        if (processes.length > totalIteration) {
-            VanillaEnoughItems.LOGGER.warn("Not enough process slots to render all processes"); // TODO: Implement scroll page workbench type
-            return;
+        if (itemRecipeMap.getAllProcess().size() > PROCESS_SLOT_RANGE.size()) {
+            VanillaEnoughItems.LOGGER.warn("Not enough process slots to render all processes"); // TODO: Implement scroll page processes
         }
 
-        for (int i = 0; i < totalIteration ; i++) {
-            Process<?> process = processes[i];
-            MaxChestSlot slot = processSlots[i];
+        Iterator<MaxChestSlot> slotIterator = PROCESS_SLOT_RANGE.iterator();
+        Iterator<Process<?>> processIterator = itemRecipeMap.getAllProcess().iterator();
+
+        while (slotIterator.hasNext() && processIterator.hasNext()) {
+            MaxChestSlot slot = slotIterator.next();
+            Process<?> process = processIterator.next();
             setItem(slot, buildChangeProcessButton(process));
+        }
+    }
+
+    private void renderWorkbenchRange() {
+        // first clear old workbench options
+        for (MaxChestSlot slot : WORKBENCH_SLOT_RANGE) {
+            setItem(slot, null);
+        }
+
+        if (currentProcess.getWorkbenchOptions().size() > WORKBENCH_SLOT_RANGE.size()) {
+            VanillaEnoughItems.LOGGER.warn("Not enough workbench slots to render all workbenchs"); // TODO: Implement scroll page workbench variantn;
+        }
+
+        Iterator<MaxChestSlot> slotIterator = WORKBENCH_SLOT_RANGE.iterator();
+        Iterator<ItemStack> workbenchIterator = currentProcess.getWorkbenchOptions().iterator();
+
+        while (slotIterator.hasNext() && workbenchIterator.hasNext()) {
+            MaxChestSlot slot = slotIterator.next();
+            ItemStack workbench = workbenchIterator.next();
+            setItem(slot, buildWorkbenchOptionButton(workbench));
         }
     }
 
@@ -458,6 +479,12 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         });
         return item;
     }
+
+    private GuiItem<RecipeMenu> buildWorkbenchOptionButton(ItemStack workbench) {
+        GuiItem<RecipeMenu> item = new GuiItem<>(workbench);
+        item.setAction(this::workbenchOptionAction);
+        return item;
+    }
     
     //#endregion Button setup
 
@@ -552,6 +579,10 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         initProcessPanel();
 
         render();
+    }
+
+    private void workbenchOptionAction(InventoryClickEvent event, RecipeMenu menu) {
+        event.getWhoClicked().sendMessage("Workbench option action");
     }
 
     //#endregion Button actions
