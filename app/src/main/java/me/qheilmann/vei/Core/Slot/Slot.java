@@ -7,7 +7,7 @@ import com.google.common.base.Preconditions;
 /**
  * Represents a single slot in an inventory
  */
-public abstract class Slot {
+public abstract class Slot implements Comparable<Slot> {
     protected int index;
 
     /**
@@ -85,5 +85,10 @@ public abstract class Slot {
                 )
             );
         }
+    }
+
+    @Override
+    public int compareTo(Slot o) {
+        return Integer.compare(getIndex(), o.getIndex());
     }
 }

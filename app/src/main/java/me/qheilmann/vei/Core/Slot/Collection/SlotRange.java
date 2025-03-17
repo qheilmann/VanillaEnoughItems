@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Spliterator;
+import java.util.TreeSet;
 import java.util.function.Consumer;
 import java.util.function.IntFunction;
 import java.util.function.Predicate;
@@ -36,7 +37,7 @@ public class SlotRange<T extends GridSlot> extends SlotSequence<T> {
      * of cornerA
      */
     public SlotRange(@NotNull T cornerA, @NotNull T cornerB) {
-        super(getSlotsBetween(cornerA, cornerB));
+        super(new TreeSet<T>(), getSlotsBetween(cornerA, cornerB));
         this.topLeftSlot = getTopLeftSlot(cornerA, cornerB);
         this.bottomRightSlot = getBottomRightSlot(cornerA, cornerB);
     }
@@ -49,7 +50,7 @@ public class SlotRange<T extends GridSlot> extends SlotSequence<T> {
      */
     public SlotRange(@NotNull SlotRange<T> slotRange) {
         // The to array method is used to create a copy of the slots
-        super(List.of(slotRange.toArray()));
+        super(new TreeSet<T>(), List.of(slotRange.toArray()));
         this.topLeftSlot = slotRange.getTopLeftSlot();
         this.bottomRightSlot = slotRange.getBottomRightSlot();
     }
