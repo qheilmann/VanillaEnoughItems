@@ -9,14 +9,16 @@ import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.jetbrains.annotations.NotNull;
-// import org.apache.commons.collections4.list.SetUniqueList;
 import com.google.common.base.Preconditions;
 
+import me.qheilmann.vei.VanillaEnoughItems;
 import me.qheilmann.vei.Core.GUI.GuiItem;
 import me.qheilmann.vei.Core.Menu.RecipeMenu;
 import me.qheilmann.vei.Core.ProcessPanel.Panels.CraftingProcessPanel;
+import me.qheilmann.vei.Core.Recipe.ItemRecipeMap;
 import me.qheilmann.vei.Core.Recipe.ProcessRecipeSet;
 import me.qheilmann.vei.Core.Slot.Collection.SlotSequence;
+import me.qheilmann.vei.Core.Style.Styles.Style;
 
 /**
  * <h1>ProcessPanel</h1>
@@ -59,7 +61,8 @@ public abstract class ProcessPanel<T extends Recipe> {
     private static final Material DEFAULT_WORKBENCH_MATERIAL            = Material.CRAFTING_TABLE;
     
     protected HashMap<ProcessPanelSlot, GuiItem<RecipeMenu>> recipePanelSlots;
-
+    
+    private final Style style;
     private ProcessRecipeSet<T> processRecipeSet;
     private int variantIndex;
     protected Map<AttachedButtonType, GuiItem<RecipeMenu>> attachedButtons = new HashMap<>();
@@ -68,8 +71,8 @@ public abstract class ProcessPanel<T extends Recipe> {
      * Create a new recipe panel for the given recipe.
      * @param processRecipeSet The recipe to display.
      */
-    public ProcessPanel(@NotNull ProcessRecipeSet<T> processRecipeSet) {
-        this(processRecipeSet, 0);
+    public ProcessPanel(@NotNull Style style, @NotNull ProcessRecipeSet<T> processRecipeSet) {
+        this(style, processRecipeSet, 0);
     }
 
     /**
@@ -77,11 +80,12 @@ public abstract class ProcessPanel<T extends Recipe> {
      * @param processRecipeSet The recipe to display.
      * @param variantIndex The variante index of the recipe to display.
      */
-    public ProcessPanel(@NotNull ProcessRecipeSet<T> processRecipeSet, int variantIndex) {
+    public ProcessPanel(@NotNull Style style, @NotNull ProcessRecipeSet<T> processRecipeSet, int variantIndex) {
         Preconditions.checkNotNull(processRecipeSet, "recipe cannot be null");
         this.recipePanelSlots = new HashMap<>();
         this.variantIndex = variantIndex;
         this.processRecipeSet = processRecipeSet;
+        this.style = style;
         setRecipVariantIndex(variantIndex);
     }
 
@@ -115,7 +119,10 @@ public abstract class ProcessPanel<T extends Recipe> {
      * Populate the recipe panel with the recipe's ingredients, results, consumables, etc.
      * @param visibleButtonTypes A set containing the types of each button that should be visible.
      */
-    public abstract void render(EnumSet<AttachedButtonType> buttonsVisibility); 
+    public void render(EnumSet<AttachedButtonType> buttonsVisibility) {
+        clear();
+        renderAttachedButtons(buttonsVisibility);
+    }
 
     /**
      * Returns the slot for the next recipe button.
@@ -308,6 +315,9 @@ public abstract class ProcessPanel<T extends Recipe> {
         clear(SlotType.RECIPE);
     }
 
+    /**
+     * Clear all items in the panel.
+     */
     public void clear() {
         clear(SlotType.ALL);
     }
@@ -358,6 +368,26 @@ public abstract class ProcessPanel<T extends Recipe> {
         if (slotTypes.contains(SlotType.PADDING)) {
             // TODO what about padding?
         }
+    }
+
+    /**
+     * Creates a GuiItem that opens the recipe inside the recipeMenu for the given item.
+     * @param processRecipeSet The item to show and open the recipe for.
+     * @return The new GuiItem instance.
+     */
+    protected GuiItem<RecipeMenu> buildNewRecipeGuiItem(ItemStack item) {
+        GuiItem<RecipeMenu> guiItem = new GuiItem<>(item);
+        guiItem.setAction((event, menu) -> {
+            ItemRecipeMap recipeMap = VanillaEnoughItems.allRecipesMap.getItemRecipeMap(item);
+            if (recipeMap == null) {
+                return;
+            }
+
+            RecipeMenu recipeMenu = new RecipeMenu(style, recipeMap);
+            recipeMenu.open(event.getWhoClicked());
+        });
+
+        return guiItem;
     }
 
     private void putSlotIfNotNull(ProcessPanelSlot coord, GuiItem<RecipeMenu> parentButton) {

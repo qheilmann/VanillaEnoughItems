@@ -15,6 +15,7 @@ import me.qheilmann.vei.Core.ProcessPanel.ProcessPanel;
 import me.qheilmann.vei.Core.ProcessPanel.ProcessPanelSlot;
 import me.qheilmann.vei.Core.Recipe.ProcessRecipeSet;
 import me.qheilmann.vei.Core.Slot.Collection.SlotSequence;
+import me.qheilmann.vei.Core.Style.Styles.Style;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
@@ -25,12 +26,12 @@ public final class DummyProcessPanel extends ProcessPanel<Recipe> {
 
     private static final Material INFORMATIVE_ITEM_MATERIAL = Material.BARRIER;
 
-    public DummyProcessPanel(@NotNull ProcessRecipeSet<Recipe> recipes, int variant) {
-        super(recipes, variant);
+    public DummyProcessPanel(@NotNull Style style, @NotNull ProcessRecipeSet<Recipe> recipes, int variant) {
+        super(style, recipes, variant);
     }
 
-    public DummyProcessPanel(@NotNull ProcessRecipeSet<Recipe> recipes) {
-        super(recipes);
+    public DummyProcessPanel(@NotNull Style style, @NotNull ProcessRecipeSet<Recipe> recipes) {
+        super(style, recipes);
     }
 
     @Override
@@ -62,20 +63,24 @@ public final class DummyProcessPanel extends ProcessPanel<Recipe> {
 
     @Override
     public void render(EnumSet<AttachedButtonType> buttonsVisibility) {
-        int nbOfRecipe = getVariantCount();
+        
+        // Dummy process is a special case, it does need to use the super.render() method
+        clear();
 
+        int nbOfRecipe = getVariantCount();
+        
         GuiItem<RecipeMenu> informativeItem = new GuiItem<>(INFORMATIVE_ITEM_MATERIAL);
         boolean check = informativeItem.editMeta(meta -> {
             String message = (nbOfRecipe == 1 )
-                ? "Sorry there is %d recipe for this item without a recipe view".formatted(nbOfRecipe) 
-                : "Sorry there are %d recipes for this item without a recipe view".formatted(nbOfRecipe);
+            ? "Sorry there is %d recipe for this item without a recipe view".formatted(nbOfRecipe) 
+            : "Sorry there are %d recipes for this item without a recipe view".formatted(nbOfRecipe);
             meta.displayName(Component.text(message, NamedTextColor.RED));
         });
-
+        
         if (!check) {
             VanillaEnoughItems.LOGGER.warn("Failed to edit the meta of the informative item");
         }
-
+        
         recipePanelSlots.put(INFORMATIVE_ITEM_SLOT, informativeItem);
     }
 }

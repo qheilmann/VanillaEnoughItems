@@ -18,6 +18,10 @@ import me.qheilmann.vei.Core.Item.PersistentDataType.UuidPdt;
 // initlale: maybe convert this to agregation instead of inheritance
 // update1:an other day, fianly not needed ?, why i need this to be an agregation ? this will break every where i put a GuiItem instead of an ItemStack
 // update2: but does anywere inside this code base use of GuiItem as an ItemStack ? no ? so i can convert this to an agregation
+// update3: but what if i need to use GuiItem as an ItemStack ? i can just use GuiItem.getItemStack() and it will return the ItemStack
+//          maybe it's better to delegate the ItemStack methods to the ItemStack object, it's clearer when i use guiItem
+//          and i can also use multiple item for the same itemStac if a want, and also swithc the itemStack without changing the GuiItem,
+//          so i can change the item for each GuiItem who as only a view of the itemStack
 /*
  *
  * @author Most original part come from Triumph GUI <a href="https://github.com/TriumphTeam/triumph-gui">TriumphTeam</a>

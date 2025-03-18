@@ -155,7 +155,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         Recipe recipe = processRecipeSet.getVariant(variant);
         Objects.requireNonNull(recipe, "No variant " + variant + " inside the recipe set for process: " + process.getProcessName());
 
-        this.recipePanel = process.generateProcessPanel(processRecipeSet, variant);
+        this.recipePanel = process.generateProcessPanel(style, processRecipeSet, variant);
 
         // Menu configuration
         initAllItem();
@@ -577,7 +577,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         currentVariant = 0;
 
         ProcessRecipeSet<R> processRecipeSet = itemRecipeMap.getProcessRecipeSet(process);
-        recipePanel = process.generateProcessPanel(processRecipeSet, currentVariant);
+        recipePanel = process.generateProcessPanel(style, processRecipeSet, currentVariant);
         initProcessPanel();
 
         render();

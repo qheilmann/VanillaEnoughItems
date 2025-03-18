@@ -19,6 +19,7 @@ import me.qheilmann.vei.Core.ProcessPanel.ProcessPanelSlot;
 import me.qheilmann.vei.Core.Recipe.ProcessRecipeSet;
 import me.qheilmann.vei.Core.Slot.Collection.SlotRange;
 import me.qheilmann.vei.Core.Slot.Collection.SlotSequence;
+import me.qheilmann.vei.Core.Style.Styles.Style;
 import me.qheilmann.vei.foundation.gui.GuiItemService;
 
 /**
@@ -59,12 +60,12 @@ public class CraftingProcessPanel extends ProcessPanel<CraftingRecipe> {
 
     private static final Material WORKBENCH_DISPLAY_MATERIAL = Material.CRAFTING_TABLE;
 
-    public CraftingProcessPanel(@NotNull ProcessRecipeSet<CraftingRecipe> recipes, int variant) {
-        super(recipes, variant);
+    public CraftingProcessPanel(@NotNull Style style, @NotNull ProcessRecipeSet<CraftingRecipe> recipes, int variant) {
+        super(style, recipes, variant);
     }
 
-    public CraftingProcessPanel(@NotNull ProcessRecipeSet<CraftingRecipe> recipes) {
-        super(recipes);
+    public CraftingProcessPanel(@NotNull Style style, @NotNull ProcessRecipeSet<CraftingRecipe> recipes) {
+        super(style, recipes);
     }
 
     @Override
@@ -137,8 +138,7 @@ public class CraftingProcessPanel extends ProcessPanel<CraftingRecipe> {
 
     @Override
     public void render(EnumSet<AttachedButtonType> buttonsVisibility) {
-        
-        clear();
+        super.render(buttonsVisibility);
 
         placeWorkbench();
 
@@ -149,7 +149,8 @@ public class CraftingProcessPanel extends ProcessPanel<CraftingRecipe> {
             populateShapelessRecipeCraftingsSlot(shapelessRecipe);
         }
 
-        renderAttachedButtons(buttonsVisibility);
+        // Result
+        recipePanelSlots.put(RESULT_SLOT, new GuiItem<>(currentRecipe.getResult()));
     }
 
     private void populateShapedRecipeCraftingsSlot(ShapedRecipe shapedRecipe) {
@@ -163,7 +164,8 @@ public class CraftingProcessPanel extends ProcessPanel<CraftingRecipe> {
                     continue;
                 }
                 if (recipeChoice instanceof RecipeChoice.MaterialChoice materialChoice) {
-                    recipePanelSlots.put(new ProcessPanelSlot(x+1,y+1), new GuiItem<RecipeMenu>(materialChoice.getItemStack())); // +1 +1 is because of the crafting grid offset
+                    GuiItem<RecipeMenu> recipeGuiItem = buildNewRecipeGuiItem(materialChoice.getItemStack());
+                    recipePanelSlots.put(new ProcessPanelSlot(x+1,y+1), recipeGuiItem); // +1 +1 is because of the crafting grid offset
                 }
                 else {
                     // TODO remove the use a deprecated method for generating the warning item
@@ -171,9 +173,6 @@ public class CraftingProcessPanel extends ProcessPanel<CraftingRecipe> {
                 }
             }
         }
-
-        // Result
-        recipePanelSlots.put(RESULT_SLOT, new GuiItem<>(shapedRecipe.getResult()));
     }
 
     private void populateShapelessRecipeCraftingsSlot(ShapelessRecipe shapelessRecipe) {
@@ -197,7 +196,8 @@ public class CraftingProcessPanel extends ProcessPanel<CraftingRecipe> {
         // Crafting grid
         for(RecipeChoice recipeChoice : recipeChoices) {
             if(recipeChoice instanceof RecipeChoice.MaterialChoice materialChoice) {
-                recipePanelSlots.put(new ProcessPanelSlot(x+1, y+1), new GuiItem<RecipeMenu>(materialChoice.getItemStack())); // +1 +1 is because of the crafting grid offset
+                GuiItem<RecipeMenu> recipeGuiItem = buildNewRecipeGuiItem(materialChoice.getItemStack());
+                recipePanelSlots.put(new ProcessPanelSlot(x+1, y+1), recipeGuiItem); // +1 +1 is because of the crafting grid offset
             }
             else {
                 // TODO remove the use a deprecated method for generating the warning item
@@ -209,9 +209,6 @@ public class CraftingProcessPanel extends ProcessPanel<CraftingRecipe> {
                 y++;
             }
         }
-
-        // Result
-        recipePanelSlots.put(RESULT_SLOT, new GuiItem<>(shapelessRecipe.getResult()));
     }
 
     /**

@@ -6,6 +6,7 @@ import javax.annotation.Nullable;
 
 import org.bukkit.Material;
 import org.bukkit.inventory.FurnaceRecipe;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.RecipeChoice;
 import org.jetbrains.annotations.NotNull;
 
@@ -16,6 +17,7 @@ import me.qheilmann.vei.Core.ProcessPanel.ProcessPanel;
 import me.qheilmann.vei.Core.ProcessPanel.ProcessPanelSlot;
 import me.qheilmann.vei.Core.Recipe.ProcessRecipeSet;
 import me.qheilmann.vei.Core.Slot.Collection.SlotSequence;
+import me.qheilmann.vei.Core.Style.Styles.Style;
 
 public class SmeltingProcessPanel extends ProcessPanel<FurnaceRecipe> {
     public static final ProcessPanelSlot NEXT_RECIPE_SLOT = new ProcessPanelSlot(3 , 0);
@@ -31,12 +33,12 @@ public class SmeltingProcessPanel extends ProcessPanel<FurnaceRecipe> {
 
     private static final Material WORKBENCH_DISPLAY_MATERIAL = Material.FURNACE;
     
-    public SmeltingProcessPanel(@NotNull ProcessRecipeSet<FurnaceRecipe> recipes, int variant) {
-        super(recipes, variant);
+    public SmeltingProcessPanel(@NotNull Style style, @NotNull ProcessRecipeSet<FurnaceRecipe> recipes, int variant) {
+        super(style, recipes, variant);
     }
 
-    public SmeltingProcessPanel(@NotNull ProcessRecipeSet<FurnaceRecipe> recipes) {
-        super(recipes);
+    public SmeltingProcessPanel(@NotNull Style style, @NotNull ProcessRecipeSet<FurnaceRecipe> recipes) {
+        super(style, recipes);
     }
 
     @Override
@@ -104,21 +106,21 @@ public class SmeltingProcessPanel extends ProcessPanel<FurnaceRecipe> {
 
     @Override
     public void render(EnumSet<AttachedButtonType> buttonsVisibility) {
-
-        clear();
+        super.render(buttonsVisibility);
 
         placeWorkbench();
 
         FurnaceRecipe recipe = getCurrentRecipe();
         RecipeChoice recipeChoice = recipe.getInputChoice();
         if (recipeChoice instanceof RecipeChoice.MaterialChoice materialChoice) {
-            recipePanelSlots.put(INGREDIENT_SLOT, new GuiItem<RecipeMenu>(materialChoice.getItemStack()));
+            GuiItem<RecipeMenu> smeltedGuiItem = buildNewRecipeGuiItem(materialChoice.getItemStack());
+            recipePanelSlots.put(INGREDIENT_SLOT, smeltedGuiItem);
         }
 
-        recipePanelSlots.put(COMBUSTIBLE_SLOT, new GuiItem<RecipeMenu>(Material.COAL));
-        recipePanelSlots.put(RESULT_SLOT, new GuiItem<RecipeMenu>(recipe.getResult()));
-        
-        renderAttachedButtons(buttonsVisibility);
+        GuiItem<RecipeMenu> combustibleGuiItem = buildNewRecipeGuiItem(new ItemStack(Material.COAL));
+        GuiItem<RecipeMenu> resultGuiItem = buildNewRecipeGuiItem(recipe.getResult());
+        recipePanelSlots.put(COMBUSTIBLE_SLOT, combustibleGuiItem);
+        recipePanelSlots.put(RESULT_SLOT, resultGuiItem);        
     }
 
     private void placeWorkbench() {

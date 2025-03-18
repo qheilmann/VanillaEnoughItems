@@ -4,15 +4,16 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
-import java.util.function.BiFunction;
 import javax.annotation.Nullable;
 
+import org.apache.commons.lang3.function.TriFunction;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.jetbrains.annotations.NotNull;
 
 import me.qheilmann.vei.Core.ProcessPanel.ProcessPanel;
 import me.qheilmann.vei.Core.Recipe.ProcessRecipeSet;
+import me.qheilmann.vei.Core.Style.Styles.Style;
 import me.qheilmann.vei.Core.Utils.NotNullSet;
 
 /**
@@ -35,7 +36,7 @@ public class Process<R extends Recipe> {
     private final ItemStack processIcon;
     private final NotNullSet<ItemStack> workbenchOptions;
     private final NotNullSet<Class<? extends R>> recipeClasses;
-    private final BiFunction<ProcessRecipeSet<R>, Integer, ProcessPanel<R>> processPanelSupplier;
+    private final TriFunction<Style, ProcessRecipeSet<R>, Integer, ProcessPanel<R>> processPanelSupplier;
     
     public static void registerProcesse(Process<?> process) {
         processRegistry.add(process);
@@ -76,7 +77,7 @@ public class Process<R extends Recipe> {
                     @NotNull ItemStack processIcon,
                     @NotNull Collection<ItemStack> workbenchOptions,
                     @NotNull Collection<Class<? extends R>> recipeClasses,
-                    @NotNull BiFunction<ProcessRecipeSet<R>, Integer, ProcessPanel<R>> processPanelSupplier ) {
+                    @NotNull TriFunction<Style, ProcessRecipeSet<R>, Integer, ProcessPanel<R>> processPanelSupplier ) {
         this.processName = processName;
         this.processIcon = processIcon;
         this.recipeClasses = new NotNullSet<>(new LinkedHashSet<>(), recipeClasses);
@@ -110,8 +111,8 @@ public class Process<R extends Recipe> {
      * @return the recipe panel.
      */
     @NotNull
-    public ProcessPanel<R> generateProcessPanel(@NotNull ProcessRecipeSet<R> processRecipeSet, int variant) {
-        return processPanelSupplier.apply(processRecipeSet, variant);
+    public ProcessPanel<R> generateProcessPanel(@NotNull Style style, @NotNull ProcessRecipeSet<R> processRecipeSet, int variant) {
+        return processPanelSupplier.apply(style, processRecipeSet, variant);
     }
 
     /**
