@@ -482,7 +482,9 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
 
     private GuiItem<RecipeMenu> buildWorkbenchOptionButton(ItemStack workbench) {
         GuiItem<RecipeMenu> item = new GuiItem<>(workbench);
-        item.setAction(this::workbenchOptionAction);
+        item.setAction((event, menu) -> {
+            workbenchOptionAction(event, workbench);
+        });
         return item;
     }
     
@@ -581,8 +583,15 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         render();
     }
 
-    private void workbenchOptionAction(InventoryClickEvent event, RecipeMenu menu) {
-        event.getWhoClicked().sendMessage("Workbench option action");
+    private void workbenchOptionAction(InventoryClickEvent event, ItemStack clickedWorkbench) {
+        
+        ItemRecipeMap  newItemRecipeMap = VanillaEnoughItems.allRecipesMap.getItemRecipeMap(clickedWorkbench);
+        if (newItemRecipeMap == null) {
+            return;
+        }
+
+        RecipeMenu menu = new RecipeMenu(style, newItemRecipeMap);
+        menu.open(event.getWhoClicked());
     }
 
     //#endregion Button actions
