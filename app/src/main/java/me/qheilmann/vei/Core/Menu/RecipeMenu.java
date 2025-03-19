@@ -4,6 +4,8 @@ import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
+
 import javax.annotation.Nullable;
 
 import java.awt.Toolkit;
@@ -12,6 +14,7 @@ import java.awt.datatransfer.StringSelection;
 
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -25,6 +28,8 @@ import me.qheilmann.vei.Core.GUI.GuiItem;
 import me.qheilmann.vei.Core.ProcessPanel.ProcessPanel;
 import me.qheilmann.vei.Core.Recipe.ItemRecipeMap;
 import me.qheilmann.vei.Core.Recipe.ProcessRecipeSet;
+import me.qheilmann.vei.Core.Recipe.RecipeHistory;
+import me.qheilmann.vei.Core.Recipe.RecipePath;
 import me.qheilmann.vei.Core.Process.Process;
 import me.qheilmann.vei.Core.Slot.Collection.SlotRange;
 import me.qheilmann.vei.Core.Slot.Implementation.MaxChestSlot;
@@ -124,8 +129,8 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
     private boolean isWorkbenchScrollDownVisible = false;
     private boolean isNextRecipeVisible = true;
     private boolean isPreviousRecipeVisible = true;
-    private boolean isForwardRecipeVisible = false; // TODO: Implement forward/backward recipe
-    private boolean isBackwardRecipeVisible = false;
+    private boolean isForwardRecipeVisible = true;
+    private boolean isBackwardRecipeVisible = true;
     private boolean isMoveIngredientsVisible = false; // TODO: Implement move ingredients
     //#endregion Instance variables
 
@@ -561,11 +566,21 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
     }
 
     private void forwardRecipeAction(InventoryClickEvent event, RecipeMenu menu) {
-        event.getWhoClicked().sendMessage("Forward recipe action");
+        RecipePath recipePath = VanillaEnoughItems.recipeHistoryMap.get(event.getWhoClicked().getUniqueId()).goForward();
+        if (recipePath != null) {
+            RecipeMenu newRecipeMenu = new RecipeMenu(style, VanillaEnoughItems.allRecipesMap.getItemRecipeMap(recipePath.getItemStack()), recipePath.getProcess(), recipePath.getVariant());
+            newRecipeMenu.open(event.getWhoClicked(), false);
+        }
+        event.getWhoClicked().sendMessage("No Forward recipe"); // TODO complete show/hide button
     }
 
     private void backwardRecipeAction(InventoryClickEvent event, RecipeMenu menu) {
-        event.getWhoClicked().sendMessage("Backward recipe action");
+        RecipePath recipePath = VanillaEnoughItems.recipeHistoryMap.get(event.getWhoClicked().getUniqueId()).goBack();
+        if (recipePath != null) {
+            RecipeMenu newRecipeMenu = new RecipeMenu(style, VanillaEnoughItems.allRecipesMap.getItemRecipeMap(recipePath.getItemStack()), recipePath.getProcess(), recipePath.getVariant());
+            newRecipeMenu.open(event.getWhoClicked(), false);
+        }
+        event.getWhoClicked().sendMessage("No Backward recipe"); // TODO complete show/hide button
     }
 
     private void moveIngredientsAction(InventoryClickEvent event, RecipeMenu menu) {
@@ -595,6 +610,33 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
     }
 
     //#endregion Button actions
+
+    @Override
+    @Nullable
+    public InventoryView open(@NotNull HumanEntity humanEntity) {
+        return open(humanEntity, true);
+    }
+
+    protected InventoryView open(@NotNull HumanEntity humanEntity, boolean addToHistory) {
+            // Add the recipe path to the history
+            if (addToHistory) {
+                UUID uuid = humanEntity.getUniqueId();
+                RecipeHistory recipeHistory;
+                if (VanillaEnoughItems.recipeHistoryMap.containsKey(uuid)) {
+                    recipeHistory = VanillaEnoughItems.recipeHistoryMap.get(uuid);
+                } else {
+                    recipeHistory = new RecipeHistory();
+                    VanillaEnoughItems.recipeHistoryMap.put(uuid, recipeHistory);
+                }
+                RecipePath recipePath = new RecipePath(itemRecipeMap.getItem(), currentProcess, currentVariant);
+                recipeHistory.push(recipePath);
+                
+                // TODO TMP LOGGIN
+                VanillaEnoughItems.LOGGER.info("Recipe history for %s: %s".formatted(uuid, recipeHistory));
+            }
+    
+            return super.open(humanEntity);
+    }
 
     private void setItemOnVisibility(MaxChestSlot slot, GuiItem<RecipeMenu> item, boolean isVisible) {
         setItem(slot, isVisible ? item : null);

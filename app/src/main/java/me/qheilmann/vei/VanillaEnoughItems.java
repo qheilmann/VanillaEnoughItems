@@ -1,6 +1,9 @@
 package me.qheilmann.vei;
 
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
@@ -17,6 +20,7 @@ import me.qheilmann.vei.Core.Process.VanillaProcesses;
 import me.qheilmann.vei.Core.Recipe.AllRecipeMap;
 import me.qheilmann.vei.Core.Recipe.ItemRecipeMap;
 import me.qheilmann.vei.Core.Recipe.ProcessRecipeSet;
+import me.qheilmann.vei.Core.Recipe.RecipeHistory;
 import me.qheilmann.vei.Core.Style.StyleManager;
 import me.qheilmann.vei.Listener.InventoryClickListener;
 import me.qheilmann.vei.Listener.InventoryDragListener;
@@ -33,6 +37,8 @@ public class VanillaEnoughItems extends JavaPlugin {
     private MenuManager menuManager;
 
     public static final AllRecipeMap allRecipesMap = new AllRecipeMap();
+    public static final Map<UUID, RecipeHistory> recipeHistoryMap = new java.util.HashMap<>();
+
 
     @Override
     public void onLoad() {

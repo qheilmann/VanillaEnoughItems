@@ -81,5 +81,6 @@ public class CraftCommand implements ICommand{
 
     private void openRecipeAction(@NotNull Player player, @NotNull ItemStack item, @Nullable Process<?> process, int variant) {
         menuManager.openRecipeMenu(player, item, process, variant);
+        // TODO add a global try catch here
     }
 }
