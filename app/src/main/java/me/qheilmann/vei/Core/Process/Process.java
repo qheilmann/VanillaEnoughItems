@@ -53,7 +53,7 @@ public class Process<R extends Recipe> {
      */
     public static @Nullable Process<?> getProcessByName(@NotNull String processName) {
         for (Process<?> process : processRegistry) {
-            if (process.getProcessName().toLowerCase().equals(processName)) {
+            if (process.getProcessName().toLowerCase().equals(processName.toLowerCase())) {
                 return process;
             }
         }

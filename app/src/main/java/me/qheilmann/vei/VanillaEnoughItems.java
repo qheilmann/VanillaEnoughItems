@@ -1,11 +1,15 @@
 package me.qheilmann.vei;
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapedRecipe;
@@ -21,6 +25,7 @@ import me.qheilmann.vei.Core.Recipe.AllRecipeMap;
 import me.qheilmann.vei.Core.Recipe.ItemRecipeMap;
 import me.qheilmann.vei.Core.Recipe.ProcessRecipeSet;
 import me.qheilmann.vei.Core.Recipe.RecipeHistory;
+import me.qheilmann.vei.Core.Recipe.RecipePath;
 import me.qheilmann.vei.Core.Style.StyleManager;
 import me.qheilmann.vei.Listener.InventoryClickListener;
 import me.qheilmann.vei.Listener.InventoryDragListener;
@@ -60,6 +65,44 @@ public class VanillaEnoughItems extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new InventoryDragListener(this), this);
 
         addTemporaryRecipe();
+
+        // TODO TMP 
+        LOGGER.info("TMP TEST");
+        ConfigurationSerialization.registerClass(RecipePath.class);
+        File playerBookmarkFile = new File(getDataFolder(), "playerBookmark.yml");
+        if (!playerBookmarkFile.exists()) {
+            saveResource(playerBookmarkFile.getName(), false);
+        }
+        
+        // Get all players
+        FileConfiguration playerBookmarkConfig = YamlConfiguration.loadConfiguration(playerBookmarkFile);
+        LOGGER.info("yolo:" + playerBookmarkConfig.get("players").toString());
+        
+        // Get the first player
+        List<Map<String, Object>> players = (List<Map<String, Object>>) playerBookmarkConfig.getList("players");
+        if (!players.isEmpty()) {
+            Map<String, Object> firstPlayer = players.get(0);
+            LOGGER.info("player[0]: " + firstPlayer.toString());
+        }
+
+        // Get the first player with serialized object
+        if (players != null && !players.isEmpty()) {
+            Map<String, Object> firstPlayer = players.get(0);
+            List<Map<String, Object>> bookmarks = (List<Map<String, Object>>) firstPlayer.get("bookmarks"); 
+            if (bookmarks != null && !bookmarks.isEmpty()) {
+                Map<String, Object> firstBookmark = bookmarks.get(0);
+
+                // Deserialize the first bookmark into a RecipePath object
+                RecipePath recipePath = RecipePath.deserialize(firstBookmark); // Check case of process (not cast to lowercase, case is important ?)
+                LOGGER.info("First RecipePath of the first player: " + recipePath);
+            }
+        }
+
+        String testPath = playerBookmarkConfig.getString("players[0].bookmarks[0].itemStack");
+        LOGGER.info("Loaded playerBookmark config: " + testPath);
+        // TODO END TMP
+
+        // saveResource("serverBookmark.json", false);
 
         Process.registerProcesses(VanillaProcesses.getAllVanillaProcesses());
         fillRecipeMap();

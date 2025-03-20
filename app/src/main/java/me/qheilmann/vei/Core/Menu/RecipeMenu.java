@@ -570,8 +570,9 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         if (recipePath != null) {
             RecipeMenu newRecipeMenu = new RecipeMenu(style, VanillaEnoughItems.allRecipesMap.getItemRecipeMap(recipePath.getItemStack()), recipePath.getProcess(), recipePath.getVariant());
             newRecipeMenu.open(event.getWhoClicked(), false);
+        } else {
+            event.getWhoClicked().sendMessage("No Forward recipe"); // TODO complete show/hide button
         }
-        event.getWhoClicked().sendMessage("No Forward recipe"); // TODO complete show/hide button
     }
 
     private void backwardRecipeAction(InventoryClickEvent event, RecipeMenu menu) {
@@ -579,8 +580,9 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         if (recipePath != null) {
             RecipeMenu newRecipeMenu = new RecipeMenu(style, VanillaEnoughItems.allRecipesMap.getItemRecipeMap(recipePath.getItemStack()), recipePath.getProcess(), recipePath.getVariant());
             newRecipeMenu.open(event.getWhoClicked(), false);
+        } else {
+            event.getWhoClicked().sendMessage("No Backward recipe"); // TODO complete show/hide button
         }
-        event.getWhoClicked().sendMessage("No Backward recipe"); // TODO complete show/hide button
     }
 
     private void moveIngredientsAction(InventoryClickEvent event, RecipeMenu menu) {

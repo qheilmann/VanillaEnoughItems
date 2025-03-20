@@ -1,0 +1,15 @@
+players:
+  - uuid: "81376bb8-5576-47bc-a2d9-89d98746d3ec"
+    bookmarks:
+      - itemStack: "oak_planks"
+        process: "Crafting"
+        variant: 2
+      - itemStack: "glass"
+        process: "Smelting"
+        variant: 1
+
+  - uuid: "a88b949a-fa2d-4e11-8b3b-28410fe8dac0"
+    bookmarks:
+      - itemStack: "crafting_table"
+        process: "Crafting"
+        variant: 1

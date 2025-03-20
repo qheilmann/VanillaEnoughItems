@@ -1,9 +1,14 @@
 package me.qheilmann.vei.Core.Recipe;
 
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.inventory.ItemStack;
 import me.qheilmann.vei.Core.Process.Process;
 
-public record RecipePath(ItemStack itemStack, Process<?> process, int variant) {
+import java.util.HashMap;
+import java.util.Map;
+
+public record RecipePath(ItemStack itemStack, Process<?> process, int variant)
+        implements ConfigurationSerializable {
 
     public ItemStack getItemStack() {
         return itemStack;
@@ -28,35 +33,13 @@ public record RecipePath(ItemStack itemStack, Process<?> process, int variant) {
     }
 
     @Override
-    public final boolean equals(Object arg0) {
-        if (this == arg0) {
-            return true;
-        }
-        if (arg0 == null) {
-            return false;
-        }
-        if (getClass() != arg0.getClass()) {
-            return false;
-        }
-        RecipePath other = (RecipePath) arg0;
-        if (itemStack == null) {
-            if (other.itemStack != null) {
-                return false;
-            }
-        } else if (!itemStack.equals(other.itemStack)) {
-            return false;
-        }
-        if (process == null) {
-            if (other.process != null) {
-                return false;
-            }
-        } else if (!process.equals(other.process)) {
-            return false;
-        }
-        if (variant != other.variant) {
-            return false;
-        }
-        return true;
+    public final boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        RecipePath that = (RecipePath) o;
+        return variant == that.variant &&
+               itemStack.equals(that.itemStack) &&
+               process.equals(that.process);
     }
 
     @Override
@@ -66,5 +49,23 @@ public record RecipePath(ItemStack itemStack, Process<?> process, int variant) {
                 ", process=" + process +
                 ", variant=" + variant +
                 '}';
+    }
+
+    @Override
+    public Map<String, Object> serialize() {
+        Map<String, Object> data = new HashMap<>();
+        data.put("itemStack", itemStack.getType().key().toString());
+        data.put("variant", variant);
+        // Temporary placeholder for process
+        data.put("process", process.getProcessName());
+        return data;
+    }
+
+    public static RecipePath deserialize(Map<String, Object> args) {
+        ItemStack itemStack = new ItemStack(org.bukkit.Material.matchMaterial((String) args.get("itemStack"))); // TODO adapt to each ItemStack
+        int variant = (int) args.get("variant");
+        Process<?> process = Process.getProcessByName((String) args.get("process"));
+
+        return new RecipePath(itemStack, process, variant);
     }
 }
