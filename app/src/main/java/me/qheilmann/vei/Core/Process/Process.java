@@ -48,12 +48,13 @@ public class Process<R extends Recipe> {
 
     /**
      * Get a process by its process name (e.g., Crafting, Smelting, Smithing).
+     * It's case insensitive.
      *
      * @return the process or null if the process does not exist or was not implemented.
      */
     public static @Nullable Process<?> getProcessByName(@NotNull String processName) {
         for (Process<?> process : processRegistry) {
-            if (process.getProcessName().toLowerCase().equals(processName.toLowerCase())) {
+            if (process.equalName(processName)) {
                 return process;
             }
         }
@@ -153,6 +154,21 @@ public class Process<R extends Recipe> {
      */
     public void addWorkbenchOption(@NotNull ItemStack workbenchOption) {
         this.workbenchOptions.add(workbenchOption);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        Process<?> process = (Process<?>) obj;
+        return this.equalName(process.processName);
+    }
+
+    /**
+     * True if same process name, case insensitive.
+     */
+    private boolean equalName(@Nullable String processName) {
+        return processName != null && this.processName.toLowerCase().equals(processName.toLowerCase());
     }
 }
 

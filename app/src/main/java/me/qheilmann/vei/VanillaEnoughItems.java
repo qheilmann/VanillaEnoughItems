@@ -3,10 +3,13 @@ package me.qheilmann.vei;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
@@ -18,6 +21,7 @@ import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPIBukkitConfig;
 import me.qheilmann.vei.Command.CraftCommand;
 import me.qheilmann.vei.Command.TestCommand;
+import me.qheilmann.vei.Core.Config.RecipeConfigLoader;
 import me.qheilmann.vei.Core.GUI.BaseGui;
 import me.qheilmann.vei.Core.Process.Process;
 import me.qheilmann.vei.Core.Process.VanillaProcesses;
@@ -66,6 +70,11 @@ public class VanillaEnoughItems extends JavaPlugin {
 
         addTemporaryRecipe();
 
+        Process.registerProcesses(VanillaProcesses.getAllVanillaProcesses());
+        fillRecipeMap();
+
+
+
         // TODO TMP 
         LOGGER.info("TMP TEST");
         ConfigurationSerialization.registerClass(RecipePath.class);
@@ -75,37 +84,142 @@ public class VanillaEnoughItems extends JavaPlugin {
         }
         
         // Get all players
+        VanillaEnoughItems.LOGGER.info("[All players]");
         FileConfiguration playerBookmarkConfig = YamlConfiguration.loadConfiguration(playerBookmarkFile);
         LOGGER.info("yolo:" + playerBookmarkConfig.get("players").toString());
         
         // Get the first player
+        VanillaEnoughItems.LOGGER.info("[First player]");
         List<Map<String, Object>> players = (List<Map<String, Object>>) playerBookmarkConfig.getList("players");
         if (!players.isEmpty()) {
             Map<String, Object> firstPlayer = players.get(0);
             LOGGER.info("player[0]: " + firstPlayer.toString());
         }
-
+        
         // Get the first player with serialized object
+        VanillaEnoughItems.LOGGER.info("[First player (serialized)]");
         if (players != null && !players.isEmpty()) {
             Map<String, Object> firstPlayer = players.get(0);
             List<Map<String, Object>> bookmarks = (List<Map<String, Object>>) firstPlayer.get("bookmarks"); 
             if (bookmarks != null && !bookmarks.isEmpty()) {
                 Map<String, Object> firstBookmark = bookmarks.get(0);
-
+                
                 // Deserialize the first bookmark into a RecipePath object
                 RecipePath recipePath = RecipePath.deserialize(firstBookmark); // Check case of process (not cast to lowercase, case is important ?)
                 LOGGER.info("First RecipePath of the first player: " + recipePath);
             }
         }
+        
+        VanillaEnoughItems.LOGGER.info("[By config section]");
+        ConfigurationSection rootSection = playerBookmarkConfig.getConfigurationSection("");
+        if (rootSection == null) {
+            LOGGER.info("root section is null");
+        } else {
+            LOGGER.info("root section: " + rootSection.toString());
+            for (String key : rootSection.getKeys(false)) {
+                LOGGER.info("Key: " + key);
+            }
+            // Get the player list
+            String playerKey = rootSection.getKeys(false).iterator().next();
+            List<?> playerSection = rootSection.getList(playerKey);
+            LOGGER.info("player section: " + playerKey);
+            for (Object config : playerSection) {
+                LOGGER.info("fullConfig: " + config);
+            }
+            // Get the player list map
+            List<Map<?, ?>> playerSectionMap = rootSection.getMapList(playerKey);
+            LOGGER.info("player section: " + playerKey);
+            for (Map<?, ?> config : playerSectionMap) {
+                LOGGER.info("fullConfig: " + config);
+                Object bookmarks = config.get("bookmarks");
+                LOGGER.info("bookmarks: " + bookmarks);
+            }
 
-        String testPath = playerBookmarkConfig.getString("players[0].bookmarks[0].itemStack");
-        LOGGER.info("Loaded playerBookmark config: " + testPath);
+            // Print all keys
+            VanillaEnoughItems.LOGGER.info("[Deep keys]");
+            for (String key : rootSection.getKeys(true)) {
+                LOGGER.info("deepKey: " + key);
+            }
+
+            // var a = rootSection.getSerializable("players", RecipePath.class);
+        }
+
+        // [Clear getting format]
+        VanillaEnoughItems.LOGGER.info("[Clear getting format]");
+        List<Map<?, ?>> playersList = playerBookmarkConfig.getMapList("players");
+        for (Map<?, ?> player : playersList) {
+            LOGGER.info("player: " + player.get("uuid"));
+
+            // Get and convert bookmarks list of the player
+            Object bookmarksObj = player.get("bookmarks");
+            List<Map<String, Object>> bookmarksList = null;
+            if (bookmarksObj instanceof List<?>) {
+                bookmarksList = ((List<?>) bookmarksObj).stream()
+                    .filter(item -> item instanceof Map<?, ?>)
+                    .map(item -> (Map<String, Object>) item)
+                    .collect(Collectors.toList());
+            }
+
+            if (bookmarksList != null) {
+                for (Map<String, Object> bookmarkMap : bookmarksList) {
+                    RecipePath bookmark = RecipePath.deserialize(bookmarkMap);
+                    LOGGER.info("bookmark: " + bookmark.toString());
+                }
+            }
+        }
+
+
+        // [Set a new bookmark]
+        VanillaEnoughItems.LOGGER.info("[Set a new bookmark]");
+        RecipePath newRecipePath = new RecipePath(new ItemStack(Material.DIAMOND_SWORD), Process.getProcessByName("Crafting"), 0);
+        UUID playerUuid = UUID.fromString("81376bb8-5576-47bc-a2d9-89d98746d3ec"); 
+        
+        // Serialize and find the target player
+        Map<String, Object> serializedRecipePath = newRecipePath.serialize();
+        List<Map<?, ?>> rootPlayersList = playerBookmarkConfig.getMapList("players");
+        Map<String, Object> targetPlayer = null;
+        for (Map<?, ?> player : rootPlayersList) {
+            if (playerUuid.toString().equals(player.get("uuid"))) {
+                targetPlayer = (Map<String, Object>) player;
+                break;
+            }
+        }
+
+        // Add the new bookmark to the player
+        if (targetPlayer != null) {
+            List<Map<String, Object>> playerBookmarks = (List<Map<String, Object>>) targetPlayer.get("bookmarks");
+            if (playerBookmarks != null) {
+                playerBookmarks.add(serializedRecipePath);
+            } else {
+                playerBookmarks = List.of(serializedRecipePath);
+                targetPlayer.put("bookmarks", playerBookmarks);
+            }
+        } else {
+            rootPlayersList.add(Map.of("uuid", playerUuid.toString(), "bookmarks", List.of(serializedRecipePath)));
+        }
+
+        
+        // [Load from RecipeConfigLoader]
+        LOGGER.info("[Load from RecipeConfigLoader]");
+        Map<UUID, Set<RecipePath>> bookmarkSetMap = RecipeConfigLoader.loadRecipes(playerBookmarkConfig);
+        for (Map.Entry<UUID, Set<RecipePath>> entry : bookmarkSetMap.entrySet()) {
+            LOGGER.info("UUID: " + entry.getKey());
+            for (RecipePath recipePath : entry.getValue()) {
+                LOGGER.info("RecipePath: " + recipePath);
+            }
+        }
+        
+        // Save the new bookmark
+        try {
+            playerBookmarkConfig.save(playerBookmarkFile);
+        } catch (Exception e) {
+            LOGGER.error("Error while saving the playerBookmark config", e);
+        }
+        
         // TODO END TMP
+        // TODO maybe sqlite or just inMemory database for the begining
 
-        // saveResource("serverBookmark.json", false);
 
-        Process.registerProcesses(VanillaProcesses.getAllVanillaProcesses());
-        fillRecipeMap();
 
         LOGGER.info(NAME+ " has been enabled!");
     }

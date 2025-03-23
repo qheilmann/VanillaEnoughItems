@@ -10,4 +10,5 @@
     // Config
     "java.configuration.updateBuildConfiguration": "automatic",
     "java.compile.nullAnalysis.mode": "automatic",
+    "java.settings.url": ".vscode/settings.prefs"
 }

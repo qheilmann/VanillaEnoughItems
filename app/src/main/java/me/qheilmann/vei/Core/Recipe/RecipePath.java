@@ -1,8 +1,10 @@
 package me.qheilmann.vei.Core.Recipe;
 
+import org.bukkit.Material;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.inventory.ItemStack;
 import me.qheilmann.vei.Core.Process.Process;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -44,9 +46,10 @@ public record RecipePath(ItemStack itemStack, Process<?> process, int variant)
 
     @Override
     public final String toString() {
+        String itemStackName = PlainTextComponentSerializer.plainText().serialize(itemStack.displayName());
         return "RecipePath{" +
-                "itemStack=" + itemStack +
-                ", process=" + process +
+                "itemStack=" + itemStackName +
+                ", process=" + process.getProcessName() +
                 ", variant=" + variant +
                 '}';
     }
@@ -62,7 +65,7 @@ public record RecipePath(ItemStack itemStack, Process<?> process, int variant)
     }
 
     public static RecipePath deserialize(Map<String, Object> args) {
-        ItemStack itemStack = new ItemStack(org.bukkit.Material.matchMaterial((String) args.get("itemStack"))); // TODO adapt to each ItemStack
+        ItemStack itemStack = new ItemStack(Material.matchMaterial((String) args.get("itemStack")));
         int variant = (int) args.get("variant");
         Process<?> process = Process.getProcessByName((String) args.get("process"));
 
