@@ -30,11 +30,13 @@ import me.qheilmann.vei.Core.Recipe.ItemRecipeMap;
 import me.qheilmann.vei.Core.Recipe.ProcessRecipeSet;
 import me.qheilmann.vei.Core.Recipe.RecipeHistory;
 import me.qheilmann.vei.Core.Recipe.RecipePath;
+import me.qheilmann.vei.Core.Recipe.Bookmark.Bookmark;
 import me.qheilmann.vei.Core.Process.Process;
 import me.qheilmann.vei.Core.Slot.Collection.SlotRange;
 import me.qheilmann.vei.Core.Slot.Implementation.MaxChestSlot;
 import me.qheilmann.vei.Core.Style.ButtonType.VeiButtonType;
 import me.qheilmann.vei.Core.Style.Styles.Style;
+import net.kyori.adventure.key.Keyed;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
@@ -632,9 +634,21 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
                 }
                 RecipePath recipePath = new RecipePath(itemRecipeMap.getItem(), currentProcess, currentVariant);
                 recipeHistory.push(recipePath);
-                
-                // TODO TMP LOGGIN
-                VanillaEnoughItems.LOGGER.info("Recipe history for %s: %s".formatted(uuid, recipeHistory));
+            }
+
+            // TODO TEMP
+            ProcessRecipeSet<?> processRecipeSet = itemRecipeMap.getProcessRecipeSet(currentProcess);
+            if (processRecipeSet == null) {
+                VanillaEnoughItems.LOGGER.warn("No recipe found for process: %s".formatted(currentProcess.getProcessName()));
+                return null;
+            }
+            Recipe currentRecipe = processRecipeSet.getVariant(currentVariant);
+            if (currentRecipe instanceof Keyed keyed) {
+                Bookmark.addBookmarkAsync(humanEntity.getUniqueId(), keyed.key()).join();
+                VanillaEnoughItems.LOGGER.info("Bookmark recipe: %s".formatted(keyed.key()));
+                VanillaEnoughItems.LOGGER.info("Total: %s".formatted(Bookmark.getBookmarksAsync(humanEntity.getUniqueId()).join()));
+            } else {
+                VanillaEnoughItems.LOGGER.warn("Cannot bookmark recipe: %s".formatted(currentRecipe));
             }
     
             return super.open(humanEntity);

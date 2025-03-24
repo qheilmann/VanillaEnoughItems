@@ -30,10 +30,13 @@ import me.qheilmann.vei.Core.Recipe.ItemRecipeMap;
 import me.qheilmann.vei.Core.Recipe.ProcessRecipeSet;
 import me.qheilmann.vei.Core.Recipe.RecipeHistory;
 import me.qheilmann.vei.Core.Recipe.RecipePath;
+import me.qheilmann.vei.Core.Recipe.Bookmark.Bookmark;
+import me.qheilmann.vei.Core.Recipe.Bookmark.Repository.InMemoryBookmarkRepository;
 import me.qheilmann.vei.Core.Style.StyleManager;
 import me.qheilmann.vei.Listener.InventoryClickListener;
 import me.qheilmann.vei.Listener.InventoryDragListener;
 import me.qheilmann.vei.Menu.MenuManager;
+import net.kyori.adventure.key.Keyed;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger;
 
@@ -68,13 +71,68 @@ public class VanillaEnoughItems extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new InventoryClickListener(menuManager), this);
         getServer().getPluginManager().registerEvents(new InventoryDragListener(this), this);
 
-        addTemporaryRecipe();
+        addTemporaryRecipe(); // TEMP
 
         Process.registerProcesses(VanillaProcesses.getAllVanillaProcesses());
         fillRecipeMap();
 
+        Bookmark.init(new InMemoryBookmarkRepository());
+        UUID quoinquoinUuid = UUID.fromString("81376bb8-5576-47bc-a2d9-89d98746d3ec");
+        Bookmark.addBookmarkAsync(quoinquoinUuid, new NamespacedKey(NAMESPACE, "warrior_sword")).join();
+        LOGGER.info("Quoinquoin's bookmarks: " + Bookmark.getBookmarksAsync(quoinquoinUuid).join());      
 
+        testConfig(); // TEMP
 
+        LOGGER.info(NAME+ " has been enabled!");
+    }
+
+    @Override
+    public void onDisable() {
+        CommandAPI.onDisable();
+        BaseGui.onDisable();
+        LOGGER.info(NAME + " has been disabled!");
+    }
+
+    // TEMP: Remove this method (temporary recipe)
+    private void addTemporaryRecipe() {
+        LOGGER.info("[123_A] Temporary recipe\n");
+
+        // Custom recipe 1 (minecraft item with a new recipe)
+        NamespacedKey key = new NamespacedKey(NAMESPACE, "second_diamond_swore");
+        ItemStack item = new ItemStack(Material.DIAMOND_SWORD);
+
+        ShapedRecipe secondDiamondSwordRecipe = new ShapedRecipe(key, item);
+        secondDiamondSwordRecipe.shape(" A", "AA", " B");
+        secondDiamondSwordRecipe.setIngredient('A', Material.DIAMOND);
+        secondDiamondSwordRecipe.setIngredient('B', Material.STICK);
+
+        getServer().addRecipe(secondDiamondSwordRecipe, true);
+
+        // Custom recipe 2 (custom item with a new recipe = here juste a rename diamond sword)
+        NamespacedKey key2 = new NamespacedKey(NAMESPACE, "warrior_sword");
+        ItemStack item2 = new ItemStack(Material.DIAMOND_SWORD);
+        item2.editMeta(meta -> meta.displayName(Component.text("Warrior Sword")));
+        item2.editMeta(meta -> meta.lore(List.of(Component.text("A sword for the bravest warriors"))));
+        item2.editMeta(meta -> meta.setEnchantmentGlintOverride(true));
+
+        ShapedRecipe warriorSwordRecipe = new ShapedRecipe(key2, item2);
+        warriorSwordRecipe.shape("AAA", "AAA", " B ");
+        warriorSwordRecipe.setIngredient('A', Material.GOLD_INGOT);
+        warriorSwordRecipe.setIngredient('B', Material.STICK);
+
+        getServer().addRecipe(warriorSwordRecipe, true);
+
+        // Retrieve the recipe
+        Recipe recipe = getServer().getRecipe(key);
+        if (recipe instanceof Keyed keyed) {
+            LOGGER.info("Retrieve Recipe by key: " + keyed.key());
+        } else {
+            LOGGER.info("Retrieve Recipe by key: not found(" + recipe + ")");
+        }
+    }
+
+    // TEMP: Remove this method (temporary test)
+    private void testConfig() {
         // TODO TMP 
         LOGGER.info("TMP TEST");
         ConfigurationSerialization.registerClass(RecipePath.class);
@@ -218,47 +276,6 @@ public class VanillaEnoughItems extends JavaPlugin {
         
         // TODO END TMP
         // TODO maybe sqlite or just inMemory database for the begining
-
-
-
-        LOGGER.info(NAME+ " has been enabled!");
-    }
-
-    @Override
-    public void onDisable() {
-        CommandAPI.onDisable();
-        BaseGui.onDisable();
-        LOGGER.info(NAME + " has been disabled!");
-    }
-
-    // TEMP: Remove this method (temporary recipe)
-    private void addTemporaryRecipe() {
-        LOGGER.info("[123_A] Temporary recipe\n");
-
-        // Custom recipe 1 (minecraft item with a new recipe)
-        NamespacedKey key = new NamespacedKey(NAMESPACE, "second_diamond_swore");
-        ItemStack item = new ItemStack(Material.DIAMOND_SWORD);
-
-        ShapedRecipe secondDiamondSwordRecipe = new ShapedRecipe(key, item);
-        secondDiamondSwordRecipe.shape(" A", "AA", " B");
-        secondDiamondSwordRecipe.setIngredient('A', Material.DIAMOND);
-        secondDiamondSwordRecipe.setIngredient('B', Material.STICK);
-
-        getServer().addRecipe(secondDiamondSwordRecipe, true);
-
-        // Custom recipe 2 (custom item with a new recipe = here juste a rename diamond sword)
-        NamespacedKey key2 = new NamespacedKey(NAMESPACE, "warrior_sword");
-        ItemStack item2 = new ItemStack(Material.DIAMOND_SWORD);
-        item2.editMeta(meta -> meta.displayName(Component.text("Warrior Sword")));
-        item2.editMeta(meta -> meta.lore(List.of(Component.text("A sword for the bravest warriors"))));
-        item2.editMeta(meta -> meta.setEnchantmentGlintOverride(true));
-
-        ShapedRecipe warriorSwordRecipe = new ShapedRecipe(key2, item2);
-        warriorSwordRecipe.shape("AAA", "AAA", " B ");
-        warriorSwordRecipe.setIngredient('A', Material.GOLD_INGOT);
-        warriorSwordRecipe.setIngredient('B', Material.STICK);
-
-        getServer().addRecipe(warriorSwordRecipe, true);
     }
 
     @SuppressWarnings("null")
