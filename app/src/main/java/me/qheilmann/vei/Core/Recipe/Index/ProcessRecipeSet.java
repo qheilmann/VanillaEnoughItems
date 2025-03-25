@@ -1,11 +1,11 @@
-package me.qheilmann.vei.Core.Recipe;
+package me.qheilmann.vei.Core.Recipe.Index;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.SequencedSet;
 
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
@@ -17,7 +17,7 @@ import me.qheilmann.vei.Core.Utils.NotNullSequenceSet;
  * Contains all process recipes for an item. Includes all recipe variants 
  * within a specific process for a particular item.
  */
-public class ProcessRecipeSet<T extends Recipe> {
+public class ProcessRecipeSet {
     
     /**
      * The set of recipes.
@@ -26,14 +26,14 @@ public class ProcessRecipeSet<T extends Recipe> {
      * while others need a List for operations like maintaining order or accessing by index.
      * Therefore, both collections are necessary.
      */
-    private final NotNullSequenceSet<T> recipes;
-    private final ArrayList<T> recipeArray;
+    private final NotNullSequenceSet<Recipe> recipes;
+    private final ArrayList<Recipe> recipeArray;
 
     public ProcessRecipeSet() {
         this(Collections.emptyList());
     }
 
-    public ProcessRecipeSet(Collection<? extends T> ProcessRecipeCollection) {
+    public ProcessRecipeSet(Collection<Recipe> ProcessRecipeCollection) {
         this.recipes = new NotNullSequenceSet<>(new LinkedHashSet<>(), ProcessRecipeCollection);
         recipeArray = new ArrayList<>(recipes);
     }
@@ -42,9 +42,33 @@ public class ProcessRecipeSet<T extends Recipe> {
         return recipeArray.get(0).getResult();
         // TODO check during ctor and add if all process return at any moment the item of this set (result can be a list so change the protoype with the item of this set)
         // then change here to return the item of this set
+
+        // check by a predicate (bc sometime by result or by ingredient or by nothing)
+    }
+
+    /**
+     * Returns the recipe at the specified index in the collection.
+     * 
+     * @param index the index of the recipe to return
+     * @return the recipe at the specified index in the collection
+     * @throws IndexOutOfBoundsException {@inheritDoc}
+     */
+    @NotNull
+    public Recipe getVariant(int index) {
+        return recipeArray.get(index);
+    }
+
+    /**
+     * Returns all the recipes in the set.
+     * 
+     * @return all the recipes in the set
+     */
+    public SequencedSet<Recipe> getAllRecipes() {
+        return Collections.unmodifiableSequencedSet(recipes);
     }
 
     // Add methods to delegate to the wrapped NotNullSet
+    //#region Delegation
 
     /**
      * Adds a recipe to the set.
@@ -52,7 +76,7 @@ public class ProcessRecipeSet<T extends Recipe> {
      * @param recipe the recipe to add
      * @return true if the recipe was added
      */
-    public boolean add(@NotNull T recipe) {
+    public boolean add(@NotNull Recipe recipe) {
         if (recipes.add(recipe)) {
             recipeArray.add(recipe);
             return true;
@@ -61,33 +85,14 @@ public class ProcessRecipeSet<T extends Recipe> {
     }
 
     /**
-     * Attempts to add a recipe to the set. The recipe is only added if it is an 
-     * instance of the specified type and not already in the set. You can differ
-     * between the two cases by using {@link #contains(Object)}.
-     * 
-     * @param recipe the recipe to add
-     * @return true if the recipe was added
-     */
-    @SuppressWarnings("unchecked")
-    public boolean tryAdd(@NotNull Recipe recipe) {
-        T castedRecipee;
-        try {
-            castedRecipee = (T) recipe;
-        } catch (ClassCastException e) {
-            return false;
-        }
-        return add(castedRecipee);
-    }
-
-    /**
      * Adds all recipes in the specified collection to the set.
      * 
-     * @param c the collection of recipes to add
+     * @param collection the collection of recipes to add
      * @return true if the set was modified
      */
-    public boolean addAll(@NotNull Collection<? extends T> c) {
+    public boolean addAll(@NotNull Collection<Recipe> collection) {
         boolean modified = false;
-        for (T recipe : c) {
+        for (Recipe recipe : collection) {
             modified |= add(recipe);
         }
         return modified;
@@ -96,21 +101,21 @@ public class ProcessRecipeSet<T extends Recipe> {
     /**
      * Returns true if the set contains the specified recipe.
      * 
-     * @param o the recipe to check for
+     * @param recipe the recipe to check for
      * @return true if the set contains the specified recipe
      */
-    public boolean contains(@NotNull Object o) {
-        return recipes.contains(o);
+    public boolean contains(@NotNull Recipe recipe) {
+        return recipes.contains(recipe);
     }
 
     /**
      * Returns true if the set contains all recipes in the specified collection.
      * 
-     * @param c the collection of recipes to check for
+     * @param collection the collection of recipes to check for
      * @return true if the set contains all recipes in the specified collection
      */
-    public boolean containsAll(@NotNull Collection<?> c) {
-        return recipes.containsAll(c);
+    public boolean containsAll(@NotNull Collection<Recipe> collection) {
+        return recipes.containsAll(collection);
     }
 
     /**
@@ -134,12 +139,12 @@ public class ProcessRecipeSet<T extends Recipe> {
     /**
      * Removes a recipe from the set.
      * 
-     * @param o the recipe to remove
+     * @param recipe the recipe to remove
      * @return true if the recipe was removed
      */
-    public boolean remove(@NotNull Object o) {
-        if (recipes.remove(o)) {
-            recipeArray.remove(o);
+    public boolean remove(@NotNull Recipe recipe) {
+        if (recipes.remove(recipe)) {
+            recipeArray.remove(recipe);
             return true;
         }
         return false;
@@ -148,12 +153,12 @@ public class ProcessRecipeSet<T extends Recipe> {
     /**
      * Removes all recipes in the specified collection from the set.
      * 
-     * @param c the collection of recipes to remove
+     * @param collection the collection of recipes to remove
      * @return true if the set was modified
      */
-    public boolean removeAll(@NotNull Collection<?> c) {
+    public boolean removeAll(@NotNull Collection<Recipe> collection) {
         boolean modified = false;
-        for (Object recipe : c) {
+        for (Recipe recipe : collection) {
             modified |= remove(recipe);
         }
         return modified;
@@ -163,11 +168,11 @@ public class ProcessRecipeSet<T extends Recipe> {
      * Retains only the recipes in the set that are contained in the specified 
      * collection.
      * 
-     * @param c the collection of recipes to retain
+     * @param collection the collection of recipes to retain
      * @return true if the set was modified
      */
-    public boolean retainAll(@NotNull Collection<?> c) {
-        boolean modified = recipes.retainAll(c);
+    public boolean retainAll(@NotNull Collection<Recipe> collection) {
+        boolean modified = recipes.retainAll(collection);
         recipeArray.clear();
         recipeArray.addAll(recipes);
         
@@ -188,7 +193,7 @@ public class ProcessRecipeSet<T extends Recipe> {
      * @return an iterator over the recipes in the set
      */
     @NotNull
-    public Iterator<T> iterator() {
+    public Iterator<Recipe> iterator() {
         return recipeArray.iterator();
     }
 
@@ -198,28 +203,21 @@ public class ProcessRecipeSet<T extends Recipe> {
      * @return an array containing all of the recipes in the set
      */
     @NotNull
-    public T[] toArray() {
-        if (recipeArray.isEmpty()) {
-            @SuppressWarnings("unchecked")
-            T[] emptyArray = (T[]) new Recipe[0];
-            return emptyArray;
-        }
-        @SuppressWarnings("unchecked")
-        T[] array = (T[]) Array.newInstance(Recipe.class, recipeArray.size());
-        return recipeArray.toArray(array);
+    public Recipe[] toArray() {
+        return recipeArray.toArray(new Recipe[recipeArray.size()]);
     }
 
     /**
      * Returns an array containing all of the recipes in the set.
      * 
-     * @param a the array into which the recipes are to be stored, if it is big 
+     * @param array the array into which the recipes are to be stored, if it is big 
      * enough; otherwise, a new array of the same runtime type is allocated for 
      * this purpose
      * @return an array containing all of the recipes in the set
      */
     @NotNull
-    public T[] toArray(@NotNull T[] a) {
-        return recipeArray.toArray(a);
+    public Recipe[] toArray(@NotNull Recipe[] array) {
+        return recipeArray.toArray(array);
     }
 
     /**
@@ -229,24 +227,14 @@ public class ProcessRecipeSet<T extends Recipe> {
      * @param index the index of the recipe to return
      * @return the recipe at the specified index in the set
      */
-    public int indexOf(T recipe) {
+    public int indexOf(Recipe recipe) {
         if (recipe == null || !recipes.contains(recipe)) {
             return -1;
         }
         return recipeArray.indexOf(recipe);
     }
 
-    /**
-     * Returns the recipe at the specified index in the collection.
-     * 
-     * @param index the index of the recipe to return
-     * @return the recipe at the specified index in the collection
-     * @throws IndexOutOfBoundsException {@inheritDoc}
-     */
-    @NotNull
-    public T getVariant(int index) {
-        return recipeArray.get(index);
-    }
+    //#endregion Delegation
 
     /**
      * Returns a string representation of the set.

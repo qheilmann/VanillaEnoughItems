@@ -1,15 +1,16 @@
-package me.qheilmann.vei.Core.Recipe;
+package me.qheilmann.vei.Core.Recipe.Index;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.SequencedSet;
 import java.util.Set;
 import java.util.TreeMap;
-
+import java.util.function.BiPredicate;
 import javax.annotation.Nullable;
 
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.jetbrains.annotations.NotNull;
 
@@ -21,26 +22,62 @@ import me.qheilmann.vei.Core.Process.VanillaProcesses;
  * Contains all recipes for an item, including all variants and different
  * processes for a specific item.
  */
-public class ItemRecipeMap {
+public class MixedProcessRecipeMap {
     
-    private final NotNullMap<Process<?>, ProcessRecipeSet<?>> recipes;
+    private final NotNullMap<Process<?>, ProcessRecipeSet> recipes;
+    private final BiPredicate<Process<?>, ProcessRecipeSet> processPredicate = ((p, prs) -> true); // always true by default
 
-    public ItemRecipeMap() {
+    public MixedProcessRecipeMap() {
         this(Collections.emptyMap());
     }
 
-    public ItemRecipeMap(@NotNull Map<? extends Process<?>, ? extends ProcessRecipeSet<?>> recipeCollection) {
+    public MixedProcessRecipeMap(@NotNull Map<? extends Process<?>, ? extends ProcessRecipeSet> recipeCollection) {
         Comparator<Process<?>> processComparator = getProcessOrderComparator();
-        this.recipes = new NotNullMap<>(new TreeMap<>(processComparator), recipeCollection);
+        this.recipes = new NotNullMap<>(new TreeMap<>(processComparator));
+        for (var entry : recipeCollection.entrySet()) {
+            if (processPredicate.test(entry.getKey(), entry.getValue())) {
+                recipes.put(entry.getKey(), entry.getValue());
+            }
+        }
     }
 
-    public ItemStack getItem() {
-        return recipes.values().iterator().next().getItem();
-        // TODO check during ctor and add if all processSet is each time for the same item
-        // then change here to return the item of this map
+    /**
+     * Add a recipe to the map.
+     */
+    public void addRecipe(@NotNull Recipe recipe) {
+        Process<?> process = Process.ProcessRegistry.getProcesseByRecipe(recipe);
+        recipes.computeIfAbsent(process, p -> new ProcessRecipeSet()).add(recipe);
+    }
+
+    /**
+     * Remove a recipe from the map.
+     */
+    public void removeRecipe(@NotNull Recipe recipe) {
+        Process<?> process = Process.ProcessRegistry.getProcesseByRecipe(recipe);
+        ProcessRecipeSet processRecipeSet = recipes.get(process);
+        if (processRecipeSet != null) {
+            processRecipeSet.remove(recipe);
+
+            // Also remove the process if it has no recipes anymore
+            if (processRecipeSet.isEmpty()) {
+                recipes.remove(process);
+            }
+        }
+    }
+
+    /**
+     * Get all the recipes from each process.
+     */
+    public SequencedSet<Recipe> getAllRecipes() {
+        SequencedSet<Recipe> allRecipes = new LinkedHashSet<>();
+        for (ProcessRecipeSet processRecipeSet : recipes.values()) {
+            allRecipes.addAll(processRecipeSet.getAllRecipes());
+        }
+        return Collections.unmodifiableSequencedSet(allRecipes);
     }
 
     // Add methods to delegate to the wrapped NotNullMap
+    //#region Delegation
 
     /**
      * Returns the number of different processes used to craft the item.
@@ -66,7 +103,7 @@ public class ItemRecipeMap {
      * @param process the process to check for
      * @return true if the map contains the specified process
      */
-    public boolean containsProcess(@NotNull Object process) {     
+    public boolean containsProcess(@NotNull Process<?> process) {     
         return recipes.containsKey(process);
     }
 
@@ -78,9 +115,8 @@ public class ItemRecipeMap {
      * there is no mapping for the process
      */
     @Nullable
-    @SuppressWarnings("unchecked")
-    public <R extends Recipe> ProcessRecipeSet<R> getProcessRecipeSet(@NotNull Process<R> process) {
-        return (ProcessRecipeSet<R>) recipes.get(process);
+    public <R extends Recipe> ProcessRecipeSet getProcessRecipeSet(@NotNull Process<R> process) {
+        return recipes.get(process);
     }
 
     /**
@@ -92,25 +128,7 @@ public class ItemRecipeMap {
      * was no mapping for the process
      */
     @Nullable
-    @SuppressWarnings("unchecked")
-    public <R extends Recipe> ProcessRecipeSet<R> putProcessRecipeSet(@NotNull Process<R> process, @NotNull ProcessRecipeSet<R> recipeSet) {        
-        return (ProcessRecipeSet<R>) recipes.put(process, recipeSet);
-    }
-
-    /**
-     * Adds a new recipe set with the specified process to the map without type
-     * checking. The Process generic type must match the ProcessRecipeSet generic
-     * type, otherwise undefined behavior may occur.
-     * 
-     * @param process the process to add
-     * @param recipeSet the recipe set to add
-     * @return the previous value associated with the process, or null if there
-     * was no mapping for the process
-     * @throws IllegalArgumentException if the recipe set is not compatible with
-     * the process
-     */
-    @Nullable
-    public ProcessRecipeSet<?> unsafePutProcessRecipeSet(@NotNull Process<?> process, @NotNull ProcessRecipeSet<?> recipeSet) {
+    public <R extends Recipe> ProcessRecipeSet putProcessRecipeSet(@NotNull Process<R> process, @NotNull ProcessRecipeSet recipeSet) {        
         return recipes.put(process, recipeSet);
     }
 
@@ -122,9 +140,8 @@ public class ItemRecipeMap {
      * there was no mapping for the process
      */
     @Nullable
-    @SuppressWarnings("unchecked")
-    public <R extends Recipe> ProcessRecipeSet<R> removeProcessRecipeSet(@Nullable Process<R> process) {
-        return (ProcessRecipeSet<R>) recipes.remove(process);
+    public <R extends Recipe> ProcessRecipeSet removeProcessRecipeSet(@Nullable Process<R> process) {
+        return recipes.remove(process);
     }
 
     /**
@@ -140,7 +157,7 @@ public class ItemRecipeMap {
      * @return an unmodifiable view of the map
      */
     @NotNull
-    public Map<Process<?>, ProcessRecipeSet<?>> asMap() {
+    public Map<Process<?>, ProcessRecipeSet> asMap() {
         return Collections.unmodifiableMap(recipes);
     }
 
@@ -160,7 +177,7 @@ public class ItemRecipeMap {
      * @return a collection view of the recipe sets contained in the collection
      */
     @NotNull
-    public Collection<ProcessRecipeSet<?>> getAllProcessRecipeSet() {
+    public Collection<ProcessRecipeSet> getAllProcessRecipeSet() {
         return recipes.values();
     }
 
@@ -170,9 +187,11 @@ public class ItemRecipeMap {
      * @return a set view of the mappings contained in the map
      */
     @NotNull
-    public Set<Map.Entry<Process<?>, ProcessRecipeSet<?>>> entrySet() {
+    public Set<Map.Entry<Process<?>, ProcessRecipeSet>> entrySet() {
         return recipes.entrySet();
     }
+
+    //#endregion
 
     /**
      * Get the hash code of the map.

@@ -67,7 +67,7 @@ public record RecipePath(ItemStack itemStack, Process<?> process, int variant)
     public static RecipePath deserialize(Map<String, Object> args) {
         ItemStack itemStack = new ItemStack(Material.matchMaterial((String) args.get("itemStack")));
         int variant = (int) args.get("variant");
-        Process<?> process = Process.getProcessByName((String) args.get("process"));
+        Process<?> process = Process.ProcessRegistry.getProcessByName((String) args.get("process"));
 
         return new RecipePath(itemStack, process, variant);
     }

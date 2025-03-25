@@ -16,7 +16,8 @@ import me.qheilmann.vei.Core.GUI.GuiItem;
 import me.qheilmann.vei.Core.Menu.RecipeMenu;
 import me.qheilmann.vei.Core.ProcessPanel.ProcessPanel;
 import me.qheilmann.vei.Core.ProcessPanel.ProcessPanelSlot;
-import me.qheilmann.vei.Core.Recipe.ProcessRecipeSet;
+import me.qheilmann.vei.Core.Recipe.Index.ProcessRecipeSet;
+import me.qheilmann.vei.Core.Recipe.Index.ProcessSpecifiqueRecipeSet;
 import me.qheilmann.vei.Core.Slot.Collection.SlotRange;
 import me.qheilmann.vei.Core.Slot.Collection.SlotSequence;
 import me.qheilmann.vei.Core.Style.Styles.Style;
@@ -60,11 +61,11 @@ public class CraftingProcessPanel extends ProcessPanel<CraftingRecipe> {
 
     private static final Material WORKBENCH_DISPLAY_MATERIAL = Material.CRAFTING_TABLE;
 
-    public CraftingProcessPanel(@NotNull Style style, @NotNull ProcessRecipeSet<CraftingRecipe> recipes, int variant) {
+    public CraftingProcessPanel(@NotNull Style style, @NotNull ProcessSpecifiqueRecipeSet<CraftingRecipe> recipes, int variant) {
         super(style, recipes, variant);
     }
 
-    public CraftingProcessPanel(@NotNull Style style, @NotNull ProcessRecipeSet<CraftingRecipe> recipes) {
+    public CraftingProcessPanel(@NotNull Style style, @NotNull ProcessSpecifiqueRecipeSet<CraftingRecipe> recipes) {
         super(style, recipes);
     }
 

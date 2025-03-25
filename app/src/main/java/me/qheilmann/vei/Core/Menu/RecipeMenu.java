@@ -11,6 +11,7 @@ import javax.annotation.Nullable;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
+import java.lang.reflect.Type;
 
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -26,11 +27,12 @@ import me.qheilmann.vei.Command.CraftCommand;
 import me.qheilmann.vei.Core.GUI.BaseGui;
 import me.qheilmann.vei.Core.GUI.GuiItem;
 import me.qheilmann.vei.Core.ProcessPanel.ProcessPanel;
-import me.qheilmann.vei.Core.Recipe.ItemRecipeMap;
-import me.qheilmann.vei.Core.Recipe.ProcessRecipeSet;
 import me.qheilmann.vei.Core.Recipe.RecipeHistory;
 import me.qheilmann.vei.Core.Recipe.RecipePath;
 import me.qheilmann.vei.Core.Recipe.Bookmark.Bookmark;
+import me.qheilmann.vei.Core.Recipe.Index.MixedProcessRecipeMap;
+import me.qheilmann.vei.Core.Recipe.Index.ProcessRecipeSet;
+import me.qheilmann.vei.Core.Recipe.Index.ProcessSpecifiqueRecipeSet;
 import me.qheilmann.vei.Core.Process.Process;
 import me.qheilmann.vei.Core.Slot.Collection.SlotRange;
 import me.qheilmann.vei.Core.Slot.Implementation.MaxChestSlot;
@@ -105,7 +107,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
     private ProcessPanel<?> recipePanel;
 
     // Keeps track of the currently displayed recipe
-    private ItemRecipeMap itemRecipeMap;
+    private MixedProcessRecipeMap mixedProcessRecipeMap;
     private Process<?> currentProcess;
     private int currentVariant;
 
@@ -136,33 +138,44 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
     private boolean isMoveIngredientsVisible = false; // TODO: Implement move ingredients
     //#endregion Instance variables
 
-    public RecipeMenu(@NotNull Style style, @NotNull ItemRecipeMap itemRecipeMap) {
-        this(style, itemRecipeMap, itemRecipeMap.getAllProcess().iterator().next());
+    public RecipeMenu(@NotNull Style style, @NotNull MixedProcessRecipeMap mixedProcessRecipeMap) {
+        this(style, mixedProcessRecipeMap, mixedProcessRecipeMap.getAllProcess().iterator().next());
     }
 
-    public RecipeMenu(@NotNull Style style, @NotNull ItemRecipeMap itemRecipeMap, @Nullable Process<?> process) {
-        this(style, itemRecipeMap, process, 0);
+    public RecipeMenu(@NotNull Style style, @NotNull MixedProcessRecipeMap mixedProcessRecipeMap, @Nullable Process<?> process) {
+        this(style, mixedProcessRecipeMap, process, 0);
     }
 
-    public <R extends Recipe> RecipeMenu(@NotNull Style style, @NotNull ItemRecipeMap itemRecipeMap, @NotNull Process<R> process, int variant) {
+    public <R extends Recipe> RecipeMenu(@NotNull Style style, @NotNull MixedProcessRecipeMap mixedProcessRecipeMap, @NotNull Process<R> process, int variant) {
         super((owner) -> BaseGui.plugin.getServer().createInventory(owner, 6*9, Component.text("Recipe Menu")), InteractionModifier.VALUES);
 
         // Validate and set fields
         Objects.requireNonNull(style, "style cannot be null");
-        Objects.requireNonNull(itemRecipeMap, "itemRecipeMap cannot be null");
+        Objects.requireNonNull(mixedProcessRecipeMap, "mixedProcessRecipeMap cannot be null");
 
         this.style = style;
-        this.itemRecipeMap = itemRecipeMap;
+        this.mixedProcessRecipeMap = mixedProcessRecipeMap;
         this.currentProcess = process;
         this.currentVariant = variant;
 
-        ProcessRecipeSet<R> processRecipeSet = itemRecipeMap.getProcessRecipeSet(process);
+        ProcessRecipeSet processRecipeSet = mixedProcessRecipeMap.getProcessRecipeSet(process);
         Objects.requireNonNull(processRecipeSet, "No recipe set found for process: " + process.getProcessName());
 
         Recipe recipe = processRecipeSet.getVariant(variant);
         Objects.requireNonNull(recipe, "No variant " + variant + " inside the recipe set for process: " + process.getProcessName());
 
-        this.recipePanel = process.generateProcessPanel(style, processRecipeSet, variant);
+
+        // TODO TEMP way to transform a ProcessRecipeSet to a ProcessSpecifiqueRecipeSet<R>
+        ProcessSpecifiqueRecipeSet<R> processSpecifiqueRecipeSet = new ProcessSpecifiqueRecipeSet<R>();
+        for (Recipe processRecipe : processRecipeSet.getAllRecipes()) {
+            Type RClass = currentProcess.getClass().getGenericSuperclass();
+            if (!(RClass.getClass().isAssignableFrom(processRecipe.getClass()))) {
+                throw new IllegalArgumentException("The recipe class %s is not compatible with the process class %s".formatted(processRecipe.getClass().getName(), RClass.getClass().getName()));
+            }
+            processSpecifiqueRecipeSet.add((R) processRecipe);
+        }
+
+        this.recipePanel = process.generateProcessPanel(style, processSpecifiqueRecipeSet, variant);
 
         // Menu configuration
         initAllItem();
@@ -247,12 +260,12 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
     private void renderProcessRange() {
         // no clear old process needed here
 
-        if (itemRecipeMap.getAllProcess().size() > PROCESS_SLOT_RANGE.size()) {
+        if (mixedProcessRecipeMap.getAllProcess().size() > PROCESS_SLOT_RANGE.size()) {
             VanillaEnoughItems.LOGGER.warn("Not enough process slots to render all processes"); // TODO: Implement scroll page processes
         }
 
         Iterator<MaxChestSlot> slotIterator = PROCESS_SLOT_RANGE.iterator();
-        Iterator<Process<?>> processIterator = itemRecipeMap.getAllProcess().iterator();
+        Iterator<Process<?>> processIterator = mixedProcessRecipeMap.getAllProcess().iterator();
 
         while (slotIterator.hasNext() && processIterator.hasNext()) {
             MaxChestSlot slot = slotIterator.next();
@@ -570,7 +583,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
     private void forwardRecipeAction(InventoryClickEvent event, RecipeMenu menu) {
         RecipePath recipePath = VanillaEnoughItems.recipeHistoryMap.get(event.getWhoClicked().getUniqueId()).goForward();
         if (recipePath != null) {
-            RecipeMenu newRecipeMenu = new RecipeMenu(style, VanillaEnoughItems.allRecipesMap.getItemRecipeMap(recipePath.getItemStack()), recipePath.getProcess(), recipePath.getVariant());
+            RecipeMenu newRecipeMenu = new RecipeMenu(style, VanillaEnoughItems.allRecipesMap.getMixedProcessRecipeMap(recipePath.getItemStack()), recipePath.getProcess(), recipePath.getVariant());
             newRecipeMenu.open(event.getWhoClicked(), false);
         } else {
             event.getWhoClicked().sendMessage("No Forward recipe"); // TODO complete show/hide button
@@ -580,7 +593,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
     private void backwardRecipeAction(InventoryClickEvent event, RecipeMenu menu) {
         RecipePath recipePath = VanillaEnoughItems.recipeHistoryMap.get(event.getWhoClicked().getUniqueId()).goBack();
         if (recipePath != null) {
-            RecipeMenu newRecipeMenu = new RecipeMenu(style, VanillaEnoughItems.allRecipesMap.getItemRecipeMap(recipePath.getItemStack()), recipePath.getProcess(), recipePath.getVariant());
+            RecipeMenu newRecipeMenu = new RecipeMenu(style, VanillaEnoughItems.allRecipesMap.getMixedProcessRecipeMap(recipePath.getItemStack()), recipePath.getProcess(), recipePath.getVariant());
             newRecipeMenu.open(event.getWhoClicked(), false);
         } else {
             event.getWhoClicked().sendMessage("No Backward recipe"); // TODO complete show/hide button
@@ -595,8 +608,19 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         currentProcess = process;
         currentVariant = 0;
 
-        ProcessRecipeSet<R> processRecipeSet = itemRecipeMap.getProcessRecipeSet(process);
-        recipePanel = process.generateProcessPanel(style, processRecipeSet, currentVariant);
+        ProcessRecipeSet processRecipeSet = mixedProcessRecipeMap.getProcessRecipeSet(process);
+
+        // TODO TEMP way to transform a ProcessRecipeSet to a ProcessSpecifiqueRecipeSet<R>
+        ProcessSpecifiqueRecipeSet<R> processSpecifiqueRecipeSet = new ProcessSpecifiqueRecipeSet<R>();
+        for (Recipe processRecipe : processRecipeSet.getAllRecipes()) {
+            Type RClass = currentProcess.getClass().getGenericSuperclass();
+            if (!(RClass.getClass().isAssignableFrom(processRecipe.getClass()))) {
+                throw new IllegalArgumentException("The recipe class %s is not compatible with the process class %s".formatted(processRecipe.getClass().getName(), currentProcess.getClass().getName()));
+            }
+            processSpecifiqueRecipeSet.add((R) processRecipe);
+        }
+
+        recipePanel = process.generateProcessPanel(style, processSpecifiqueRecipeSet, currentVariant);
         initProcessPanel();
 
         render();
@@ -604,12 +628,12 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
 
     private void workbenchOptionAction(InventoryClickEvent event, ItemStack clickedWorkbench) {
         
-        ItemRecipeMap  newItemRecipeMap = VanillaEnoughItems.allRecipesMap.getItemRecipeMap(clickedWorkbench);
-        if (newItemRecipeMap == null) {
+        MixedProcessRecipeMap  newMixedProcessRecipeMap = VanillaEnoughItems.allRecipesMap.getMixedProcessRecipeMap(clickedWorkbench);
+        if (newMixedProcessRecipeMap == null) {
             return;
         }
 
-        RecipeMenu menu = new RecipeMenu(style, newItemRecipeMap);
+        RecipeMenu menu = new RecipeMenu(style, newMixedProcessRecipeMap);
         menu.open(event.getWhoClicked());
     }
 
@@ -632,12 +656,19 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
                     recipeHistory = new RecipeHistory();
                     VanillaEnoughItems.recipeHistoryMap.put(uuid, recipeHistory);
                 }
-                RecipePath recipePath = new RecipePath(itemRecipeMap.getItem(), currentProcess, currentVariant);
+
+                ProcessRecipeSet processRecipeSet = mixedProcessRecipeMap.getProcessRecipeSet(currentProcess);
+                if (processRecipeSet == null) {
+                    VanillaEnoughItems.LOGGER.warn("No recipe found for process: %s".formatted(currentProcess.getProcessName()));
+                    return null;
+                }
+                ItemStack currentResultItemStack = processRecipeSet.getVariant(currentVariant).getResult();
+                RecipePath recipePath = new RecipePath(currentResultItemStack, currentProcess, currentVariant);
                 recipeHistory.push(recipePath);
             }
 
             // TODO TEMP
-            ProcessRecipeSet<?> processRecipeSet = itemRecipeMap.getProcessRecipeSet(currentProcess);
+            ProcessRecipeSet processRecipeSet = mixedProcessRecipeMap.getProcessRecipeSet(currentProcess);
             if (processRecipeSet == null) {
                 VanillaEnoughItems.LOGGER.warn("No recipe found for process: %s".formatted(currentProcess.getProcessName()));
                 return null;
@@ -730,13 +761,20 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         return set;
     }
 
+    // TODO redo by recipeId
     /**
      * Get the quick link string to open the recipe menu with the current item, process and variant.
      * @return the quick link string with something like "/craft minecraft:iron_ingot smelting 2"
      */
     private String getQuickLinkString() {
+        ProcessRecipeSet processRecipeSet = mixedProcessRecipeMap.getProcessRecipeSet(currentProcess);
+        if (processRecipeSet == null) {
+            VanillaEnoughItems.LOGGER.warn("No recipe found for process: %s".formatted(currentProcess.getProcessName()));
+            return "";
+        }
+        ItemStack currentResultItemStack = processRecipeSet.getVariant(currentVariant).getResult();
         return "/" + CraftCommand.NAME + " " 
-            + itemRecipeMap.getItem().getType().getKey() + " " 
+            + currentResultItemStack.getType().getKey() + " " 
             +  currentProcess.getProcessName().toLowerCase() + " " 
             + (currentVariant + 1); // (Command is 1 based because of the final user)
     }

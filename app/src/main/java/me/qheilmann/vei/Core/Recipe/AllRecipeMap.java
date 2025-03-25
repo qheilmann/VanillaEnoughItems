@@ -10,11 +10,13 @@ import javax.annotation.Nullable;
 
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
+
+import me.qheilmann.vei.Core.Recipe.Index.MixedProcessRecipeMap;
 import me.qheilmann.vei.Core.Utils.NotNullMap;
 
 public class AllRecipeMap {
 
-    private final NotNullMap<ItemStack, ItemRecipeMap> recipes;
+    private final NotNullMap<ItemStack, MixedProcessRecipeMap> recipes;
 
     public AllRecipeMap() {
         this.recipes = new NotNullMap<>(new HashMap<>());
@@ -62,7 +64,7 @@ public class AllRecipeMap {
      * @return the recipes map for the specified item
      */
     @Nullable
-    public ItemRecipeMap getItemRecipeMap(@Nullable ItemStack item) {
+    public MixedProcessRecipeMap getMixedProcessRecipeMap(@Nullable ItemStack item) {
         ItemStack singleItem = getSingleItem(item);
         if (singleItem == null) {
             return null;
@@ -78,7 +80,7 @@ public class AllRecipeMap {
      * @return the previous recipe map for the item, or null if there was none
      */    
     @Nullable
-    public ItemRecipeMap putItemRecipeMap(@NotNull ItemStack item, @NotNull ItemRecipeMap recipeMap) {
+    public MixedProcessRecipeMap putMixedProcessRecipeMap(@NotNull ItemStack item, @NotNull MixedProcessRecipeMap recipeMap) {
         ItemStack singleItem = getSingleItem(item);
         if (singleItem == null) {
             return null;
@@ -94,7 +96,7 @@ public class AllRecipeMap {
      * @return the recipe map for the item, or null if there was none
      */
     @Nullable
-    public ItemRecipeMap remove(@Nullable Object item) {
+    public MixedProcessRecipeMap remove(@Nullable Object item) {
         ItemStack singleItem = getSingleItem(item);
         if (singleItem == null) {
             return null;
@@ -132,7 +134,7 @@ public class AllRecipeMap {
      * Returns an unmodifiable view of the map.
      */
     @NotNull
-    public Map<ItemStack, ItemRecipeMap> asMap() {
+    public Map<ItemStack, MixedProcessRecipeMap> asMap() {
         return Collections.unmodifiableMap(recipes);
     }
 
@@ -140,7 +142,7 @@ public class AllRecipeMap {
      * Returns a collection view of the recipe maps contained in the map.
      */
     @NotNull
-    public Collection<ItemRecipeMap> recipeMapSet() {
+    public Collection<MixedProcessRecipeMap> recipeMapSet() {
         return recipes.values();
     }
 
@@ -148,7 +150,7 @@ public class AllRecipeMap {
      * Returns a set view of the mappings contained in this map.
      */
     @NotNull
-    public Set<Map.Entry<ItemStack, ItemRecipeMap>> entrySet() {
+    public Set<Map.Entry<ItemStack, MixedProcessRecipeMap>> entrySet() {
         return recipes.entrySet();
     }
 

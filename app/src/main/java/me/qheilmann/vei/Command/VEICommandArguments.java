@@ -17,7 +17,7 @@ public class VEICommandArguments {
     public static Argument<Process<?>> processArgument(String nodeName) {
         return new CustomArgument<Process<?>, String>(new StringArgument(nodeName), (input) -> {
             String processName = input.input().toLowerCase();
-            Process<?> process = Process.getProcessByName(processName);
+            Process<?> process = Process.ProcessRegistry.getProcessByName(processName);
 
             if (process == null) {
                 throw CustomArgumentException.fromMessageBuilder(new MessageBuilder("Unknown process: ").appendArgInput());

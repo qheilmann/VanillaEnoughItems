@@ -13,8 +13,8 @@ import org.jetbrains.annotations.NotNull;
 import me.qheilmann.vei.VanillaEnoughItems;
 import me.qheilmann.vei.Core.Menu.RecipeMenu;
 import me.qheilmann.vei.Core.Process.Process;
-import me.qheilmann.vei.Core.Recipe.ItemRecipeMap;
-import me.qheilmann.vei.Core.Recipe.ProcessRecipeSet;
+import me.qheilmann.vei.Core.Recipe.Index.MixedProcessRecipeMap;
+import me.qheilmann.vei.Core.Recipe.Index.ProcessRecipeSet;
 import me.qheilmann.vei.Core.Style.Styles.Style;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
@@ -36,24 +36,24 @@ public class MenuManager {
      * which will run the task on the next tick.
      */
     public void openRecipeMenu(@NotNull Player player, @NotNull ItemStack item, @Nullable Process<?> process, int variant) {
-        ItemRecipeMap itemRecipeMap = VanillaEnoughItems.allRecipesMap.getItemRecipeMap(item);
-        ProcessRecipeSet<?> processRecipeSet;
+        MixedProcessRecipeMap mixedProcessRecipeMap = VanillaEnoughItems.allRecipesMap.getMixedProcessRecipeMap(item);
+        ProcessRecipeSet processRecipeSet;
 
-        if (itemRecipeMap == null) {
+        if (mixedProcessRecipeMap == null) {
             player.sendMessage(Component.text("No recipe found for this item %s".formatted(item.getType().name())).color(TextColor.color(0xFB5454)));
             return;
         }
 
         if (process != null) {
-            if (!itemRecipeMap.containsProcess(process)) {
+            if (!mixedProcessRecipeMap.containsProcess(process)) {
                 player.sendMessage(Component.text("The process %s does not exist for this item".formatted(process.getProcessName())).color(TextColor.color(0xFB5454)));
                 return;
             }
         } else {
-            process = itemRecipeMap.getAllProcess().iterator().next();
+            process = mixedProcessRecipeMap.getAllProcess().iterator().next();
         }
 
-        processRecipeSet = itemRecipeMap.getProcessRecipeSet(process);
+        processRecipeSet = mixedProcessRecipeMap.getProcessRecipeSet(process);
         if (processRecipeSet == null) {
             throw new RuntimeException("The processRecipeSet is null, it should not be null");
         }
@@ -63,7 +63,7 @@ public class MenuManager {
             return;
         }
 
-        RecipeMenu recipeMenu = new RecipeMenu(style, itemRecipeMap, process, variant);
+        RecipeMenu recipeMenu = new RecipeMenu(style, mixedProcessRecipeMap, process, variant);
         recipeMenu.open(player);
     }
 

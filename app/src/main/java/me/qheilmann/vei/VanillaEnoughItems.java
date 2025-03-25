@@ -26,12 +26,12 @@ import me.qheilmann.vei.Core.GUI.BaseGui;
 import me.qheilmann.vei.Core.Process.Process;
 import me.qheilmann.vei.Core.Process.VanillaProcesses;
 import me.qheilmann.vei.Core.Recipe.AllRecipeMap;
-import me.qheilmann.vei.Core.Recipe.ItemRecipeMap;
-import me.qheilmann.vei.Core.Recipe.ProcessRecipeSet;
 import me.qheilmann.vei.Core.Recipe.RecipeHistory;
 import me.qheilmann.vei.Core.Recipe.RecipePath;
 import me.qheilmann.vei.Core.Recipe.Bookmark.Bookmark;
 import me.qheilmann.vei.Core.Recipe.Bookmark.Repository.InMemoryBookmarkRepository;
+import me.qheilmann.vei.Core.Recipe.Index.MixedProcessRecipeMap;
+import me.qheilmann.vei.Core.Recipe.Index.ProcessRecipeSet;
 import me.qheilmann.vei.Core.Style.StyleManager;
 import me.qheilmann.vei.Listener.InventoryClickListener;
 import me.qheilmann.vei.Listener.InventoryDragListener;
@@ -73,7 +73,7 @@ public class VanillaEnoughItems extends JavaPlugin {
 
         addTemporaryRecipe(); // TEMP
 
-        Process.registerProcesses(VanillaProcesses.getAllVanillaProcesses());
+        Process.ProcessRegistry.registerProcesses(VanillaProcesses.getAllVanillaProcesses());
         fillRecipeMap();
 
         Bookmark.init(new InMemoryBookmarkRepository());
@@ -229,7 +229,7 @@ public class VanillaEnoughItems extends JavaPlugin {
 
         // [Set a new bookmark]
         VanillaEnoughItems.LOGGER.info("[Set a new bookmark]");
-        RecipePath newRecipePath = new RecipePath(new ItemStack(Material.DIAMOND_SWORD), Process.getProcessByName("Crafting"), 0);
+        RecipePath newRecipePath = new RecipePath(new ItemStack(Material.DIAMOND_SWORD), Process.ProcessRegistry.getProcessByName("Crafting"), 0);
         UUID playerUuid = UUID.fromString("81376bb8-5576-47bc-a2d9-89d98746d3ec"); 
         
         // Serialize and find the target player
@@ -287,32 +287,32 @@ public class VanillaEnoughItems extends JavaPlugin {
         while (recipeIterator.hasNext()) {
             Recipe recipe =  recipeIterator.next();
             ItemStack result = recipe.getResult();
-            Process<?> process = Process.getProcesseByRecipe(recipe);
+            Process<?> process = Process.ProcessRegistry.getProcesseByRecipe(recipe);
 
             if (result == null) {
                 continue;
             }
 
             // Get/create the item recipe map
-            ItemRecipeMap itemRecipeMap;
+            MixedProcessRecipeMap mixedProcessRecipeMap;
             if (allRecipesMap.containsItem(result)) {
-                itemRecipeMap = allRecipesMap.getItemRecipeMap(result);
+                mixedProcessRecipeMap = allRecipesMap.getMixedProcessRecipeMap(result);
             } else {
-                itemRecipeMap = new ItemRecipeMap();
-                allRecipesMap.putItemRecipeMap(result, itemRecipeMap);
+                mixedProcessRecipeMap = new MixedProcessRecipeMap();
+                allRecipesMap.putMixedProcessRecipeMap(result, mixedProcessRecipeMap);
             }
 
             // Get/create the process recipe set
-            ProcessRecipeSet<?> processRecipeSet;
-            if (itemRecipeMap.containsProcess(process)) {
-                processRecipeSet = itemRecipeMap.getProcessRecipeSet(process);
+            ProcessRecipeSet processRecipeSet;
+            if (mixedProcessRecipeMap.containsProcess(process)) {
+                processRecipeSet = mixedProcessRecipeMap.getProcessRecipeSet(process);
             } else {
-                processRecipeSet = new ProcessRecipeSet<>();
-                itemRecipeMap.unsafePutProcessRecipeSet(process, processRecipeSet);
+                processRecipeSet = new ProcessRecipeSet();
+                mixedProcessRecipeMap.putProcessRecipeSet(process, processRecipeSet);
             }
 
             // Add the recipe to the process recipe set
-            if (!processRecipeSet.tryAdd(recipe) && !processRecipeSet.contains(recipe)) {
+            if (!processRecipeSet.add(recipe) && !processRecipeSet.contains(recipe)) {
                 throw new IllegalStateException("Recipe cannot be added to the process recipe set, the recipe type is not the same as the process recipe set type");
             }
         }
