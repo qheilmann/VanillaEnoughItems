@@ -14,7 +14,7 @@ public class IndexRecipeService {
     private final NotNullMap<ItemStack, MixedProcessRecipeMap> recipesByResult = new NotNullMap<>(new HashMap<>());
     @SuppressWarnings("unused") // TODO: Implement recipesByIngredient index
     private final NotNullMap<ItemStack, MixedProcessRecipeMap> recipesByIngredient = new NotNullMap<>(new HashMap<>());
-    private final NotNullMap<Process<? extends Recipe>, ProcessRecipeSet> recipesByProcess = new NotNullMap<>(new HashMap<>());
+    private final NotNullMap<Process<?>, ProcessRecipeSet<?>> recipesByProcess = new NotNullMap<>(new HashMap<>());
 
     public void addRecipe(Recipe recipe) {
         // Index by ID
@@ -32,7 +32,7 @@ public class IndexRecipeService {
 
         // Index by process
         Process<?> process = Process.ProcessRegistry.getProcesseByRecipe(recipe);
-        recipesByProcess.computeIfAbsent(process, p -> new ProcessRecipeSet()).add(recipe);
+        recipesByProcess.computeIfAbsent(process, p -> new ProcessRecipeSet<>()).unsafeAdd(recipe);
     }
 
     public void removeRecipe(Recipe recipe) {
@@ -60,9 +60,9 @@ public class IndexRecipeService {
 
         // Remove from process index
         Process<?> process = Process.ProcessRegistry.getProcesseByRecipe(recipe);
-        ProcessRecipeSet processRecipeSet = recipesByProcess.get(process);
+        ProcessRecipeSet<?> processRecipeSet = recipesByProcess.get(process);
         if (processRecipeSet != null) {
-            processRecipeSet.remove(recipe);
+            processRecipeSet.unsafeRemove(recipe);
 
             // Also remove the process if it has no recipes anymore
             if (processRecipeSet.isEmpty()) {

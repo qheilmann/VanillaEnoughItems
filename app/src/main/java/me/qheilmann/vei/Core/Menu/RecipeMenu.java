@@ -11,8 +11,6 @@ import javax.annotation.Nullable;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
-import java.lang.reflect.Type;
-
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.InventoryView;
@@ -32,7 +30,6 @@ import me.qheilmann.vei.Core.Recipe.RecipePath;
 import me.qheilmann.vei.Core.Recipe.Bookmark.Bookmark;
 import me.qheilmann.vei.Core.Recipe.Index.MixedProcessRecipeMap;
 import me.qheilmann.vei.Core.Recipe.Index.ProcessRecipeSet;
-import me.qheilmann.vei.Core.Recipe.Index.ProcessSpecifiqueRecipeSet;
 import me.qheilmann.vei.Core.Process.Process;
 import me.qheilmann.vei.Core.Slot.Collection.SlotRange;
 import me.qheilmann.vei.Core.Slot.Implementation.MaxChestSlot;
@@ -158,24 +155,13 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         this.currentProcess = process;
         this.currentVariant = variant;
 
-        ProcessRecipeSet processRecipeSet = mixedProcessRecipeMap.getProcessRecipeSet(process);
+        ProcessRecipeSet<R> processRecipeSet = mixedProcessRecipeMap.getProcessRecipeSet(process);
         Objects.requireNonNull(processRecipeSet, "No recipe set found for process: " + process.getProcessName());
 
         Recipe recipe = processRecipeSet.getVariant(variant);
         Objects.requireNonNull(recipe, "No variant " + variant + " inside the recipe set for process: " + process.getProcessName());
 
-
-        // TODO TEMP way to transform a ProcessRecipeSet to a ProcessSpecifiqueRecipeSet<R>
-        ProcessSpecifiqueRecipeSet<R> processSpecifiqueRecipeSet = new ProcessSpecifiqueRecipeSet<R>();
-        for (Recipe processRecipe : processRecipeSet.getAllRecipes()) {
-            Type RClass = currentProcess.getClass().getGenericSuperclass();
-            if (!(RClass.getClass().isAssignableFrom(processRecipe.getClass()))) {
-                throw new IllegalArgumentException("The recipe class %s is not compatible with the process class %s".formatted(processRecipe.getClass().getName(), RClass.getClass().getName()));
-            }
-            processSpecifiqueRecipeSet.add((R) processRecipe);
-        }
-
-        this.recipePanel = process.generateProcessPanel(style, processSpecifiqueRecipeSet, variant);
+        this.recipePanel = process.generateProcessPanel(style, processRecipeSet, variant);
 
         // Menu configuration
         initAllItem();
@@ -608,19 +594,9 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         currentProcess = process;
         currentVariant = 0;
 
-        ProcessRecipeSet processRecipeSet = mixedProcessRecipeMap.getProcessRecipeSet(process);
+        ProcessRecipeSet<R> processRecipeSet = mixedProcessRecipeMap.getProcessRecipeSet(process);
 
-        // TODO TEMP way to transform a ProcessRecipeSet to a ProcessSpecifiqueRecipeSet<R>
-        ProcessSpecifiqueRecipeSet<R> processSpecifiqueRecipeSet = new ProcessSpecifiqueRecipeSet<R>();
-        for (Recipe processRecipe : processRecipeSet.getAllRecipes()) {
-            Type RClass = currentProcess.getClass().getGenericSuperclass();
-            if (!(RClass.getClass().isAssignableFrom(processRecipe.getClass()))) {
-                throw new IllegalArgumentException("The recipe class %s is not compatible with the process class %s".formatted(processRecipe.getClass().getName(), currentProcess.getClass().getName()));
-            }
-            processSpecifiqueRecipeSet.add((R) processRecipe);
-        }
-
-        recipePanel = process.generateProcessPanel(style, processSpecifiqueRecipeSet, currentVariant);
+        recipePanel = process.generateProcessPanel(style, processRecipeSet, currentVariant);
         initProcessPanel();
 
         render();
@@ -657,7 +633,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
                     VanillaEnoughItems.recipeHistoryMap.put(uuid, recipeHistory);
                 }
 
-                ProcessRecipeSet processRecipeSet = mixedProcessRecipeMap.getProcessRecipeSet(currentProcess);
+                ProcessRecipeSet<?> processRecipeSet = mixedProcessRecipeMap.getProcessRecipeSet(currentProcess);
                 if (processRecipeSet == null) {
                     VanillaEnoughItems.LOGGER.warn("No recipe found for process: %s".formatted(currentProcess.getProcessName()));
                     return null;
@@ -668,7 +644,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
             }
 
             // TODO TEMP
-            ProcessRecipeSet processRecipeSet = mixedProcessRecipeMap.getProcessRecipeSet(currentProcess);
+            ProcessRecipeSet<?> processRecipeSet = mixedProcessRecipeMap.getProcessRecipeSet(currentProcess);
             if (processRecipeSet == null) {
                 VanillaEnoughItems.LOGGER.warn("No recipe found for process: %s".formatted(currentProcess.getProcessName()));
                 return null;
@@ -767,7 +743,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
      * @return the quick link string with something like "/craft minecraft:iron_ingot smelting 2"
      */
     private String getQuickLinkString() {
-        ProcessRecipeSet processRecipeSet = mixedProcessRecipeMap.getProcessRecipeSet(currentProcess);
+        ProcessRecipeSet<?> processRecipeSet = mixedProcessRecipeMap.getProcessRecipeSet(currentProcess);
         if (processRecipeSet == null) {
             VanillaEnoughItems.LOGGER.warn("No recipe found for process: %s".formatted(currentProcess.getProcessName()));
             return "";

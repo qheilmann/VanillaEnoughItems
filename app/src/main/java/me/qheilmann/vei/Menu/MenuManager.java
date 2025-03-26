@@ -37,7 +37,7 @@ public class MenuManager {
      */
     public void openRecipeMenu(@NotNull Player player, @NotNull ItemStack item, @Nullable Process<?> process, int variant) {
         MixedProcessRecipeMap mixedProcessRecipeMap = VanillaEnoughItems.allRecipesMap.getMixedProcessRecipeMap(item);
-        ProcessRecipeSet processRecipeSet;
+        ProcessRecipeSet<?> processRecipeSet;
 
         if (mixedProcessRecipeMap == null) {
             player.sendMessage(Component.text("No recipe found for this item %s".formatted(item.getType().name())).color(TextColor.color(0xFB5454)));

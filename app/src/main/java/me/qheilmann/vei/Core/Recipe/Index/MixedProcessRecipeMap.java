@@ -24,14 +24,14 @@ import me.qheilmann.vei.Core.Process.VanillaProcesses;
  */
 public class MixedProcessRecipeMap {
     
-    private final NotNullMap<Process<?>, ProcessRecipeSet> recipes;
-    private final BiPredicate<Process<?>, ProcessRecipeSet> processPredicate = ((p, prs) -> true); // always true by default
+    private final NotNullMap<Process<?>, ProcessRecipeSet<?>> recipes;
+    private final BiPredicate<Process<?>, ProcessRecipeSet<?>> processPredicate = ((p, prs) -> true); // always true by default
 
     public MixedProcessRecipeMap() {
         this(Collections.emptyMap());
     }
 
-    public MixedProcessRecipeMap(@NotNull Map<? extends Process<?>, ? extends ProcessRecipeSet> recipeCollection) {
+    public MixedProcessRecipeMap(@NotNull Map<? extends Process<?>, ProcessRecipeSet<? extends Recipe>> recipeCollection) {
         Comparator<Process<?>> processComparator = getProcessOrderComparator();
         this.recipes = new NotNullMap<>(new TreeMap<>(processComparator));
         for (var entry : recipeCollection.entrySet()) {
@@ -46,17 +46,24 @@ public class MixedProcessRecipeMap {
      */
     public void addRecipe(@NotNull Recipe recipe) {
         Process<?> process = Process.ProcessRegistry.getProcesseByRecipe(recipe);
-        recipes.computeIfAbsent(process, p -> new ProcessRecipeSet()).add(recipe);
+        ProcessRecipeSet<?> processRecipeSet = recipes.computeIfAbsent(process, p -> new ProcessRecipeSet<>());
+        processRecipeSet.unsafeAdd(recipe);
     }
 
     /**
-     * Remove a recipe from the map.
+     * Removes a recipe from the map.
+     * <p>
+     * If the process's recipe set associated with the recipe no longer contains any recipes,
+     * the process's recipe set is also removed from the map.
+     * <p>
+     * If the recipe is not present in its associated process's recipe set or if
+     * the process itself is not in the map, no action is taken.
      */
     public void removeRecipe(@NotNull Recipe recipe) {
         Process<?> process = Process.ProcessRegistry.getProcesseByRecipe(recipe);
-        ProcessRecipeSet processRecipeSet = recipes.get(process);
+        ProcessRecipeSet<?> processRecipeSet = recipes.get(process);
         if (processRecipeSet != null) {
-            processRecipeSet.remove(recipe);
+            processRecipeSet.unsafeRemove(recipe);
 
             // Also remove the process if it has no recipes anymore
             if (processRecipeSet.isEmpty()) {
@@ -70,7 +77,7 @@ public class MixedProcessRecipeMap {
      */
     public SequencedSet<Recipe> getAllRecipes() {
         SequencedSet<Recipe> allRecipes = new LinkedHashSet<>();
-        for (ProcessRecipeSet processRecipeSet : recipes.values()) {
+        for (ProcessRecipeSet<?> processRecipeSet : recipes.values()) {
             allRecipes.addAll(processRecipeSet.getAllRecipes());
         }
         return Collections.unmodifiableSequencedSet(allRecipes);
@@ -115,8 +122,8 @@ public class MixedProcessRecipeMap {
      * there is no mapping for the process
      */
     @Nullable
-    public <R extends Recipe> ProcessRecipeSet getProcessRecipeSet(@NotNull Process<R> process) {
-        return recipes.get(process);
+    public <R extends Recipe> ProcessRecipeSet<R> getProcessRecipeSet(@NotNull Process<R> process) {
+        return (ProcessRecipeSet<R>) recipes.get(process);
     }
 
     /**
@@ -128,7 +135,35 @@ public class MixedProcessRecipeMap {
      * was no mapping for the process
      */
     @Nullable
-    public <R extends Recipe> ProcessRecipeSet putProcessRecipeSet(@NotNull Process<R> process, @NotNull ProcessRecipeSet recipeSet) {        
+    public <R extends Recipe> ProcessRecipeSet<R> putProcessRecipeSet(@NotNull Process<R> process, @NotNull ProcessRecipeSet<R> recipeSet) {        
+        return (ProcessRecipeSet<R>) recipes.put(process, recipeSet);
+    }
+
+    /**
+     * Adds a new recipe set with the specified process to the map without type
+     * checking. The Process generic type must match the ProcessRecipeSet generic
+     * type, otherwise undefined behavior may occur.
+     * 
+     * @param process the process to add
+     * @param recipeSet the recipe set to add
+     * @return the previous value associated with the process, or null if there
+     * was no mapping for the process
+     * @throws IllegalArgumentException if the recipe set is not compatible with
+     * the process
+     */
+    @Nullable
+    @SuppressWarnings("unused")
+    private ProcessRecipeSet<?> unsafePutProcessRecipeSet(@NotNull Process<?> process, @NotNull ProcessRecipeSet<?> recipeSet) {
+        // Check if the recipe set is compatible with the process
+        var classes = process.getRecipeClasses();
+        for (var recipeClass : classes) {
+            if (recipeSet.iterator().next().getClass().isAssignableFrom(recipeClass)) {
+                break;
+            }
+            throw new IllegalArgumentException("Recipe set (%s also %s) is not compatible with process (%s also %s)"
+                    .formatted(recipeSet.getClass(), recipeSet.getClass().getGenericSuperclass(), process.getClass(), process.getClass().getGenericSuperclass()));
+        }
+
         return recipes.put(process, recipeSet);
     }
 
@@ -140,8 +175,9 @@ public class MixedProcessRecipeMap {
      * there was no mapping for the process
      */
     @Nullable
-    public <R extends Recipe> ProcessRecipeSet removeProcessRecipeSet(@Nullable Process<R> process) {
-        return recipes.remove(process);
+    @SuppressWarnings("unchecked")
+    public <R extends Recipe> ProcessRecipeSet<R> removeProcessRecipeSet(@Nullable Process<R> process) {
+        return (ProcessRecipeSet<R>) recipes.remove(process);
     }
 
     /**
@@ -157,7 +193,7 @@ public class MixedProcessRecipeMap {
      * @return an unmodifiable view of the map
      */
     @NotNull
-    public Map<Process<?>, ProcessRecipeSet> asMap() {
+    public Map<Process<?>, ProcessRecipeSet<?>> asMap() {
         return Collections.unmodifiableMap(recipes);
     }
 
@@ -177,7 +213,7 @@ public class MixedProcessRecipeMap {
      * @return a collection view of the recipe sets contained in the collection
      */
     @NotNull
-    public Collection<ProcessRecipeSet> getAllProcessRecipeSet() {
+    public Collection<ProcessRecipeSet<?>> getAllProcessRecipeSet() {
         return recipes.values();
     }
 
@@ -187,7 +223,7 @@ public class MixedProcessRecipeMap {
      * @return a set view of the mappings contained in the map
      */
     @NotNull
-    public Set<Map.Entry<Process<?>, ProcessRecipeSet>> entrySet() {
+    public Set<Map.Entry<Process<?>, ProcessRecipeSet<?>>> entrySet() {
         return recipes.entrySet();
     }
 

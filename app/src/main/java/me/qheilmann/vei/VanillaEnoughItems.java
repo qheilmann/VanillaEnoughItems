@@ -302,19 +302,22 @@ public class VanillaEnoughItems extends JavaPlugin {
                 allRecipesMap.putMixedProcessRecipeMap(result, mixedProcessRecipeMap);
             }
 
-            // Get/create the process recipe set
-            ProcessRecipeSet processRecipeSet;
-            if (mixedProcessRecipeMap.containsProcess(process)) {
-                processRecipeSet = mixedProcessRecipeMap.getProcessRecipeSet(process);
-            } else {
-                processRecipeSet = new ProcessRecipeSet();
-                mixedProcessRecipeMap.putProcessRecipeSet(process, processRecipeSet);
-            }
+            mixedProcessRecipeMap.addRecipe(recipe);
 
-            // Add the recipe to the process recipe set
-            if (!processRecipeSet.add(recipe) && !processRecipeSet.contains(recipe)) {
-                throw new IllegalStateException("Recipe cannot be added to the process recipe set, the recipe type is not the same as the process recipe set type");
-            }
+
+            // // Get/create the process recipe set
+            // ProcessRecipeSet<?> processRecipeSet;
+            // if (mixedProcessRecipeMap.containsProcess(process)) {
+            //     processRecipeSet = mixedProcessRecipeMap.getProcessRecipeSet(process);
+            // } else {
+            //     processRecipeSet = new ProcessRecipeSet<>();
+            //     mixedProcessRecipeMap.putProcessRecipeSet(process, processRecipeSet);
+            // }
+
+            // // Add the recipe to the process recipe set
+            // if (!processRecipeSet.add(recipe) && !processRecipeSet.contains(recipe)) {
+            //     throw new IllegalStateException("Recipe cannot be added to the process recipe set, the recipe type is not the same as the process recipe set type");
+            // }
         }
 
         // Check the recipe map

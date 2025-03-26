@@ -1,5 +1,6 @@
 package me.qheilmann.vei.Core.Recipe.Index;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -17,7 +18,7 @@ import me.qheilmann.vei.Core.Utils.NotNullSequenceSet;
  * Contains all process recipes for an item. Includes all recipe variants 
  * within a specific process for a particular item.
  */
-public class ProcessRecipeSet {
+public class ProcessRecipeSet<R extends Recipe> {
     
     /**
      * The set of recipes.
@@ -26,14 +27,14 @@ public class ProcessRecipeSet {
      * while others need a List for operations like maintaining order or accessing by index.
      * Therefore, both collections are necessary.
      */
-    private final NotNullSequenceSet<Recipe> recipes;
-    private final ArrayList<Recipe> recipeArray;
+    private final NotNullSequenceSet<R> recipes;
+    private final ArrayList<R> recipeArray;
 
     public ProcessRecipeSet() {
         this(Collections.emptyList());
     }
 
-    public ProcessRecipeSet(Collection<Recipe> ProcessRecipeCollection) {
+    public ProcessRecipeSet(Collection<? extends R> ProcessRecipeCollection) {
         this.recipes = new NotNullSequenceSet<>(new LinkedHashSet<>(), ProcessRecipeCollection);
         recipeArray = new ArrayList<>(recipes);
     }
@@ -54,7 +55,7 @@ public class ProcessRecipeSet {
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
     @NotNull
-    public Recipe getVariant(int index) {
+    public R getVariant(int index) {
         return recipeArray.get(index);
     }
 
@@ -63,7 +64,8 @@ public class ProcessRecipeSet {
      * 
      * @return all the recipes in the set
      */
-    public SequencedSet<Recipe> getAllRecipes() {
+    @NotNull
+    public SequencedSet<R> getAllRecipes() {
         return Collections.unmodifiableSequencedSet(recipes);
     }
 
@@ -74,9 +76,9 @@ public class ProcessRecipeSet {
      * Adds a recipe to the set.
      * 
      * @param recipe the recipe to add
-     * @return true if the recipe was added
+     * @return true if this set did not already contain the specified element
      */
-    public boolean add(@NotNull Recipe recipe) {
+    public boolean add(@NotNull R recipe) {
         if (recipes.add(recipe)) {
             recipeArray.add(recipe);
             return true;
@@ -85,14 +87,31 @@ public class ProcessRecipeSet {
     }
 
     /**
+     * Attempts to add a recipe to the set. The recipe is only added if it is an 
+     * instance of the specified set type and not already in the set. You can differ
+     * between the two cases by using {@link #contains(Object)}.
+     * 
+     * @param recipe the recipe to add
+     * @return true if the recipe was added
+     */
+    public boolean unsafeAdd(@NotNull Recipe recipe) {
+        try {
+            return add((R) recipe);
+        } catch (ClassCastException e) {
+            throw new IllegalArgumentException("Recipe (%s) is not an instance of the specified set type (%s also)"
+            .formatted(recipe, this.getClass(), this.getClass().getGenericSuperclass()), e);
+        }
+    }
+
+    /**
      * Adds all recipes in the specified collection to the set.
      * 
-     * @param collection the collection of recipes to add
+     * @param recipes the collection of recipes to add
      * @return true if the set was modified
      */
-    public boolean addAll(@NotNull Collection<Recipe> collection) {
+    public boolean addAll(@NotNull Collection<R> recipes) {
         boolean modified = false;
-        for (Recipe recipe : collection) {
+        for (R recipe : recipes) {
             modified |= add(recipe);
         }
         return modified;
@@ -104,18 +123,18 @@ public class ProcessRecipeSet {
      * @param recipe the recipe to check for
      * @return true if the set contains the specified recipe
      */
-    public boolean contains(@NotNull Recipe recipe) {
+    public boolean contains(@NotNull R recipe) {
         return recipes.contains(recipe);
     }
 
     /**
      * Returns true if the set contains all recipes in the specified collection.
      * 
-     * @param collection the collection of recipes to check for
+     * @param recipes the collection of recipes to check for
      * @return true if the set contains all recipes in the specified collection
      */
-    public boolean containsAll(@NotNull Collection<Recipe> collection) {
-        return recipes.containsAll(collection);
+    public boolean containsAll(@NotNull Collection<R> recipes) {
+        return recipes.containsAll(recipes);
     }
 
     /**
@@ -142,7 +161,7 @@ public class ProcessRecipeSet {
      * @param recipe the recipe to remove
      * @return true if the recipe was removed
      */
-    public boolean remove(@NotNull Recipe recipe) {
+    public boolean remove(@NotNull R recipe) {
         if (recipes.remove(recipe)) {
             recipeArray.remove(recipe);
             return true;
@@ -151,14 +170,30 @@ public class ProcessRecipeSet {
     }
 
     /**
+     * Attempts to remove a recipe from the set. The recipe is only removed if it is 
+     * an instance of the specified set type and in the set.
+     * 
+     * @param recipe the recipe to remove
+     * @return true if the recipe was removed
+     */
+    public boolean unsafeRemove(@NotNull Recipe recipe) {
+        try {
+            return remove((R) recipe);
+        } catch (ClassCastException e) {
+            throw new IllegalArgumentException("Recipe (%s) is not an instance of the specified set type (%s also)"
+            .formatted(recipe, this.getClass(), this.getClass().getGenericSuperclass()), e);
+        }
+    }
+
+    /**
      * Removes all recipes in the specified collection from the set.
      * 
-     * @param collection the collection of recipes to remove
+     * @param recipes the collection of recipes to remove
      * @return true if the set was modified
      */
-    public boolean removeAll(@NotNull Collection<Recipe> collection) {
+    public boolean removeAll(@NotNull Collection<R> recipes) {
         boolean modified = false;
-        for (Recipe recipe : collection) {
+        for (R recipe : recipes) {
             modified |= remove(recipe);
         }
         return modified;
@@ -168,15 +203,15 @@ public class ProcessRecipeSet {
      * Retains only the recipes in the set that are contained in the specified 
      * collection.
      * 
-     * @param collection the collection of recipes to retain
+     * @param recipes the collection of recipes to retain
      * @return true if the set was modified
      */
-    public boolean retainAll(@NotNull Collection<Recipe> collection) {
-        boolean modified = recipes.retainAll(collection);
+    public boolean retainAll(@NotNull Collection<R> recipes) {
+        boolean modified = recipes.retainAll(recipes);
         recipeArray.clear();
         recipeArray.addAll(recipes);
         
-        return modified; // TODO fast same order as before ?
+        return modified; // TODO is array in the same order as before (no) ?
     }
 
     /**
@@ -193,7 +228,7 @@ public class ProcessRecipeSet {
      * @return an iterator over the recipes in the set
      */
     @NotNull
-    public Iterator<Recipe> iterator() {
+    public Iterator<R> iterator() {
         return recipeArray.iterator();
     }
 
@@ -203,8 +238,13 @@ public class ProcessRecipeSet {
      * @return an array containing all of the recipes in the set
      */
     @NotNull
-    public Recipe[] toArray() {
-        return recipeArray.toArray(new Recipe[recipeArray.size()]);
+    public R[] toArray() {
+        if (recipeArray.isEmpty()) {
+            R[] emptyArray = (R[]) new Recipe[0];
+            return emptyArray;
+        }
+        R[] array = (R[]) Array.newInstance(Recipe.class, recipeArray.size());
+        return recipeArray.toArray(array);
     }
 
     /**
@@ -216,7 +256,7 @@ public class ProcessRecipeSet {
      * @return an array containing all of the recipes in the set
      */
     @NotNull
-    public Recipe[] toArray(@NotNull Recipe[] array) {
+    public R[] toArray(@NotNull R[] array) {
         return recipeArray.toArray(array);
     }
 
@@ -227,7 +267,7 @@ public class ProcessRecipeSet {
      * @param index the index of the recipe to return
      * @return the recipe at the specified index in the set
      */
-    public int indexOf(Recipe recipe) {
+    public int indexOf(R recipe) {
         if (recipe == null || !recipes.contains(recipe)) {
             return -1;
         }

@@ -16,7 +16,7 @@ import me.qheilmann.vei.Core.GUI.GuiItem;
 import me.qheilmann.vei.Core.Menu.RecipeMenu;
 import me.qheilmann.vei.Core.ProcessPanel.Panels.CraftingProcessPanel;
 import me.qheilmann.vei.Core.Recipe.Index.MixedProcessRecipeMap;
-import me.qheilmann.vei.Core.Recipe.Index.ProcessSpecifiqueRecipeSet;
+import me.qheilmann.vei.Core.Recipe.Index.ProcessRecipeSet;
 import me.qheilmann.vei.Core.Slot.Collection.SlotSequence;
 import me.qheilmann.vei.Core.Style.Styles.Style;
 
@@ -63,7 +63,7 @@ public abstract class ProcessPanel<R extends Recipe> { // TODO maybe need to dep
     protected HashMap<ProcessPanelSlot, GuiItem<RecipeMenu>> recipePanelSlots;
     
     private final Style style;
-    private ProcessSpecifiqueRecipeSet<R> processRecipeSet;
+    private ProcessRecipeSet<R> processRecipeSet;
     private int variantIndex;
     protected Map<AttachedButtonType, GuiItem<RecipeMenu>> attachedButtons = new HashMap<>();
     
@@ -71,7 +71,7 @@ public abstract class ProcessPanel<R extends Recipe> { // TODO maybe need to dep
      * Create a new recipe panel for the given recipe.
      * @param processRecipeSet The recipe to display.
      */
-    public ProcessPanel(@NotNull Style style, @NotNull ProcessSpecifiqueRecipeSet<R> processRecipeSet) {
+    public ProcessPanel(@NotNull Style style, @NotNull ProcessRecipeSet<R> processRecipeSet) {
         this(style, processRecipeSet, 0);
     }
 
@@ -80,7 +80,7 @@ public abstract class ProcessPanel<R extends Recipe> { // TODO maybe need to dep
      * @param processRecipeSet The recipe to display.
      * @param variantIndex The variante index of the recipe to display.
      */
-    public ProcessPanel(@NotNull Style style, @NotNull ProcessSpecifiqueRecipeSet<R> processRecipeSet, int variantIndex) {
+    public ProcessPanel(@NotNull Style style, @NotNull ProcessRecipeSet<R> processRecipeSet, int variantIndex) {
         Preconditions.checkNotNull(processRecipeSet, "recipe cannot be null");
         this.recipePanelSlots = new HashMap<>();
         this.variantIndex = variantIndex;
