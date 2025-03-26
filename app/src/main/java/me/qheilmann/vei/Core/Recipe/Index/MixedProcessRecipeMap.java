@@ -122,6 +122,7 @@ public class MixedProcessRecipeMap {
      * there is no mapping for the process
      */
     @Nullable
+    @SuppressWarnings("unchecked")
     public <R extends Recipe> ProcessRecipeSet<R> getProcessRecipeSet(@NotNull Process<R> process) {
         return (ProcessRecipeSet<R>) recipes.get(process);
     }
@@ -135,6 +136,7 @@ public class MixedProcessRecipeMap {
      * was no mapping for the process
      */
     @Nullable
+    @SuppressWarnings("unchecked")
     public <R extends Recipe> ProcessRecipeSet<R> putProcessRecipeSet(@NotNull Process<R> process, @NotNull ProcessRecipeSet<R> recipeSet) {        
         return (ProcessRecipeSet<R>) recipes.put(process, recipeSet);
     }

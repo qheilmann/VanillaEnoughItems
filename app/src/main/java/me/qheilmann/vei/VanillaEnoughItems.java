@@ -31,7 +31,6 @@ import me.qheilmann.vei.Core.Recipe.RecipePath;
 import me.qheilmann.vei.Core.Recipe.Bookmark.Bookmark;
 import me.qheilmann.vei.Core.Recipe.Bookmark.Repository.InMemoryBookmarkRepository;
 import me.qheilmann.vei.Core.Recipe.Index.MixedProcessRecipeMap;
-import me.qheilmann.vei.Core.Recipe.Index.ProcessRecipeSet;
 import me.qheilmann.vei.Core.Style.StyleManager;
 import me.qheilmann.vei.Listener.InventoryClickListener;
 import me.qheilmann.vei.Listener.InventoryDragListener;
@@ -81,7 +80,7 @@ public class VanillaEnoughItems extends JavaPlugin {
         Bookmark.addBookmarkAsync(quoinquoinUuid, new NamespacedKey(NAMESPACE, "warrior_sword")).join();
         LOGGER.info("Quoinquoin's bookmarks: " + Bookmark.getBookmarksAsync(quoinquoinUuid).join());      
 
-        testConfig(); // TEMP
+        // testConfig(); // TEMP
 
         LOGGER.info(NAME+ " has been enabled!");
     }
@@ -131,9 +130,8 @@ public class VanillaEnoughItems extends JavaPlugin {
         }
     }
 
-    // TEMP: Remove this method (temporary test)
+    // TODO TEMP: Remove this method (temporary test)
     private void testConfig() {
-        // TODO TMP 
         LOGGER.info("TMP TEST");
         ConfigurationSerialization.registerClass(RecipePath.class);
         File playerBookmarkFile = new File(getDataFolder(), "playerBookmark.yml");
@@ -275,7 +273,6 @@ public class VanillaEnoughItems extends JavaPlugin {
         }
         
         // TODO END TMP
-        // TODO maybe sqlite or just inMemory database for the begining
     }
 
     @SuppressWarnings("null")
@@ -287,7 +284,6 @@ public class VanillaEnoughItems extends JavaPlugin {
         while (recipeIterator.hasNext()) {
             Recipe recipe =  recipeIterator.next();
             ItemStack result = recipe.getResult();
-            Process<?> process = Process.ProcessRegistry.getProcesseByRecipe(recipe);
 
             if (result == null) {
                 continue;
@@ -303,48 +299,7 @@ public class VanillaEnoughItems extends JavaPlugin {
             }
 
             mixedProcessRecipeMap.addRecipe(recipe);
-
-
-            // // Get/create the process recipe set
-            // ProcessRecipeSet<?> processRecipeSet;
-            // if (mixedProcessRecipeMap.containsProcess(process)) {
-            //     processRecipeSet = mixedProcessRecipeMap.getProcessRecipeSet(process);
-            // } else {
-            //     processRecipeSet = new ProcessRecipeSet<>();
-            //     mixedProcessRecipeMap.putProcessRecipeSet(process, processRecipeSet);
-            // }
-
-            // // Add the recipe to the process recipe set
-            // if (!processRecipeSet.add(recipe) && !processRecipeSet.contains(recipe)) {
-            //     throw new IllegalStateException("Recipe cannot be added to the process recipe set, the recipe type is not the same as the process recipe set type");
-            // }
         }
-
-        // Check the recipe map
-        // LOGGER.info("[***]Recipe map[***]: " + allRecipesMap.size());
-        // for (ItemStack item : allRecipesMap.getItems()) {
-
-        //     // log only iron_ingot recipe or all
-        //     if(item.getType() != Material.IRON_INGOT) {
-        //         continue;
-        //     }
-
-        //     LOGGER.info("[Item]: " + item.toString());
-        //     ItemRecipeMap itemRecipeMap = allRecipesMap.getItemRecipeMap(item);
-        //     for (Process<?> process : itemRecipeMap.getAllProcess()) {
-
-        //         ProcessRecipeSet<?> processRecipeSet = itemRecipeMap.getProcessRecipeSet(process);
-        //         for (Recipe recipe : processRecipeSet.toArray()) {
-
-        //             String str = "Recipe: " + recipe.getResult() + " " + recipe.getClass().getName() + " ";
-        //             if (recipe instanceof ShapedRecipe shapedRecipe) {
-        //                 str += shapedRecipe.getChoiceMap();
-        //             }
-        //             LOGGER.info(str);
-        //         }
-        //     }
-        //     LOGGER.info("\n\n");
-        // }
     }
 }
 
@@ -367,16 +322,12 @@ public class VanillaEnoughItems extends JavaPlugin {
 // test https://github.com/sladkoff/minecraft-prometheus-exporter?tab=readme-ov-file > Minecraft > Prometheus > Grafana
 // json file inside ressource folder / plugin folder for custom recipes (other than API)
 // Replace concat string inside precondition with internal formatting like this Preconditions.checkArgument(y >= 0 && y < rowCount, "y must be between 0 and %d, current value: %d", rowCount, y);
+// we can use @implSpec and @throws IndexOutOfBoundsException {@inheritDoc}
 
 // fast
 // replace precondition with Preconditions.checkArgument(0 != 0, "%s cannot be null", RecipeMenu.class);
-// getRecipeFor(ItemStack) inside Server class
-// TODO set the style of the GuiItemService inside the ctor
 // TODO check si quand je crée un itemStack avec un autre item stack (copy ctor), s'il garde les pcd, displayname, lore, etc
-// TODO when the Gui item is remove by a player click (not canceled), the GuiListener throw an warning, (fix it ?, check with debug prrint)
-// TODO For the moment the AllRecipeMap override workbench when they are the same supertype (eg: material.crafting table and material.crafter)
-// TODO add Shapeless to the crafting process panel
-// TODO we can use @implSpec and @throws IndexOutOfBoundsException {@inheritDoc}
+// TODO when the Gui item is remove by a player click (not canceled), the GuiListener throw an warning, (fix it ?, check with debug prrint) < ShadowInventory
 
 
 // [Command]

@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 public class RecipeConfigLoader {
 
+    @SuppressWarnings("unchecked")
     public static Map<UUID, Set<RecipePath>> loadRecipes(FileConfiguration config) {
         Map<UUID, Set<RecipePath>> bookmarkSetMap = new HashMap<>();
         

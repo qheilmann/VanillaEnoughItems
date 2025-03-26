@@ -94,6 +94,7 @@ public class ProcessRecipeSet<R extends Recipe> {
      * @param recipe the recipe to add
      * @return true if the recipe was added
      */
+    @SuppressWarnings("unchecked")
     public boolean unsafeAdd(@NotNull Recipe recipe) {
         try {
             return add((R) recipe);
@@ -176,6 +177,7 @@ public class ProcessRecipeSet<R extends Recipe> {
      * @param recipe the recipe to remove
      * @return true if the recipe was removed
      */
+    @SuppressWarnings("unchecked")
     public boolean unsafeRemove(@NotNull Recipe recipe) {
         try {
             return remove((R) recipe);
@@ -240,9 +242,11 @@ public class ProcessRecipeSet<R extends Recipe> {
     @NotNull
     public R[] toArray() {
         if (recipeArray.isEmpty()) {
+            @SuppressWarnings("unchecked")
             R[] emptyArray = (R[]) new Recipe[0];
             return emptyArray;
         }
+        @SuppressWarnings("unchecked")
         R[] array = (R[]) Array.newInstance(Recipe.class, recipeArray.size());
         return recipeArray.toArray(array);
     }

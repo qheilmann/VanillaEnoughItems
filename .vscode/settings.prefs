@@ -1,0 +1,10 @@
+org.eclipse.jdt.core.compiler.problem.uncheckedTypeOperation=warning
+org.eclipse.jdt.core.compiler.problem.suppressWarningsNotFullyAnalysed=warning
+org.eclipse.jdt.core.compiler.problem.uncheckedTypeOperation=warning
+org.eclipse.jdt.core.compiler.annotation.nonnull=javax.annotation.Nonnull
+org.eclipse.jdt.core.compiler.annotation.nonnull.secondary=
+org.eclipse.jdt.core.compiler.annotation.nonnullbydefault=javax.annotation.NonNullByDefault
+org.eclipse.jdt.core.compiler.annotation.nonnullbydefault.secondary=
+org.eclipse.jdt.core.compiler.annotation.nullable=javax.annotation.Nullable
+org.eclipse.jdt.core.compiler.annotation.nullable.secondary=
+org.eclipse.jdt.core.compiler.annotation.nullanalysis=enabled

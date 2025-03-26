@@ -17,7 +17,9 @@
             "group": {
                 "isDefault": true
             },
-            "problemMatcher": [],
+            "problemMatcher": [
+                "$gradle",
+            ],
             "presentation": {
                 "close": true,
                 "clear": true

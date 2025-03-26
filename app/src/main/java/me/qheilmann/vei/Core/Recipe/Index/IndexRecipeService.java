@@ -75,15 +75,16 @@ public class IndexRecipeService {
         return recipesById.get(recipeId);
     }
 
-    public SequencedSet<Recipe> getSetByResult(ItemStack item) {
+    public SequencedSet<Recipe> getAllByResult(ItemStack item) {
         return Collections.unmodifiableSequencedSet(recipesByResult.getOrDefault(item, new MixedProcessRecipeMap()).getAllRecipes());
     }
 
-    public SequencedSet<Recipe> getSetByIngredient(ItemStack item) {
+    public SequencedSet<Recipe> getAllByIngredient(ItemStack item) {
         throw new UnsupportedOperationException("Not implemented yet");
     }
 
-    public SequencedSet<Recipe> getRecipesByProcess(Process<?> process) {
-        return recipesByProcess.getOrDefault(process, new ProcessRecipeSet()).getAllRecipes();
+    @SuppressWarnings("unchecked")
+    public <R extends Recipe> SequencedSet<R> getRecipesByProcess(Process<R> process) {
+        return (SequencedSet<R>) recipesByProcess.getOrDefault(process, new ProcessRecipeSet<>()).getAllRecipes();
     }
 }
