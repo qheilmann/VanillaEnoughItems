@@ -211,7 +211,7 @@ public abstract class ProcessPanel<R extends Recipe> { // TODO maybe need to dep
      */
     @NotNull
     public R getCurrentRecipe() {
-        return processRecipeSet.getVariant(variantIndex);
+        return processRecipeSet.getIndex(variantIndex);
     }
 
     /**

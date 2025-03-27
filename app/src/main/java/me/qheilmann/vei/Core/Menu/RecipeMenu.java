@@ -158,7 +158,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         ProcessRecipeSet<R> processRecipeSet = mixedProcessRecipeMap.getProcessRecipeSet(process);
         Objects.requireNonNull(processRecipeSet, "No recipe set found for process: " + process.getProcessName());
 
-        Recipe recipe = processRecipeSet.getVariant(variant);
+        Recipe recipe = processRecipeSet.getIndex(variant);
         Objects.requireNonNull(recipe, "No variant " + variant + " inside the recipe set for process: " + process.getProcessName());
 
         this.recipePanel = process.generateProcessPanel(style, processRecipeSet, variant);
@@ -638,7 +638,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
                     VanillaEnoughItems.LOGGER.warn("No recipe found for process: %s".formatted(currentProcess.getProcessName()));
                     return null;
                 }
-                ItemStack currentResultItemStack = processRecipeSet.getVariant(currentVariant).getResult();
+                ItemStack currentResultItemStack = processRecipeSet.getIndex(currentVariant).getResult();
                 RecipePath recipePath = new RecipePath(currentResultItemStack, currentProcess, currentVariant);
                 recipeHistory.push(recipePath);
             }
@@ -649,7 +649,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
                 VanillaEnoughItems.LOGGER.warn("No recipe found for process: %s".formatted(currentProcess.getProcessName()));
                 return null;
             }
-            Recipe currentRecipe = processRecipeSet.getVariant(currentVariant);
+            Recipe currentRecipe = processRecipeSet.getIndex(currentVariant);
             if (currentRecipe instanceof Keyed keyed) {
                 Bookmark.addBookmarkAsync(humanEntity.getUniqueId(), keyed.key()).join();
                 VanillaEnoughItems.LOGGER.info("Bookmark recipe: %s".formatted(keyed.key()));
@@ -748,7 +748,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
             VanillaEnoughItems.LOGGER.warn("No recipe found for process: %s".formatted(currentProcess.getProcessName()));
             return "";
         }
-        ItemStack currentResultItemStack = processRecipeSet.getVariant(currentVariant).getResult();
+        ItemStack currentResultItemStack = processRecipeSet.getIndex(currentVariant).getResult();
         return "/" + CraftCommand.NAME + " " 
             + currentResultItemStack.getType().getKey() + " " 
             +  currentProcess.getProcessName().toLowerCase() + " " 

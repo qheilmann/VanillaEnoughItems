@@ -4,19 +4,18 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.SequencedSet;
+import java.util.TreeSet;
 
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.jetbrains.annotations.NotNull;
 
 import me.qheilmann.vei.Core.Utils.NotNullSequenceSet;
 
 /**
- * Contains all process recipes for an item. Includes all recipe variants 
- * within a specific process for a particular item.
+ * Contains a set of recipe for a particular process
  */
 public class ProcessRecipeSet<R extends Recipe> {
     
@@ -35,16 +34,9 @@ public class ProcessRecipeSet<R extends Recipe> {
     }
 
     public ProcessRecipeSet(Collection<? extends R> ProcessRecipeCollection) {
-        this.recipes = new NotNullSequenceSet<>(new LinkedHashSet<>(), ProcessRecipeCollection);
+        Comparator<Recipe> recipeComparator = recipeComparator();
+        this.recipes = new NotNullSequenceSet<>(new TreeSet<>(recipeComparator), ProcessRecipeCollection);
         recipeArray = new ArrayList<>(recipes);
-    }
-
-    public ItemStack getItem() {
-        return recipeArray.get(0).getResult();
-        // TODO check during ctor and add if all process return at any moment the item of this set (result can be a list so change the protoype with the item of this set)
-        // then change here to return the item of this set
-
-        // check by a predicate (bc sometime by result or by ingredient or by nothing)
     }
 
     /**
@@ -55,7 +47,7 @@ public class ProcessRecipeSet<R extends Recipe> {
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
     @NotNull
-    public R getVariant(int index) {
+    public R getIndex(int index) {
         return recipeArray.get(index);
     }
 
@@ -89,7 +81,7 @@ public class ProcessRecipeSet<R extends Recipe> {
     /**
      * Attempts to add a recipe to the set. The recipe is only added if it is an 
      * instance of the specified set type and not already in the set. You can differ
-     * between the two cases by using {@link #contains(Object)}.
+     * between the two cases by using {@link #contains(Recipe)}.
      * 
      * @param recipe the recipe to add
      * @return true if the recipe was added
@@ -309,5 +301,46 @@ public class ProcessRecipeSet<R extends Recipe> {
      */
     public int hashCode() {
         return recipes.hashCode();
+    }
+
+    /**
+     * Provides a custom comparator for ordering processes.
+     * The CraftingProcess is prioritized first, followed by all other processes in lexicographical order, and finally the DummyProcess.
+     * 
+     * @return a comparator for ordering processes
+     */
+    public static Comparator<Recipe> recipeComparator() {
+        return new Comparator<Recipe>() {
+            @Override
+            public int compare(Recipe r1, Recipe r2) {
+
+                // Check if both recipes refer to the same object
+                if (r1 == r2) {
+                    return 0;
+                } 
+                
+                // Check normal cases, keyed recipes
+                if (r1 instanceof org.bukkit.Keyed keyed1 && r2 instanceof org.bukkit.Keyed keyed2) {
+                    // Compare the keys of the recipes
+                    int keyComparison = keyed1.getKey().compareTo(keyed2.getKey());
+                    if (keyComparison != 0) {
+                        return keyComparison;
+                    }
+                } else if (r1 instanceof org.bukkit.Keyed) {
+                    return -1; // r1 is a Keyed recipe, r2 is not
+                } else if (r2 instanceof org.bukkit.Keyed) {
+                    return 1; // r2 is a Keyed recipe, r1 is not
+                }
+
+                // If neither is a Keyed recipe, or not differentiable by key, we can compare them by their hash codes
+                int deltaHashCode = r1.hashCode() - r2.hashCode();
+                if (deltaHashCode != 0) {
+                    return deltaHashCode;
+                } 
+
+                // If hash codes are equal, compare the class names for a consistent order (rare case)
+                return r1.getClass().getName().compareTo(r2.getClass().getName());
+            }
+        };
     }
 }

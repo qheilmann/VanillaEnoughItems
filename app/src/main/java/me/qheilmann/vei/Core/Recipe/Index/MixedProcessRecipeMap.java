@@ -19,8 +19,7 @@ import me.qheilmann.vei.Core.Process.Process;
 import me.qheilmann.vei.Core.Process.VanillaProcesses;
 
 /**
- * Contains all recipes for an item, including all variants and different
- * processes for a specific item.
+ * Contains a collection of recipes witch are grouped by Process.
  */
 public class MixedProcessRecipeMap {
     
@@ -32,7 +31,7 @@ public class MixedProcessRecipeMap {
     }
 
     public MixedProcessRecipeMap(@NotNull Map<? extends Process<?>, ProcessRecipeSet<? extends Recipe>> recipeCollection) {
-        Comparator<Process<?>> processComparator = getProcessOrderComparator();
+        Comparator<Process<?>> processComparator = processComparator();
         this.recipes = new NotNullMap<>(new TreeMap<>(processComparator));
         for (var entry : recipeCollection.entrySet()) {
             if (processPredicate.test(entry.getKey(), entry.getValue())) {
@@ -73,7 +72,7 @@ public class MixedProcessRecipeMap {
     }
 
     /**
-     * Get all the recipes from each process.
+     * Get all the recipes from each process in an unique unmodifiable set.
      */
     public SequencedSet<Recipe> getAllRecipes() {
         SequencedSet<Recipe> allRecipes = new LinkedHashSet<>();
@@ -251,7 +250,7 @@ public class MixedProcessRecipeMap {
      * 
      * @return a comparator for ordering processes
      */
-    public static Comparator<Process<?>> getProcessOrderComparator() {
+    public static Comparator<Process<?>> processComparator() {
         return new Comparator<Process<?>>() {
             @Override
             public int compare(Process<?> p1, Process<?> p2) {
