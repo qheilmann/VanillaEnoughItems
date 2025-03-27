@@ -131,6 +131,7 @@ public class VanillaEnoughItems extends JavaPlugin {
     }
 
     // TODO TEMP: Remove this method (temporary test)
+    @SuppressWarnings({"unchecked", "unused"})
     private void testConfig() {
         LOGGER.info("TMP TEST");
         ConfigurationSerialization.registerClass(RecipePath.class);

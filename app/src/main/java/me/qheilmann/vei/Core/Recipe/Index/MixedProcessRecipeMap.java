@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.SequencedSet;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.function.BiPredicate;
 import javax.annotation.Nullable;
 
 import org.bukkit.inventory.Recipe;
@@ -24,19 +23,17 @@ import me.qheilmann.vei.Core.Process.VanillaProcesses;
 public class MixedProcessRecipeMap {
     
     private final NotNullMap<Process<?>, ProcessRecipeSet<?>> recipes;
-    private final BiPredicate<Process<?>, ProcessRecipeSet<?>> processPredicate = ((p, prs) -> true); // always true by default
 
     public MixedProcessRecipeMap() {
         this(Collections.emptyMap());
     }
 
     public MixedProcessRecipeMap(@NotNull Map<? extends Process<?>, ProcessRecipeSet<? extends Recipe>> recipeCollection) {
-        Comparator<Process<?>> processComparator = processComparator();
+       Comparator<Process<?>> processComparator = processComparator();
         this.recipes = new NotNullMap<>(new TreeMap<>(processComparator));
+
         for (var entry : recipeCollection.entrySet()) {
-            if (processPredicate.test(entry.getKey(), entry.getValue())) {
-                recipes.put(entry.getKey(), entry.getValue());
-            }
+            recipes.put(entry.getKey(), entry.getValue());
         }
     }
 
