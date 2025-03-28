@@ -6,13 +6,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.SequencedSet;
-import java.util.TreeSet;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 import org.bukkit.inventory.Recipe;
 import org.jetbrains.annotations.NotNull;
-
-import me.qheilmann.vei.Core.Utils.NotNullSequenceSet;
 
 /**
  * Contains a set of recipe for a particular process
@@ -20,22 +19,30 @@ import me.qheilmann.vei.Core.Utils.NotNullSequenceSet;
 public class ProcessRecipeSet<R extends Recipe> {
     
     /**
-     * The set of recipes.
-     * The recipes and recipeArray are kept in sync to ensure consistency.
-     * Some methods require the use of a Set for operations like ensuring uniqueness,
-     * while others need a List for operations like maintaining order or accessing by index.
-     * Therefore, both collections are necessary.
+     * A collection of recipes.
+     * Each entry in this set must be non-null, and this requirement must be strictly enforced.
      */
-    private final NotNullSequenceSet<R> recipes;
+    private final ConcurrentSkipListSet<R> recipes;
+    /**
+    * The recipes and recipeArray are kept in sync to ensure consistency.
+    * Some methods require the use of a Set for operations like ensuring uniqueness,
+    * while others need a List for operations like maintaining order or accessing by index.
+    * Therefore, both collections are necessary.
+    */
     private final ArrayList<R> recipeArray;
 
     public ProcessRecipeSet() {
         this(Collections.emptyList());
     }
 
-    public ProcessRecipeSet(Collection<? extends R> ProcessRecipeCollection) {
+    public ProcessRecipeSet(@NotNull Collection<? extends R> ProcessRecipeCollection) {
+        if (ProcessRecipeCollection.contains(null)) {
+            throw new IllegalArgumentException("ProcessRecipeCollection cannot contain null values %s".formatted(ProcessRecipeCollection));
+        }
+
         Comparator<Recipe> recipeComparator = recipeComparator();
-        this.recipes = new NotNullSequenceSet<>(new TreeSet<>(recipeComparator), ProcessRecipeCollection);
+        this.recipes = new ConcurrentSkipListSet<>(recipeComparator);
+        this.recipes.addAll(ProcessRecipeCollection);
         recipeArray = new ArrayList<>(recipes);
     }
 
@@ -71,6 +78,8 @@ public class ProcessRecipeSet<R extends Recipe> {
      * @return true if this set did not already contain the specified element
      */
     public boolean add(@NotNull R recipe) {
+        Objects.requireNonNull(recipe, "Recipe cannot be null");
+
         if (recipes.add(recipe)) {
             recipeArray.add(recipe);
             return true;
@@ -103,6 +112,10 @@ public class ProcessRecipeSet<R extends Recipe> {
      * @return true if the set was modified
      */
     public boolean addAll(@NotNull Collection<R> recipes) {
+        if (recipes.contains(null)) {
+            throw new IllegalArgumentException("recipes collection cannot contain null values %s".formatted(recipes));
+        }
+
         boolean modified = false;
         for (R recipe : recipes) {
             modified |= add(recipe);
@@ -203,9 +216,9 @@ public class ProcessRecipeSet<R extends Recipe> {
     public boolean retainAll(@NotNull Collection<R> recipes) {
         boolean modified = recipes.retainAll(recipes);
         recipeArray.clear();
-        recipeArray.addAll(recipes);
+        recipeArray.addAll(recipes); // add in the same order as the ordered set
         
-        return modified; // TODO is array in the same order as before (no) ?
+        return modified;
     }
 
     /**

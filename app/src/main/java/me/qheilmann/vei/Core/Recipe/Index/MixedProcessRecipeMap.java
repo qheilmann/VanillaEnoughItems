@@ -5,15 +5,20 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.NavigableSet;
+import java.util.Objects;
 import java.util.SequencedSet;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.concurrent.ConcurrentSkipListMap;
+
 import javax.annotation.Nullable;
 
 import org.bukkit.inventory.Recipe;
 import org.jetbrains.annotations.NotNull;
 
-import me.qheilmann.vei.Core.Utils.NotNullMap;
 import me.qheilmann.vei.Core.Process.Process;
 import me.qheilmann.vei.Core.Process.VanillaProcesses;
 
@@ -22,25 +27,32 @@ import me.qheilmann.vei.Core.Process.VanillaProcesses;
  */
 public class MixedProcessRecipeMap {
     
-    private final NotNullMap<Process<?>, ProcessRecipeSet<?>> recipes;
+    /**
+     * A map that organizes recipes by their associated processes.
+     * Keys and values in this map must be non-null and this constraint must be strictly enforced.
+     */
+    private final ConcurrentSkipListMap<Process<?>, ProcessRecipeSet<?>> recipes;
 
     public MixedProcessRecipeMap() {
         this(Collections.emptyMap());
     }
 
     public MixedProcessRecipeMap(@NotNull Map<? extends Process<?>, ProcessRecipeSet<? extends Recipe>> recipeCollection) {
-       Comparator<Process<?>> processComparator = processComparator();
-        this.recipes = new NotNullMap<>(new TreeMap<>(processComparator));
-
-        for (var entry : recipeCollection.entrySet()) {
-            recipes.put(entry.getKey(), entry.getValue());
+        if (recipeCollection.containsKey(null) || recipeCollection.containsValue(null)) {
+            throw new IllegalArgumentException("The map cannot contain null keys or values %s".formatted(recipeCollection));
         }
+
+        Comparator<Process<?>> processComparator = processComparator();
+        this.recipes = new ConcurrentSkipListMap<>(processComparator);
+        recipes.putAll(recipeCollection);
     }
 
     /**
      * Add a recipe to the map.
      */
     public void addRecipe(@NotNull Recipe recipe) {
+        Objects.requireNonNull(recipe, "Recipe cannot be null");
+
         Process<?> process = Process.ProcessRegistry.getProcesseByRecipe(recipe);
         ProcessRecipeSet<?> processRecipeSet = recipes.computeIfAbsent(process, p -> new ProcessRecipeSet<>());
         processRecipeSet.unsafeAdd(recipe);
