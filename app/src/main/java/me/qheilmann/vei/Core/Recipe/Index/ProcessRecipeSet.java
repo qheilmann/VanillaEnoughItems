@@ -1,13 +1,12 @@
 package me.qheilmann.vei.Core.Recipe.Index;
 
 import java.lang.reflect.Array;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.NavigableSet;
 import java.util.Objects;
-import java.util.SequencedSet;
 import java.util.concurrent.ConcurrentSkipListSet;
 
 import org.bukkit.inventory.Recipe;
@@ -23,13 +22,6 @@ public class ProcessRecipeSet<R extends Recipe> {
      * Each entry in this set must be non-null, and this requirement must be strictly enforced.
      */
     private final ConcurrentSkipListSet<R> recipes;
-    /**
-    * The recipes and recipeArray are kept in sync to ensure consistency.
-    * Some methods require the use of a Set for operations like ensuring uniqueness,
-    * while others need a List for operations like maintaining order or accessing by index.
-    * Therefore, both collections are necessary.
-    */
-    private final ArrayList<R> recipeArray;
 
     public ProcessRecipeSet() {
         this(Collections.emptyList());
@@ -43,19 +35,6 @@ public class ProcessRecipeSet<R extends Recipe> {
         Comparator<Recipe> recipeComparator = recipeComparator();
         this.recipes = new ConcurrentSkipListSet<>(recipeComparator);
         this.recipes.addAll(ProcessRecipeCollection);
-        recipeArray = new ArrayList<>(recipes);
-    }
-
-    /**
-     * Returns the recipe at the specified index in the collection.
-     * 
-     * @param index the index of the recipe to return
-     * @return the recipe at the specified index in the collection
-     * @throws IndexOutOfBoundsException {@inheritDoc}
-     */
-    @NotNull
-    public R getIndex(int index) {
-        return recipeArray.get(index);
     }
 
     /**
@@ -64,8 +43,8 @@ public class ProcessRecipeSet<R extends Recipe> {
      * @return all the recipes in the set
      */
     @NotNull
-    public SequencedSet<R> getAllRecipes() {
-        return Collections.unmodifiableSequencedSet(recipes);
+    public NavigableSet<R> getAllRecipes() {
+        return Collections.unmodifiableNavigableSet(recipes);
     }
 
     // Add methods to delegate to the wrapped NotNullSet
@@ -80,11 +59,7 @@ public class ProcessRecipeSet<R extends Recipe> {
     public boolean add(@NotNull R recipe) {
         Objects.requireNonNull(recipe, "Recipe cannot be null");
 
-        if (recipes.add(recipe)) {
-            recipeArray.add(recipe);
-            return true;
-        }
-        return false;
+        return recipes.add(recipe);
     }
 
     /**
@@ -168,11 +143,7 @@ public class ProcessRecipeSet<R extends Recipe> {
      * @return true if the recipe was removed
      */
     public boolean remove(@NotNull R recipe) {
-        if (recipes.remove(recipe)) {
-            recipeArray.remove(recipe);
-            return true;
-        }
-        return false;
+        return recipes.remove(recipe);
     }
 
     /**
@@ -214,11 +185,7 @@ public class ProcessRecipeSet<R extends Recipe> {
      * @return true if the set was modified
      */
     public boolean retainAll(@NotNull Collection<R> recipes) {
-        boolean modified = recipes.retainAll(recipes);
-        recipeArray.clear();
-        recipeArray.addAll(recipes); // add in the same order as the ordered set
-        
-        return modified;
+        return recipes.retainAll(recipes);
     }
 
     /**
@@ -226,7 +193,6 @@ public class ProcessRecipeSet<R extends Recipe> {
      */
     public void clear() {
         recipes.clear();
-        recipeArray.clear();
     }
 
     /**
@@ -236,7 +202,7 @@ public class ProcessRecipeSet<R extends Recipe> {
      */
     @NotNull
     public Iterator<R> iterator() {
-        return recipeArray.iterator();
+        return recipes.iterator();
     }
 
     /**
@@ -246,14 +212,14 @@ public class ProcessRecipeSet<R extends Recipe> {
      */
     @NotNull
     public R[] toArray() {
-        if (recipeArray.isEmpty()) {
+        if (recipes.isEmpty()) {
             @SuppressWarnings("unchecked")
             R[] emptyArray = (R[]) new Recipe[0];
             return emptyArray;
         }
         @SuppressWarnings("unchecked")
-        R[] array = (R[]) Array.newInstance(Recipe.class, recipeArray.size());
-        return recipeArray.toArray(array);
+        R[] array = (R[]) Array.newInstance(Recipe.class, recipes.size());
+        return recipes.toArray(array);
     }
 
     /**
@@ -266,21 +232,7 @@ public class ProcessRecipeSet<R extends Recipe> {
      */
     @NotNull
     public R[] toArray(@NotNull R[] array) {
-        return recipeArray.toArray(array);
-    }
-
-    /**
-     * Returns the index of the first occurrence of the specified element in 
-     * this collection, or -1 if this collection does not contain the element
-     * 
-     * @param index the index of the recipe to return
-     * @return the recipe at the specified index in the set
-     */
-    public int indexOf(R recipe) {
-        if (recipe == null || !recipes.contains(recipe)) {
-            return -1;
-        }
-        return recipeArray.indexOf(recipe);
+        return recipes.toArray(array);
     }
 
     //#endregion Delegation
@@ -292,7 +244,7 @@ public class ProcessRecipeSet<R extends Recipe> {
      */
     @NotNull
     public String toString() {
-        return recipeArray.toString();
+        return recipes.toString();
     }
 
     /**

@@ -158,7 +158,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         ProcessRecipeSet<R> processRecipeSet = mixedProcessRecipeMap.getProcessRecipeSet(process);
         Objects.requireNonNull(processRecipeSet, "No recipe set found for process: " + process.getProcessName());
 
-        Recipe recipe = processRecipeSet.getIndex(variant);
+        Recipe recipe = getRecipeIndex(processRecipeSet, variant);
         Objects.requireNonNull(recipe, "No variant " + variant + " inside the recipe set for process: " + process.getProcessName());
 
         this.recipePanel = process.generateProcessPanel(style, processRecipeSet, variant);
@@ -638,7 +638,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
                     VanillaEnoughItems.LOGGER.warn("No recipe found for process: %s".formatted(currentProcess.getProcessName()));
                     return null;
                 }
-                ItemStack currentResultItemStack = processRecipeSet.getIndex(currentVariant).getResult();
+                ItemStack currentResultItemStack = getRecipeIndex(processRecipeSet, currentVariant).getResult();
                 RecipePath recipePath = new RecipePath(currentResultItemStack, currentProcess, currentVariant);
                 recipeHistory.push(recipePath);
             }
@@ -649,7 +649,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
                 VanillaEnoughItems.LOGGER.warn("No recipe found for process: %s".formatted(currentProcess.getProcessName()));
                 return null;
             }
-            Recipe currentRecipe = processRecipeSet.getIndex(currentVariant);
+            Recipe currentRecipe = getRecipeIndex(processRecipeSet, currentVariant);
             if (currentRecipe instanceof Keyed keyed) {
                 Bookmark.addBookmarkAsync(humanEntity.getUniqueId(), keyed.key()).join();
                 VanillaEnoughItems.LOGGER.info("Bookmark recipe: %s".formatted(keyed.key()));
@@ -748,7 +748,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
             VanillaEnoughItems.LOGGER.warn("No recipe found for process: %s".formatted(currentProcess.getProcessName()));
             return "";
         }
-        ItemStack currentResultItemStack = processRecipeSet.getIndex(currentVariant).getResult();
+        ItemStack currentResultItemStack = getRecipeIndex(processRecipeSet, currentVariant).getResult();
         return "/" + CraftCommand.NAME + " " 
             + currentResultItemStack.getType().getKey() + " " 
             +  currentProcess.getProcessName().toLowerCase() + " " 
@@ -760,5 +760,20 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         Clipboard clipboard = toolkit.getSystemClipboard();
         StringSelection strSel = new StringSelection(str);
         clipboard.setContents(strSel, null);
+    }
+
+    private <R extends Recipe> R getRecipeIndex(ProcessRecipeSet<R> processRecipeSet, int variant) {
+        R recipe = null;
+        Iterator<R> iterator = processRecipeSet.iterator();
+        if (variant < 0) {
+            throw new ArrayIndexOutOfBoundsException("Variant index out of bounds: " + variant);
+        }
+        for (int i = 0; i <= variant ; i++) {
+            if (!iterator.hasNext()) {
+                throw new ArrayIndexOutOfBoundsException("Variant index out of bounds: " + variant);
+            }
+            recipe = iterator.next();
+        }
+        return recipe;
     }
 }

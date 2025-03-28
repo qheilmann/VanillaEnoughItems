@@ -1,18 +1,15 @@
 package me.qheilmann.vei.Core.Recipe.Index;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.NavigableMap;
 import java.util.NavigableSet;
 import java.util.Objects;
 import java.util.SequencedSet;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 import javax.annotation.Nullable;
 
@@ -81,14 +78,14 @@ public class MixedProcessRecipeMap {
     }
 
     /**
-     * Get all the recipes from each process in an unique unmodifiable set.
+     * Get all the recipes from each process in an unmodifiable NavigaleSet.
      */
-    public SequencedSet<Recipe> getAllRecipes() {
-        SequencedSet<Recipe> allRecipes = new LinkedHashSet<>();
+    public NavigableSet<Recipe> getAllRecipes() {
+        NavigableSet<Recipe> allRecipes = new ConcurrentSkipListSet<>(ProcessRecipeSet.recipeComparator());
         for (ProcessRecipeSet<?> processRecipeSet : recipes.values()) {
             allRecipes.addAll(processRecipeSet.getAllRecipes());
         }
-        return Collections.unmodifiableSequencedSet(allRecipes);
+        return Collections.unmodifiableNavigableSet(allRecipes);
     }
 
     // Add methods to delegate to the wrapped NotNullMap
@@ -203,8 +200,8 @@ public class MixedProcessRecipeMap {
      * @return an unmodifiable view of the map
      */
     @NotNull
-    public Map<Process<?>, ProcessRecipeSet<?>> asMap() {
-        return Collections.unmodifiableMap(recipes);
+    public NavigableMap<Process<?>, ProcessRecipeSet<?>> asMap() {
+        return Collections.unmodifiableNavigableMap(recipes);
     }
 
     /**
@@ -213,18 +210,20 @@ public class MixedProcessRecipeMap {
      * @return a set view of the processes contained in the map
      */
     @NotNull
-    public Set<Process<?>> getAllProcess() {
-        return recipes.keySet();
+    public NavigableSet<Process<?>> getAllProcess() {
+        return Collections.unmodifiableNavigableSet(recipes.navigableKeySet());
     }
 
     /**
-     * Returns a collection view of the ProcessRecipe contained in the collection.
+     * Returns an unmodifiable SequencedSet of ProcessRecipeSets contained in the collection.
+     * The order matches the sequence of their associated processes.
      * 
-     * @return a collection view of the recipe sets contained in the collection
+     * @return an unmodifiable SequencedSet of ProcessRecipeSets in the collection
      */
     @NotNull
-    public Collection<ProcessRecipeSet<?>> getAllProcessRecipeSet() {
-        return recipes.values();
+    public SequencedSet<ProcessRecipeSet<?>> getAllProcessRecipeSet() {
+        SequencedSet<ProcessRecipeSet<?>> collections = new LinkedHashSet<ProcessRecipeSet<?>>(recipes.values());
+        return Collections.unmodifiableSequencedSet(collections);
     }
 
     /**
@@ -233,8 +232,9 @@ public class MixedProcessRecipeMap {
      * @return a set view of the mappings contained in the map
      */
     @NotNull
-    public Set<Map.Entry<Process<?>, ProcessRecipeSet<?>>> entrySet() {
-        return recipes.entrySet();
+    public SequencedSet<Map.Entry<Process<?>, ProcessRecipeSet<?>>> entrySet() {
+        SequencedSet<Map.Entry<Process<?>, ProcessRecipeSet<?>>> entries = new LinkedHashSet<Map.Entry<Process<?>, ProcessRecipeSet<?>>>(recipes.entrySet());
+        return Collections.unmodifiableSequencedSet(entries);
     }
 
     //#endregion

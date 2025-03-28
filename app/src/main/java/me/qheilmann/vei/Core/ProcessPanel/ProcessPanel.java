@@ -2,6 +2,7 @@ package me.qheilmann.vei.Core.ProcessPanel;
 
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import javax.annotation.Nullable;
 
@@ -211,7 +212,7 @@ public abstract class ProcessPanel<R extends Recipe> { // TODO maybe need to dep
      */
     @NotNull
     public R getCurrentRecipe() {
-        return processRecipeSet.getIndex(variantIndex);
+        return getRecipeIndex(processRecipeSet, variantIndex);
     }
 
     /**
@@ -394,6 +395,21 @@ public abstract class ProcessPanel<R extends Recipe> { // TODO maybe need to dep
         if(coord != null) {
             recipePanelSlots.put(coord, parentButton);
         }
+    }
+
+    private <Re extends Recipe> Re getRecipeIndex(ProcessRecipeSet<Re> processRecipeSet, int variant) {
+        Re recipe = null;
+        Iterator<Re> iterator = processRecipeSet.iterator();
+        if (variant < 0) {
+            throw new ArrayIndexOutOfBoundsException("Variant index out of bounds: " + variant);
+        }
+        for (int i = 0; i <= variant ; i++) {
+            if (!iterator.hasNext()) {
+                throw new ArrayIndexOutOfBoundsException("Variant index out of bounds: " + variant);
+            }
+            recipe = iterator.next();
+        }
+        return recipe;
     }
 
     /**
