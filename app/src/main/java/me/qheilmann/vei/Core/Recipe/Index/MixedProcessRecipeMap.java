@@ -24,6 +24,8 @@ import me.qheilmann.vei.Core.Process.VanillaProcesses;
  */
 public class MixedProcessRecipeMap {
     
+    public static final Comparator<Process<?>> PROCESS_COMPARATOR = processComparator();
+
     /**
      * A map that organizes recipes by their associated processes.
      * Keys and values in this map must be non-null and this constraint must be strictly enforced.
@@ -39,8 +41,7 @@ public class MixedProcessRecipeMap {
             throw new IllegalArgumentException("The map cannot contain null keys or values %s".formatted(recipeCollection));
         }
 
-        Comparator<Process<?>> processComparator = processComparator();
-        this.recipes = new ConcurrentSkipListMap<>(processComparator);
+        this.recipes = new ConcurrentSkipListMap<>(PROCESS_COMPARATOR);
         recipes.putAll(recipeCollection);
     }
 
@@ -81,7 +82,7 @@ public class MixedProcessRecipeMap {
      * Get all the recipes from each process in an unmodifiable NavigaleSet.
      */
     public NavigableSet<Recipe> getAllRecipes() {
-        NavigableSet<Recipe> allRecipes = new ConcurrentSkipListSet<>(ProcessRecipeSet.recipeComparator());
+        NavigableSet<Recipe> allRecipes = new ConcurrentSkipListSet<>(ProcessRecipeSet.RECIPE_COMPARATOR);
         for (ProcessRecipeSet<?> processRecipeSet : recipes.values()) {
             allRecipes.addAll(processRecipeSet.getAllRecipes());
         }
@@ -195,9 +196,10 @@ public class MixedProcessRecipeMap {
     }
 
     /**
-     * Returns an unmodifiable view of the map.
+     * Provides an unmodifiable NavigableMap view of the recipes map.
+     * The map is ordered using the {@link #PROCESS_COMPARATOR}.
      * 
-     * @return an unmodifiable view of the map
+     * @return an unmodifiable NavigableMap view of the recipes map
      */
     @NotNull
     public NavigableMap<Process<?>, ProcessRecipeSet<?>> asMap() {
@@ -205,9 +207,10 @@ public class MixedProcessRecipeMap {
     }
 
     /**
-     * Returns a set view of the processes contained in the map.
+     * Returns an unmodifiable NavigableSet of all processes contained in the map.
+     * The processes are ordered using the {@link #PROCESS_COMPARATOR}.
      * 
-     * @return a set view of the processes contained in the map
+     * @return an unmodifiable NavigableSet of all processes in the map
      */
     @NotNull
     public NavigableSet<Process<?>> getAllProcess() {
@@ -215,8 +218,9 @@ public class MixedProcessRecipeMap {
     }
 
     /**
-     * Returns an unmodifiable SequencedSet of ProcessRecipeSets contained in the collection.
-     * The order matches the sequence of their associated processes.
+     * Returns an unmodifiable SequencedSet of ProcessRecipeSets contained in 
+     * the collection. The order matches the sequence of their associated 
+     * processes, which are ordered using the {@link #PROCESS_COMPARATOR}.
      * 
      * @return an unmodifiable SequencedSet of ProcessRecipeSets in the collection
      */
@@ -259,7 +263,7 @@ public class MixedProcessRecipeMap {
      * 
      * @return a comparator for ordering processes
      */
-    public static Comparator<Process<?>> processComparator() {
+    private static Comparator<Process<?>> processComparator() {
         return new Comparator<Process<?>>() {
             @Override
             public int compare(Process<?> p1, Process<?> p2) {

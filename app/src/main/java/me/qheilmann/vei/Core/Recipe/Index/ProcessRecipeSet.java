@@ -17,6 +17,8 @@ import org.jetbrains.annotations.NotNull;
  */
 public class ProcessRecipeSet<R extends Recipe> {
     
+    public static final Comparator<Recipe> RECIPE_COMPARATOR = recipeComparator();
+
     /**
      * A collection of recipes.
      * Each entry in this set must be non-null, and this requirement must be strictly enforced.
@@ -32,13 +34,13 @@ public class ProcessRecipeSet<R extends Recipe> {
             throw new IllegalArgumentException("ProcessRecipeCollection cannot contain null values %s".formatted(ProcessRecipeCollection));
         }
 
-        Comparator<Recipe> recipeComparator = recipeComparator();
-        this.recipes = new ConcurrentSkipListSet<>(recipeComparator);
+        this.recipes = new ConcurrentSkipListSet<>(RECIPE_COMPARATOR);
         this.recipes.addAll(ProcessRecipeCollection);
     }
 
     /**
-     * Returns all the recipes in the set.
+     * Returns all the recipes in the set. The recipe are ordered by the
+     * {@link #RECIPE_COMPARATOR} comparator.
      * 
      * @return all the recipes in the set
      */
@@ -274,7 +276,7 @@ public class ProcessRecipeSet<R extends Recipe> {
      * 
      * @return a comparator for ordering processes
      */
-    public static Comparator<Recipe> recipeComparator() {
+    private static Comparator<Recipe> recipeComparator() {
         return new Comparator<Recipe>() {
             @Override
             public int compare(Recipe r1, Recipe r2) {
