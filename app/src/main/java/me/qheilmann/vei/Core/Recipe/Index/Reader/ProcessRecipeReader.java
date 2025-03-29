@@ -1,37 +1,40 @@
-package me.qheilmann.vei.Core.Recipe.Index;
+package me.qheilmann.vei.Core.Recipe.Index.Reader;
 
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Collections;
 import java.util.NavigableSet;
 import org.bukkit.inventory.Recipe;
 import org.jetbrains.annotations.NotNull;
 
-public class ProcessRecipeReader {
-    private final @NotNull ProcessRecipeSet<Recipe> recipeSet;
-    private Recipe currentRecipe;
+import me.qheilmann.vei.Core.Recipe.Index.ProcessRecipeSet;
 
-    public ProcessRecipeReader(@NotNull ProcessRecipeSet<Recipe> recipeSet) {
-        this.recipeSet = recipeSet;
-        this.currentRecipe = recipeSet.getAllRecipes().first();
+public class ProcessRecipeReader<R extends Recipe> {
+    private final @NotNull ProcessRecipeSet<R> recipeSet;
+    private R currentRecipe;
+
+    public ProcessRecipeReader(@NotNull ProcessRecipeSet<R> recipeSet) {
+        this(recipeSet, recipeSet.getAllRecipes().first());
     }
 
-    public ProcessRecipeReader(@NotNull ProcessRecipeSet<Recipe> recipeSet, Recipe recipe) {
-        this(recipeSet);
+    public ProcessRecipeReader(@NotNull ProcessRecipeSet<R> recipeSet, R recipe) {
+        Objects.requireNonNull(recipeSet, "RecipeSet cannot be null.");
+
+        this.recipeSet = recipeSet;
         setRecipe(recipe);
     }
 
-    public void setRecipe(Recipe recipe) {
-        if (recipe == null) {
-            throw new IllegalArgumentException("Recipe cannot be null.");
-        }
+    public ProcessRecipeReader<R> setRecipe(R recipe) {
+        Objects.requireNonNull(recipe, "Recipe cannot be null.");
 
         if (!recipeSet.getAllRecipes().contains(recipe)) {
             throw new IllegalArgumentException("Recipe not found in the recipe set: " + recipe.getResult());
         }
         this.currentRecipe = recipe;
+        return this;
     }
 
-    public Recipe currentRecipe() {
+    public R currentRecipe() {
         return currentRecipe;
     }
 
@@ -39,8 +42,8 @@ public class ProcessRecipeReader {
         return recipeSet.getAllRecipes().higher(currentRecipe) != null;
     }
 
-    public Recipe next() {
-        Recipe nextRecipe = recipeSet.getAllRecipes().higher(currentRecipe);
+    public R next() {
+        R nextRecipe = recipeSet.getAllRecipes().higher(currentRecipe);
         if (nextRecipe == null) {
             throw new NoSuchElementException("No next recipe available.");
         }
@@ -51,33 +54,33 @@ public class ProcessRecipeReader {
         return recipeSet.getAllRecipes().lower(currentRecipe) != null;
     }
 
-    public Recipe previous() {
-        Recipe previousRecipe = recipeSet.getAllRecipes().lower(currentRecipe);
+    public R previous() {
+        R previousRecipe = recipeSet.getAllRecipes().lower(currentRecipe);
         if (previousRecipe == null) {
             throw new NoSuchElementException("No previous recipe available.");
         }
         return currentRecipe = previousRecipe;
     }
 
-    public Recipe first() {
+    public R first() {
         if (recipeSet.isEmpty()) {
             throw new NoSuchElementException("No recipes available.");
         }
         return currentRecipe = recipeSet.getAllRecipes().first();
     }
 
-    public Recipe last() {
+    public R last() {
         if (recipeSet.isEmpty()) {
             throw new NoSuchElementException("No recipes available.");
         }
         return currentRecipe = recipeSet.getAllRecipes().last();
     }
 
-    public boolean Contains(Recipe recipe) {
+    public boolean Contains(R recipe) {
         return recipeSet.getAllRecipes().contains(recipe);
     }
 
-    public NavigableSet<Recipe> getAllRecipes() {
+    public NavigableSet<R> getAllRecipes() {
         return Collections.unmodifiableNavigableSet(recipeSet.getAllRecipes());
     }
 }

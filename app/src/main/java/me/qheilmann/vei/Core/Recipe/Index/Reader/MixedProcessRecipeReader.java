@@ -1,39 +1,51 @@
-package me.qheilmann.vei.Core.Recipe.Index;
+package me.qheilmann.vei.Core.Recipe.Index.Reader;
 
 import java.util.NavigableSet;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
+import javax.annotation.Nullable;
+
 import org.bukkit.inventory.Recipe;
 import org.jetbrains.annotations.NotNull;
-
 import me.qheilmann.vei.Core.Process.Process;
+import me.qheilmann.vei.Core.Recipe.Index.MixedProcessRecipeMap;
 
 public class MixedProcessRecipeReader {
     private final @NotNull MixedProcessRecipeMap mixedProcessMap;
+    /**
+     * The process currently being read.
+     */
     private @NotNull Process<?> currentProcess;
+    /**
+     * The process that was active the last time the ProcessRecipeReader was accessed.
+     */
+    private @Nullable Process<?> lastProcess; // Cache for the last process to avoid unnecessary reloading.
+    private ProcessRecipeReader<?> currentProcessRecipeReader;
 
     public MixedProcessRecipeReader(MixedProcessRecipeMap mixedProcessRecipeMap) {
+        this(mixedProcessRecipeMap, mixedProcessRecipeMap.getAllProcess().first());
+    }
+
+    public <R extends Recipe> MixedProcessRecipeReader(MixedProcessRecipeMap mixedProcessRecipeMap, Process<R> process) {
+        Objects.requireNonNull(mixedProcessRecipeMap, "MixedProcessRecipeMap cannot be null.");
+        Objects.requireNonNull(process, "Process cannot be null.");
+
         mixedProcessMap = mixedProcessRecipeMap;
-        currentProcess = mixedProcessMap.getAllProcess().first();
-    }
-
-    public MixedProcessRecipeReader(MixedProcessRecipeMap mixedProcessRecipeMap, Process<?> process) {
-        this(mixedProcessRecipeMap);
         setProcess(process);
-    }
-
-    public MixedProcessRecipeReader(MixedProcessRecipeMap mixedProcessRecipeMap, Process<?> process, Recipe recipe) {
-        this(mixedProcessRecipeMap, process);
-        currentProcessRecipeReader().setRecipe(recipe);
     }
 
     public void setProcess(Process<?> process) {
         Objects.requireNonNull(process, "Process cannot be null.");
 
+        if (process == currentProcess) {
+            return; // No change needed, the currentProcessRecipeReader is already set to the correct process AND RECIPE.
+        }
+
         if (!mixedProcessMap.getAllProcess().contains(process)) {
             throw new IllegalArgumentException("Process not found in the recipe map: " + process.getProcessName());
         }
+
         this.currentProcess = process;
     }
 
@@ -41,8 +53,12 @@ public class MixedProcessRecipeReader {
         return currentProcess;
     }
 
-    public ProcessRecipeReader currentProcessRecipeReader() {
-        throw new UnsupportedOperationException("Not implemented yet."); // TODO Impl currentProcessRecipeReader()
+    public ProcessRecipeReader<?> currentProcessRecipeReader() {
+        if (lastProcess == null || (lastProcess != null && lastProcess.equals(currentProcess))) {
+            return currentProcessRecipeReader; // Return the cached reader if the process hasn't changed.
+        }
+
+        return (currentProcessRecipeReader = new ProcessRecipeReader<>(mixedProcessMap.getProcessRecipeSet(currentProcess)));
     }
 
     public boolean hasNext() {
