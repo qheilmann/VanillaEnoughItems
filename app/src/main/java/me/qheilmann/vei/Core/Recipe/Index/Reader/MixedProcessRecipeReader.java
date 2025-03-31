@@ -54,10 +54,11 @@ public class MixedProcessRecipeReader {
     }
 
     public ProcessRecipeReader<?> currentProcessRecipeReader() {
-        if (lastProcess == null || (lastProcess != null && lastProcess.equals(currentProcess))) {
-            return currentProcessRecipeReader; // Return the cached reader if the process hasn't changed.
-        }
+        // if (currentProcessRecipeReader != null || lastProcess == null || (lastProcess != null && lastProcess.equals(currentProcess))) {
+        //     return currentProcessRecipeReader; // Return the cached reader if the process hasn't changed.
+        // } // TODO reimplement this optimization
 
+        lastProcess = currentProcess;
         return (currentProcessRecipeReader = new ProcessRecipeReader<>(mixedProcessMap.getProcessRecipeSet(currentProcess)));
     }
 

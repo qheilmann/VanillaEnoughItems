@@ -31,6 +31,7 @@ import me.qheilmann.vei.Core.Recipe.RecipePath;
 import me.qheilmann.vei.Core.Recipe.Bookmark.Bookmark;
 import me.qheilmann.vei.Core.Recipe.Bookmark.Repository.InMemoryBookmarkRepository;
 import me.qheilmann.vei.Core.Recipe.Index.MixedProcessRecipeMap;
+import me.qheilmann.vei.Core.Recipe.Index.RecipeIndexService;
 import me.qheilmann.vei.Core.Style.StyleManager;
 import me.qheilmann.vei.Listener.InventoryClickListener;
 import me.qheilmann.vei.Listener.InventoryDragListener;
@@ -56,7 +57,7 @@ public class VanillaEnoughItems extends JavaPlugin {
         CommandAPI.onLoad(new CommandAPIBukkitConfig(this));
         menuManager = new MenuManager(this, StyleManager.DEFAULT_STYLE);
         
-        new CraftCommand(menuManager).register();
+
         new TestCommand().register();
 
         LOGGER.info(NAME + " has been loaded!");
@@ -71,14 +72,19 @@ public class VanillaEnoughItems extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new InventoryDragListener(this), this);
 
         addTemporaryRecipe(); // TEMP
-
+        
         Process.ProcessRegistry.registerProcesses(VanillaProcesses.getAllVanillaProcesses());
-        fillRecipeMap();
+        RecipeIndexService recipeIndex = generateRecipeIndex();
+        fillRecipeMap(); // TEMP
 
+        // CommandAPI command registration
+        new CraftCommand(menuManager, recipeIndex).register();
+        
         Bookmark.init(new InMemoryBookmarkRepository());
-        UUID quoinquoinUuid = UUID.fromString("81376bb8-5576-47bc-a2d9-89d98746d3ec");
-        Bookmark.addBookmarkAsync(quoinquoinUuid, new NamespacedKey(NAMESPACE, "warrior_sword")).join();
-        LOGGER.info("Quoinquoin's bookmarks: " + Bookmark.getBookmarksAsync(quoinquoinUuid).join());      
+
+        // UUID quoinquoinUuid = UUID.fromString("81376bb8-5576-47bc-a2d9-89d98746d3ec");
+        // Bookmark.addBookmarkAsync(quoinquoinUuid, new NamespacedKey(NAMESPACE, "warrior_sword")).join();
+        // LOGGER.info("Quoinquoin's bookmarks: " + Bookmark.getBookmarksAsync(quoinquoinUuid).join());      
 
         // testConfig(); // TEMP
 
@@ -274,6 +280,12 @@ public class VanillaEnoughItems extends JavaPlugin {
         }
         
         // TODO END TMP
+    }
+
+    private RecipeIndexService generateRecipeIndex() {
+        RecipeIndexService recipeIndexService = new RecipeIndexService();
+        recipeIndexService.IndexRecipes(this);
+        return recipeIndexService;
     }
 
     @SuppressWarnings("null")

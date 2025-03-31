@@ -19,7 +19,7 @@ public class InMemoryBookmarkRepository implements IBookmarkRepository {
     public InMemoryBookmarkRepository() {
         var defaultUuid = UUID.fromString("81376bb8-5576-47bc-a2d9-89d98746d3ec"); // hard coded quoinquoin UUID
         data.put(defaultUuid, new HashSet<>(List.of(
-            Key.key(VanillaEnoughItems.NAMESPACE, "second_diamond_swore"),
+            Key.key(VanillaEnoughItems.NAMESPACE, "second_diamond_sword"),
             Key.key("stick"),
             Key.key("iron_ingot_from_smelting_deepslate_iron_ore")
         )));
