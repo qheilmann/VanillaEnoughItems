@@ -5,10 +5,13 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
+import javax.annotation.Nullable;
+
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
 
 import me.qheilmann.vei.Core.Process.Process;
 import me.qheilmann.vei.Core.Recipe.Index.Reader.MixedProcessRecipeReader;
@@ -141,32 +144,50 @@ public class RecipeIndexService {
 
     //#region Searching
 
+    @NotNull
     public SequencedSet<NamespacedKey> getAllRecipeIds() {
         return Collections.unmodifiableSequencedSet(recipesById.keySet());
     }
 
+    @Nullable
     public Recipe getById(NamespacedKey recipeId) {
         return recipesById.get(recipeId);
     }
 
+    @Nullable
     public MixedProcessRecipeReader getByResult(ItemStack item) {
-        return new MixedProcessRecipeReader(recipesByResult.get(item));
+        MixedProcessRecipeMap mixedProcessRecipeMap = recipesByResult.get(item);
+        if (mixedProcessRecipeMap == null) {
+            return null; // No recipes found for this result
+        }
+        return new MixedProcessRecipeReader(mixedProcessRecipeMap);
     }
 
+    @Nullable
     public MixedProcessRecipeReader getByIngredient(ItemStack item) {
         throw new UnsupportedOperationException("Not implemented yet");
     }
 
+    @Nullable
     @SuppressWarnings("unchecked")
     public <R extends Recipe> ProcessRecipeReader<R> getByProcess(Process<R> process) {
-        return (ProcessRecipeReader<R>) new ProcessRecipeReader<>(recipesByProcess.getOrDefault(process, new ProcessRecipeSet<>()));
+        ProcessRecipeSet<?> processRecipeSet = recipesByProcess.get(process);
+        if (processRecipeSet == null) {
+            return null; // No recipes found for this process
+        }
+        return (ProcessRecipeReader<R>) new ProcessRecipeReader<>(recipesByProcess.get(process));
     }
 
+    @Nullable
     public <R extends Recipe> MixedProcessRecipeReader getGlobalIndex() {
         MixedProcessRecipeMap globalIndexByProcess = new MixedProcessRecipeMap();
         
         for (Entry<Process<?>, ProcessRecipeSet<?>> processRecipeEntry : recipesByProcess.entrySet()) {
             globalIndexByProcess.addProcessRecipeSet(processRecipeEntry.getKey(), processRecipeEntry.getValue());
+        }
+
+        if (globalIndexByProcess.isEmpty()) {
+            return null; // No process found in this global index
         }
 
         return new MixedProcessRecipeReader(globalIndexByProcess);

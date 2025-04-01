@@ -24,14 +24,27 @@ public class ProcessRecipeReader<R extends Recipe> {
         setRecipe(recipe);
     }
 
-    public ProcessRecipeReader<R> setRecipe(R recipe) {
+    public boolean setRecipe(R recipe) {
         Objects.requireNonNull(recipe, "Recipe cannot be null.");
 
         if (!recipeSet.getAllRecipes().contains(recipe)) {
-            throw new IllegalArgumentException("Recipe not found in the recipe set: " + recipe.getResult());
-        }
+            return false; // Recipe not found in the set, cannot set it as current.
+        }   
         this.currentRecipe = recipe;
-        return this;
+        return true;
+    }
+
+
+    /**
+     * Sets the current recipe to the given recipe
+     * @param recipe
+     * @return true if the recipe was set, false if the recipe was not found in the set.
+     * @throws ClassCastException if the types of one or more elements
+     * in the specified collection are incompatible with this reader
+     */
+    @SuppressWarnings("unchecked")
+    public boolean unsafeSetRecipe(Recipe recipe) throws ClassCastException {
+        return setRecipe((R) recipe);
     }
 
     public R currentRecipe() {

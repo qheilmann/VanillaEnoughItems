@@ -56,7 +56,7 @@ public class MixedProcessRecipeReader {
     public ProcessRecipeReader<?> currentProcessRecipeReader() {
         // if (currentProcessRecipeReader != null || lastProcess == null || (lastProcess != null && lastProcess.equals(currentProcess))) {
         //     return currentProcessRecipeReader; // Return the cached reader if the process hasn't changed.
-        // } // TODO reimplement this optimization
+        // } // TODO reimplement this, change Reader current recipe and keep it in sync inside this reader.
 
         lastProcess = currentProcess;
         return (currentProcessRecipeReader = new ProcessRecipeReader<>(mixedProcessMap.getProcessRecipeSet(currentProcess)));
