@@ -1,6 +1,7 @@
 package me.qheilmann.vei.Core.Recipe.Index;
 
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
@@ -33,12 +34,12 @@ public class RecipeIndexService {
     /**
      * Indexes a collection of recipes.
      * <p>
-     * @see {@link #IndexRecipes(JavaPlugin)}: Preferred method to index all recipes in the server.
+     * @see {@link #indexRecipes(JavaPlugin)}: Preferred method to index all recipes in the server.
      * @param recipes The collection of recipes to index.
      */
-    public void IndexRecipes(Collection<Recipe> recipes) {
+    public void indexRecipes(Collection<Recipe> recipes) {
         for (Recipe recipe : recipes) {
-            IndexRecipe(recipe);
+            indexRecipe(recipe);
         }
     }
 
@@ -48,11 +49,11 @@ public class RecipeIndexService {
      * This is the preferred default method to index recipes
      * @param plugin The plugin instance
      */
-    public void IndexRecipes(JavaPlugin plugin) {
+    public void indexRecipes(JavaPlugin plugin) {
         Iterator<Recipe> recipeIterator = plugin.getServer().recipeIterator();
         while (recipeIterator.hasNext()) {
             Recipe recipe = recipeIterator.next();
-            IndexRecipe(recipe);
+            indexRecipe(recipe);
         }        
     }
 
@@ -60,7 +61,7 @@ public class RecipeIndexService {
      * Indexes a recipe.
      * @param recipe The recipe to index.
      */
-    public void IndexRecipe(Recipe recipe) {
+    public void indexRecipe(Recipe recipe) {
         // Index by ID
         if (recipe instanceof org.bukkit.Keyed keyedRecipe) {
             recipesById.put(keyedRecipe.getKey(), recipe);
@@ -79,21 +80,21 @@ public class RecipeIndexService {
         recipesByProcess.computeIfAbsent(process, p -> new ProcessRecipeSet<>()).unsafeAdd(recipe);
     }
 
-    public void UnindexRecipes(Collection<Recipe> recipes) {
+    public void unindexRecipes(Collection<Recipe> recipes) {
         for (Recipe recipe : recipes) {
-            UnindexRecipe(recipe);
+            unindexRecipe(recipe);
         }
     }
 
-    public void UnindexRecipes(JavaPlugin plugin) {
+    public void unindexRecipes(JavaPlugin plugin) {
         Iterator<Recipe> recipeIterator = plugin.getServer().recipeIterator();
         while (recipeIterator.hasNext()) {
             Recipe recipe = recipeIterator.next();
-            UnindexRecipe(recipe);
+            unindexRecipe(recipe);
         }
     }
 
-    public void UnindexRecipe(Recipe recipe) {
+    public void unindexRecipe(Recipe recipe) {
         // Remove from ID index
         if (recipe instanceof org.bukkit.Keyed keyedRecipe) {
             recipesById.remove(keyedRecipe.getKey());
@@ -129,7 +130,7 @@ public class RecipeIndexService {
         }
     }
 
-    public void UnindexAll() {
+    public void unindexAll() {
         recipesById.clear();
         recipesByResult.clear();
         recipesByIngredient.clear();
@@ -159,6 +160,16 @@ public class RecipeIndexService {
     @SuppressWarnings("unchecked")
     public <R extends Recipe> ProcessRecipeReader<R> getByProcess(Process<R> process) {
         return (ProcessRecipeReader<R>) new ProcessRecipeReader<>(recipesByProcess.getOrDefault(process, new ProcessRecipeSet<>()));
+    }
+
+    public <R extends Recipe> MixedProcessRecipeReader getGlobalIndex() {
+        MixedProcessRecipeMap globalIndexByProcess = new MixedProcessRecipeMap();
+        
+        for (Entry<Process<?>, ProcessRecipeSet<?>> processRecipeEntry : recipesByProcess.entrySet()) {
+            globalIndexByProcess.addProcessRecipeSet(processRecipeEntry.getKey(), processRecipeEntry.getValue());
+        }
+
+        return new MixedProcessRecipeReader(globalIndexByProcess);
     }
 
     //#endregion Searching

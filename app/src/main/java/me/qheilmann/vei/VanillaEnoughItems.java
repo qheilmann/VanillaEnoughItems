@@ -284,7 +284,7 @@ public class VanillaEnoughItems extends JavaPlugin {
 
     private RecipeIndexService generateRecipeIndex() {
         RecipeIndexService recipeIndexService = new RecipeIndexService();
-        recipeIndexService.IndexRecipes(this);
+        recipeIndexService.indexRecipes(this);
         return recipeIndexService;
     }
 

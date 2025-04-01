@@ -100,6 +100,14 @@ public class ProcessRecipeSet<R extends Recipe> {
         return modified;
     }
 
+    public boolean unsafeAddAll(@NotNull Collection<? extends Recipe> recipes) {
+        boolean modified = false;
+        for (Recipe recipe : recipes) {
+            modified |= unsafeAdd(recipe);
+        }
+        return modified;
+    }
+
     /**
      * Returns true if the set contains the specified recipe.
      * 
