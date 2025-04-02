@@ -96,4 +96,9 @@ public class ProcessRecipeReader<R extends Recipe> {
     public NavigableSet<R> getAllRecipes() {
         return Collections.unmodifiableNavigableSet(recipeSet.getAllRecipes());
     }
+
+    // Temporary adapter for smooth transition
+    public ProcessRecipeSet<R> temporaryGetRecipeSet() {
+        return recipeSet;
+    }
 }

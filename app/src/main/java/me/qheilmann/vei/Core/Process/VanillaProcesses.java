@@ -53,7 +53,7 @@ public class VanillaProcesses {
                 generateIcon(),
                 getWorkbenchOptions(),
                 getRecipeClasses(),
-                (style, recipeSet, variant) -> new CraftingProcessPanel(style, recipeSet, variant)
+                (style, recipeIndex, recipeSet, variant) -> new CraftingProcessPanel(style, recipeIndex, recipeSet, variant)
             );
         }
 
@@ -91,7 +91,7 @@ public class VanillaProcesses {
                 generateIcon(),
                 getWorkbenchOptions(),
                 getRecipeClasses(),
-                (style, recipeSet, variant) -> new SmeltingProcessPanel(style, recipeSet, variant)
+                (style, recipeIndex, recipeSet, variant) -> new SmeltingProcessPanel(style, recipeIndex, recipeSet, variant)
             );
         }
 
@@ -127,7 +127,7 @@ public class VanillaProcesses {
                 generateIcon(),
                 getWorkbenchOptions(),
                 getRecipeClasses(),
-                (style, recipeSet, variant) -> new DummyProcessPanel(style, recipeSet, variant)
+                (style, recipeIndex, recipeSet, variant) -> new DummyProcessPanel(style, recipeIndex, recipeSet, variant)
             );
         }
 

@@ -12,12 +12,12 @@ import org.bukkit.inventory.Recipe;
 import org.jetbrains.annotations.NotNull;
 import com.google.common.base.Preconditions;
 
-import me.qheilmann.vei.VanillaEnoughItems;
 import me.qheilmann.vei.Core.GUI.GuiItem;
 import me.qheilmann.vei.Core.Menu.RecipeMenu;
 import me.qheilmann.vei.Core.ProcessPanel.Panels.CraftingProcessPanel;
-import me.qheilmann.vei.Core.Recipe.Index.MixedProcessRecipeMap;
 import me.qheilmann.vei.Core.Recipe.Index.ProcessRecipeSet;
+import me.qheilmann.vei.Core.Recipe.Index.RecipeIndexService;
+import me.qheilmann.vei.Core.Recipe.Index.Reader.MixedProcessRecipeReader;
 import me.qheilmann.vei.Core.Slot.Collection.SlotSequence;
 import me.qheilmann.vei.Core.Style.Styles.Style;
 
@@ -64,6 +64,7 @@ public abstract class ProcessPanel<R extends Recipe> { // TODO maybe need to dep
     protected HashMap<ProcessPanelSlot, GuiItem<RecipeMenu>> recipePanelSlots;
     
     private final Style style;
+    private final RecipeIndexService recipeIndex;
     private ProcessRecipeSet<R> processRecipeSet;
     private int variantIndex;
     protected Map<AttachedButtonType, GuiItem<RecipeMenu>> attachedButtons = new HashMap<>();
@@ -72,8 +73,8 @@ public abstract class ProcessPanel<R extends Recipe> { // TODO maybe need to dep
      * Create a new recipe panel for the given recipe.
      * @param processRecipeSet The recipe to display.
      */
-    public ProcessPanel(@NotNull Style style, @NotNull ProcessRecipeSet<R> processRecipeSet) {
-        this(style, processRecipeSet, 0);
+    public ProcessPanel(@NotNull Style style, @NotNull RecipeIndexService recipeIndex, @NotNull ProcessRecipeSet<R> processRecipeSet) {
+        this(style, recipeIndex, processRecipeSet, 0);
     }
 
     /**
@@ -81,12 +82,13 @@ public abstract class ProcessPanel<R extends Recipe> { // TODO maybe need to dep
      * @param processRecipeSet The recipe to display.
      * @param variantIndex The variante index of the recipe to display.
      */
-    public ProcessPanel(@NotNull Style style, @NotNull ProcessRecipeSet<R> processRecipeSet, int variantIndex) {
+    public ProcessPanel(@NotNull Style style, @NotNull RecipeIndexService recipeIndex, @NotNull ProcessRecipeSet<R> processRecipeSet, int variantIndex) {
         Preconditions.checkNotNull(processRecipeSet, "recipe cannot be null");
         this.recipePanelSlots = new HashMap<>();
         this.variantIndex = variantIndex;
         this.processRecipeSet = processRecipeSet;
         this.style = style;
+        this.recipeIndex = recipeIndex;
         setRecipVariantIndex(variantIndex);
     }
 
@@ -379,12 +381,12 @@ public abstract class ProcessPanel<R extends Recipe> { // TODO maybe need to dep
     protected GuiItem<RecipeMenu> buildNewRecipeGuiItem(ItemStack item) {
         GuiItem<RecipeMenu> guiItem = new GuiItem<>(item);
         guiItem.setAction((event, menu) -> {
-            MixedProcessRecipeMap recipeMap = VanillaEnoughItems.allRecipesMap.getMixedProcessRecipeMap(item);
-            if (recipeMap == null) {
+            MixedProcessRecipeReader recipeReader = recipeIndex.getByResult(item);
+            if (recipeReader == null) {
                 return;
             }
 
-            RecipeMenu recipeMenu = new RecipeMenu(style, recipeMap);
+            RecipeMenu recipeMenu = new RecipeMenu(style, recipeIndex, recipeReader);
             recipeMenu.open(event.getWhoClicked());
         });
 

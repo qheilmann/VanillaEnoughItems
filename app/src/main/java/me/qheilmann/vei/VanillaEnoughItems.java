@@ -55,10 +55,6 @@ public class VanillaEnoughItems extends JavaPlugin {
     @Override
     public void onLoad() {
         CommandAPI.onLoad(new CommandAPIBukkitConfig(this));
-        menuManager = new MenuManager(this, StyleManager.DEFAULT_STYLE);
-        
-
-        new TestCommand().register();
 
         LOGGER.info(NAME + " has been loaded!");
     }
@@ -68,25 +64,23 @@ public class VanillaEnoughItems extends JavaPlugin {
         CommandAPI.onEnable();
         BaseGui.onEnable(this);
 
-        getServer().getPluginManager().registerEvents(new InventoryClickListener(menuManager), this);
-        getServer().getPluginManager().registerEvents(new InventoryDragListener(this), this);
-
         addTemporaryRecipe(); // TEMP
         
         Process.ProcessRegistry.registerProcesses(VanillaProcesses.getAllVanillaProcesses());
         RecipeIndexService recipeIndex = generateRecipeIndex();
         fillRecipeMap(); // TEMP
 
+        menuManager = new MenuManager(this, StyleManager.DEFAULT_STYLE, recipeIndex);
+
         // CommandAPI command registration
         new CraftCommand(menuManager, recipeIndex).register();
-        
+        new TestCommand().register();
+
         Bookmark.init(new InMemoryBookmarkRepository());
 
-        // UUID quoinquoinUuid = UUID.fromString("81376bb8-5576-47bc-a2d9-89d98746d3ec");
-        // Bookmark.addBookmarkAsync(quoinquoinUuid, new NamespacedKey(NAMESPACE, "warrior_sword")).join();
-        // LOGGER.info("Quoinquoin's bookmarks: " + Bookmark.getBookmarksAsync(quoinquoinUuid).join());      
-
-        // testConfig(); // TEMP
+        // Event registration
+        getServer().getPluginManager().registerEvents(new InventoryClickListener(menuManager), this);
+        getServer().getPluginManager().registerEvents(new InventoryDragListener(this), this);
 
         LOGGER.info(NAME+ " has been enabled!");
     }

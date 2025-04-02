@@ -155,18 +155,7 @@ public class CraftCommand implements ICommand{
             throw CommandAPIBukkit.failWithAdventureComponent(Component.text("No recipes with result: ").append(result.displayName()).color(NamedTextColor.RED));
         }
 
-        // TEMP Adapter to old API
-        Process<?> process = recipeReader.currentProcess();
-        Recipe[] RecipeArray = recipeReader.currentProcessRecipeReader().getAllRecipes().toArray(Recipe[]::new);
-        int variant = 0;
-        for (int i = 0; i < RecipeArray.length; i++) {
-            if (RecipeArray[i].getResult().isSimilar(result)) {
-                variant = i;
-                break;
-            }
-        }
-
-        openRecipe(player, result, process, variant);
+        menuManager.openRecipeMenu(player, recipeReader);
     }
 
     private void byItemAction(@NotNull Player player, @NotNull ItemStack item, SearchMode searchMode, @Nullable Process<?> process, @NotNull NamespacedKey recipeId) throws WrapperCommandSyntaxException {
@@ -210,20 +199,7 @@ public class CraftCommand implements ICommand{
             }
         }
 
-        // Here mixedProcessRecipeReader is correctly set to be used
-        
-
-        // TEMP Adapter to old API
-        Recipe[] RecipeArray = mixedProcessRecipeReader.currentProcessRecipeReader().getAllRecipes().toArray(Recipe[]::new);
-        int variant = 0;
-        for (int i = 0; i < RecipeArray.length; i++) {
-            if (RecipeArray[i].getResult().isSimilar(resultItem)) {
-                variant = i;
-                break;
-            }
-        }
-
-        openRecipe(player, resultItem, mixedProcessRecipeReader.currentProcess(), variant);
+        menuManager.openRecipeMenu(player, mixedProcessRecipeReader);
     }
 
     private void byIngredientAction(@NotNull Player player, @NotNull ItemStack ingredientItem, @Nullable Process<?> process, @NotNull NamespacedKey recipeId) throws WrapperCommandSyntaxException {
@@ -253,24 +229,7 @@ public class CraftCommand implements ICommand{
             }
         }
 
-        // Here mixedProcessRecipeReader is correctly set to be used
-
-        // TEMP Adapter to old API
-        Recipe[] RecipeArray = mixedProcessRecipeReader.currentProcessRecipeReader().getAllRecipes().toArray(Recipe[]::new);
-        int variant = 0;
-        for (int i = 0; i < RecipeArray.length; i++) {
-            if (RecipeArray[i].getResult().isSimilar(ingredientItem)) {
-                variant = i;
-                break;
-            }
-        }
-
-        openRecipe(player, ingredientItem, mixedProcessRecipeReader.currentProcess(), variant);
-    }
-
-    private void openRecipe(@NotNull Player player, @NotNull ItemStack item, @Nullable Process<?> process, int variant) {
-        menuManager.openRecipeMenu(player, item, process, variant);
-        // TODO add a global try catch here
+        menuManager.openRecipeMenu(player, mixedProcessRecipeReader);
     }
 
     private enum SearchMode {
