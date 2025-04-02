@@ -15,8 +15,8 @@ import me.qheilmann.vei.Core.GUI.GuiItem;
 import me.qheilmann.vei.Core.Menu.RecipeMenu;
 import me.qheilmann.vei.Core.ProcessPanel.ProcessPanel;
 import me.qheilmann.vei.Core.ProcessPanel.ProcessPanelSlot;
-import me.qheilmann.vei.Core.Recipe.Index.ProcessRecipeSet;
 import me.qheilmann.vei.Core.Recipe.Index.RecipeIndexService;
+import me.qheilmann.vei.Core.Recipe.Index.Reader.ProcessRecipeReader;
 import me.qheilmann.vei.Core.Slot.Collection.SlotSequence;
 import me.qheilmann.vei.Core.Style.Styles.Style;
 
@@ -34,12 +34,8 @@ public class SmeltingProcessPanel extends ProcessPanel<FurnaceRecipe> {
 
     private static final Material WORKBENCH_DISPLAY_MATERIAL = Material.FURNACE;
     
-    public SmeltingProcessPanel(@NotNull Style style, @NotNull RecipeIndexService recipeIndex, @NotNull ProcessRecipeSet<FurnaceRecipe> recipes, int variant) {
-        super(style, recipeIndex, recipes, variant);
-    }
-
-    public SmeltingProcessPanel(@NotNull Style style, @NotNull RecipeIndexService recipeIndex, @NotNull ProcessRecipeSet<FurnaceRecipe> recipes) {
-        super(style, recipeIndex, recipes);
+    public SmeltingProcessPanel(@NotNull Style style, @NotNull RecipeIndexService recipeIndex, @NotNull ProcessRecipeReader<FurnaceRecipe> recipeReader) {
+        super(style, recipeIndex, recipeReader);
     }
 
     @Override

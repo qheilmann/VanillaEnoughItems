@@ -13,8 +13,8 @@ import me.qheilmann.vei.Core.GUI.GuiItem;
 import me.qheilmann.vei.Core.Menu.RecipeMenu;
 import me.qheilmann.vei.Core.ProcessPanel.ProcessPanel;
 import me.qheilmann.vei.Core.ProcessPanel.ProcessPanelSlot;
-import me.qheilmann.vei.Core.Recipe.Index.ProcessRecipeSet;
 import me.qheilmann.vei.Core.Recipe.Index.RecipeIndexService;
+import me.qheilmann.vei.Core.Recipe.Index.Reader.ProcessRecipeReader;
 import me.qheilmann.vei.Core.Slot.Collection.SlotSequence;
 import me.qheilmann.vei.Core.Style.Styles.Style;
 import net.kyori.adventure.text.Component;
@@ -27,12 +27,8 @@ public final class DummyProcessPanel extends ProcessPanel<Recipe> {
 
     private static final Material INFORMATIVE_ITEM_MATERIAL = Material.BARRIER;
 
-    public DummyProcessPanel(@NotNull Style style, @NotNull RecipeIndexService recipeIndex, @NotNull ProcessRecipeSet<Recipe> recipes, int variant) {
-        super(style, recipeIndex, recipes, variant);
-    }
-
-    public DummyProcessPanel(@NotNull Style style, @NotNull RecipeIndexService recipeIndex, @NotNull ProcessRecipeSet<Recipe> recipes) {
-        super(style, recipeIndex, recipes);
+    public DummyProcessPanel(@NotNull Style style, @NotNull RecipeIndexService recipeIndex, @NotNull ProcessRecipeReader<Recipe> recipeReader) {
+        super(style, recipeIndex, recipeReader);
     }
 
     @Override

@@ -7,6 +7,7 @@ import java.util.NavigableSet;
 import org.bukkit.inventory.Recipe;
 import org.jetbrains.annotations.NotNull;
 
+import me.qheilmann.vei.VanillaEnoughItems;
 import me.qheilmann.vei.Core.Recipe.Index.ProcessRecipeSet;
 
 public class ProcessRecipeReader<R extends Recipe> {
@@ -52,6 +53,10 @@ public class ProcessRecipeReader<R extends Recipe> {
     }
 
     public boolean hasNext() {
+        VanillaEnoughItems.LOGGER.info("[123] [next] Checking for  (all recipe): " + recipeSet.getAllRecipes());
+        VanillaEnoughItems.LOGGER.info("[123] [next] Checking for (current recipe): " + currentRecipe);
+        VanillaEnoughItems.LOGGER.info("[123] [next] Checking for (higher recipe): " + recipeSet.getAllRecipes().higher(currentRecipe));
+        // fail here because of the currentProcessRecipeReader() who give a new reader each time instead of the same one.
         return recipeSet.getAllRecipes().higher(currentRecipe) != null;
     }
 
@@ -64,6 +69,9 @@ public class ProcessRecipeReader<R extends Recipe> {
     }
 
     public boolean hasPrevious() {
+        VanillaEnoughItems.LOGGER.info("[123] [previous] Checking for  (all recipe): " + recipeSet.getAllRecipes());
+        VanillaEnoughItems.LOGGER.info("[123] [previous] Checking for (current recipe): " + currentRecipe);
+        VanillaEnoughItems.LOGGER.info("[123] [previous] Checking for (lower recipe): " + recipeSet.getAllRecipes().lower(currentRecipe));
         return recipeSet.getAllRecipes().lower(currentRecipe) != null;
     }
 

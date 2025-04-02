@@ -2,7 +2,6 @@ package me.qheilmann.vei.Core.ProcessPanel;
 
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import javax.annotation.Nullable;
 
@@ -15,9 +14,9 @@ import com.google.common.base.Preconditions;
 import me.qheilmann.vei.Core.GUI.GuiItem;
 import me.qheilmann.vei.Core.Menu.RecipeMenu;
 import me.qheilmann.vei.Core.ProcessPanel.Panels.CraftingProcessPanel;
-import me.qheilmann.vei.Core.Recipe.Index.ProcessRecipeSet;
 import me.qheilmann.vei.Core.Recipe.Index.RecipeIndexService;
 import me.qheilmann.vei.Core.Recipe.Index.Reader.MixedProcessRecipeReader;
+import me.qheilmann.vei.Core.Recipe.Index.Reader.ProcessRecipeReader;
 import me.qheilmann.vei.Core.Slot.Collection.SlotSequence;
 import me.qheilmann.vei.Core.Style.Styles.Style;
 
@@ -65,31 +64,25 @@ public abstract class ProcessPanel<R extends Recipe> { // TODO maybe need to dep
     
     private final Style style;
     private final RecipeIndexService recipeIndex;
-    private ProcessRecipeSet<R> processRecipeSet;
-    private int variantIndex;
+    private final ProcessRecipeReader<R> recipeReader;
+
     protected Map<AttachedButtonType, GuiItem<RecipeMenu>> attachedButtons = new HashMap<>();
-    
-    /**
-     * Create a new recipe panel for the given recipe.
-     * @param processRecipeSet The recipe to display.
-     */
-    public ProcessPanel(@NotNull Style style, @NotNull RecipeIndexService recipeIndex, @NotNull ProcessRecipeSet<R> processRecipeSet) {
-        this(style, recipeIndex, processRecipeSet, 0);
-    }
 
     /**
      * Create a new recipe panel for the given recipe.
-     * @param processRecipeSet The recipe to display.
-     * @param variantIndex The variante index of the recipe to display.
+     * @param style The style of the panel.
+     * @param recipeIndex The recipe index service.
+     * @param recipeReader The recipe reader for the recipe.
      */
-    public ProcessPanel(@NotNull Style style, @NotNull RecipeIndexService recipeIndex, @NotNull ProcessRecipeSet<R> processRecipeSet, int variantIndex) {
-        Preconditions.checkNotNull(processRecipeSet, "recipe cannot be null");
+    public ProcessPanel(@NotNull Style style, @NotNull RecipeIndexService recipeIndex, @NotNull ProcessRecipeReader<R> recipeReader) {
+        Preconditions.checkNotNull(style, "recipe cannot be null");
+        Preconditions.checkNotNull(recipeIndex, "recipeIndex cannot be null");
+        Preconditions.checkNotNull(recipeReader, "recipeReader cannot be null");
+
         this.recipePanelSlots = new HashMap<>();
-        this.variantIndex = variantIndex;
-        this.processRecipeSet = processRecipeSet;
         this.style = style;
         this.recipeIndex = recipeIndex;
-        setRecipVariantIndex(variantIndex);
+        this.recipeReader = recipeReader;
     }
 
     /**
@@ -190,22 +183,8 @@ public abstract class ProcessPanel<R extends Recipe> { // TODO maybe need to dep
         return ProcessPanel.DEFAULT_WORKBENCH_MATERIAL;
     }
 
-    /**
-     * Set the recipe to display in the panel.
-     * @param processRecipeSet The recipe to display.
-     * @param variantIndex The variant index of the recipe to display.
-     */
-    public void setRecipVariantIndex(int variantIndex) {
-        Preconditions.checkArgument(variantIndex >= 0 && variantIndex < processRecipeSet.size(), "Invalid variant index, must be between 0 and %s (actual: %s)", processRecipeSet.size(), variantIndex);
-        this.variantIndex = variantIndex;
-    }
-
-    public int getCurrentVariantIndex() {
-        return variantIndex;
-    }
-
     public int getVariantCount() {
-        return processRecipeSet.size();
+        return recipeReader.getAllRecipes().size();
     }
 
     /**
@@ -214,7 +193,7 @@ public abstract class ProcessPanel<R extends Recipe> { // TODO maybe need to dep
      */
     @NotNull
     public R getCurrentRecipe() {
-        return getRecipeIndex(processRecipeSet, variantIndex);
+        return recipeReader.currentRecipe();
     }
 
     /**
@@ -397,21 +376,6 @@ public abstract class ProcessPanel<R extends Recipe> { // TODO maybe need to dep
         if(coord != null) {
             recipePanelSlots.put(coord, parentButton);
         }
-    }
-
-    private <Re extends Recipe> Re getRecipeIndex(ProcessRecipeSet<Re> processRecipeSet, int variant) {
-        Re recipe = null;
-        Iterator<Re> iterator = processRecipeSet.iterator();
-        if (variant < 0) {
-            throw new ArrayIndexOutOfBoundsException("Variant index out of bounds: " + variant);
-        }
-        for (int i = 0; i <= variant ; i++) {
-            if (!iterator.hasNext()) {
-                throw new ArrayIndexOutOfBoundsException("Variant index out of bounds: " + variant);
-            }
-            recipe = iterator.next();
-        }
-        return recipe;
     }
 
     /**

@@ -107,9 +107,6 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
     private final MixedProcessRecipeReader mixedProcessRecipeReader;
     private ProcessPanel<?> recipePanel;
 
-    // Keeps track of the currently displayed recipe
-    private int currentVariant;
-
     private GuiItem<RecipeMenu> quickLinkItem;
     private GuiItem<RecipeMenu> processScrollLeftItem;
     private GuiItem<RecipeMenu> processScrollRightItem;
@@ -149,14 +146,12 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         this.recipeIndex = reicpeIndex;
         this.mixedProcessRecipeReader = mixedProcessRecipeReader;
 
-        // TEMP Adapter
+        // Generate the recipe panel
+        @SuppressWarnings("unchecked") // Casting to the super type
+        Process<Recipe> process = (Process<Recipe>) mixedProcessRecipeReader.currentProcess();
+        @SuppressWarnings("unchecked") // Casting to the super type
         ProcessRecipeReader<Recipe> processRecipeReader = (ProcessRecipeReader<Recipe>) mixedProcessRecipeReader.currentProcessRecipeReader();
-        currentVariant = processRecipeReader.getAllRecipes().headSet(processRecipeReader.currentRecipe()).size();
-        ProcessRecipeSet<Recipe> recipeSet = processRecipeReader.temporaryGetRecipeSet();
-        // End TEMP Adapter
-
-        Process<Recipe> curProcess = (Process<Recipe>) mixedProcessRecipeReader.currentProcess();
-        this.recipePanel = curProcess.generateProcessPanel(style, recipeIndex, recipeSet, currentVariant);
+        this.recipePanel = process.generateProcessPanel(style, reicpeIndex, processRecipeReader);
 
         // Menu configuration
         initAllItem();
@@ -550,14 +545,36 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
     }
 
     private void nextRecipeAction(InventoryClickEvent event, RecipeMenu menu) {
-        currentVariant = calcNextVariantIndex();
-        recipePanel.setRecipVariantIndex(currentVariant);
+        ProcessRecipeReader<?> processRecipeReader = mixedProcessRecipeReader.currentProcessRecipeReader();
+        if (!processRecipeReader.hasNext()) {
+            return; // Silently ignore
+        }
+        processRecipeReader.next();
+
+        // Regenerate the recipe panel
+        @SuppressWarnings("unchecked")
+        ProcessRecipeReader<Recipe> castedProcessRecipeReader = (ProcessRecipeReader<Recipe>) processRecipeReader;
+        @SuppressWarnings("unchecked")
+        Process<Recipe> castedProcess = (Process<Recipe>) mixedProcessRecipeReader.currentProcess();
+        recipePanel = castedProcess.generateProcessPanel(style, recipeIndex, castedProcessRecipeReader);
+
         render();
     }
 
     private void previousRecipeAction(InventoryClickEvent event, RecipeMenu menu) {
-        currentVariant = calcPreviousVariantIndex();
-        recipePanel.setRecipVariantIndex(currentVariant);
+        ProcessRecipeReader<?> processRecipeReader = mixedProcessRecipeReader.currentProcessRecipeReader();
+        if (!processRecipeReader.hasPrevious()) {
+            return; // Silently ignore
+        }
+        processRecipeReader.previous();
+
+        // Regenerate the recipe panel
+        @SuppressWarnings("unchecked")
+        ProcessRecipeReader<Recipe> castedProcessRecipeReader = (ProcessRecipeReader<Recipe>) processRecipeReader;
+        @SuppressWarnings("unchecked")
+        Process<Recipe> castedProcess = (Process<Recipe>) mixedProcessRecipeReader.currentProcess();
+        recipePanel = castedProcess.generateProcessPanel(style, recipeIndex, castedProcessRecipeReader);
+
         render();
     }
 
@@ -592,12 +609,14 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
     }
 
     private <R extends Recipe> void changeProcessAction(InventoryClickEvent event, RecipeMenu menu, Process<R> process) {
-        mixedProcessRecipeReader.setProcess(process); 
-        currentVariant = 0;
+        mixedProcessRecipeReader.setProcess(process);
 
-        ProcessRecipeSet<R> processRecipeSet = mixedProcessRecipeReader.temporaryGetProcessRecipeMap().getProcessRecipeSet(process);
+        @SuppressWarnings("unchecked")
+        Process<Recipe> castedProcess = (Process<Recipe>) process;
+        @SuppressWarnings("unchecked")
+        ProcessRecipeReader<Recipe> castedProcessRecipeReader = (ProcessRecipeReader<Recipe>) mixedProcessRecipeReader.currentProcessRecipeReader();
 
-        recipePanel = process.generateProcessPanel(style, recipeIndex, processRecipeSet, currentVariant);
+        recipePanel = castedProcess.generateProcessPanel(style, recipeIndex, castedProcessRecipeReader);
         initProcessPanel();
 
         render();
@@ -623,43 +642,47 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
     }
 
     protected InventoryView open(@NotNull HumanEntity humanEntity, boolean addToHistory) {
-            // Add the recipe path to the history
-            if (addToHistory) {
-                UUID uuid = humanEntity.getUniqueId();
-                RecipeHistory recipeHistory;
-                if (VanillaEnoughItems.recipeHistoryMap.containsKey(uuid)) {
-                    recipeHistory = VanillaEnoughItems.recipeHistoryMap.get(uuid);
-                } else {
-                    recipeHistory = new RecipeHistory();
-                    VanillaEnoughItems.recipeHistoryMap.put(uuid, recipeHistory);
-                }
+        
+        Recipe currentRecipe = mixedProcessRecipeReader.currentProcessRecipeReader().currentRecipe();
 
-                ProcessRecipeSet<?> processRecipeSet = mixedProcessRecipeReader.temporaryGetProcessRecipeMap().getProcessRecipeSet(mixedProcessRecipeReader.currentProcess());
-                if (processRecipeSet == null) {
-                    VanillaEnoughItems.LOGGER.warn("No recipe found for process: %s".formatted(mixedProcessRecipeReader.currentProcess().getProcessName()));
-                    return null;
-                }
-                ItemStack currentResultItemStack = getRecipeIndex(processRecipeSet, currentVariant).getResult();
-                RecipePath recipePath = new RecipePath(currentResultItemStack, mixedProcessRecipeReader.currentProcess(), currentVariant);
-                recipeHistory.push(recipePath);
-            }
-
-            // TODO TEMP
-            ProcessRecipeSet<?> processRecipeSet = mixedProcessRecipeReader.temporaryGetProcessRecipeMap().getProcessRecipeSet(mixedProcessRecipeReader.currentProcess());
-            if (processRecipeSet == null) {
-                VanillaEnoughItems.LOGGER.warn("No recipe found for process: %s".formatted(mixedProcessRecipeReader.currentProcess().getProcessName()));
-                return null;
-            }
-            Recipe currentRecipe = getRecipeIndex(processRecipeSet, currentVariant);
-            if (currentRecipe instanceof Keyed keyed) {
-                Bookmark.addBookmarkAsync(humanEntity.getUniqueId(), keyed.key()).join();
-                VanillaEnoughItems.LOGGER.info("Bookmark recipe: %s".formatted(keyed.key()));
-                VanillaEnoughItems.LOGGER.info("Total: %s".formatted(Bookmark.getBookmarksAsync(humanEntity.getUniqueId()).join()));
+        // TODO TEMP adapter
+        @SuppressWarnings("unchecked")
+        ProcessRecipeReader<Recipe> castedProcessRecipeReader = (ProcessRecipeReader<Recipe>) mixedProcessRecipeReader.currentProcessRecipeReader();
+        int currentVariant = castedProcessRecipeReader.getAllRecipes().headSet(currentRecipe).size();
+        // end adapter
+        
+        // Add the recipe path to the history
+        if (addToHistory) {
+            UUID uuid = humanEntity.getUniqueId();
+            RecipeHistory recipeHistory;
+            if (VanillaEnoughItems.recipeHistoryMap.containsKey(uuid)) {
+                recipeHistory = VanillaEnoughItems.recipeHistoryMap.get(uuid);
             } else {
-                VanillaEnoughItems.LOGGER.warn("Cannot bookmark recipe: %s".formatted(currentRecipe));
+                recipeHistory = new RecipeHistory();
+                VanillaEnoughItems.recipeHistoryMap.put(uuid, recipeHistory);
             }
-    
-            return super.open(humanEntity);
+
+            ItemStack currentResultItemStack = currentRecipe.getResult();
+
+            RecipePath recipePath = new RecipePath(currentResultItemStack, mixedProcessRecipeReader.currentProcess(), currentVariant); // TODO redo this history part
+            recipeHistory.push(recipePath);
+        }
+
+        // TODO TEMP
+        ProcessRecipeSet<?> processRecipeSet = mixedProcessRecipeReader.temporaryGetProcessRecipeMap().getProcessRecipeSet(mixedProcessRecipeReader.currentProcess());
+        if (processRecipeSet == null) {
+            VanillaEnoughItems.LOGGER.warn("No recipe found for process: %s".formatted(mixedProcessRecipeReader.currentProcess().getProcessName()));
+            return null;
+        }
+        if (currentRecipe instanceof Keyed keyed) {
+            Bookmark.addBookmarkAsync(humanEntity.getUniqueId(), keyed.key()).join();
+            VanillaEnoughItems.LOGGER.info("Bookmark recipe: %s".formatted(keyed.key()));
+            VanillaEnoughItems.LOGGER.info("Total: %s".formatted(Bookmark.getBookmarksAsync(humanEntity.getUniqueId()).join()));
+        } else {
+            VanillaEnoughItems.LOGGER.warn("Cannot bookmark recipe: %s".formatted(currentRecipe));
+        }
+
+        return super.open(humanEntity);
     }
 
     private void setItemOnVisibility(MaxChestSlot slot, GuiItem<RecipeMenu> item, boolean isVisible) {
@@ -690,42 +713,9 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         });
     }
 
-    private int calcNextVariantIndex() {
-        int nextVariantIndex = recipePanel.getCurrentVariantIndex() + 1;
-        int maxVariantIndex = recipePanel.getVariantCount() - 1;
-
-        if (nextVariantIndex <= maxVariantIndex) {
-            return nextVariantIndex;
-        } else { // invalide case
-            return 0;
-        }
-    }
-
-    private int calcPreviousVariantIndex() {
-        int previousVariantIndex = recipePanel.getCurrentVariantIndex() - 1;
-
-        if (previousVariantIndex >= 0) {
-            return previousVariantIndex;
-        } else { // invalide case
-            return 0;
-        }
-    }
-
     private void updateNextPreviousRecipeVisibility() {
-        int variantIndex = recipePanel.getCurrentVariantIndex();
-        int maxVariantIndex = recipePanel.getVariantCount() - 1;
-
-        if (variantIndex >= maxVariantIndex) {
-            isNextRecipeVisible = false;
-        } else {
-            isNextRecipeVisible = true;
-        }
-
-        if (variantIndex <= 0) {
-            isPreviousRecipeVisible = false;
-        } else {
-            isPreviousRecipeVisible = true;
-        }
+        isNextRecipeVisible = mixedProcessRecipeReader.currentProcessRecipeReader().hasNext();
+        isPreviousRecipeVisible = mixedProcessRecipeReader.currentProcessRecipeReader().hasPrevious();
     }
 
     private EnumSet<ProcessPanel.AttachedButtonType> getAllVisibleAttachedButtonsSet() {
@@ -744,16 +734,18 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
      * @return the quick link string with something like "/craft minecraft:iron_ingot smelting 2"
      */
     private String getQuickLinkString() {
+        Recipe currentRecipe = mixedProcessRecipeReader.currentProcessRecipeReader().currentRecipe();
+
         ProcessRecipeSet<?> processRecipeSet = mixedProcessRecipeReader.temporaryGetProcessRecipeMap().getProcessRecipeSet(mixedProcessRecipeReader.currentProcess());
         if (processRecipeSet == null) {
             VanillaEnoughItems.LOGGER.warn("No recipe found for process: %s".formatted(mixedProcessRecipeReader.currentProcess().getProcessName()));
             return "";
         }
-        ItemStack currentResultItemStack = getRecipeIndex(processRecipeSet, currentVariant).getResult();
+        ItemStack currentResultItemStack = currentRecipe.getResult();
         return "/" + CraftCommand.NAME + " " 
             + currentResultItemStack.getType().getKey() + " " 
             +  mixedProcessRecipeReader.currentProcess().getProcessName().toLowerCase() + " " 
-            + (currentVariant + 1); // (Command is 1 based because of the final user)
+            + (68 + 1); // (Command is 1 based because of the final user) // TODO redo the quick link string to use the recipeId instead of the index
     }
 
     private void setClipBoard(String str) {
@@ -761,20 +753,5 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         Clipboard clipboard = toolkit.getSystemClipboard();
         StringSelection strSel = new StringSelection(str);
         clipboard.setContents(strSel, null);
-    }
-
-    private <R extends Recipe> R getRecipeIndex(ProcessRecipeSet<R> processRecipeSet, int variant) {
-        R recipe = null;
-        Iterator<R> iterator = processRecipeSet.iterator();
-        if (variant < 0) {
-            throw new ArrayIndexOutOfBoundsException("Variant index out of bounds: " + variant);
-        }
-        for (int i = 0; i <= variant ; i++) {
-            if (!iterator.hasNext()) {
-                throw new ArrayIndexOutOfBoundsException("Variant index out of bounds: " + variant);
-            }
-            recipe = iterator.next();
-        }
-        return recipe;
     }
 }
