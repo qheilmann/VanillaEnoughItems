@@ -108,9 +108,4 @@ public class MixedProcessRecipeReader {
     public NavigableSet<Process<?>> getAllProcess() {
         return mixedProcessMap.getAllProcess();
     }
-
-    // Temporary adapter for smooth transition
-    public MixedProcessRecipeMap temporaryGetProcessRecipeMap() {
-        return mixedProcessMap;
-    }
 }

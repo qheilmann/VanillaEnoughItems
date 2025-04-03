@@ -25,12 +25,10 @@ import me.qheilmann.vei.Core.Config.RecipeConfigLoader;
 import me.qheilmann.vei.Core.GUI.BaseGui;
 import me.qheilmann.vei.Core.Process.Process;
 import me.qheilmann.vei.Core.Process.VanillaProcesses;
-import me.qheilmann.vei.Core.Recipe.AllRecipeMap;
 import me.qheilmann.vei.Core.Recipe.RecipeHistory;
 import me.qheilmann.vei.Core.Recipe.RecipePath;
 import me.qheilmann.vei.Core.Recipe.Bookmark.Bookmark;
 import me.qheilmann.vei.Core.Recipe.Bookmark.Repository.InMemoryBookmarkRepository;
-import me.qheilmann.vei.Core.Recipe.Index.MixedProcessRecipeMap;
 import me.qheilmann.vei.Core.Recipe.Index.RecipeIndexService;
 import me.qheilmann.vei.Core.Style.StyleManager;
 import me.qheilmann.vei.Listener.InventoryClickListener;
@@ -48,9 +46,7 @@ public class VanillaEnoughItems extends JavaPlugin {
 
     private MenuManager menuManager;
 
-    public static final AllRecipeMap allRecipesMap = new AllRecipeMap();
     public static final Map<UUID, RecipeHistory> recipeHistoryMap = new java.util.HashMap<>();
-
 
     @Override
     public void onLoad() {
@@ -68,7 +64,6 @@ public class VanillaEnoughItems extends JavaPlugin {
         
         Process.ProcessRegistry.registerProcesses(VanillaProcesses.getAllVanillaProcesses());
         RecipeIndexService recipeIndex = generateRecipeIndex();
-        fillRecipeMap(); // TEMP
 
         menuManager = new MenuManager(this, StyleManager.DEFAULT_STYLE, recipeIndex);
 
@@ -280,33 +275,6 @@ public class VanillaEnoughItems extends JavaPlugin {
         RecipeIndexService recipeIndexService = new RecipeIndexService();
         recipeIndexService.indexRecipes(this);
         return recipeIndexService;
-    }
-
-    @SuppressWarnings("null")
-    private void fillRecipeMap() {
-        LOGGER.info("[123_C] Fill the recipe map\n");
-
-        // Get all recipes
-        var recipeIterator = getServer().recipeIterator();
-        while (recipeIterator.hasNext()) {
-            Recipe recipe =  recipeIterator.next();
-            ItemStack result = recipe.getResult();
-
-            if (result == null) {
-                continue;
-            }
-
-            // Get/create the item recipe map
-            MixedProcessRecipeMap mixedProcessRecipeMap;
-            if (allRecipesMap.containsItem(result)) {
-                mixedProcessRecipeMap = allRecipesMap.getMixedProcessRecipeMap(result);
-            } else {
-                mixedProcessRecipeMap = new MixedProcessRecipeMap();
-                allRecipesMap.putMixedProcessRecipeMap(result, mixedProcessRecipeMap);
-            }
-
-            mixedProcessRecipeMap.addRecipe(recipe);
-        }
     }
 }
 

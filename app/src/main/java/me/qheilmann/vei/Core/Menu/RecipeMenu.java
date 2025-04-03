@@ -236,12 +236,13 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
     private void renderProcessRange() {
         // no clear old process needed here
 
-        if (mixedProcessRecipeReader.temporaryGetProcessRecipeMap().getAllProcess().size() > PROCESS_SLOT_RANGE.size()) {
+        // if (mixedProcessRecipeReader.temporaryGetProcessRecipeMap().getAllProcess().size() > PROCESS_SLOT_RANGE.size()) {
+        if (mixedProcessRecipeReader.getAllProcess().size() > PROCESS_SLOT_RANGE.size()) {
             VanillaEnoughItems.LOGGER.warn("Not enough process slots to render all processes"); // TODO: Implement scroll page processes
         }
 
         Iterator<MaxChestSlot> slotIterator = PROCESS_SLOT_RANGE.iterator();
-        Iterator<Process<?>> processIterator = mixedProcessRecipeReader.temporaryGetProcessRecipeMap().getAllProcess().iterator();
+        Iterator<Process<?>> processIterator = mixedProcessRecipeReader.getAllProcess().iterator();
 
         while (slotIterator.hasNext() && processIterator.hasNext()) {
             MaxChestSlot slot = slotIterator.next();
@@ -668,12 +669,6 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
             recipeHistory.push(recipePath);
         }
 
-        // TODO TEMP
-        ProcessRecipeSet<?> processRecipeSet = mixedProcessRecipeReader.temporaryGetProcessRecipeMap().getProcessRecipeSet(mixedProcessRecipeReader.currentProcess());
-        if (processRecipeSet == null) {
-            VanillaEnoughItems.LOGGER.warn("No recipe found for process: %s".formatted(mixedProcessRecipeReader.currentProcess().getProcessName()));
-            return null;
-        }
         if (currentRecipe instanceof Keyed keyed) {
             Bookmark.addBookmarkAsync(humanEntity.getUniqueId(), keyed.key()).join();
             VanillaEnoughItems.LOGGER.info("Bookmark recipe: %s".formatted(keyed.key()));
@@ -736,16 +731,12 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
     private String getQuickLinkString() {
         Recipe currentRecipe = mixedProcessRecipeReader.currentProcessRecipeReader().currentRecipe();
 
-        ProcessRecipeSet<?> processRecipeSet = mixedProcessRecipeReader.temporaryGetProcessRecipeMap().getProcessRecipeSet(mixedProcessRecipeReader.currentProcess());
-        if (processRecipeSet == null) {
-            VanillaEnoughItems.LOGGER.warn("No recipe found for process: %s".formatted(mixedProcessRecipeReader.currentProcess().getProcessName()));
-            return "";
+        if (currentRecipe instanceof Keyed keyedRecipe) {
+            String recipeId = keyedRecipe.key().toString();
+            return "/" + CraftCommand.NAME + " " + "--id=" + recipeId;
+        } else {
+            return "No quick link available for this recipe type";
         }
-        ItemStack currentResultItemStack = currentRecipe.getResult();
-        return "/" + CraftCommand.NAME + " " 
-            + currentResultItemStack.getType().getKey() + " " 
-            +  mixedProcessRecipeReader.currentProcess().getProcessName().toLowerCase() + " " 
-            + (68 + 1); // (Command is 1 based because of the final user) // TODO redo the quick link string to use the recipeId instead of the index
     }
 
     private void setClipBoard(String str) {
