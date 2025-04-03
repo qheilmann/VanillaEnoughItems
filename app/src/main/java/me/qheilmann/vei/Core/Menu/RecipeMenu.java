@@ -105,7 +105,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
     private final Style style;
     private final RecipeIndexService recipeIndex;
     private final MixedProcessRecipeReader mixedProcessRecipeReader;
-    private ProcessPanel<?> recipePanel;
+    private ProcessPanel<?> processPanel;
 
     private GuiItem<RecipeMenu> quickLinkItem;
     private GuiItem<RecipeMenu> processScrollLeftItem;
@@ -146,15 +146,12 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         this.recipeIndex = reicpeIndex;
         this.mixedProcessRecipeReader = mixedProcessRecipeReader;
 
-        // Generate the recipe panel
-        @SuppressWarnings("unchecked") // Casting to the super type
-        Process<Recipe> process = (Process<Recipe>) mixedProcessRecipeReader.currentProcess();
-        @SuppressWarnings("unchecked") // Casting to the super type
-        ProcessRecipeReader<Recipe> processRecipeReader = (ProcessRecipeReader<Recipe>) mixedProcessRecipeReader.currentProcessRecipeReader();
-        this.recipePanel = process.generateProcessPanel(style, reicpeIndex, processRecipeReader);
-
         // Menu configuration
         initAllItem();
+
+        // Generate the recipe panel
+        regenerateProcessPanel();
+
         render();
     }
 
@@ -185,18 +182,25 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         setItem(BOOKMARK_LIST_SLOT, bookmarkListItem);
         setItem(BOOKMARK_SERVER_LIST_SLOT, bookmarkServerListItem);
         setItem(EXIT_SLOT, exitItem);
-
-        // Initialize process panel
-        initProcessPanel();
     }
 
     private void initProcessPanel() {
         // Attach action to the recipe panel
-        recipePanel.attachPannelButton(ProcessPanel.AttachedButtonType.NEXT_RECIPE, nextRecipeItem);
-        recipePanel.attachPannelButton(ProcessPanel.AttachedButtonType.PREVIOUS_RECIPE, previousRecipeItem);
-        recipePanel.attachPannelButton(ProcessPanel.AttachedButtonType.FORWARD_RECIPE, forwardRecipeItem);
-        recipePanel.attachPannelButton(ProcessPanel.AttachedButtonType.BACKWARD_RECIPE, backwardRecipeItem);
-        recipePanel.attachPannelButton(ProcessPanel.AttachedButtonType.MOVE_INGREDIENTS, moveIngredientsItem);
+        processPanel.attachPannelButton(ProcessPanel.AttachedButtonType.NEXT_RECIPE, nextRecipeItem);
+        processPanel.attachPannelButton(ProcessPanel.AttachedButtonType.PREVIOUS_RECIPE, previousRecipeItem);
+        processPanel.attachPannelButton(ProcessPanel.AttachedButtonType.FORWARD_RECIPE, forwardRecipeItem);
+        processPanel.attachPannelButton(ProcessPanel.AttachedButtonType.BACKWARD_RECIPE, backwardRecipeItem);
+        processPanel.attachPannelButton(ProcessPanel.AttachedButtonType.MOVE_INGREDIENTS, moveIngredientsItem);
+    }
+
+    private void regenerateProcessPanel() {
+        // Regenerate the recipe panel
+        @SuppressWarnings("unchecked") // Casting to the super type
+        Process<Recipe> process = (Process<Recipe>) mixedProcessRecipeReader.currentProcess();
+        @SuppressWarnings("unchecked") // Casting to the super type
+        ProcessRecipeReader<Recipe> processRecipeReader = (ProcessRecipeReader<Recipe>) mixedProcessRecipeReader.currentProcessRecipeReader();
+        this.processPanel = process.generateProcessPanel(style, recipeIndex, processRecipeReader);
+        initProcessPanel();
     }
 
     public void render() {
@@ -229,14 +233,13 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         }
 
         // Calculate the new recipe panel, then place it in the GUI
-        recipePanel.render(getAllVisibleAttachedButtonsSet()); 
-        recipePanel.getContentPanel(ProcessPanel.SlotType.ALL).forEach((slot, item) -> setItem(slot.asMaxChestSlot(), item));
+        processPanel.render(getAllVisibleAttachedButtonsSet()); 
+        processPanel.getContentPanel(ProcessPanel.SlotType.ALL).forEach((slot, item) -> setItem(slot.asMaxChestSlot(), item));
     }
 
     private void renderProcessRange() {
         // no clear old process needed here
 
-        // if (mixedProcessRecipeReader.temporaryGetProcessRecipeMap().getAllProcess().size() > PROCESS_SLOT_RANGE.size()) {
         if (mixedProcessRecipeReader.getAllProcess().size() > PROCESS_SLOT_RANGE.size()) {
             VanillaEnoughItems.LOGGER.warn("Not enough process slots to render all processes"); // TODO: Implement scroll page processes
         }
@@ -553,11 +556,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         processRecipeReader.next();
 
         // Regenerate the recipe panel
-        @SuppressWarnings("unchecked")
-        ProcessRecipeReader<Recipe> castedProcessRecipeReader = (ProcessRecipeReader<Recipe>) processRecipeReader;
-        @SuppressWarnings("unchecked")
-        Process<Recipe> castedProcess = (Process<Recipe>) mixedProcessRecipeReader.currentProcess();
-        recipePanel = castedProcess.generateProcessPanel(style, recipeIndex, castedProcessRecipeReader);
+        regenerateProcessPanel();
 
         render();
     }
@@ -570,11 +569,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         processRecipeReader.previous();
 
         // Regenerate the recipe panel
-        @SuppressWarnings("unchecked")
-        ProcessRecipeReader<Recipe> castedProcessRecipeReader = (ProcessRecipeReader<Recipe>) processRecipeReader;
-        @SuppressWarnings("unchecked")
-        Process<Recipe> castedProcess = (Process<Recipe>) mixedProcessRecipeReader.currentProcess();
-        recipePanel = castedProcess.generateProcessPanel(style, recipeIndex, castedProcessRecipeReader);
+        regenerateProcessPanel();
 
         render();
     }
@@ -611,15 +606,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
 
     private <R extends Recipe> void changeProcessAction(InventoryClickEvent event, RecipeMenu menu, Process<R> process) {
         mixedProcessRecipeReader.setProcess(process);
-
-        @SuppressWarnings("unchecked")
-        Process<Recipe> castedProcess = (Process<Recipe>) process;
-        @SuppressWarnings("unchecked")
-        ProcessRecipeReader<Recipe> castedProcessRecipeReader = (ProcessRecipeReader<Recipe>) mixedProcessRecipeReader.currentProcessRecipeReader();
-
-        recipePanel = castedProcess.generateProcessPanel(style, recipeIndex, castedProcessRecipeReader);
-        initProcessPanel();
-
+        regenerateProcessPanel();
         render();
     }
 
@@ -701,7 +688,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
     */
     protected void fixOverPadding(){
         EnumSet<ProcessPanel.SlotType> slotType = EnumSet.of(ProcessPanel.SlotType.INGREDIENTS, ProcessPanel.SlotType.RESULTS, ProcessPanel.SlotType.CONSUMABLES);
-        recipePanel.getContentPanel(slotType).forEach((slot, item) -> {
+        processPanel.getContentPanel(slotType).forEach((slot, item) -> {
             if (item == null || item.isEmpty()) {
                 setItem(slot.asMaxChestSlot(), null);
             }

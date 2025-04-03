@@ -20,7 +20,7 @@ public class MixedProcessRecipeReader {
     /**
      * The process that was active the last time the ProcessRecipeReader was accessed.
      */
-    private @Nullable Process<?> lastProcess; // Cache for the last process to avoid unnecessary reloading.
+    private @Nullable Process<?> lastProcess; // Cache the last process to avoid unnecessary reloading.
     private ProcessRecipeReader<?> currentProcessRecipeReader;
 
     public MixedProcessRecipeReader(MixedProcessRecipeMap mixedProcessRecipeMap) {
@@ -39,7 +39,9 @@ public class MixedProcessRecipeReader {
         Objects.requireNonNull(process, "Process cannot be null.");
 
         if (process == currentProcess) {
-            return; // No change needed, the currentProcessRecipeReader is already set to the correct process AND RECIPE.
+            // Prevents replacing the currentProcessRecipeReader.
+            // Ensures the current process and recipes are not reset if no changes are made.
+            return;
         }
 
         if (!mixedProcessMap.getAllProcess().contains(process)) {
@@ -54,13 +56,14 @@ public class MixedProcessRecipeReader {
     }
 
     public ProcessRecipeReader<?> currentProcessRecipeReader() {
-        // if (currentProcessRecipeReader != null || (lastProcess != null && lastProcess.equals(currentProcess))) {
-        //     return currentProcessRecipeReader; // Return the cached reader if the process hasn't changed.
-        // } 
-        // TODO reimplement this, change Reader current recipe and keep it in sync inside this reader.
+        // Return the cached reader if the process hasn't changed.
+        if (currentProcessRecipeReader != null && lastProcess != null && lastProcess.equals(currentProcess)) {
+            return currentProcessRecipeReader;
+        } 
 
         lastProcess = currentProcess;
-        return (currentProcessRecipeReader = new ProcessRecipeReader<>(mixedProcessMap.getProcessRecipeSet(currentProcess)));
+        currentProcessRecipeReader = new ProcessRecipeReader<>(mixedProcessMap.getProcessRecipeSet(currentProcess));
+        return currentProcessRecipeReader;
     }
 
     public boolean hasNext() {

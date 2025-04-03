@@ -66,7 +66,7 @@ public abstract class ProcessPanel<R extends Recipe> { // TODO maybe need to dep
     private final RecipeIndexService recipeIndex;
     private final ProcessRecipeReader<R> recipeReader;
 
-    protected Map<AttachedButtonType, GuiItem<RecipeMenu>> attachedButtons = new HashMap<>();
+    protected Map<AttachedButtonType, GuiItem<RecipeMenu>> attachedButtons;
 
     /**
      * Create a new recipe panel for the given recipe.
@@ -80,6 +80,7 @@ public abstract class ProcessPanel<R extends Recipe> { // TODO maybe need to dep
         Preconditions.checkNotNull(recipeReader, "recipeReader cannot be null");
 
         this.recipePanelSlots = new HashMap<>();
+        this.attachedButtons = new HashMap<>();
         this.style = style;
         this.recipeIndex = recipeIndex;
         this.recipeReader = recipeReader;
@@ -232,8 +233,9 @@ public abstract class ProcessPanel<R extends Recipe> { // TODO maybe need to dep
     protected void renderAttachedButtons(EnumSet<AttachedButtonType> buttonsVisibility) {
         for (AttachedButtonType buttonType : buttonsVisibility) {
             GuiItem<RecipeMenu> attachedItem = attachedButtons.get(buttonType);
-            if (attachedItem == null) continue;
-            
+            if (attachedItem == null) {
+                continue;
+            }
             putAttachedButtons(buttonType, attachedItem);
         }
     }
