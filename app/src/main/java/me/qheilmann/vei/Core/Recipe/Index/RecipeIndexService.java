@@ -71,7 +71,7 @@ public class RecipeIndexService {
         }
 
         // Index by result
-        recipesByResult.computeIfAbsent(recipe.getResult(), p -> new MixedProcessRecipeMap()).addRecipe(recipe);
+        recipesByResult.computeIfAbsent(recipe.getResult().asOne(), p -> new MixedProcessRecipeMap()).addRecipe(recipe);
 
         // Index by needed ingredients
         // for (ItemStack ingredient : recipe.<A way to get needed items from a recipe>) {
@@ -104,7 +104,7 @@ public class RecipeIndexService {
         }
 
         // Remove from result index
-        ItemStack result = recipe.getResult();
+        ItemStack result = recipe.getResult().asOne();
         MixedProcessRecipeMap map = recipesByResult.get(result);
         if (map != null) {
             map.removeRecipe(recipe);
@@ -156,6 +156,7 @@ public class RecipeIndexService {
 
     @Nullable
     public MixedProcessRecipeReader getByResult(ItemStack item) {
+        item = item.asOne();
         MixedProcessRecipeMap mixedProcessRecipeMap = recipesByResult.get(item);
         if (mixedProcessRecipeMap == null) {
             return null; // No recipes found for this result
@@ -165,6 +166,7 @@ public class RecipeIndexService {
 
     @Nullable
     public MixedProcessRecipeReader getByIngredient(ItemStack item) {
+        item = item.asOne();
         throw new UnsupportedOperationException("Not implemented yet");
     }
 
