@@ -575,12 +575,9 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
     }
 
     private void forwardRecipeAction(InventoryClickEvent event, RecipeMenu menu) {
-        RecipePath recipePath = VanillaEnoughItems.recipeHistoryMap.get(event.getWhoClicked().getUniqueId()).goForward();
-        if (recipePath != null) {
-            mixedProcessRecipeReader.first(); // TODO redo history: temporary set to the first recipe of this process set to "simulate" a fake history
-            event.getWhoClicked().sendMessage("Simulate fake recipe history");
-
-            RecipeMenu newRecipeMenu = new RecipeMenu(style, recipeIndex, mixedProcessRecipeReader);
+        MixedProcessRecipeReader forwardMixedProcessRecipeReader = VanillaEnoughItems.recipeHistoryMap.get(event.getWhoClicked().getUniqueId()).goForward();
+        if (forwardMixedProcessRecipeReader != null) {
+            RecipeMenu newRecipeMenu = new RecipeMenu(style, recipeIndex, forwardMixedProcessRecipeReader);
             newRecipeMenu.open(event.getWhoClicked(), false);
         } else {
             event.getWhoClicked().sendMessage("No Forward recipe"); // TODO complete show/hide button
@@ -588,12 +585,9 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
     }
 
     private void backwardRecipeAction(InventoryClickEvent event, RecipeMenu menu) {
-        RecipePath recipePath = VanillaEnoughItems.recipeHistoryMap.get(event.getWhoClicked().getUniqueId()).goBack();
-        if (recipePath != null) {
-            mixedProcessRecipeReader.first(); // TODO redo history: temporary set to the first recipe of this process set to "simulate" a fake history
-            event.getWhoClicked().sendMessage("Simulate fake recipe history");
-
-            RecipeMenu newRecipeMenu = new RecipeMenu(style, recipeIndex, mixedProcessRecipeReader);
+        MixedProcessRecipeReader backwardMixedProcessReader = VanillaEnoughItems.recipeHistoryMap.get(event.getWhoClicked().getUniqueId()).goBack();
+        if (backwardMixedProcessReader != null) {
+            RecipeMenu newRecipeMenu = new RecipeMenu(style, recipeIndex, backwardMixedProcessReader);
             newRecipeMenu.open(event.getWhoClicked(), false);
         } else {
             event.getWhoClicked().sendMessage("No Backward recipe"); // TODO complete show/hide button
@@ -642,18 +636,8 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         // Add the recipe path to the history
         if (addToHistory) {
             UUID uuid = humanEntity.getUniqueId();
-            RecipeHistory recipeHistory;
-            if (VanillaEnoughItems.recipeHistoryMap.containsKey(uuid)) {
-                recipeHistory = VanillaEnoughItems.recipeHistoryMap.get(uuid);
-            } else {
-                recipeHistory = new RecipeHistory();
-                VanillaEnoughItems.recipeHistoryMap.put(uuid, recipeHistory);
-            }
-
-            ItemStack currentResultItemStack = currentRecipe.getResult();
-
-            RecipePath recipePath = new RecipePath(currentResultItemStack, mixedProcessRecipeReader.currentProcess(), currentVariant); // TODO redo this history part
-            recipeHistory.push(recipePath);
+            RecipeHistory recipeHistory = VanillaEnoughItems.recipeHistoryMap.computeIfAbsent(uuid, k -> new RecipeHistory());
+            recipeHistory.push(mixedProcessRecipeReader);
         }
 
         if (currentRecipe instanceof Keyed keyed) {

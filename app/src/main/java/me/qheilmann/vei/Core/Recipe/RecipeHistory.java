@@ -3,39 +3,42 @@ package me.qheilmann.vei.Core.Recipe;
 import java.util.ArrayList;
 import java.util.List;
 
+import me.qheilmann.vei.Core.Recipe.Index.Reader.MixedProcessRecipeReader;
+
 public class RecipeHistory {
 
-    private final List<RecipePath> history = new ArrayList<>();
+    private final List<MixedProcessRecipeReader> history = new ArrayList<>();
     private int currentIndex = -1;
 
-    public RecipeHistory() {
-    }
+    public RecipeHistory() {}
 
-    public void push(RecipePath state) {
+    public void push(MixedProcessRecipeReader state) {
+        // Clear the history forward the current index if we go forward with a different path.
         if (currentIndex < history.size() - 1) {
             history.subList(currentIndex + 1, history.size()).clear();
         }
+
         history.add(state);
         currentIndex++;
     }
 
-    public RecipePath goBack() {
-        if (currentIndex > 0){
-            currentIndex--;  
+    public MixedProcessRecipeReader goBack() {
+        if (currentIndex > 0) {
+            currentIndex--;
             return getCurrent();
         }
         return null;
     }
 
-    public RecipePath goForward() {
-        if (currentIndex < history.size() - 1){
+    public MixedProcessRecipeReader goForward() {
+        if (currentIndex < history.size() - 1) {
             currentIndex++;
             return getCurrent();
         }
         return null;
     }
 
-    public RecipePath getCurrent() {
+    public MixedProcessRecipeReader getCurrent() {
         if (currentIndex >= 0 && currentIndex < history.size()) {
             return history.get(currentIndex);
         }
