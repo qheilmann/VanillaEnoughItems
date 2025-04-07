@@ -1,9 +1,9 @@
 package me.qheilmann.vei.Core.Config;
 
+import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import me.qheilmann.vei.VanillaEnoughItems;
-import me.qheilmann.vei.Core.Recipe.RecipePath;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -11,8 +11,8 @@ import java.util.stream.Collectors;
 public class RecipeConfigLoader {
 
     @SuppressWarnings("unchecked")
-    public static Map<UUID, Set<RecipePath>> loadRecipes(FileConfiguration config) {
-        Map<UUID, Set<RecipePath>> bookmarkSetMap = new HashMap<>();
+    public static Map<UUID, Set<NamespacedKey>> loadRecipes(FileConfiguration config) {
+        Map<UUID, Set<NamespacedKey>> bookmarkSetMap = new HashMap<>();
         
         // Check if the config is empty
         if (!config.contains("players") || !config.isList("players")) {
@@ -37,11 +37,7 @@ public class RecipeConfigLoader {
             }
 
             // Get or create bookmark set for the player
-            Set<RecipePath> bookmarkSet = bookmarkSetMap.get(uuid);
-            if (bookmarkSet == null) {
-                bookmarkSet = new HashSet<>();
-                bookmarkSetMap.put(uuid, bookmarkSet);
-            }
+            Set<NamespacedKey> bookmarkSet = bookmarkSetMap.computeIfAbsent(uuid, k -> new HashSet<>());
 
             // Get and convert bookmarks list of the player
             Object bookmarksObj = player.get("bookmarks");
@@ -56,7 +52,10 @@ public class RecipeConfigLoader {
             // Add each bookmark to the bookmark set
             if (bookmarksList != null) {
                 for (Map<String, Object> bookmarkMap : bookmarksList) {
-                    RecipePath bookmark = RecipePath.deserialize(bookmarkMap);
+                    NamespacedKey bookmark = bookmarkMap.keySet().stream()
+                        .findFirst()
+                        .map(key -> NamespacedKey.fromString(key))
+                        .orElse(null);
                     bookmarkSet.add(bookmark);
                 }
             }

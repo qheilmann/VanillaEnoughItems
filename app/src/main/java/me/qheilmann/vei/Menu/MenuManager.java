@@ -13,12 +13,10 @@ import me.qheilmann.vei.Core.Style.Styles.Style;
 
 public class MenuManager {
 
-    private final JavaPlugin plugin;
     private final Style style;
     private final RecipeIndexService recipeIndex;
 
     public MenuManager(JavaPlugin plugin, Style style, RecipeIndexService recipeIndex) {
-        this.plugin = plugin;
         this.style = style;
         this.recipeIndex = recipeIndex;
     }

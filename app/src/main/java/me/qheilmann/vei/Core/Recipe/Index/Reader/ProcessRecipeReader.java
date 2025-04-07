@@ -7,7 +7,6 @@ import java.util.NavigableSet;
 import org.bukkit.inventory.Recipe;
 import org.jetbrains.annotations.NotNull;
 
-import me.qheilmann.vei.VanillaEnoughItems;
 import me.qheilmann.vei.Core.Recipe.Index.ProcessRecipeSet;
 
 public class ProcessRecipeReader<R extends Recipe> {

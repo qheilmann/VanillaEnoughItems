@@ -3,7 +3,6 @@ package me.qheilmann.vei;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -12,7 +11,6 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapedRecipe;
@@ -21,12 +19,10 @@ import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPIBukkitConfig;
 import me.qheilmann.vei.Command.CraftCommand;
 import me.qheilmann.vei.Command.TestCommand;
-import me.qheilmann.vei.Core.Config.RecipeConfigLoader;
 import me.qheilmann.vei.Core.GUI.BaseGui;
 import me.qheilmann.vei.Core.Process.Process;
 import me.qheilmann.vei.Core.Process.VanillaProcesses;
 import me.qheilmann.vei.Core.Recipe.RecipeHistory;
-import me.qheilmann.vei.Core.Recipe.RecipePath;
 import me.qheilmann.vei.Core.Recipe.Bookmark.Bookmark;
 import me.qheilmann.vei.Core.Recipe.Bookmark.Repository.InMemoryBookmarkRepository;
 import me.qheilmann.vei.Core.Recipe.Index.RecipeIndexService;
@@ -129,7 +125,6 @@ public class VanillaEnoughItems extends JavaPlugin {
     @SuppressWarnings({"unchecked", "unused"})
     private void testConfig() {
         LOGGER.info("TMP TEST");
-        ConfigurationSerialization.registerClass(RecipePath.class);
         File playerBookmarkFile = new File(getDataFolder(), "playerBookmark.yml");
         if (!playerBookmarkFile.exists()) {
             saveResource(playerBookmarkFile.getName(), false);
@@ -149,18 +144,18 @@ public class VanillaEnoughItems extends JavaPlugin {
         }
         
         // Get the first player with serialized object
-        VanillaEnoughItems.LOGGER.info("[First player (serialized)]");
-        if (players != null && !players.isEmpty()) {
-            Map<String, Object> firstPlayer = players.get(0);
-            List<Map<String, Object>> bookmarks = (List<Map<String, Object>>) firstPlayer.get("bookmarks"); 
-            if (bookmarks != null && !bookmarks.isEmpty()) {
-                Map<String, Object> firstBookmark = bookmarks.get(0);
+        // VanillaEnoughItems.LOGGER.info("[First player (serialized)]");
+        // if (players != null && !players.isEmpty()) {
+        //     Map<String, Object> firstPlayer = players.get(0);
+        //     List<Map<String, Object>> bookmarks = (List<Map<String, Object>>) firstPlayer.get("bookmarks"); 
+        //     if (bookmarks != null && !bookmarks.isEmpty()) {
+        //         Map<String, Object> firstBookmark = bookmarks.get(0);
                 
-                // Deserialize the first bookmark into a RecipePath object
-                RecipePath recipePath = RecipePath.deserialize(firstBookmark); // Check case of process (not cast to lowercase, case is important ?)
-                LOGGER.info("First RecipePath of the first player: " + recipePath);
-            }
-        }
+        //         // Deserialize the first bookmark into a RecipePath object
+        //         RecipePath recipePath = RecipePath.deserialize(firstBookmark); // Check case of process (not cast to lowercase, case is important ?)
+        //         LOGGER.info("First RecipePath of the first player: " + recipePath);
+        //     }
+        // }
         
         VanillaEnoughItems.LOGGER.info("[By config section]");
         ConfigurationSection rootSection = playerBookmarkConfig.getConfigurationSection("");
@@ -212,54 +207,54 @@ public class VanillaEnoughItems extends JavaPlugin {
                     .collect(Collectors.toList());
             }
 
-            if (bookmarksList != null) {
-                for (Map<String, Object> bookmarkMap : bookmarksList) {
-                    RecipePath bookmark = RecipePath.deserialize(bookmarkMap);
-                    LOGGER.info("bookmark: " + bookmark.toString());
-                }
-            }
+            // if (bookmarksList != null) {
+            //     for (Map<String, Object> bookmarkMap : bookmarksList) {
+            //         RecipePath bookmark = RecipePath.deserialize(bookmarkMap);
+            //         LOGGER.info("bookmark: " + bookmark.toString());
+            //     }
+            // }
         }
 
 
         // [Set a new bookmark]
-        VanillaEnoughItems.LOGGER.info("[Set a new bookmark]");
-        RecipePath newRecipePath = new RecipePath(new ItemStack(Material.DIAMOND_SWORD), Process.ProcessRegistry.getProcessByName("Crafting"), 0);
-        UUID playerUuid = UUID.fromString("81376bb8-5576-47bc-a2d9-89d98746d3ec"); 
+        // VanillaEnoughItems.LOGGER.info("[Set a new bookmark]");
+        // RecipePath newRecipePath = new RecipePath(new ItemStack(Material.DIAMOND_SWORD), Process.ProcessRegistry.getProcessByName("Crafting"), 0);
+        // UUID playerUuid = UUID.fromString("81376bb8-5576-47bc-a2d9-89d98746d3ec"); 
         
-        // Serialize and find the target player
-        Map<String, Object> serializedRecipePath = newRecipePath.serialize();
-        List<Map<?, ?>> rootPlayersList = playerBookmarkConfig.getMapList("players");
-        Map<String, Object> targetPlayer = null;
-        for (Map<?, ?> player : rootPlayersList) {
-            if (playerUuid.toString().equals(player.get("uuid"))) {
-                targetPlayer = (Map<String, Object>) player;
-                break;
-            }
-        }
+        // // Serialize and find the target player
+        // Map<String, Object> serializedRecipePath = newRecipePath.serialize();
+        // List<Map<?, ?>> rootPlayersList = playerBookmarkConfig.getMapList("players");
+        // Map<String, Object> targetPlayer = null;
+        // for (Map<?, ?> player : rootPlayersList) {
+        //     if (playerUuid.toString().equals(player.get("uuid"))) {
+        //         targetPlayer = (Map<String, Object>) player;
+        //         break;
+        //     }
+        // }
 
-        // Add the new bookmark to the player
-        if (targetPlayer != null) {
-            List<Map<String, Object>> playerBookmarks = (List<Map<String, Object>>) targetPlayer.get("bookmarks");
-            if (playerBookmarks != null) {
-                playerBookmarks.add(serializedRecipePath);
-            } else {
-                playerBookmarks = List.of(serializedRecipePath);
-                targetPlayer.put("bookmarks", playerBookmarks);
-            }
-        } else {
-            rootPlayersList.add(Map.of("uuid", playerUuid.toString(), "bookmarks", List.of(serializedRecipePath)));
-        }
+        // // Add the new bookmark to the player
+        // if (targetPlayer != null) {
+        //     List<Map<String, Object>> playerBookmarks = (List<Map<String, Object>>) targetPlayer.get("bookmarks");
+        //     if (playerBookmarks != null) {
+        //         playerBookmarks.add(serializedRecipePath);
+        //     } else {
+        //         playerBookmarks = List.of(serializedRecipePath);
+        //         targetPlayer.put("bookmarks", playerBookmarks);
+        //     }
+        // } else {
+        //     rootPlayersList.add(Map.of("uuid", playerUuid.toString(), "bookmarks", List.of(serializedRecipePath)));
+        // }
 
         
-        // [Load from RecipeConfigLoader]
-        LOGGER.info("[Load from RecipeConfigLoader]");
-        Map<UUID, Set<RecipePath>> bookmarkSetMap = RecipeConfigLoader.loadRecipes(playerBookmarkConfig);
-        for (Map.Entry<UUID, Set<RecipePath>> entry : bookmarkSetMap.entrySet()) {
-            LOGGER.info("UUID: " + entry.getKey());
-            for (RecipePath recipePath : entry.getValue()) {
-                LOGGER.info("RecipePath: " + recipePath);
-            }
-        }
+        // // [Load from RecipeConfigLoader]
+        // LOGGER.info("[Load from RecipeConfigLoader]");
+        // Map<UUID, Set<RecipePath>> bookmarkSetMap = RecipeConfigLoader.loadRecipes(playerBookmarkConfig);
+        // for (Map.Entry<UUID, Set<RecipePath>> entry : bookmarkSetMap.entrySet()) {
+        //     LOGGER.info("UUID: " + entry.getKey());
+        //     for (RecipePath recipePath : entry.getValue()) {
+        //         LOGGER.info("RecipePath: " + recipePath);
+        //     }
+        // }
         
         // Save the new bookmark
         try {

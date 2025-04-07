@@ -26,9 +26,7 @@ import me.qheilmann.vei.Core.GUI.BaseGui;
 import me.qheilmann.vei.Core.GUI.GuiItem;
 import me.qheilmann.vei.Core.ProcessPanel.ProcessPanel;
 import me.qheilmann.vei.Core.Recipe.RecipeHistory;
-import me.qheilmann.vei.Core.Recipe.RecipePath;
 import me.qheilmann.vei.Core.Recipe.Bookmark.Bookmark;
-import me.qheilmann.vei.Core.Recipe.Index.ProcessRecipeSet;
 import me.qheilmann.vei.Core.Recipe.Index.RecipeIndexService;
 import me.qheilmann.vei.Core.Recipe.Index.Reader.MixedProcessRecipeReader;
 import me.qheilmann.vei.Core.Recipe.Index.Reader.ProcessRecipeReader;
@@ -626,12 +624,6 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
     protected InventoryView open(@NotNull HumanEntity humanEntity, boolean addToHistory) {
         
         Recipe currentRecipe = mixedProcessRecipeReader.currentProcessRecipeReader().currentRecipe();
-
-        // TODO TEMP adapter
-        @SuppressWarnings("unchecked")
-        ProcessRecipeReader<Recipe> castedProcessRecipeReader = (ProcessRecipeReader<Recipe>) mixedProcessRecipeReader.currentProcessRecipeReader();
-        int currentVariant = castedProcessRecipeReader.getAllRecipes().headSet(currentRecipe).size();
-        // end adapter
         
         // Add the recipe path to the history
         if (addToHistory) {
@@ -642,8 +634,6 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
 
         if (currentRecipe instanceof Keyed keyed) {
             Bookmark.addBookmarkAsync(humanEntity.getUniqueId(), keyed.key()).join();
-            VanillaEnoughItems.LOGGER.info("Bookmark recipe: %s".formatted(keyed.key()));
-            VanillaEnoughItems.LOGGER.info("Total: %s".formatted(Bookmark.getBookmarksAsync(humanEntity.getUniqueId()).join()));
         } else {
             VanillaEnoughItems.LOGGER.warn("Cannot bookmark recipe: %s".formatted(currentRecipe));
         }
@@ -694,7 +684,6 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         return set;
     }
 
-    // TODO redo by recipeId
     /**
      * Get the quick link string to open the recipe menu with the current item, process and variant.
      * @return the quick link string with something like "/craft minecraft:iron_ingot smelting 2"

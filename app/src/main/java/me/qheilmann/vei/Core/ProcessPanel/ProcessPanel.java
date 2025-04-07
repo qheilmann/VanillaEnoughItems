@@ -413,7 +413,5 @@ public abstract class ProcessPanel<R extends Recipe> { // TODO maybe need to dep
          * The slot types that are part of a recipe. (INGREDIENTS, CONSUMABLES, RESULTS)
          */
         public static EnumSet<SlotType> RECIPE = EnumSet.of(SlotType.INGREDIENTS, SlotType.CONSUMABLES, SlotType.RESULTS);
-
-        // CHANGED, // TODO add changed slot types (how can i save the change the change here and be ablse to track change for other classes modifing the map)
     }
 }
