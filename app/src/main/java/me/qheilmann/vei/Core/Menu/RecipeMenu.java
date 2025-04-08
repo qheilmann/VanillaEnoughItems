@@ -130,6 +130,12 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
     private boolean isForwardRecipeVisible = true;
     private boolean isBackwardRecipeVisible = true;
     private boolean isMoveIngredientsVisible = false; // TODO: Implement move ingredients
+
+    /**
+     * Represents the last viewer who opened this menu.
+     * This if for example used to determine the forward/backward button with his history.
+     */
+    private @Nullable HumanEntity lastViewer = null;
     //#endregion Instance variables
 
     public <R extends Recipe> RecipeMenu(@NotNull Style style, @NotNull RecipeIndexService reicpeIndex, @NotNull MixedProcessRecipeReader mixedProcessRecipeReader) {
@@ -146,11 +152,6 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
 
         // Menu configuration
         initAllItem();
-
-        // Generate the recipe panel
-        regenerateProcessPanel();
-
-        render();
     }
 
     void initAllItem() {
@@ -205,6 +206,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
 
         // Update visibility booleans
         updateNextPreviousRecipeVisibility();
+        updateForwardBackwardRecipeVisibility();
 
         // Apply menu button visibility
         setItemOnVisibility(PROCESS_SCROLL_LEFT_SLOT, processScrollLeftItem, isProcessScrollLeftVisible);
@@ -574,22 +576,22 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
 
     private void forwardRecipeAction(InventoryClickEvent event, RecipeMenu menu) {
         MixedProcessRecipeReader forwardMixedProcessRecipeReader = VanillaEnoughItems.recipeHistoryMap.get(event.getWhoClicked().getUniqueId()).goForward();
-        if (forwardMixedProcessRecipeReader != null) {
-            RecipeMenu newRecipeMenu = new RecipeMenu(style, recipeIndex, forwardMixedProcessRecipeReader);
-            newRecipeMenu.open(event.getWhoClicked(), false);
-        } else {
-            event.getWhoClicked().sendMessage("No Forward recipe"); // TODO complete show/hide button
+        if (forwardMixedProcessRecipeReader == null) {
+            return; // Silently ignore, the button should not be visible
         }
+
+        RecipeMenu newRecipeMenu = new RecipeMenu(style, recipeIndex, forwardMixedProcessRecipeReader);
+        newRecipeMenu.open(event.getWhoClicked(), false);
     }
 
     private void backwardRecipeAction(InventoryClickEvent event, RecipeMenu menu) {
-        MixedProcessRecipeReader backwardMixedProcessReader = VanillaEnoughItems.recipeHistoryMap.get(event.getWhoClicked().getUniqueId()).goBack();
-        if (backwardMixedProcessReader != null) {
-            RecipeMenu newRecipeMenu = new RecipeMenu(style, recipeIndex, backwardMixedProcessReader);
-            newRecipeMenu.open(event.getWhoClicked(), false);
-        } else {
-            event.getWhoClicked().sendMessage("No Backward recipe"); // TODO complete show/hide button
+        MixedProcessRecipeReader backwardMixedProcessReader = VanillaEnoughItems.recipeHistoryMap.get(event.getWhoClicked().getUniqueId()).goBackward();
+        if (backwardMixedProcessReader == null) {
+            return; // Silently ignore, the button should not be visible
         }
+
+        RecipeMenu newRecipeMenu = new RecipeMenu(style, recipeIndex, backwardMixedProcessReader);
+        newRecipeMenu.open(event.getWhoClicked(), false);
     }
 
     private void moveIngredientsAction(InventoryClickEvent event, RecipeMenu menu) {
@@ -622,6 +624,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
     }
 
     protected InventoryView open(@NotNull HumanEntity humanEntity, boolean addToHistory) {
+        lastViewer = humanEntity;
         
         Recipe currentRecipe = mixedProcessRecipeReader.currentProcessRecipeReader().currentRecipe();
         
@@ -632,11 +635,16 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
             recipeHistory.push(mixedProcessRecipeReader);
         }
 
+        // TEMP bookmark test
         if (currentRecipe instanceof Keyed keyed) {
             Bookmark.addBookmarkAsync(humanEntity.getUniqueId(), keyed.key()).join();
         } else {
             VanillaEnoughItems.LOGGER.warn("Cannot bookmark recipe: %s".formatted(currentRecipe));
         }
+
+        // Generate the recipe panel and render
+        regenerateProcessPanel();
+        render();
 
         return super.open(humanEntity);
     }
@@ -672,6 +680,28 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
     private void updateNextPreviousRecipeVisibility() {
         isNextRecipeVisible = mixedProcessRecipeReader.currentProcessRecipeReader().hasNext();
         isPreviousRecipeVisible = mixedProcessRecipeReader.currentProcessRecipeReader().hasPrevious();
+    }
+
+    private void updateForwardBackwardRecipeVisibility() {
+        HumanEntity viewer = lastViewer;
+        if (viewer == null) {
+            VanillaEnoughItems.LOGGER.warn("Viewer is null, cannot update forward/backward recipe visibility");
+            isBackwardRecipeVisible = false;
+            isForwardRecipeVisible = false;
+            return;
+        }
+
+        UUID viewerUuid = viewer.getUniqueId();
+        RecipeHistory recipeHistory = VanillaEnoughItems.recipeHistoryMap.get(viewerUuid);
+        if (recipeHistory == null || recipeHistory.getCurrent() == null) {
+            VanillaEnoughItems.LOGGER.warn("No history for this UUID, cannot update forward/backward recipe visibility");
+            isBackwardRecipeVisible = false;
+            isForwardRecipeVisible = false;
+            return;
+        } 
+
+        isBackwardRecipeVisible = recipeHistory.hasBackward();
+        isForwardRecipeVisible = recipeHistory.hasForward();
     }
 
     private EnumSet<ProcessPanel.AttachedButtonType> getAllVisibleAttachedButtonsSet() {

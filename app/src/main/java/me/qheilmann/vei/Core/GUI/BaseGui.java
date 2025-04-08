@@ -913,6 +913,7 @@ public abstract class BaseGui<G extends BaseGui<G, S>, S extends Slot> implement
 // - Make a pane visible / invisible, a guiItem visible / invisible (+ by player ?) /!\ maybe this will perturb the user, if he can't see a guiItem ?
 // - Save/Restore player inv so we can also use the player inv as a GUI
 // - Maybe we can open InventoryView with two different GUI (like a chest and a hopper and no player inv)
+// - Attention viewer is only add to the vieer list when we call .open(HumanEntity), before (between the creation of the menu and the first .open() it will be empty) an separate hard coded list of viewer maybe on menu construction
 // Inpiration from the library:
 // - https://github.com/TriumphTeam/triumph-gui
 // - https://github.com/stefvanschie/IF/

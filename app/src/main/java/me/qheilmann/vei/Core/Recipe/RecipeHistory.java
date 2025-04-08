@@ -13,6 +13,12 @@ public class RecipeHistory {
     public RecipeHistory() {}
 
     public void push(MixedProcessRecipeReader state) {
+
+        // If the state is null, or the same as the current state, don't add it to the history.
+        if (state == null || state.equals(getCurrent())) {
+            return;
+        }
+
         // Clear the history forward the current index if we go forward with a different path.
         if (currentIndex < history.size() - 1) {
             history.subList(currentIndex + 1, history.size()).clear();
@@ -22,8 +28,8 @@ public class RecipeHistory {
         currentIndex++;
     }
 
-    public MixedProcessRecipeReader goBack() {
-        if (currentIndex > 0) {
+    public MixedProcessRecipeReader goBackward() {
+        if (hasBackward()) {
             currentIndex--;
             return getCurrent();
         }
@@ -31,7 +37,7 @@ public class RecipeHistory {
     }
 
     public MixedProcessRecipeReader goForward() {
-        if (currentIndex < history.size() - 1) {
+        if (hasForward()) {
             currentIndex++;
             return getCurrent();
         }
@@ -43,6 +49,14 @@ public class RecipeHistory {
             return history.get(currentIndex);
         }
         return null;
+    }
+
+    public boolean hasBackward() {
+        return currentIndex > 0;
+    }
+
+    public boolean hasForward() {
+        return currentIndex < history.size() - 1;
     }
 
     @Override

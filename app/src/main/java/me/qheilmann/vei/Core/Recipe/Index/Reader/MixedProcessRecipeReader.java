@@ -104,11 +104,23 @@ public class MixedProcessRecipeReader {
         return currentProcess = mixedProcessMap.getAllProcess().last();
     }
 
-    public boolean Contains(Process<?> process) {
+    public boolean contains(Process<?> process) {
         return mixedProcessMap.getAllProcess().contains(process);
     }
 
     public NavigableSet<Process<?>> getAllProcess() {
         return mixedProcessMap.getAllProcess();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        
+        MixedProcessRecipeReader that = (MixedProcessRecipeReader) obj;
+        if (!Objects.equals(currentProcess, that.currentProcess)) return false;
+        if (!Objects.equals(mixedProcessMap, that.mixedProcessMap)) return false;
+
+        return true;
     }
 }
