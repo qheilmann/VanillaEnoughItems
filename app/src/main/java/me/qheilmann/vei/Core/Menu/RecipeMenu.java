@@ -3,6 +3,7 @@ package me.qheilmann.vei.Core.Menu;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -99,6 +100,8 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
     private static final SlotRange<MaxChestSlot> RECIPE_PANEL_SLOT_RANGE = new SlotRange<>(new MaxChestSlot(1, 1), new MaxChestSlot(7, 5));
     //#endregion Static Constants
 
+    private static final Map<UUID, RecipeHistory> historyMap = new java.util.HashMap<>();
+
     //#region Instance variables
     private final Style style;
     private final RecipeIndexService recipeIndex;
@@ -137,6 +140,10 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
      */
     private @Nullable HumanEntity lastViewer = null;
     //#endregion Instance variables
+
+    public static @Nullable RecipeHistory getHistory(@NotNull HumanEntity viewer) {
+        return historyMap.get(viewer.getUniqueId());
+    }
 
     public <R extends Recipe> RecipeMenu(@NotNull Style style, @NotNull RecipeIndexService reicpeIndex, @NotNull MixedProcessRecipeReader mixedProcessRecipeReader) {
         super((owner) -> BaseGui.plugin.getServer().createInventory(owner, 6*9, Component.text("Recipe Menu")), InteractionModifier.VALUES);
@@ -575,7 +582,11 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
     }
 
     private void forwardRecipeAction(InventoryClickEvent event, RecipeMenu menu) {
-        MixedProcessRecipeReader forwardMixedProcessRecipeReader = VanillaEnoughItems.recipeHistoryMap.get(event.getWhoClicked().getUniqueId()).goForward();
+        RecipeHistory history = getHistory(event.getWhoClicked());
+        if (history == null) {
+            return; // Silently ignore, the button should not be visible
+        }
+        MixedProcessRecipeReader forwardMixedProcessRecipeReader = history.goForward();
         if (forwardMixedProcessRecipeReader == null) {
             return; // Silently ignore, the button should not be visible
         }
@@ -585,7 +596,11 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
     }
 
     private void backwardRecipeAction(InventoryClickEvent event, RecipeMenu menu) {
-        MixedProcessRecipeReader backwardMixedProcessReader = VanillaEnoughItems.recipeHistoryMap.get(event.getWhoClicked().getUniqueId()).goBackward();
+        RecipeHistory history = getHistory(event.getWhoClicked());
+        if (history == null) {
+            return; // Silently ignore, the button should not be visible
+        }
+        MixedProcessRecipeReader backwardMixedProcessReader = history.goBackward();
         if (backwardMixedProcessReader == null) {
             return; // Silently ignore, the button should not be visible
         }
@@ -631,7 +646,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         // Add the recipe path to the history
         if (addToHistory) {
             UUID uuid = humanEntity.getUniqueId();
-            RecipeHistory recipeHistory = VanillaEnoughItems.recipeHistoryMap.computeIfAbsent(uuid, k -> new RecipeHistory());
+            RecipeHistory recipeHistory = historyMap.computeIfAbsent(uuid, k -> new RecipeHistory());
             recipeHistory.push(mixedProcessRecipeReader);
         }
 
@@ -691,8 +706,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
             return;
         }
 
-        UUID viewerUuid = viewer.getUniqueId();
-        RecipeHistory recipeHistory = VanillaEnoughItems.recipeHistoryMap.get(viewerUuid);
+        RecipeHistory recipeHistory = getHistory(viewer);
         if (recipeHistory == null || recipeHistory.getCurrent() == null) {
             VanillaEnoughItems.LOGGER.warn("No history for this UUID, cannot update forward/backward recipe visibility");
             isBackwardRecipeVisible = false;

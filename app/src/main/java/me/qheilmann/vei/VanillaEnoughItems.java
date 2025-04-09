@@ -3,7 +3,6 @@ package me.qheilmann.vei;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.bukkit.Material;
@@ -22,7 +21,6 @@ import me.qheilmann.vei.Command.TestCommand;
 import me.qheilmann.vei.Core.GUI.BaseGui;
 import me.qheilmann.vei.Core.Process.Process;
 import me.qheilmann.vei.Core.Process.VanillaProcesses;
-import me.qheilmann.vei.Core.Recipe.RecipeHistory;
 import me.qheilmann.vei.Core.Recipe.Bookmark.Bookmark;
 import me.qheilmann.vei.Core.Recipe.Bookmark.Repository.InMemoryBookmarkRepository;
 import me.qheilmann.vei.Core.Recipe.Index.RecipeIndexService;
@@ -41,8 +39,6 @@ public class VanillaEnoughItems extends JavaPlugin {
     public static final ComponentLogger LOGGER = ComponentLogger.logger(NAME);
 
     private MenuManager menuManager;
-
-    public static final Map<UUID, RecipeHistory> recipeHistoryMap = new java.util.HashMap<>();
 
     @Override
     public void onLoad() {
