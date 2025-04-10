@@ -44,8 +44,9 @@ public class DarkStyle extends Style {
     private static Map<ButtonType, ItemStack> getbuttonMaterialsMap(){
         Map<ButtonType, ItemStack> buttonSkins = new HashMap<>();
 
-        buttonSkins.put(VeiButtonType.RecipeMenu.BOOKMARK_THIS_RECIPE, new ItemStack(Material.BLACK_CANDLE));
-        buttonSkins.put(VeiButtonType.RecipeMenu.UNBOOKMARK_THIS_RECIPE, new ItemStack(Material.ORANGE_CANDLE));
+        buttonSkins.put(VeiButtonType.RecipeMenu.BOOKMARK_THIS_RECIPE_BOOKMARKED, new ItemStack(Material.ORANGE_CANDLE));
+        buttonSkins.put(VeiButtonType.RecipeMenu.BOOKMARK_THIS_RECIPE_UNBOOKMARKED, new ItemStack(Material.BLACK_CANDLE));
+        buttonSkins.put(VeiButtonType.RecipeMenu.BOOKMARK_THIS_RECIPE_UNABLE, new ItemStack(Material.RED_CANDLE));
         buttonSkins.put(null, new ItemStack(Material.BLACKSTONE)); // default
         
         return buttonSkins;

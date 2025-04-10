@@ -12,6 +12,8 @@ import javax.annotation.Nullable;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
+import java.awt.print.Book;
+
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.InventoryView;
@@ -108,7 +110,6 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
     private final MixedProcessRecipeReader mixedProcessRecipeReader;
     private ProcessPanel<?> processPanel;
 
-    private GuiItem<RecipeMenu> quickLinkItem;
     private GuiItem<RecipeMenu> processScrollLeftItem;
     private GuiItem<RecipeMenu> processScrollRightItem;
     private GuiItem<RecipeMenu> infoItem;
@@ -171,7 +172,6 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         this.infoItem                       = buildInfoButton();
         this.workbenchScrollUpItem          = buildWorkbenchScrollUpButton();
         this.workbenchScrollDownItem        = buildWorkbenchScrollDownButton();
-        this.bookmarkThisRecipeItemToggle   = buildBookmarkRecipeToggleButton();
         this.bookmarkListItem               = buildBookmarkListButton();
         this.bookmarkServerListItem         = buildBookmarkServerListButton();
         this.exitItem                       = buildExitButton();
@@ -182,7 +182,6 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         this.moveIngredientsItem            = buildMoveIngredientsButton();
 
         // Render static buttons
-        setItem(QUICK_LINK_SLOT, quickLinkItem);
         setItem(INFO_SLOT, infoItem);
         setItem(BOOKMARK_THIS_RECIPE_TOGGLE_SLOT, bookmarkThisRecipeItemToggle);
         setItem(BOOKMARK_LIST_SLOT, bookmarkListItem);
@@ -226,6 +225,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         renderProcessRange();
         renderWorkbenchRange();
         renderQuickLink();
+        renderBookmarkThisRecipe();
 
         // Padding empty slots (except valide air slot in the recipe panel)
         padEmptySlots();
@@ -283,6 +283,10 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
 
     private void renderQuickLink() {
         setItem(QUICK_LINK_SLOT, buildQuickLinkItem(getQuickLinkString()));
+    }
+
+    private void renderBookmarkThisRecipe() {
+        setItem(BOOKMARK_THIS_RECIPE_TOGGLE_SLOT, buildBookmarkRecipeToggleButton(mixedProcessRecipeReader.currentProcessRecipeReader().currentRecipe()));
     }
 
     //#region Button setup
@@ -360,16 +364,61 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         return button;
     }
 
-    private GuiItem<RecipeMenu> buildBookmarkRecipeToggleButton() {
-        GuiItem<RecipeMenu> button = new GuiItem<>(style.getButtonMaterial(VeiButtonType.RecipeMenu.BOOKMARK_THIS_RECIPE));
-        button.editMeta(meta -> {
-            meta.displayName(Component.text("Bookmark").color(style.getPrimaryColor()));
-            meta.lore(List.of(
-                Component.text("Add this recipe to your bookmark").color(style.getSecondaryColor())
-            ));
-        });
-        button.setAction(this::bookmarkRecipeToggleAction);
-        return button;
+    private GuiItem<RecipeMenu> buildBookmarkRecipeToggleButton(@NotNull Recipe recipe) {
+
+        // Check
+        if (lastViewer == null) {
+            VanillaEnoughItems.LOGGER.warn("Viewer is null, cannot calculate the bookmark state");
+            GuiItem<RecipeMenu> button = new GuiItem<>(style.getButtonMaterial(VeiButtonType.RecipeMenu.BOOKMARK_THIS_RECIPE_UNABLE)); // TODO: use warning guiItem
+            button.editMeta(meta -> {
+                meta.displayName(Component.text("Bookmark calculation unavailable").color(style.getPrimaryColor()));
+                meta.lore(List.of(
+                    Component.text("The last viewer is not set").color(style.getSecondaryColor())
+                ));
+            });
+            return button;
+        }
+
+        // Edge case: recipe without an ID
+        if(!(recipe instanceof Keyed)) {
+            GuiItem<RecipeMenu> button = new GuiItem<>(style.getButtonMaterial(VeiButtonType.RecipeMenu.BOOKMARK_THIS_RECIPE_UNABLE));
+            button.editMeta(meta -> {
+                meta.displayName(Component.text("Unable to Bookmark this Recipe").color(style.getPrimaryColor()));
+                meta.lore(List.of(
+                    Component.text("This recipe does not have a recipe ID.").color(style.getSecondaryColor())
+                ));
+            });
+            button.setAction((event, context) -> {}); // No action
+            return button;
+        }
+
+        // Normal recipe
+        Keyed keyedRecipe = (Keyed) recipe;
+        @SuppressWarnings("null")
+        boolean isAlreadyBookmarked = Bookmark.hasBookmarkAsync(lastViewer.getUniqueId(), keyedRecipe).join(); // TODO async bookmark check
+
+        if(isAlreadyBookmarked) {
+            GuiItem<RecipeMenu> button = new GuiItem<>(style.getButtonMaterial(VeiButtonType.RecipeMenu.BOOKMARK_THIS_RECIPE_BOOKMARKED)); // Show bookmark icon
+            button.editMeta(meta -> {
+                meta.displayName(Component.text("Bookmarked recipe").color(style.getPrimaryColor()));
+                meta.lore(List.of(
+                    Component.text("Click to remove this recipe from your bookmark list").color(style.getSecondaryColor())
+                ));
+            });
+            button.setAction((event, context) -> bookmarkRecipeAction(event, context, false)); // Unbookmark action
+            return button;
+        }
+        else {
+            GuiItem<RecipeMenu> button = new GuiItem<>(style.getButtonMaterial(VeiButtonType.RecipeMenu.BOOKMARK_THIS_RECIPE_UNBOOKMARKED));
+            button.editMeta(meta -> {
+                meta.displayName(Component.text("Bookmark this recipe").color(style.getPrimaryColor()));
+                meta.lore(List.of(
+                    Component.text("Click to add this recipe to your bookmark list").color(style.getSecondaryColor())
+                ));
+            });
+            button.setAction((event, context) -> bookmarkRecipeAction(event, context, true)); // Bookmark action
+            return button;
+        }
     }
 
     private GuiItem<RecipeMenu> buildBookmarkListButton() {
@@ -539,8 +588,28 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         event.getWhoClicked().sendMessage("Scroll down action");
     }
 
-    private void bookmarkRecipeToggleAction(InventoryClickEvent event, RecipeMenu menu) {
-        event.getWhoClicked().sendMessage("Bookmark toggle action");
+    private void bookmarkRecipeAction(InventoryClickEvent event, RecipeMenu menu, boolean shouldBookmark) {
+        UUID playerUuid = event.getWhoClicked().getUniqueId();
+        Recipe currentRecipe = mixedProcessRecipeReader.currentProcessRecipeReader().currentRecipe();
+
+        // Check recipe (edge case: recipe without an ID)
+        if(!(currentRecipe instanceof Keyed keyedRecipe)) {
+            event.getWhoClicked().sendMessage("This recipe cannot be bookmarked");
+        } 
+        // Normal recipe
+        else {
+            if (shouldBookmark) {
+                Bookmark.addBookmarkAsync(playerUuid, keyedRecipe).join(); // TODO async bookmark add
+            } else {
+                Bookmark.removeBookmarkAsync(playerUuid, keyedRecipe).join();
+            }
+        }
+
+        // Regenerate the recipe panel
+        regenerateProcessPanel();
+        render();
+
+        return;
     }
 
     private void bookmarkListAction(InventoryClickEvent event, RecipeMenu menu) {
@@ -564,7 +633,6 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
 
         // Regenerate the recipe panel
         regenerateProcessPanel();
-
         render();
     }
 
@@ -577,7 +645,6 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
 
         // Regenerate the recipe panel
         regenerateProcessPanel();
-
         render();
     }
 
@@ -640,21 +707,12 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
 
     protected InventoryView open(@NotNull HumanEntity humanEntity, boolean addToHistory) {
         lastViewer = humanEntity;
-        
-        Recipe currentRecipe = mixedProcessRecipeReader.currentProcessRecipeReader().currentRecipe();
-        
+            
         // Add the recipe path to the history
         if (addToHistory) {
             UUID uuid = humanEntity.getUniqueId();
             RecipeHistory recipeHistory = historyMap.computeIfAbsent(uuid, k -> new RecipeHistory());
             recipeHistory.push(mixedProcessRecipeReader);
-        }
-
-        // TEMP bookmark test
-        if (currentRecipe instanceof Keyed keyed) {
-            Bookmark.addBookmarkAsync(humanEntity.getUniqueId(), keyed.key()).join();
-        } else {
-            VanillaEnoughItems.LOGGER.warn("Cannot bookmark recipe: %s".formatted(currentRecipe));
         }
 
         // Generate the recipe panel and render

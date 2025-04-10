@@ -48,7 +48,9 @@ public class LightStyle extends Style{
         buttonSkins.put(VeiButtonType.RecipeMenu.BACKWARD_RECIPE, CustomHeadFactory.QUARTZ_BACKWARD_II);
         buttonSkins.put(VeiButtonType.RecipeMenu.BOOKMARK_LIST, CustomHeadFactory.FIREWORK_STAR_CYAN);
         buttonSkins.put(VeiButtonType.RecipeMenu.BOOKMARK_SERVER_LIST, CustomHeadFactory.FIREWORK_STAR_GREEN);
-        buttonSkins.put(VeiButtonType.RecipeMenu.BOOKMARK_THIS_RECIPE, new ItemStack(Material.WHITE_CANDLE));
+        buttonSkins.put(VeiButtonType.RecipeMenu.BOOKMARK_THIS_RECIPE_BOOKMARKED, new ItemStack(Material.YELLOW_CANDLE));
+        buttonSkins.put(VeiButtonType.RecipeMenu.BOOKMARK_THIS_RECIPE_UNBOOKMARKED, new ItemStack(Material.WHITE_CANDLE));
+        buttonSkins.put(VeiButtonType.RecipeMenu.BOOKMARK_THIS_RECIPE_UNABLE, new ItemStack(Material.RED_CANDLE));
         buttonSkins.put(VeiButtonType.RecipeMenu.FORWARD_RECIPE, CustomHeadFactory.QUARTZ_FORWARD_II);
         buttonSkins.put(VeiButtonType.RecipeMenu.MOVE_INGREDIENTS, CustomHeadFactory.QUARTZ_PLUS);
         buttonSkins.put(VeiButtonType.RecipeMenu.NEXT_RECIPE, CustomHeadFactory.QUARTZ_FORWARD);
@@ -58,7 +60,6 @@ public class LightStyle extends Style{
         buttonSkins.put(VeiButtonType.RecipeMenu.WORKBENCH_TYPE_SCROLL_RIGHT, CustomHeadFactory.QUARTZ_ARROW_RIGHT);
         buttonSkins.put(VeiButtonType.RecipeMenu.WORKBENCH_VARIANT_SCROLL_DOWN, CustomHeadFactory.QUARTZ_ARROW_DOWN);
         buttonSkins.put(VeiButtonType.RecipeMenu.WORKBENCH_VARIANT_SCROLL_UP, CustomHeadFactory.QUARTZ_ARROW_UP);
-        buttonSkins.put(VeiButtonType.RecipeMenu.UNBOOKMARK_THIS_RECIPE, new ItemStack(Material.YELLOW_CANDLE));
         buttonSkins.put(null, new ItemStack(Material.SMOOTH_QUARTZ)); // default
         
         return buttonSkins;
