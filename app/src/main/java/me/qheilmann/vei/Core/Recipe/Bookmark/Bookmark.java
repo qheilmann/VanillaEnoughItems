@@ -5,7 +5,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 import me.qheilmann.vei.Core.Recipe.Bookmark.Repository.IBookmarkRepository;
-
+import net.kyori.adventure.key.Key;
 import net.kyori.adventure.key.Keyed;
 import org.jetbrains.annotations.NotNull;
 
@@ -24,7 +24,7 @@ public class Bookmark {
      * @param playerId The player's UUID
      * @return A set of the player's bookmarked recipes
      */
-    public static CompletableFuture<Set<Keyed>> getBookmarksAsync(@NotNull UUID playerId) {
+    public static CompletableFuture<Set<Key>> getBookmarksAsync(@NotNull UUID playerId) {
         return repository.getBookmarksAsync(playerId);
     }
 
@@ -35,7 +35,7 @@ public class Bookmark {
      * @return true if the bookmark was newly added, false otherwise
      */
     public static CompletableFuture<Boolean> addBookmarkAsync(@NotNull UUID playerId, @NotNull Keyed recipe) {
-        return repository.addBookmarkAsync(playerId, recipe);
+        return repository.addBookmarkAsync(playerId, recipe.key());
     }
 
     /**
@@ -45,7 +45,7 @@ public class Bookmark {
      * @return true if the bookmark was removed, false otherwise
      */
     public static CompletableFuture<Boolean> removeBookmarkAsync(@NotNull UUID playerId, @NotNull Keyed recipe) {
-        return repository.removeBookmarkAsync(playerId, recipe);
+        return repository.removeBookmarkAsync(playerId, recipe.key());
     }
 
     /**
@@ -55,6 +55,6 @@ public class Bookmark {
      * @return true if the recipe is bookmarked
      */
     public static CompletableFuture<Boolean> hasBookmarkAsync(@NotNull UUID playerId, @NotNull Keyed recipe) {
-        return repository.hasBookmarkAsync(playerId, recipe);
+        return repository.hasBookmarkAsync(playerId, recipe.key());
     }
 }

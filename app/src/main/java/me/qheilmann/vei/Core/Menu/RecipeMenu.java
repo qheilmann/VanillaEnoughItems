@@ -12,8 +12,6 @@ import javax.annotation.Nullable;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
-import java.awt.print.Book;
-
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.InventoryView;
@@ -591,7 +589,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
     private void bookmarkRecipeAction(InventoryClickEvent event, RecipeMenu menu, boolean shouldBookmark) {
         UUID playerUuid = event.getWhoClicked().getUniqueId();
         Recipe currentRecipe = mixedProcessRecipeReader.currentProcessRecipeReader().currentRecipe();
-
+        
         // Check recipe (edge case: recipe without an ID)
         if(!(currentRecipe instanceof Keyed keyedRecipe)) {
             event.getWhoClicked().sendMessage("This recipe cannot be bookmarked");
