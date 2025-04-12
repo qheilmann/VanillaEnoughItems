@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -110,7 +111,9 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
     private final RecipeIndexService recipeIndex;
     private final MixedProcessRecipeReader mixedProcessRecipeReader;
     private ProcessPanel<?> processPanel;
+    private int workbenchOptionOffset = 0;
 
+    // menu items
     private GuiItem<RecipeMenu> processScrollLeftItem;
     private GuiItem<RecipeMenu> processScrollRightItem;
     private GuiItem<RecipeMenu> infoItem;
@@ -120,6 +123,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
     private GuiItem<RecipeMenu> bookmarkListItem;
     private GuiItem<RecipeMenu> bookmarkServerListItem;
     private GuiItem<RecipeMenu> exitItem;
+    // process panel items
     private GuiItem<RecipeMenu> nextRecipeItem;
     private GuiItem<RecipeMenu> previousRecipeItem;
     private GuiItem<RecipeMenu> forwardRecipeItem;
@@ -269,17 +273,28 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
             setItem(slot, null);
         }
 
-        if (mixedProcessRecipeReader.currentProcess().getWorkbenchOptions().size() > WORKBENCH_SLOT_RANGE.size()) {
-            VanillaEnoughItems.LOGGER.warn("Not enough workbench slots to render all workbenchs"); // TODO: Implement scroll page workbench variantn;
+        Set<ItemStack> workbenchOptions = mixedProcessRecipeReader.currentProcess().getWorkbenchOptions();
+        Iterator<ItemStack> filteredWorkbenchIterator = workbenchOptions.stream().skip(workbenchOptionOffset).iterator();
+
+        // Workbench options
+        for (MaxChestSlot slot : WORKBENCH_SLOT_RANGE) {
+            if (!filteredWorkbenchIterator.hasNext()) {
+                break; // No more workbench options to render
+            }
+            ItemStack workbench = filteredWorkbenchIterator.next();
+            setItem(slot, buildWorkbenchOptionButton(workbench));
         }
 
-        Iterator<MaxChestSlot> slotIterator = WORKBENCH_SLOT_RANGE.iterator();
-        Iterator<ItemStack> workbenchIterator = mixedProcessRecipeReader.currentProcess().getWorkbenchOptions().iterator();
-
-        while (slotIterator.hasNext() && workbenchIterator.hasNext()) {
-            MaxChestSlot slot = slotIterator.next();
-            ItemStack workbench = workbenchIterator.next();
-            setItem(slot, buildWorkbenchOptionButton(workbench));
+        // Up / Down option
+        if (workbenchOptionOffset > 0) {
+            setItem(WORKBENCH_SCROLL_UP_SLOT, workbenchScrollUpItem);
+        } else {
+            setItem(WORKBENCH_SCROLL_UP_SLOT, null);
+        }
+        if (filteredWorkbenchIterator.hasNext()) {
+            setItem(WORKBENCH_SCROLL_DOWN_SLOT, workbenchScrollDownItem);
+        } else {
+            setItem(WORKBENCH_SCROLL_DOWN_SLOT, null);
         }
     }
 
@@ -603,11 +618,18 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
     }
 
     private void workbenchScrollUpAction(InventoryClickEvent event, RecipeMenu menu) {
-        event.getWhoClicked().sendMessage("Scroll up action");
+        if (workbenchOptionOffset > 0) {
+            workbenchOptionOffset--;
+            render();
+        }
     }
 
     private void workbenchDownAction(InventoryClickEvent event, RecipeMenu menu) {
-        event.getWhoClicked().sendMessage("Scroll down action");
+        Set<ItemStack> workbenchOptions = mixedProcessRecipeReader.currentProcess().getWorkbenchOptions();
+        if (workbenchOptionOffset < workbenchOptions.size() - WORKBENCH_SLOT_RANGE.size()) {
+            workbenchOptionOffset++;
+            render();
+        }
     }
 
     private void bookmarkRecipeAction(InventoryClickEvent event, RecipeMenu menu, boolean shouldBookmark) {
