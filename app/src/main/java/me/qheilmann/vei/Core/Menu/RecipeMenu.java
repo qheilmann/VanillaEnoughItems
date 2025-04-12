@@ -4,11 +4,11 @@ import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-
 import javax.annotation.Nullable;
 
 import java.awt.Toolkit;
@@ -112,6 +112,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
     private final MixedProcessRecipeReader mixedProcessRecipeReader;
     private ProcessPanel<?> processPanel;
     private int workbenchOptionOffset = 0;
+    private int processOptionOffset = 0;
 
     // menu items
     private GuiItem<RecipeMenu> processScrollLeftItem;
@@ -129,11 +130,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
     private GuiItem<RecipeMenu> forwardRecipeItem;
     private GuiItem<RecipeMenu> backwardRecipeItem;
     private GuiItem<RecipeMenu> moveIngredientsItem;
-
-    private boolean isProcessScrollLeftVisible = false; // TODO: Implement scroll page workbench type
-    private boolean isProcessScrollRightVisible = false;
-    private boolean isWorkbenchScrollUpVisible = false; // TODO: Implement scroll page workbench variant
-    private boolean isWorkbenchScrollDownVisible = false;
+    // process panel visibility booleans
     private boolean isNextRecipeVisible = true;
     private boolean isPreviousRecipeVisible = true;
     private boolean isForwardRecipeVisible = true;
@@ -215,18 +212,13 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
     //#region Render methods
 
     public void render() {
+        // Always visible buttons don't need to be re rendered (render once in the constructor)
 
         // Update visibility booleans
         updateNextPreviousRecipeVisibility();
         updateForwardBackwardRecipeVisibility();
 
-        // Apply menu button visibility
-        setItemOnVisibility(PROCESS_SCROLL_LEFT_SLOT, processScrollLeftItem, isProcessScrollLeftVisible);
-        setItemOnVisibility(PROCESS_SCROLL_RIGHT_SLOT, processScrollRightItem, isProcessScrollRightVisible);
-        setItemOnVisibility(WORKBENCH_SCROLL_UP_SLOT, workbenchScrollUpItem, isWorkbenchScrollUpVisible);
-        setItemOnVisibility(WORKBENCH_SCROLL_DOWN_SLOT, workbenchScrollDownItem, isWorkbenchScrollDownVisible);
-        // Always visible buttons don't need to be re rendered (render once in the constructor)
-
+        // Render per part
         renderRecipePanel();
         renderProcessRange();
         renderWorkbenchRange();
@@ -251,19 +243,33 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
     }
 
     private void renderProcessRange() {
-        // no clear old process needed here
-
-        if (mixedProcessRecipeReader.getAllProcess().size() > PROCESS_SLOT_RANGE.size()) {
-            VanillaEnoughItems.LOGGER.warn("Not enough process slots to render all processes"); // TODO: Implement scroll page processes
+        // first clear old process options
+        for (MaxChestSlot slot : PROCESS_SLOT_RANGE) {
+            setItem(slot, null);
         }
 
-        Iterator<MaxChestSlot> slotIterator = PROCESS_SLOT_RANGE.iterator();
-        Iterator<Process<?>> processIterator = mixedProcessRecipeReader.getAllProcess().iterator();
+        NavigableSet<Process<?>> processOptions = mixedProcessRecipeReader.getAllProcess();
+        Iterator<Process<?>> filteredProcessIterator = processOptions.stream().skip(processOptionOffset).iterator();
 
-        while (slotIterator.hasNext() && processIterator.hasNext()) {
-            MaxChestSlot slot = slotIterator.next();
-            Process<?> process = processIterator.next();
+        // Process options
+        for (MaxChestSlot slot : PROCESS_SLOT_RANGE) {
+            if (!filteredProcessIterator.hasNext()) {
+                break; // No more process options to render
+            }
+            Process<?> process = filteredProcessIterator.next();
             setItem(slot, buildChangeProcessButton(process));
+        }
+
+        // Left / Right option
+        if (processOptionOffset > 0) {
+            setItem(PROCESS_SCROLL_LEFT_SLOT, processScrollLeftItem);
+        } else {
+            setItem(PROCESS_SCROLL_LEFT_SLOT, null);
+        }
+        if (filteredProcessIterator.hasNext()) {
+            setItem(PROCESS_SCROLL_RIGHT_SLOT, processScrollRightItem);
+        } else {
+            setItem(PROCESS_SCROLL_RIGHT_SLOT, null);
         }
     }
 
@@ -606,11 +612,18 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
     }
 
     private void processScrollLeftAction(InventoryClickEvent event, RecipeMenu menu) {
-        event.getWhoClicked().sendMessage("Scroll left action");
+        if (processOptionOffset > 0) {
+            processOptionOffset--;
+            render();
+        }
     }
 
     private void processScrollRightAction(InventoryClickEvent event, RecipeMenu menu) {
-        event.getWhoClicked().sendMessage("Scroll right action");
+        Set<Process<?>> processOptions = mixedProcessRecipeReader.getAllProcess();
+        if (processOptionOffset < processOptions.size() - PROCESS_SLOT_RANGE.size()) {
+            processOptionOffset++;
+            render();
+        }
     }
 
     private void infoAction(InventoryClickEvent event, RecipeMenu menu) {
