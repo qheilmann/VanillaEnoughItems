@@ -340,7 +340,8 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         button.editMeta(meta -> {
             meta.displayName(Component.text("Scroll left").color(style.getPrimaryColor()));
             meta.lore(List.of(
-                Component.text("See previous workbench type").color(style.getSecondaryColor())
+                Component.text("Browse previous processes").color(style.getSecondaryColor()),
+                Component.text("Hold Shift to scroll faster").color(style.getSecondaryColor())
             ));
         });
         button.setAction(this::processScrollLeftAction);
@@ -352,7 +353,8 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         button.editMeta(meta -> {
             meta.displayName(Component.text("Scroll right").color(style.getPrimaryColor()));
             meta.lore(List.of(
-                Component.text("See next workbench type").color(style.getSecondaryColor())
+                Component.text("Browse additional processes").color(style.getSecondaryColor()),
+                Component.text("Hold Shift to scroll faster").color(style.getSecondaryColor())
             ));
         });
         button.setAction(this::processScrollRightAction);
@@ -376,7 +378,8 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         button.editMeta(meta -> {
             meta.displayName(Component.text("Scroll up").color(style.getPrimaryColor()));
             meta.lore(List.of(
-                Component.text("See previous workbench variant").color(style.getSecondaryColor())
+                Component.text("Browse previous workbench options").color(style.getSecondaryColor()),
+                Component.text("Hold Shift to scroll faster").color(style.getSecondaryColor())
             ));
         });
         button.setAction(this::workbenchScrollUpAction);
@@ -388,7 +391,8 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         button.editMeta(meta -> {
             meta.displayName(Component.text("Scroll down").color(style.getPrimaryColor()));
             meta.lore(List.of(
-                Component.text("See next workbench variant").color(style.getSecondaryColor())
+                Component.text("Browse additional workbench options").color(style.getSecondaryColor()),
+                Component.text("Hold Shift to scroll faster").color(style.getSecondaryColor())
             ));
         });
         button.setAction(this::workbenchDownAction);
@@ -612,16 +616,37 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
     }
 
     private void processScrollLeftAction(InventoryClickEvent event, RecipeMenu menu) {
-        if (processOptionOffset > 0) {
+        boolean isShiftClicked = event.isShiftClick();
+        int previousOffset = processOptionOffset;
+
+        if (isShiftClicked) {
+            processOptionOffset -= PROCESS_SLOT_RANGE.size();
+        } else {
             processOptionOffset--;
+        }
+
+        processOptionOffset = Math.max(processOptionOffset, 0);
+
+        if (processOptionOffset != previousOffset) {
             render();
         }
     }
 
     private void processScrollRightAction(InventoryClickEvent event, RecipeMenu menu) {
         Set<Process<?>> processOptions = mixedProcessRecipeReader.getAllProcess();
-        if (processOptionOffset < processOptions.size() - PROCESS_SLOT_RANGE.size()) {
+        int maxOffset = Math.max(processOptions.size() - PROCESS_SLOT_RANGE.size(), 0);
+        boolean isShiftClicked = event.isShiftClick();
+        int previousOffset = processOptionOffset;
+
+        if (isShiftClicked) {
+            processOptionOffset += PROCESS_SLOT_RANGE.size();
+        } else {
             processOptionOffset++;
+        }
+
+        processOptionOffset = Math.min(processOptionOffset, maxOffset);
+
+        if (processOptionOffset != previousOffset) {
             render();
         }
     }
@@ -631,16 +656,37 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
     }
 
     private void workbenchScrollUpAction(InventoryClickEvent event, RecipeMenu menu) {
-        if (workbenchOptionOffset > 0) {
+        boolean isShiftClicked = event.isShiftClick();
+        int previousOffset = workbenchOptionOffset;
+
+        if (isShiftClicked) {
+            workbenchOptionOffset -= WORKBENCH_SLOT_RANGE.size();
+        } else {
             workbenchOptionOffset--;
+        }
+
+        workbenchOptionOffset = Math.max(workbenchOptionOffset, 0);
+
+        if (workbenchOptionOffset != previousOffset) {
             render();
         }
     }
 
     private void workbenchDownAction(InventoryClickEvent event, RecipeMenu menu) {
         Set<ItemStack> workbenchOptions = mixedProcessRecipeReader.currentProcess().getWorkbenchOptions();
-        if (workbenchOptionOffset < workbenchOptions.size() - WORKBENCH_SLOT_RANGE.size()) {
+        int maxOffset = Math.max(workbenchOptions.size() - WORKBENCH_SLOT_RANGE.size(), 0);
+        boolean isShiftClicked = event.isShiftClick();
+        int previousOffset = workbenchOptionOffset;
+
+        if (isShiftClicked) {
+            workbenchOptionOffset += WORKBENCH_SLOT_RANGE.size();
+        } else {
             workbenchOptionOffset++;
+        }
+
+        workbenchOptionOffset = Math.min(workbenchOptionOffset, maxOffset);
+
+        if (workbenchOptionOffset != previousOffset) {
             render();
         }
     }
@@ -777,10 +823,6 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         render();
 
         return super.open(humanEntity);
-    }
-
-    private void setItemOnVisibility(MaxChestSlot slot, GuiItem<RecipeMenu> item, boolean isVisible) {
-        setItem(slot, isVisible ? item : null);
     }
 
     protected void padEmptySlots(){
