@@ -10,6 +10,9 @@ import org.bukkit.inventory.CraftingRecipe;
 import org.bukkit.inventory.FurnaceRecipe;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
+import org.bukkit.inventory.SmithingRecipe;
+import org.bukkit.inventory.SmithingTransformRecipe;
+import org.bukkit.inventory.SmithingTrimRecipe;
 import org.bukkit.inventory.SmokingRecipe;
 import org.bukkit.inventory.StonecuttingRecipe;
 import org.bukkit.inventory.ItemStack;
@@ -20,6 +23,7 @@ import me.qheilmann.vei.Core.ProcessPanel.Panels.CampfireProcessPanel;
 import me.qheilmann.vei.Core.ProcessPanel.Panels.CraftingProcessPanel;
 import me.qheilmann.vei.Core.ProcessPanel.Panels.DummyProcessPanel;
 import me.qheilmann.vei.Core.ProcessPanel.Panels.SmeltingProcessPanel;
+import me.qheilmann.vei.Core.ProcessPanel.Panels.SmithingProcessPanel;
 import me.qheilmann.vei.Core.ProcessPanel.Panels.SmokingProcessPanel;
 import me.qheilmann.vei.Core.ProcessPanel.Panels.StonecuttingProcessPanel;
 import net.kyori.adventure.text.Component;
@@ -37,19 +41,14 @@ public class VanillaProcesses {
     public static LinkedHashSet<Process<?>> getAllVanillaProcesses() {
         
         LinkedHashSet<Process<?>> processes = new LinkedHashSet<>();
-        // we place it in optimized order to gain small performance when indexing the recipes
+        // We place it in optimized order to gain small performance when indexing the recipes
         processes.add(CraftingProcessHelper.getCraftingProcess());
         processes.add(SmeltingProcessHelper.getSmeltingProcess());
         processes.add(BlastingProcessHelper.getBlastingProcess());
         processes.add(SmokingProcessHelper.getSmokingProcess());
         processes.add(CampfireProcessHelper.getCampfireProcess());
         processes.add(StonecuttingProcessHelper.getStonecuttingProcess());
-
-        // TODO add the following processes
-        // SmithingTransformRecipe
-        // SmithingTrimRecipe
-        // SmithingRecipe
-        // TransmuteRecipe
+        processes.add(SmithingProcessHelper.getSmithingProcess());
         
         return processes;
     }
@@ -197,6 +196,43 @@ public class VanillaProcesses {
         private static Collection<Class<? extends FurnaceRecipe>> getRecipeClasses() {
             return Arrays.asList(
                 FurnaceRecipe.class
+            );
+        }
+    }
+
+    private static class SmithingProcessHelper {
+        private static final String PROCESS_NAME = "Smithing Table";
+
+        private static Process<SmithingRecipe> getSmithingProcess() {
+            return new Process<>(
+                PROCESS_NAME,
+                generateIcon(),
+                getWorkbenchOptions(),
+                getRecipeClasses(),
+                (style, recipeIndex, recipeReader) -> new SmithingProcessPanel(style, recipeIndex, recipeReader)
+            );
+        }
+
+        private static ItemStack generateIcon() {
+            ItemStack icon =
+                new ItemStack(Material.FURNACE);
+            icon.editMeta(meta -> {
+                meta.displayName(Component.text(PROCESS_NAME));
+                meta.setMaxStackSize(1);
+            });
+            return icon;
+        }
+
+        private static Collection<ItemStack> getWorkbenchOptions() {
+            return Arrays.asList(
+                new ItemStack(Material.FURNACE)
+            );
+        }
+
+        private static Collection<Class<? extends SmithingRecipe>> getRecipeClasses() {
+            return Arrays.asList(
+                SmithingTransformRecipe.class,
+                SmithingTrimRecipe.class
             );
         }
     }
