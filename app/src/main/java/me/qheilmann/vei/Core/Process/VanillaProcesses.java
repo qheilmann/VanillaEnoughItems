@@ -11,6 +11,7 @@ import org.bukkit.inventory.FurnaceRecipe;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.inventory.SmokingRecipe;
+import org.bukkit.inventory.StonecuttingRecipe;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 
@@ -20,6 +21,7 @@ import me.qheilmann.vei.Core.ProcessPanel.Panels.CraftingProcessPanel;
 import me.qheilmann.vei.Core.ProcessPanel.Panels.DummyProcessPanel;
 import me.qheilmann.vei.Core.ProcessPanel.Panels.SmeltingProcessPanel;
 import me.qheilmann.vei.Core.ProcessPanel.Panels.SmokingProcessPanel;
+import me.qheilmann.vei.Core.ProcessPanel.Panels.StonecuttingProcessPanel;
 import net.kyori.adventure.text.Component;
 
 public class VanillaProcesses {
@@ -41,12 +43,13 @@ public class VanillaProcesses {
         processes.add(BlastingProcessHelper.getBlastingProcess());
         processes.add(SmokingProcessHelper.getSmokingProcess());
         processes.add(CampfireProcessHelper.getCampfireProcess());
+        processes.add(StonecuttingProcessHelper.getStonecuttingProcess());
 
         // TODO add the following processes
         // SmithingTransformRecipe
         // SmithingTrimRecipe
         // SmithingRecipe
-        // StonecuttingRecipe
+        // TransmuteRecipe
         
         return processes;
     }
@@ -230,6 +233,42 @@ public class VanillaProcesses {
         private static Collection<Class<? extends SmokingRecipe>> getRecipeClasses() {
             return Arrays.asList(
                 SmokingRecipe.class
+            );
+        }
+    }
+
+    private static class StonecuttingProcessHelper {
+        private static final String PROCESS_NAME = "Stonecutting";
+
+        private static Process<StonecuttingRecipe> getStonecuttingProcess() {
+            return new Process<>(
+                PROCESS_NAME,
+                generateIcon(),
+                getWorkbenchOptions(),
+                getRecipeClasses(),
+                (style, recipeIndex, recipeReader) -> new StonecuttingProcessPanel(style, recipeIndex, recipeReader)
+            );
+        }
+
+        private static ItemStack generateIcon() {
+            ItemStack icon =
+                new ItemStack(Material.STONECUTTER);
+            icon.editMeta(meta -> {
+                meta.displayName(Component.text(PROCESS_NAME));
+                meta.setMaxStackSize(1);
+            });
+            return icon;
+        }
+
+        private static Collection<ItemStack> getWorkbenchOptions() {
+            return Arrays.asList(
+                new ItemStack(Material.STONECUTTER)
+            );
+        }
+
+        private static Collection<Class<? extends StonecuttingRecipe>> getRecipeClasses() {
+            return Arrays.asList(
+                StonecuttingRecipe.class
             );
         }
     }
