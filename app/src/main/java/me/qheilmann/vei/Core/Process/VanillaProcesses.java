@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import org.bukkit.Material;
+import org.bukkit.inventory.BlastingRecipe;
 import org.bukkit.inventory.CraftingRecipe;
 import org.bukkit.inventory.FurnaceRecipe;
 import org.bukkit.inventory.ShapedRecipe;
@@ -11,6 +12,8 @@ import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.inventory.SmokingRecipe;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
+
+import me.qheilmann.vei.Core.ProcessPanel.Panels.BlastingProcessPanel;
 import me.qheilmann.vei.Core.ProcessPanel.Panels.CraftingProcessPanel;
 import me.qheilmann.vei.Core.ProcessPanel.Panels.DummyProcessPanel;
 import me.qheilmann.vei.Core.ProcessPanel.Panels.SmeltingProcessPanel;
@@ -30,12 +33,13 @@ public class VanillaProcesses {
     public static LinkedHashSet<Process<?>> getAllVanillaProcesses() {
         
         LinkedHashSet<Process<?>> processes = new LinkedHashSet<>();
+        // we place it in optimized order to gain small performance when indexing the recipes
         processes.add(CraftingProcessHelper.getCraftingProcess());
-        processes.add(SmokingProcessHelper.getSmokingProcess());
         processes.add(SmeltingProcessHelper.getSmeltingProcess());
+        processes.add(BlastingProcessHelper.getBlastingProcess());
+        processes.add(SmokingProcessHelper.getSmokingProcess());
 
         // TODO add the following processes
-        // BlastingRecipe
         // CampfireRecipe
         // SmithingTransformRecipe
         // SmithingTrimRecipe
@@ -43,6 +47,42 @@ public class VanillaProcesses {
         // StonecuttingRecipe
         
         return processes;
+    }
+
+    private static class BlastingProcessHelper {
+        private static final String PROCESS_NAME = "Blasting";
+
+        private static Process<BlastingRecipe> getBlastingProcess() {
+            return new Process<>(
+                PROCESS_NAME,
+                generateIcon(),
+                getWorkbenchOptions(),
+                getRecipeClasses(),
+                (style, recipeIndex, recipeReader) -> new BlastingProcessPanel(style, recipeIndex, recipeReader)
+            );
+        }
+
+        private static ItemStack generateIcon() {
+            ItemStack icon =
+                new ItemStack(Material.BLAST_FURNACE);
+            icon.editMeta(meta -> {
+                meta.displayName(Component.text(PROCESS_NAME));
+                meta.setMaxStackSize(1);
+            });
+            return icon;
+        }
+
+        private static Collection<ItemStack> getWorkbenchOptions() {
+            return Arrays.asList(
+                new ItemStack(Material.BLAST_FURNACE)
+            );
+        }
+
+        private static Collection<Class<? extends BlastingRecipe>> getRecipeClasses() {
+            return Arrays.asList(
+                BlastingRecipe.class
+            );
+        }
     }
 
     private static class CraftingProcessHelper {
