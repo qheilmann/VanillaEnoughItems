@@ -5,9 +5,9 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import org.bukkit.Material;
-import org.bukkit.inventory.FurnaceRecipe;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.RecipeChoice;
+import org.bukkit.inventory.SmokingRecipe;
 import org.jetbrains.annotations.NotNull;
 
 import me.qheilmann.vei.VanillaEnoughItems;
@@ -20,7 +20,7 @@ import me.qheilmann.vei.Core.Recipe.Index.Reader.ProcessRecipeReader;
 import me.qheilmann.vei.Core.Slot.Collection.SlotSequence;
 import me.qheilmann.vei.Core.Style.Styles.Style;
 
-public class SmeltingProcessPanel extends ProcessPanel<FurnaceRecipe> {
+public class SmokingProcessPanel extends ProcessPanel<SmokingRecipe> {
     public static final ProcessPanelSlot NEXT_RECIPE_SLOT = new ProcessPanelSlot(3 , 0);
     public static final ProcessPanelSlot PREVIOUS_RECIPE_SLOT = new ProcessPanelSlot(1, 0);
     public static final ProcessPanelSlot FORWARD_RECIPE_SLOT = new ProcessPanelSlot(3, 4);
@@ -32,9 +32,9 @@ public class SmeltingProcessPanel extends ProcessPanel<FurnaceRecipe> {
     public static final ProcessPanelSlot COMBUSTIBLE_SLOT = new ProcessPanelSlot(2, 3);
     public static final ProcessPanelSlot RESULT_SLOT = new ProcessPanelSlot(5, 2);
 
-    private static final Material WORKBENCH_DISPLAY_MATERIAL = Material.FURNACE;
+    private static final Material WORKBENCH_DISPLAY_MATERIAL = Material.SMOKER;
     
-    public SmeltingProcessPanel(@NotNull Style style, @NotNull RecipeIndexService recipeIndex, @NotNull ProcessRecipeReader<FurnaceRecipe> recipeReader) {
+    public SmokingProcessPanel(@NotNull Style style, @NotNull RecipeIndexService recipeIndex, @NotNull ProcessRecipeReader<SmokingRecipe> recipeReader) {
         super(style, recipeIndex, recipeReader);
     }
 
@@ -107,7 +107,7 @@ public class SmeltingProcessPanel extends ProcessPanel<FurnaceRecipe> {
 
         placeWorkbench();
 
-        FurnaceRecipe recipe = getCurrentRecipe();
+        SmokingRecipe recipe = getCurrentRecipe();
         RecipeChoice recipeChoice = recipe.getInputChoice();
         if (recipeChoice instanceof RecipeChoice.MaterialChoice materialChoice) {
             GuiItem<RecipeMenu> inputGuiItem = buildNewRecipeGuiItem(materialChoice.getItemStack());

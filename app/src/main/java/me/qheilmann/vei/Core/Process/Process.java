@@ -136,12 +136,30 @@ public class Process<R extends Recipe> {
 
 
     public class ProcessRegistry {
+        // Stores all registered processes in the order they were registered.
         private static final NotNullSet<Process<?>> processRegistry = new NotNullSet<>(new LinkedHashSet<>());
                 
+        /**
+         * Adds a process to the registry.
+         * <p>
+         * A process must be added to the registry before indexing its associated recipes.
+         * <p>
+         * In cases of inheritance (e.g., SmokingRecipe -> CookingRecipe), the child process must be added first (e.g., SmokingProcess before CookingProcess).
+         * @param process the process to register.
+         */
         public static void registerProcesse(Process<?> process) {
             processRegistry.add(process);
         }
 
+        /**
+         * Registers a collection of processes in the order they are provided.
+         * <p>
+         * A process must be registered before its associated recipes can be indexed.
+         * <p>
+         * For inheritance scenarios (e.g., SmokingRecipe -> CookingRecipe), ensure child processes are registered first 
+         * (e.g., register SmokingProcess before CookingProcess).
+         * @param processes the collection of processes to register.
+         */
         public static void registerProcesses(Collection<Process<?>> processes) {
             processRegistry.addAll(processes);
         }

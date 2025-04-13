@@ -8,11 +8,13 @@ import org.bukkit.inventory.CraftingRecipe;
 import org.bukkit.inventory.FurnaceRecipe;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
+import org.bukkit.inventory.SmokingRecipe;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import me.qheilmann.vei.Core.ProcessPanel.Panels.CraftingProcessPanel;
 import me.qheilmann.vei.Core.ProcessPanel.Panels.DummyProcessPanel;
 import me.qheilmann.vei.Core.ProcessPanel.Panels.SmeltingProcessPanel;
+import me.qheilmann.vei.Core.ProcessPanel.Panels.SmokingProcessPanel;
 import net.kyori.adventure.text.Component;
 
 public class VanillaProcesses {
@@ -29,11 +31,11 @@ public class VanillaProcesses {
         
         LinkedHashSet<Process<?>> processes = new LinkedHashSet<>();
         processes.add(CraftingProcessHelper.getCraftingProcess());
+        processes.add(SmokingProcessHelper.getSmokingProcess());
         processes.add(SmeltingProcessHelper.getSmeltingProcess());
 
         // TODO add the following processes
         // BlastingRecipe
-        // SmokingRecipe
         // CampfireRecipe
         // SmithingTransformRecipe
         // SmithingTrimRecipe
@@ -114,6 +116,42 @@ public class VanillaProcesses {
         private static Collection<Class<? extends FurnaceRecipe>> getRecipeClasses() {
             return Arrays.asList(
                 FurnaceRecipe.class
+            );
+        }
+    }
+
+    private static class SmokingProcessHelper {
+        private static final String PROCESS_NAME = "Smoking";
+
+        private static Process<SmokingRecipe> getSmokingProcess() {
+            return new Process<>(
+                PROCESS_NAME,
+                generateIcon(),
+                getWorkbenchOptions(),
+                getRecipeClasses(),
+                (style, recipeIndex, recipeReader) -> new SmokingProcessPanel(style, recipeIndex, recipeReader)
+            );
+        }
+
+        private static ItemStack generateIcon() {
+            ItemStack icon =
+                new ItemStack(Material.SMOKER);
+            icon.editMeta(meta -> {
+                meta.displayName(Component.text(PROCESS_NAME));
+                meta.setMaxStackSize(1);
+            });
+            return icon;
+        }
+
+        private static Collection<ItemStack> getWorkbenchOptions() {
+            return Arrays.asList(
+                new ItemStack(Material.SMOKER)
+            );
+        }
+
+        private static Collection<Class<? extends SmokingRecipe>> getRecipeClasses() {
+            return Arrays.asList(
+                SmokingRecipe.class
             );
         }
     }
