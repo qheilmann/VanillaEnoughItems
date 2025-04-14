@@ -137,22 +137,16 @@ public class CraftCommand implements ICommand{
     // Action
 
     private void byIdAction(@NotNull Player player, @NotNull NamespacedKey recipeId) throws WrapperCommandSyntaxException {
-        Recipe recipe = recipeIndex.getById(recipeId);
-        if (recipe == null) {
-            throw CommandAPIBukkit.failWithAdventureComponent(Component.text("Recipe ID not found: " + recipeId.toString(), NamedTextColor.RED));
-        }
 
-        ItemStack result = recipe.getResult();
-        if (result == null || result.isEmpty() || result.getType().isAir()) {
-            throw CommandAPIBukkit.failWithAdventureComponent(Component.text("Recipe result not found: " 
-                + recipeId.toString() + ". Complexe recipes are not supported yet.", NamedTextColor.RED));
+        MixedProcessRecipeReader recipeReader;
+        try {
+            recipeReader = recipeIndex.getById(recipeId);
+        } catch (Exception e) {
+            throw CommandAPIBukkit.failWithAdventureComponent(Component.text("An error occurred while retrieving the recipe reader: " + e.getMessage(), NamedTextColor.RED));
         }
-
-        // For the moment simply take the result instead of right result variant
-        MixedProcessRecipeReader recipeReader = recipeIndex.getByResult(result);
 
         if (recipeReader == null) {
-            throw CommandAPIBukkit.failWithAdventureComponent(Component.text("No recipes with result: ").append(result.displayName()).color(NamedTextColor.RED));
+            throw CommandAPIBukkit.failWithAdventureComponent(Component.text("Recipe ID not found: " + recipeId.toString(), NamedTextColor.RED));
         }
 
         menuManager.openRecipeMenu(player, recipeReader);
@@ -188,7 +182,7 @@ public class CraftCommand implements ICommand{
         }
 
         if (recipeId != null) {
-            Recipe recipe = recipeIndex.getById(recipeId);
+            Recipe recipe = recipeIndex.getSingleRecipeById(recipeId);
             if (recipe == null) {
                 throw CommandAPIBukkit.failWithAdventureComponent(Component.text("Recipe ID not found: " + recipeId.toString(), NamedTextColor.RED));
             }
@@ -218,7 +212,7 @@ public class CraftCommand implements ICommand{
         }
 
         if (recipeId != null) {
-            Recipe recipe = recipeIndex.getById(recipeId);
+            Recipe recipe = recipeIndex.getSingleRecipeById(recipeId);
             if (recipe == null) {
                 throw CommandAPIBukkit.failWithAdventureComponent(Component.text("Recipe ID not found: " + recipeId.toString(), NamedTextColor.RED));
             }

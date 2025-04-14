@@ -150,8 +150,40 @@ public class RecipeIndexService {
     }
 
     @Nullable
-    public Recipe getById(NamespacedKey recipeId) {
+    public Recipe getSingleRecipeById(NamespacedKey recipeId) {
         return recipesById.get(recipeId);
+    }
+
+    /**
+     * Get the mixed process readder, which contains all recipes for the given result.
+     * And place the pointer to this recipe.
+     * @param recipeId
+     * @return The recipe by result reader for the given recipe ID, at the position of the recipe.
+     * Or null if the recipe is not found.
+     * @throws RuntimeException if the recipe result is null or empty.
+     */
+    @Nullable
+    public MixedProcessRecipeReader getById(NamespacedKey recipeId) {
+        Recipe recipe = getSingleRecipeById(recipeId);
+        if (recipe == null) {
+            return null; // Recipe not found
+        }
+
+        ItemStack recipeResult = recipe.getResult();
+        if (recipeResult == null || recipeResult.isEmpty() || recipeResult.getType().isAir()) {
+            throw new RuntimeException("Recipe result is null or empty: " + recipeId + ", (complexe recipes are not supported yet).");
+        }
+
+        MixedProcessRecipeMap mixedProcessRecipeMap = recipesByResult.get(recipeResult.asOne());
+        if (mixedProcessRecipeMap == null) {
+            return null; // No recipes found for this result
+        }
+
+        MixedProcessRecipeReader mixedProcessRecipeReader = new MixedProcessRecipeReader(mixedProcessRecipeMap);
+        mixedProcessRecipeReader.setProcess(Process.ProcessRegistry.getProcesseByRecipe(recipe));
+        mixedProcessRecipeReader.currentProcessRecipeReader().unsafeSetRecipe((Recipe) recipe);
+        
+        return mixedProcessRecipeReader;
     }
 
     @Nullable

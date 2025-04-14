@@ -82,7 +82,7 @@ public class VanillaEnoughItems extends JavaPlugin {
     // TEMP: Remove this method (temporary recipe)
     private void addTemporaryRecipe() {
         LOGGER.info("[123_A] Temporary recipe\n");
-
+        
         // Custom recipe 1 (minecraft item with a new recipe)
         NamespacedKey key = new NamespacedKey(NAMESPACE, "second_diamond_swore");
         ItemStack item = new ItemStack(Material.DIAMOND_SWORD);
