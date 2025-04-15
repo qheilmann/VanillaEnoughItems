@@ -139,15 +139,32 @@ public class CraftCommand implements ICommand{
     private void byIdAction(@NotNull Player player, @NotNull NamespacedKey recipeId) throws WrapperCommandSyntaxException {
 
         MixedProcessRecipeReader recipeReader;
+
+        // TODO TEMP
+        ItemStack resultItem;
         try {
-            recipeReader = recipeIndex.getById(recipeId);
+            resultItem = recipeIndex.getSingleRecipeById(recipeId).getResult();
         } catch (Exception e) {
-            throw CommandAPIBukkit.failWithAdventureComponent(Component.text("An error occurred while retrieving the recipe reader: " + e.getMessage(), NamedTextColor.RED));
+            throw CommandAPIBukkit.failWithAdventureComponent(Component.text("Failed to retrieve the first ItemStack of the recipe: " + e.getMessage(), NamedTextColor.RED));
         }
 
-        if (recipeReader == null) {
-            throw CommandAPIBukkit.failWithAdventureComponent(Component.text("Recipe ID not found: " + recipeId.toString(), NamedTextColor.RED));
+        if (resultItem == null) {
+            throw CommandAPIBukkit.failWithAdventureComponent(Component.text("No result ItemStack found for recipe ID: " + recipeId.toString(), NamedTextColor.RED));
         }
+
+        recipeReader = recipeIndex.getByIngredient(resultItem);
+
+        // TODO TEMP
+
+        // try {
+        //     recipeReader = recipeIndex.getById(recipeId);
+        // } catch (Exception e) {
+        //     throw CommandAPIBukkit.failWithAdventureComponent(Component.text("An error occurred while retrieving the recipe reader: " + e.getMessage(), NamedTextColor.RED));
+        // }
+
+        // if (recipeReader == null) {
+        //     throw CommandAPIBukkit.failWithAdventureComponent(Component.text("Recipe ID not found: " + recipeId.toString(), NamedTextColor.RED));
+        // }
 
         menuManager.openRecipeMenu(player, recipeReader);
     }

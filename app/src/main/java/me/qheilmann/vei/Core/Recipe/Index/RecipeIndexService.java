@@ -74,9 +74,9 @@ public class RecipeIndexService {
         recipesByResult.computeIfAbsent(recipe.getResult().asOne(), p -> new MixedProcessRecipeMap()).addRecipe(recipe);
 
         // Index by needed ingredients
-        // for (ItemStack ingredient : recipe.<A way to get needed items from a recipe>) {
-        //     recipesByIngredient.computeIfAbsent(needed, k -> new ArrayList<>()).add(recipe);
-        // }
+        for (ItemStack ingredient : RecipeIngredientExtractor.getIngredients(recipe)) {
+            recipesByIngredient.computeIfAbsent(ingredient.asOne(), k -> new MixedProcessRecipeMap()).addRecipe(recipe);
+        }
 
         // Index by process
         Process<?> process = Process.ProcessRegistry.getProcesseByRecipe(recipe);
@@ -116,9 +116,17 @@ public class RecipeIndexService {
         }
 
         // Remove from needed ingredients index
-        // for (ItemStack needed : recipe.<A way to get needed items from a recipe>) {
-        //     recipesByIngredient.getOrDefault(needed, Collections.emptyList()).remove(recipe);
-        // }
+        for (ItemStack ingredient : RecipeIngredientExtractor.getIngredients(recipe)) {
+            MixedProcessRecipeMap ingredientMap = recipesByIngredient.get(ingredient.asOne());
+            if (ingredientMap != null) {
+                ingredientMap.removeRecipe(recipe);
+
+                // Also remove the map if no recipes anymore
+                if (ingredientMap.isEmpty()) {
+                    recipesByIngredient.remove(ingredient.asOne());
+                }
+            }
+        }
 
         // Remove from process index
         Process<?> process = Process.ProcessRegistry.getProcesseByRecipe(recipe);
@@ -199,7 +207,11 @@ public class RecipeIndexService {
     @Nullable
     public MixedProcessRecipeReader getByIngredient(ItemStack item) {
         item = item.asOne();
-        throw new UnsupportedOperationException("Not implemented yet");
+        MixedProcessRecipeMap mixedProcessRecipeMap = recipesByIngredient.get(item);
+        if (mixedProcessRecipeMap == null) {
+            return null; // No recipes found for this ingredient
+        }
+        return new MixedProcessRecipeReader(mixedProcessRecipeMap);
     }
 
     @Nullable
