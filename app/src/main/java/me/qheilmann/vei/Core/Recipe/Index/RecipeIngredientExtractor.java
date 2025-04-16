@@ -35,9 +35,7 @@ public class RecipeIngredientExtractor {
             return Set.of();
         }
 
-        else if (recipe instanceof ShapelessRecipe shapelessRecipe) {
-            return extractFromCraftingRecipe(shapelessRecipe);
-        } else if (recipe instanceof CraftingRecipe shapedRecipe) {
+          else if (recipe instanceof CraftingRecipe shapedRecipe) {
             return extractFromCraftingRecipe(shapedRecipe);
         } else if (recipe instanceof CookingRecipe cookingRecipe) {
             return extractFromCookingRecipe(cookingRecipe);
