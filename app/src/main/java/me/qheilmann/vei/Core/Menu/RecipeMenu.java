@@ -136,6 +136,8 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
     private boolean isForwardRecipeVisible = true;
     private boolean isBackwardRecipeVisible = true;
     private boolean isMoveIngredientsVisible = false; // TODO: Implement move ingredients
+    private boolean isInfoButtonVisible = false; // TODO: Implement info button
+    private boolean isBookmarkListVisible = false; // TODO: Implement bookmark list
 
     /**
      * Represents the last viewer who opened this menu.
@@ -184,10 +186,14 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         this.moveIngredientsItem            = buildMoveIngredientsButton();
 
         // Render static buttons
-        setItem(INFO_SLOT, infoItem);
-        setItem(BOOKMARK_LIST_SLOT, bookmarkListItem);
-        setItem(BOOKMARK_SERVER_LIST_SLOT, bookmarkServerListItem);
         setItem(EXIT_SLOT, exitItem);
+        if(isInfoButtonVisible) {
+            setItem(INFO_SLOT, infoItem);
+        }
+        if(isBookmarkListVisible) {
+            setItem(BOOKMARK_LIST_SLOT, bookmarkListItem);
+            setItem(BOOKMARK_SERVER_LIST_SLOT, bookmarkServerListItem);
+        }
     }
 
     private void initProcessPanel() {
