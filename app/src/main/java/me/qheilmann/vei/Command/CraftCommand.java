@@ -1,5 +1,8 @@
 package me.qheilmann.vei.Command;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import javax.annotation.Nullable;
 
 import org.bukkit.entity.Player;
@@ -12,8 +15,11 @@ import dev.jorel.commandapi.CommandAPIBukkit;
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.CommandPermission;
 import dev.jorel.commandapi.arguments.ArgumentSuggestions;
+import dev.jorel.commandapi.arguments.ItemStackArgument;
 import dev.jorel.commandapi.arguments.NamespacedKeyArgument;
+import dev.jorel.commandapi.arguments.SafeSuggestions;
 import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
+import me.qheilmann.vei.VanillaEnoughItems;
 import me.qheilmann.vei.Core.Process.Process;
 import me.qheilmann.vei.Core.Recipe.Index.RecipeIndexService;
 import me.qheilmann.vei.Core.Recipe.Index.Reader.MixedProcessRecipeReader;
@@ -87,6 +93,7 @@ public class CraftCommand implements ICommand{
             .withPermission(PERMISSION)
             .withHelp(SHORT_DESCRIPTION, LONG_DESCRIPTION)
             .withUsage(USAGE)
+
             // Display name of the item but the ItemStack back conversion behind is missing
             // .withArguments(new StringArgument("item").replaceSuggestions(
             //     ArgumentSuggestions.strings(info -> VanillaEnoughItems.allRecipesMap.getItems().stream().map(t -> t.getI18NDisplayName()).toArray(String[]::new)))
@@ -98,28 +105,72 @@ public class CraftCommand implements ICommand{
             //     builder = builder.createOffset(builder.getStart() + info.currentArg().length());
             //     builder.suggest("item");
             // }))
-            // .withArguments(new ItemStackArgument("item").replaceSafeSuggestions(
-            //     SafeSuggestions.suggest(info -> {
-            //         return VanillaEnoughItems.allRecipesMap.getItems().stream().filter(item ->
-            //             // This filter isn't really efficient: it compares the beginning of the argument with all possible elements
-            //             // BUT at the same time checks with the default prefix "minecraft:", so only minecraft:minecart works for a the 5 first characters.
-            //             // {
-            //             //     VanillaEnoughItems.LOGGER.info("item: " + item.getType().name().toLowerCase() + " input: " + info.currentArg().toLowerCase() + " match: " + item.getType().name().toLowerCase().startsWith(info.currentArg().toLowerCase()));
-            //             //     return item.getType().name().toLowerCase().startsWith(info.currentArg().toLowerCase());
-            //             // }
-            //             {
-            //                 return true;
-            //             }
-            //         ).toArray(ItemStack[]::new);
-            //     })
+            
+            // [] Like /give (perfect) 
+            // [] color working (with/without prefix) if the itemstack exists
+            // [] suggestion work with and without prefix (minecraft:)
+            // .withArguments(new ItemStackArgument("item")
+
+            // [] color working (with/without prefix) if the itemstack exists
+            // [] suggestion ONLY work WITH prefix (minecraft:)
+            // .withArguments(new ItemStackArgument("item")
+            //     .replaceSuggestions(ArgumentSuggestions.strings(
+            //         List.of(
+            //                 "minecraft:acacia_boat", 
+            //                 "minecraft:acacia_button",
+            //                 "minecraft:iron_ingot", 
+            //                 "minecraft:iron_ore", 
+            //                 "minecraft:gold_ingot", 
+            //                 "minecraft:gold_ore", 
+            //                 "minecraft:diamond", 
+            //                 "minecraft:emerald", 
+            //                 "minecraft:lapis_lazuli", 
+            //                 "minecraft:redstone", 
+            //                 "minecraft:netherite_ingot", 
+            //                 "minecraft:copper_ingot",
+            //                 "minecraft:stone_sword",
+            //                 "minecraft:wooden_sword",
+            //                 "minecraft:golden_sword",
+            //                 "minecraft:diamond_sword",
+            //                 "minecraft:netherite_sword"
+            //         )
+            //     )
             // ))
+            
+            // 
+            //     .withArguments(new ItemStackArgument("item")
+            //     .replaceSuggestions((info, builder) -> {})
+            // ))
+            // builder.suggest(suggestion)
+
+            // [] sugestion work only with the prefix minecraft:
+            // .withArguments(new ItemStackArgument("item")
+                // .replaceSafeSuggestions(
+                //     SafeSuggestions.suggest(info -> {
+                //         return recipeIndex.getGlobalIndex().currentProcessRecipeReader().getAllRecipes().stream().map(recipe -> recipe.getResult()).collect(Collectors.toList()).toArray(ItemStack[]::new);
+                //         //  .stream().flatMap(a -> a.get) allRecipesMap.getItems().stream().filter(item ->
+                //             // This filter isn't really efficient: it compares the beginning of the argument with all possible elements
+                //             // BUT at the same time checks with the default prefix "minecraft:", so only minecraft:minecart works for a the 5 first characters.
+                //             // {
+                //             //     VanillaEnoughItems.LOGGER.info("item: " + item.getType().name().toLowerCase() + " input: " + info.currentArg().toLowerCase() + " match: " + item.getType().name().toLowerCase().startsWith(info.currentArg().toLowerCase()));
+                //             //     return item.getType().name().toLowerCase().startsWith(info.currentArg().toLowerCase());
+                //             // }
+                //         //     {
+                //         //         return true;
+                //         //     }
+                //         // ).toArray(ItemStack[]::new);
+                //     })
+                // )
+
+            // [] Actual working namespaced key argument (color only blue)
             .withArguments(new NamespacedKeyArgument("recipeId").replaceSuggestions(
                 ArgumentSuggestions.stringCollection(
-                    info -> recipeIndex.getAllRecipeIds().stream()
+                    info -> recipeIndex.getAllRecipeIds().stream()  
                         .map(t -> t.getNamespace() + ":" + t.getKey())
                         .toList()
                 ))
             )
+
             // .withOptionalArguments(VEICommandArguments.processArgument("process"))
             // .withOptionalArguments(new IntegerArgument("variant"))
             .executesPlayer((player, args) -> {
