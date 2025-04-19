@@ -1,4 +1,4 @@
-package me.qheilmann.vei.Command;
+package me.qheilmann.vei.Command.CustomArguments;
 
 import dev.jorel.commandapi.arguments.Argument;
 import dev.jorel.commandapi.arguments.CustomArgument;
