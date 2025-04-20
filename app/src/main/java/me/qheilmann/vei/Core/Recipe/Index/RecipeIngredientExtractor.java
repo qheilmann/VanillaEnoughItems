@@ -2,7 +2,6 @@ package me.qheilmann.vei.Core.Recipe.Index;
 
 import org.bukkit.Material;
 import org.bukkit.inventory.*;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.ApiStatus.Experimental;
 

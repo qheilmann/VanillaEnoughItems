@@ -1,9 +1,5 @@
 package me.qheilmann.vei.Command;
 
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 import javax.annotation.Nullable;
 
 import org.bukkit.entity.Player;
@@ -11,34 +7,19 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.jetbrains.annotations.NotNull;
 
-import com.mojang.brigadier.ParseResults;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
-
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 
-import dev.jorel.commandapi.Brigadier;
 import dev.jorel.commandapi.CommandAPIBukkit;
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.CommandPermission;
-import dev.jorel.commandapi.arguments.Argument;
-import dev.jorel.commandapi.arguments.ArgumentSuggestions;
-import dev.jorel.commandapi.arguments.CustomArgument;
-import dev.jorel.commandapi.arguments.IntegerArgument;
-import dev.jorel.commandapi.arguments.CustomArgument.CustomArgumentException;
-import dev.jorel.commandapi.arguments.ItemStackArgument;
-import dev.jorel.commandapi.arguments.NamespacedKeyArgument;
-import dev.jorel.commandapi.arguments.SafeSuggestions;
 import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
-import me.qheilmann.vei.VanillaEnoughItems;
-import me.qheilmann.vei.Command.CustomArguments.APIValidItemKeyArgument;
-import me.qheilmann.vei.Command.CustomArguments.VEICommandArguments;
-import me.qheilmann.vei.Command.CustomArguments.ValidItemKeyArgument;
+import me.qheilmann.vei.Command.CustomArguments.RecipeResultArgument;
 import me.qheilmann.vei.Core.Process.Process;
 import me.qheilmann.vei.Core.Recipe.Index.RecipeIndexService;
 import me.qheilmann.vei.Core.Recipe.Index.Reader.MixedProcessRecipeReader;
 import me.qheilmann.vei.Core.Recipe.Index.Reader.ProcessRecipeReader;
 import me.qheilmann.vei.Menu.MenuManager;
+import me.qheilmann.vei.Service.CustomItemRegistry;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
@@ -94,121 +75,12 @@ public class CraftCommand implements ICommand{
 
     private MenuManager menuManager;
     private RecipeIndexService recipeIndex;
+    private CustomItemRegistry customItemRegistry;
 
-    //#region TEMP for testing purposes
-    private Map<NamespacedKey, ItemStack> customItemRegistry = Map.of(
-        NamespacedKey.fromString("vei:iron_ingot"), createCustomItem(Material.IRON_INGOT, "VEI Ingot", NamedTextColor.RED),
-        NamespacedKey.fromString("ttt:iron_ingot"), createCustomItem(Material.IRON_INGOT, "TTT Ingot", NamedTextColor.GREEN),
-        NamespacedKey.fromString("vei:special_ingot"), createCustomItem(Material.GOLD_INGOT, "VEI Special Ingot", NamedTextColor.GOLD)
-    );
-
-    private ItemStack createCustomItem(Material material, String displayName, NamedTextColor color) {
-        ItemStack item = new ItemStack(material);
-        item.editMeta(meta -> {
-            meta.displayName(Component.text(displayName).color(color));
-        });
-        return item;
-    }
-
-    private List<String> dummyItemsList = List.of(
-        "minecraft:acacia_boat", 
-        "minecraft:acacia_button",
-        "minecraft:iron_ingot", 
-        "vei:iron_ingot", 
-        "ttt:iron_ingot",
-        "minecraft:iron_ore", 
-        "vei:special_ingot", 
-        "minecraft:gold_ingot", 
-        "minecraft:gold_ore", 
-        "minecraft:diamond"
-    );
-
-    Argument<ItemStack> itemArg = new CustomArgument<ItemStack, NamespacedKey>(
-        new NamespacedKeyArgument("item"),
-        info -> {
-            NamespacedKey key = info.currentInput();
-            // 1) If it's one of your custom items:
-            if (customItemRegistry.containsKey(key)) {
-                return customItemRegistry.get(key);
-            }
-            // 2) Otherwise, try vanilla:
-            Material mat = NamespacedKey.minecraft(key.getKey()) != null
-                ? Material.getMaterial(key.getKey().toUpperCase())
-                : null;
-            if (mat != null) {
-                return new ItemStack(mat);
-            }
-            // 3) Fail
-            throw CustomArgumentException.fromString("Unknown item: " + key);
-        }
-    ).replaceSuggestions((info, builder) -> {
-        String input = info.currentArg().toLowerCase();
-
-        // TEMP
-        // Parse command using brigadier
-        ParseResults<?> parseResults = Brigadier.getCommandDispatcher()
-            .parse(input, Brigadier.getBrigadierSourceFromCommandSender(info.sender()));
-
-        // Get the command node from the parse results
-
-        // Intercept any parsing errors indicating an invalid command
-        if(!parseResults.getExceptions().isEmpty()) {
-            VanillaEnoughItems.LOGGER.info("[123] throw CommandSysntaxException2");
-            CommandSyntaxException exception = parseResults.getExceptions().values().iterator().next();
-            // Raise the error, with the cursor offset to line up with the argument
-            throw new CommandSyntaxException(exception.getType(), exception.getRawMessage(), exception.getInput(), exception.getCursor() + builder.getStart());
-        }
-
-        if(input.contains("ooo")) {
-            VanillaEnoughItems.LOGGER.info("[123] throw CommandSysntaxException");
-            throw CommandSyntaxException.BUILT_IN_EXCEPTIONS.dispatcherUnknownArgument().create();
-            // throw new CommandSyntaxException(
-            //     CommandSyntaxException.BUILT_IN_EXCEPTIONS.dispatcherUnknownArgument().create().getType(),
-            //     "invalideee"
-            // );
-        }
-
-        // END TEMP
-        
-
-        for (String item : dummyItemsList) {
-            if (item.toLowerCase().contains(input)) {
-                builder.suggest(item);
-            }
-        }
-        return builder.buildFuture();
-    });
-
-    Argument<ItemStack> safeItemArg = new CustomArgument<ItemStack, String>(
-        // 1) Use our new ArgumentType<String> for true syntax+semantic validation
-        new APIValidItemKeyArgument("item", dummyItemsList),
-        
-        // 2) Convert the parsed String into an ItemStack
-        info -> {
-        VanillaEnoughItems.LOGGER.info("[123] yolo1");
-            String key = info.currentInput(); // already validated
-            // lookup a pre‑built map of ItemStacks:
-            return customItemRegistry.getOrDefault(
-                NamespacedKey.fromString(key),
-                new ItemStack(Material.STONE) // fallback, if you like
-            );
-        }
-    ).replaceSuggestions((info, builder) -> {
-        VanillaEnoughItems.LOGGER.info("[123] yolo2");
-        String input = info.currentArg().toLowerCase();
-        for (String item : dummyItemsList) {
-            if (item.toLowerCase().contains(input)) {
-                builder.suggest(item);
-            }
-        }
-        return builder.buildFuture();
-    });
-
-    // #endregion TEMP for testing purposess
-
-    public CraftCommand(MenuManager menuManager, RecipeIndexService recipeIndex) {
+    public CraftCommand(MenuManager menuManager, RecipeIndexService recipeIndex, CustomItemRegistry customItemRegistry) {
         this.menuManager = menuManager;
         this.recipeIndex = recipeIndex;
+        this.customItemRegistry = customItemRegistry;
     }
 
     @Override
@@ -292,9 +164,10 @@ public class CraftCommand implements ICommand{
             //     ))
             // )
 
-            .withArguments(itemArg)
-
+            // .withArguments(itemArg)
             // .withArguments(safeItemArg)
+
+            .withArguments(new RecipeResultArgument("resultItem", this.recipeIndex, customItemRegistry))
 
             // .withArguments(VEICommandArguments.processArgument("process"))
 
@@ -304,9 +177,10 @@ public class CraftCommand implements ICommand{
                 // ItemStack itemStack = (ItemStack) args.get("item");
                 // Process<?> process = (Process<?>) args.get("process");
                 // int variant = (int) args.getOrDefault("variant", 1) - 1; // only 1-based for the final user, otherwise it's 0-based
-                NamespacedKey recipeId = (NamespacedKey) args.get("recipeId");
+                ItemStack resultItemStack = (ItemStack) args.get("resultItem");
+                player.getInventory().addItem(resultItemStack);
 
-                byIdAction(player, recipeId);
+                // byIdAction(player, recipeId);
                 // byItemAction(player, (ItemStack) args.get("item"), SearchMode.AS_RESULT, null, recipeId);
             })
             .register();

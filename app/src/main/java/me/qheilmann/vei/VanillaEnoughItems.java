@@ -28,8 +28,10 @@ import me.qheilmann.vei.Core.Style.StyleManager;
 import me.qheilmann.vei.Listener.InventoryClickListener;
 import me.qheilmann.vei.Listener.InventoryDragListener;
 import me.qheilmann.vei.Menu.MenuManager;
+import me.qheilmann.vei.Service.CustomItemRegistry;
 import net.kyori.adventure.key.Keyed;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger;
 
 public class VanillaEnoughItems extends JavaPlugin {
@@ -52,7 +54,10 @@ public class VanillaEnoughItems extends JavaPlugin {
         CommandAPI.onEnable();
         BaseGui.onEnable(this);
 
-        addTemporaryRecipe(); // TEMP
+        CustomItemRegistry customItemRegistry = initializeCustomItemRegistry();
+
+        addTemporaryRecipe(customItemRegistry); // TEMP
+        customItemRegistry.completeInitialization();
         
         Process.ProcessRegistry.registerProcesses(VanillaProcesses.getAllVanillaProcesses());
         RecipeIndexService recipeIndex = generateRecipeIndex();
@@ -60,7 +65,7 @@ public class VanillaEnoughItems extends JavaPlugin {
         menuManager = new MenuManager(this, StyleManager.DEFAULT_STYLE, recipeIndex);
 
         // CommandAPI command registration
-        new CraftCommand(menuManager, recipeIndex).register();
+        new CraftCommand(menuManager, recipeIndex, customItemRegistry).register();
         new TestCommand().register();
 
         Bookmark.init(new InMemoryBookmarkRepository());
@@ -80,7 +85,7 @@ public class VanillaEnoughItems extends JavaPlugin {
     }
 
     // TEMP: Remove this method (temporary recipe)
-    private void addTemporaryRecipe() {
+    private void addTemporaryRecipe(CustomItemRegistry customItemRegistry) {
         LOGGER.info("[123_A] Temporary recipe\n");
         
         // Custom recipe 1 (minecraft item with a new recipe)
@@ -97,9 +102,10 @@ public class VanillaEnoughItems extends JavaPlugin {
         // Custom recipe 2 (custom item with a new recipe = here juste a rename diamond sword)
         NamespacedKey key2 = new NamespacedKey(NAMESPACE, "warrior_sword");
         ItemStack item2 = new ItemStack(Material.DIAMOND_SWORD);
-        item2.editMeta(meta -> meta.displayName(Component.text("Warrior Sword")));
+        item2.editMeta(meta -> meta.displayName(Component.text("Warrior Sword", NamedTextColor.GOLD)));
         item2.editMeta(meta -> meta.lore(List.of(Component.text("A sword for the bravest warriors"))));
         item2.editMeta(meta -> meta.setEnchantmentGlintOverride(true));
+        customItemRegistry.registerItem(key2, item2);
 
         ShapedRecipe warriorSwordRecipe = new ShapedRecipe(key2, item2);
         warriorSwordRecipe.shape("AAA", "AAA", " B ");
@@ -115,6 +121,22 @@ public class VanillaEnoughItems extends JavaPlugin {
         } else {
             LOGGER.info("Retrieve Recipe by key: not found(" + recipe + ")");
         }
+    }
+
+    private CustomItemRegistry initializeCustomItemRegistry() {
+        CustomItemRegistry customItemRegistry = new CustomItemRegistry();
+        customItemRegistry.registerItem(NamespacedKey.fromString("vei:iron_ingot"), createCustomItem(Material.IRON_INGOT, "VEI Ingot", NamedTextColor.RED));
+        customItemRegistry.registerItem(NamespacedKey.fromString("ttt:iron_ingot"), createCustomItem(Material.IRON_INGOT, "TTT Ingot", NamedTextColor.GREEN));
+        customItemRegistry.registerItem(NamespacedKey.fromString("vei:special_ingot"), createCustomItem(Material.GOLD_INGOT, "VEI Special Ingot", NamedTextColor.GOLD));
+        return customItemRegistry;
+    }
+
+    private static ItemStack createCustomItem(Material material, String displayName, NamedTextColor color) {
+        ItemStack item = new ItemStack(material);
+        item.editMeta(meta -> {
+            meta.displayName(Component.text(displayName).color(color));
+        });
+        return item;
     }
 
     // TODO TEMP: Remove this method (temporary test)

@@ -157,6 +157,22 @@ public class RecipeIndexService {
         return Collections.unmodifiableSequencedSet(recipesById.keySet());
     }
 
+    /**
+     * Retrieves all possible result ItemStacks.
+     * @return A set of all result ItemStacks.
+     */
+    public Set<ItemStack> getAllResultItemStacks() {
+        return Collections.unmodifiableSet(recipesByResult.keySet());
+    }
+
+    /**
+     * Retrieves all possible ingredient ItemStacks.
+     * @return A set of all ingredient ItemStacks.
+     */
+    public Set<ItemStack> getAllIngredientItemStacks() {
+        return Collections.unmodifiableSet(recipesByIngredient.keySet());
+    }
+
     @Nullable
     public Recipe getSingleRecipeById(NamespacedKey recipeId) {
         return recipesById.get(recipeId);
