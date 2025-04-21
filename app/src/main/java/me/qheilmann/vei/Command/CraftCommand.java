@@ -13,7 +13,7 @@ import dev.jorel.commandapi.CommandAPIBukkit;
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.CommandPermission;
 import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
-import me.qheilmann.vei.Command.CustomArguments.RecipeResultArgument;
+import me.qheilmann.vei.Command.CustomArguments.RecipeItemArgument;
 import me.qheilmann.vei.Core.Process.Process;
 import me.qheilmann.vei.Core.Recipe.Index.RecipeIndexService;
 import me.qheilmann.vei.Core.Recipe.Index.Reader.MixedProcessRecipeReader;
@@ -167,7 +167,7 @@ public class CraftCommand implements ICommand{
             // .withArguments(itemArg)
             // .withArguments(safeItemArg)
 
-            .withArguments(new RecipeResultArgument("resultItem", this.recipeIndex, customItemRegistry))
+            .withArguments(new RecipeItemArgument("resultItem", this.recipeIndex, customItemRegistry))
 
             // .withArguments(VEICommandArguments.processArgument("process"))
 
