@@ -2,11 +2,13 @@ package me.qheilmann.vei.Command.CustomArguments;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 
+import dev.jorel.commandapi.arguments.ArgumentSuggestions;
 import dev.jorel.commandapi.arguments.CustomArgument;
 import dev.jorel.commandapi.arguments.NamespacedKeyArgument;
 import me.qheilmann.vei.VanillaEnoughItems;
@@ -44,29 +46,32 @@ public class RecipeItemArgument extends CustomArgument<ItemStack, NamespacedKey>
         });
 
         this.customItemRegistry = customItemRegistry;
-        
-        // Generate the suggestions for the argument
-        this.replaceSuggestions((info, builder) -> {
-            String input = info.currentArg().toLowerCase();
-            Set<String> suggestions = new HashSet<>();
 
-            // Check if the input is a prefix of the last input, if so, use the cached suggestions
-            if (lastInput != null && (input.startsWith(lastInput) || input.endsWith(lastInput))) {
-                suggestions = filterCachedSuggestions(input, lastSuggestions);
-            } else { // Otherwise, recalculate the suggestions
-                suggestions = recalculateSuggestions(input, recipeIndexService); // TODO mb convert this to async suggestion to not overload the main thread
-            }
-            
-            for (String suggestion : suggestions) {
-                if (suggestion.contains(input)) {
-                    builder.suggest(suggestion);
+        // Generate the suggestions for the argument in a separate thread to avoid blocking the main thread
+        this.replaceSuggestions((info, builder) -> {
+            return CompletableFuture.supplyAsync(() -> {
+                
+                String input = info.currentArg().toLowerCase();
+                Set<String> suggestions = new HashSet<>();
+
+                // Check if the input is a prefix of the last input, if so, use the cached suggestions
+                if (lastInput != null && (input.startsWith(lastInput) || input.endsWith(lastInput))) {
+                    suggestions = filterCachedSuggestions(input, lastSuggestions);
+                } else { // Otherwise, recalculate the suggestions
+                    suggestions = recalculateSuggestions(input, recipeIndexService);
                 }
-            }
-            
-            lastInput = input;
-            lastSuggestions = suggestions;
-    
-            return builder.buildFuture();
+
+                for (String suggestion : suggestions) {
+                    if (suggestion.contains(input)) {
+                        builder.suggest(suggestion);
+                    }
+                }
+
+                lastInput = input;
+                lastSuggestions = suggestions;
+
+                return builder;
+            }).thenApply(b -> b.build());
         });
     }
 
