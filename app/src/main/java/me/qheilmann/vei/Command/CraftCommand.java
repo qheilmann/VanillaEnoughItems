@@ -6,13 +6,19 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.jetbrains.annotations.NotNull;
-
+import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
+import org.bukkit.command.CommandSender;
 
 import dev.jorel.commandapi.CommandAPIBukkit;
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.CommandPermission;
+import dev.jorel.commandapi.arguments.ArgumentSuggestions;
+import dev.jorel.commandapi.arguments.LiteralArgument;
+import dev.jorel.commandapi.arguments.MultiLiteralArgument;
+import dev.jorel.commandapi.arguments.NamespacedKeyArgument;
 import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
+import me.qheilmann.vei.VanillaEnoughItems;
 import me.qheilmann.vei.Command.CustomArguments.RecipeItemArgument;
 import me.qheilmann.vei.Core.Process.Process;
 import me.qheilmann.vei.Core.Recipe.Index.RecipeIndexService;
@@ -22,6 +28,7 @@ import me.qheilmann.vei.Menu.MenuManager;
 import me.qheilmann.vei.Service.CustomItemRegistry;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
 
 public class CraftCommand implements ICommand{
     public static final String NAME = "craft";
@@ -83,13 +90,19 @@ public class CraftCommand implements ICommand{
         this.customItemRegistry = customItemRegistry;
     }
 
-    @Override
-    public void register() {
-        new CommandAPICommand(NAME)
+    public CommandAPICommand createBaseCraftCommand() {
+        return new CommandAPICommand(NAME)
             .withAliases(ALIASES)
             .withPermission(PERMISSION)
             .withHelp(SHORT_DESCRIPTION, LONG_DESCRIPTION)
-            .withUsage(USAGE)
+            .withUsage(USAGE);
+    }
+
+    @Override
+    public void register() {
+
+        // /craft <item> [as-result | as-ingredient [<process> [<recipeId>]]]
+        createBaseCraftCommand()
 
             // Display name of the item but the ItemStack back conversion behind is missing
             // .withArguments(new StringArgument("item").replaceSuggestions(
@@ -184,6 +197,54 @@ public class CraftCommand implements ICommand{
                 // byItemAction(player, (ItemStack) args.get("item"), SearchMode.AS_RESULT, null, recipeId);
             })
             .register();
+
+        
+        // /craft --all [<process> [<recipeId>]]
+        createBaseCraftCommand()
+            .withArguments(new MultiLiteralArgument("all", "--all"))
+            .executesPlayer((player, args) -> {
+                    player.sendMessage(Component.text("--all not implemented yet", NamedTextColor.RED));
+                })
+            .register();
+            
+        // /craft --help
+        createBaseCraftCommand()
+            .withArguments(new MultiLiteralArgument("help", "--help"))
+            .executesPlayer((player, args) -> {
+                helpAction(player);
+            })
+            .register();
+
+        // /craft --version
+        createBaseCraftCommand()
+            .withArguments(new MultiLiteralArgument("version", "--version"))
+            .executesPlayer((player, args) -> {
+                versionAction(player);
+            })
+            .register();
+
+        // /craft --id <recipeId>
+        createBaseCraftCommand()
+            .withArguments(new MultiLiteralArgument("id", "--id"))
+            .withArguments(new NamespacedKeyArgument("recipeId")
+                .replaceSuggestions(getRecipeIdSuggestions())
+            )
+            .executesPlayer((player, args) -> {
+                NamespacedKey recipeId = (NamespacedKey) args.get("recipeId");
+                byIdAction(player, recipeId);
+            })
+            .register();
+
+        // Requires OP permission. Note: Due to the first argument, the --reload suggestion still appears even if the permission requirement is not met. (but will not execute)
+        // /craft --reload
+        createBaseCraftCommand()
+            .withArguments(new LiteralArgument("--reload")
+                .withPermission(CommandPermission.OP)
+            )
+            .executesPlayer((player, args) -> {
+                reloadAction(player);
+            })
+            .register();
     }
 
     // Action
@@ -192,31 +253,31 @@ public class CraftCommand implements ICommand{
 
         MixedProcessRecipeReader recipeReader;
 
-        // TODO TEMP
-        ItemStack resultItem;
-        try {
-            resultItem = recipeIndex.getSingleRecipeById(recipeId).getResult();
-        } catch (Exception e) {
-            throw CommandAPIBukkit.failWithAdventureComponent(Component.text("Failed to retrieve the first ItemStack of the recipe: " + e.getMessage(), NamedTextColor.RED));
-        }
-
-        if (resultItem == null) {
-            throw CommandAPIBukkit.failWithAdventureComponent(Component.text("No result ItemStack found for recipe ID: " + recipeId.toString(), NamedTextColor.RED));
-        }
-
-        recipeReader = recipeIndex.getByIngredient(resultItem);
-
-        // TODO TEMP
-
+        // // TODO TEMP
+        // ItemStack resultItem;
         // try {
-        //     recipeReader = recipeIndex.getById(recipeId);
+        //     resultItem = recipeIndex.getSingleRecipeById(recipeId).getResult();
         // } catch (Exception e) {
-        //     throw CommandAPIBukkit.failWithAdventureComponent(Component.text("An error occurred while retrieving the recipe reader: " + e.getMessage(), NamedTextColor.RED));
+        //     throw CommandAPIBukkit.failWithAdventureComponent(Component.text("Failed to retrieve the first ItemStack of the recipe: " + e.getMessage(), NamedTextColor.RED));
         // }
 
-        // if (recipeReader == null) {
-        //     throw CommandAPIBukkit.failWithAdventureComponent(Component.text("Recipe ID not found: " + recipeId.toString(), NamedTextColor.RED));
+        // if (resultItem == null) {
+        //     throw CommandAPIBukkit.failWithAdventureComponent(Component.text("No result ItemStack found for recipe ID: " + recipeId.toString(), NamedTextColor.RED));
         // }
+
+        // recipeReader = recipeIndex.getByIngredient(resultItem);
+
+        // // TODO TEMP
+
+        try {
+            recipeReader = recipeIndex.getById(recipeId);
+        } catch (Exception e) {
+            throw CommandAPIBukkit.failWithAdventureComponent(Component.text("An error occurred while retrieving the recipe reader: " + e.getMessage(), NamedTextColor.RED));
+        }
+
+        if (recipeReader == null) {
+            throw CommandAPIBukkit.failWithAdventureComponent(Component.text("Recipe ID not found: " + recipeId.toString(), NamedTextColor.RED));
+        }
 
         menuManager.openRecipeMenu(player, recipeReader);
     }
@@ -231,6 +292,21 @@ public class CraftCommand implements ICommand{
             " Use '" + SearchMode.AS_RESULT.toString() + "' or '" + SearchMode.AS_INGREDIENT.toString() + "'."
             , NamedTextColor.RED));
         }
+    }
+
+    private void helpAction(Player player) {
+        player.sendMessage(Component.text(USAGE, NamedTextColor.YELLOW));
+    }
+
+    private void versionAction(Player player) {
+        player.sendMessage(Component.text("Version: " + VanillaEnoughItems.getVersion(), NamedTextColor.YELLOW));
+    }
+
+    private void reloadAction(@NotNull Player player) {
+        player.sendMessage(Component.text("All recipes will be cleared and reloaded, excluding non-vanilla processes.", TextColor.color(0xff7777)));
+        recipeIndex.unindexAll();
+        recipeIndex.indexRecipes(Bukkit.getServer().recipeIterator());
+        player.sendMessage(Component.text("All recipes reloaded.", NamedTextColor.GREEN));
     }
 
     // Utils
@@ -294,6 +370,38 @@ public class CraftCommand implements ICommand{
 
         menuManager.openRecipeMenu(player, mixedProcessRecipeReader);
     }
+
+    private ArgumentSuggestions<CommandSender> getRecipeIdSuggestions() {
+        return ArgumentSuggestions.strings(
+            info -> recipeIndex.getAllRecipeIds().stream()
+                .map(t -> t.getNamespace() + ":" + t.getKey())
+                .toArray(String[]::new)
+        );
+    }
+
+    // private ArgumentSuggestions<String> getRecipeIdSuggestions(Process<?> process, NamespacedKey item, SearchMode searchMode) {
+    //     if (process == null && item == null) {
+    //         return getRecipeIdSuggestions();
+    //     }
+
+    //     if (process != null && item == null) {
+    //         return ArgumentSuggestions.strings(
+    //             info -> recipeIndex.getByProcess(process).getAllRecipes().stream()
+    //                 .map(recipe -> {
+    //                     if(recipe instanceof Keyed) {
+    //                         return ((Keyed) recipe).getKey().toString();
+    //                     }
+    //                     return "";
+    //                 })
+    //                 .toArray(String[]::new)
+    //         );
+    //     } 
+    //     else if (item != null && searchMode == null) {
+    //         throw new IllegalArgumentException("Search mode is required when item is provided.");
+    //     } else {
+    //         return getRecipeIdSuggestions();
+    //     }
+    // }
 
     private enum SearchMode {
         AS_RESULT,

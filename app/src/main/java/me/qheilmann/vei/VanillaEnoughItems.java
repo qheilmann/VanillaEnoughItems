@@ -289,6 +289,16 @@ public class VanillaEnoughItems extends JavaPlugin {
         recipeIndexService.indexRecipes(this);
         return recipeIndexService;
     }
+
+    public static String getVersion() {
+
+        VanillaEnoughItems plugin = VanillaEnoughItems.getPlugin(VanillaEnoughItems.class);
+        if (plugin == null) {
+            throw new IllegalStateException("VanillaEnoughItems isn't loaded yet, are you sure the plugin is already enabled?");
+        }
+
+        return plugin.getPluginMeta().getVersion();
+    }
 }
 
 // Manager

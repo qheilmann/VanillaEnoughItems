@@ -47,6 +47,16 @@ public class RecipeIndexService {
     }
 
     /**
+     * Indexes a series of recipes.
+     * <p>
+     * @see {@link #indexRecipes(JavaPlugin)}: Preferred method to index all recipes in the server.
+     * @param recipes The iterator of recipes to index.
+     */
+    public void indexRecipes(Iterator<Recipe> recipes) {
+        recipes.forEachRemaining(this::indexRecipe);
+    }
+
+    /**
      * Indexes all recipes save in the server associated with the plugin.
      * <p>
      * This is the preferred default method to index recipes
