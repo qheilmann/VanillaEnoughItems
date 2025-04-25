@@ -11,7 +11,6 @@ import org.bukkit.inventory.ItemStack;
 import dev.jorel.commandapi.arguments.ArgumentSuggestions;
 import dev.jorel.commandapi.arguments.CustomArgument;
 import dev.jorel.commandapi.arguments.StringArgument;
-import me.qheilmann.vei.Command.CraftCommand;
 import me.qheilmann.vei.Core.Process.Process;
 import me.qheilmann.vei.Core.Recipe.Index.RecipeIndexService;
 import me.qheilmann.vei.Core.Recipe.Index.Reader.MixedProcessRecipeReader;
@@ -51,9 +50,9 @@ public class ProcessArgument extends CustomArgument<Process<?>, String>{
     * @param item The item to use for generating suggestions. If null, global index is used.
     * @param searchMode The search mode to use for generating suggestions. If null, defaults to AS_RESULT.
     * @return A CompletableFuture containing the collection of suggestions.
-    * @see #argumentSuggestions(RecipeIndexService, ItemStack, CraftCommand.SearchMode)
+    * @see #argumentSuggestions(RecipeIndexService, ItemStack, SearchModeArgument.SearchMode)
     */
-    public static CompletableFuture<Collection<String>> suggestions(RecipeIndexService recipeIndex, ItemStack item, CraftCommand.SearchMode searchMode) {
+    public static CompletableFuture<Collection<String>> suggestions(RecipeIndexService recipeIndex, ItemStack item, SearchModeArgument.SearchMode searchMode) {
         if (recipeIndex == null) {
             throw new IllegalArgumentException("RecipeIndexService cannot be null");
         }
@@ -62,7 +61,7 @@ public class ProcessArgument extends CustomArgument<Process<?>, String>{
         }
 
         return CompletableFuture.supplyAsync(() -> {
-            CraftCommand.SearchMode mode = searchMode;
+            SearchModeArgument.SearchMode mode = searchMode;
             MixedProcessRecipeReader recipeReader;
             Collection<String> suggestions = new ArrayList<>();
 
@@ -73,12 +72,12 @@ public class ProcessArgument extends CustomArgument<Process<?>, String>{
             // Item index (item != null)
             else {
                 if (mode == null) {
-                    mode = CraftCommand.SearchMode.AS_RESULT;
+                    mode = SearchModeArgument.SearchMode.AS_RESULT;
                 }
 
-                if (mode == CraftCommand.SearchMode.AS_RESULT) {
+                if (mode == SearchModeArgument.SearchMode.AS_RESULT) {
                     recipeReader = recipeIndex.getByResult(item);
-                } else if (mode == CraftCommand.SearchMode.AS_INGREDIENT) {
+                } else if (mode == SearchModeArgument.SearchMode.AS_INGREDIENT) {
                     recipeReader = recipeIndex.getByIngredient(item);
                 } else {
                     throw new NotImplementedException("Search mode " + mode + " is not implemented");
@@ -103,9 +102,9 @@ public class ProcessArgument extends CustomArgument<Process<?>, String>{
     * @param item The item to use for generating suggestions. If null, global index is used.
     * @param searchMode The search mode to use for generating suggestions. If null, defaults to AS_RESULT.
     * @return An ArgumentSuggestions object containing the suggestions.
-    * @see #suggestions(RecipeIndexService, ItemStack, CraftCommand.SearchMode)
+    * @see #suggestions(RecipeIndexService, ItemStack, SearchModeArgument.SearchMode)
     */
-    public static ArgumentSuggestions<CommandSender> argumentSuggestions(RecipeIndexService recipeIndex, ItemStack item, CraftCommand.SearchMode searchMode) {
+    public static ArgumentSuggestions<CommandSender> argumentSuggestions(RecipeIndexService recipeIndex, ItemStack item, SearchModeArgument.SearchMode searchMode) {
         return ArgumentSuggestions.stringCollectionAsync((info) -> suggestions(recipeIndex, item, searchMode));
     }
 }

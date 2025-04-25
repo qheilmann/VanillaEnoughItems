@@ -21,6 +21,8 @@ import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
 import me.qheilmann.vei.VanillaEnoughItems;
 import me.qheilmann.vei.Command.CustomArguments.ProcessArgument;
 import me.qheilmann.vei.Command.CustomArguments.RecipeItemArgument;
+import me.qheilmann.vei.Command.CustomArguments.SearchModeArgument;
+import me.qheilmann.vei.Command.CustomArguments.SearchModeArgument.SearchMode;
 import me.qheilmann.vei.Core.Process.Process;
 import me.qheilmann.vei.Core.Recipe.Index.RecipeIndexService;
 import me.qheilmann.vei.Core.Recipe.Index.Reader.MixedProcessRecipeReader;
@@ -185,6 +187,10 @@ public class CraftCommand implements ICommand{
 
             .withArguments(new RecipeItemArgument("resultItem", this.recipeIndex, customItemRegistry))
 
+            .withOptionalArguments(new SearchModeArgument("searchMode")
+                .replaceSuggestions(SearchModeArgument.argumentSuggestions())
+            )
+
             .withOptionalArguments(new ProcessArgument("process")
                 .replaceSuggestions(ArgumentSuggestions.stringCollectionAsync(info -> {
                     ItemStack item = (ItemStack) info.previousArgs().get("resultItem");
@@ -310,7 +316,7 @@ public class CraftCommand implements ICommand{
         menuManager.openRecipeMenu(player, recipeReader);
     }
 
-    private void byItemAction(@NotNull Player player, @NotNull ItemStack item, SearchMode searchMode, @Nullable Process<?> process, @NotNull NamespacedKey recipeId) throws WrapperCommandSyntaxException {
+    private void byItemAction(@NotNull Player player, @NotNull ItemStack item, SearchModeArgument.SearchMode searchMode, @Nullable Process<?> process, @NotNull NamespacedKey recipeId) throws WrapperCommandSyntaxException {
         if (searchMode == SearchMode.AS_RESULT) {
             byResultAction(player, item, process, recipeId);
         } else if (searchMode == SearchMode.AS_INGREDIENT) {
@@ -434,17 +440,4 @@ public class CraftCommand implements ICommand{
     //         return getRecipeIdSuggestions();
     //     }
     // }
-
-    public enum SearchMode {
-        AS_RESULT,
-        AS_INGREDIENT;
-
-        public static SearchMode fromString(String mode) {
-            return switch (mode.toLowerCase()) {
-                case "as-result" -> AS_RESULT;
-                case "as-ingredient" -> AS_INGREDIENT;
-                default -> throw new IllegalArgumentException("Invalid search mode: " + mode);
-            };
-        }
-    }
 }
