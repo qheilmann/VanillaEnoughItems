@@ -26,7 +26,7 @@ public final class CustomArgumentHelper {
         String lastArg = input.input();
         B lastParsedArg = input.currentInput();
         String fullInput = input.previousArgs().fullInput();
-        int lastArgIndex = fullInput.indexOf(lastArg);
+        int lastArgIndex = fullInput.lastIndexOf(lastArg);
         String lastPartBeforeArg;
         
         if (lastArgIndex == -1 || lastArgIndex < 10) {
