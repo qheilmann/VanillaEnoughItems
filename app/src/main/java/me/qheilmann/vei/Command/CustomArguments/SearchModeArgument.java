@@ -10,6 +10,7 @@ import org.bukkit.command.CommandSender;
 import dev.jorel.commandapi.arguments.ArgumentSuggestions;
 import dev.jorel.commandapi.arguments.CustomArgument;
 import dev.jorel.commandapi.arguments.StringArgument;
+import net.kyori.adventure.text.Component;
 
 /**
  * A custom argument for parsing and validating search modes.
@@ -32,7 +33,7 @@ public class SearchModeArgument extends CustomArgument<SearchModeArgument.Search
             SearchMode searchMode = SearchMode.fromString(argument);
 
             if (searchMode == null) {
-                throw CustomArgumentHelper.minecraftLikeException("searchMode", input);
+                throw CustomArgumentHelper.minecraftLikeException((arg) -> Component.text("Unknow searchMode '" + arg + "'"), input);
             }
 
             return searchMode;

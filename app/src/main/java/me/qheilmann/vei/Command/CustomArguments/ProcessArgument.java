@@ -14,6 +14,7 @@ import dev.jorel.commandapi.arguments.StringArgument;
 import me.qheilmann.vei.Core.Process.Process;
 import me.qheilmann.vei.Core.Recipe.Index.RecipeIndexService;
 import me.qheilmann.vei.Core.Recipe.Index.Reader.MixedProcessRecipeReader;
+import net.kyori.adventure.text.Component;
 
 /**
  * A custom argument for parsing and validating processes type.
@@ -36,7 +37,7 @@ public class ProcessArgument extends CustomArgument<Process<?>, String>{
             Process<?> process = Process.ProcessRegistry.getProcessByName(processName);
 
             if (process == null) {
-                throw CustomArgumentHelper.minecraftLikeException("process", input);
+                throw CustomArgumentHelper.minecraftLikeException((arg) -> Component.text("Unknow process '" + arg + "'"), input);
             }
 
             return process;

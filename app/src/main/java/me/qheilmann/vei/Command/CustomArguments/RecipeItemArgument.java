@@ -13,6 +13,7 @@ import dev.jorel.commandapi.arguments.NamespacedKeyArgument;
 import me.qheilmann.vei.VanillaEnoughItems;
 import me.qheilmann.vei.Core.Recipe.Index.RecipeIndexService;
 import me.qheilmann.vei.Service.CustomItemRegistry;
+import net.kyori.adventure.text.Component;
 
 public class RecipeItemArgument extends CustomArgument<ItemStack, NamespacedKey>{
 
@@ -41,7 +42,7 @@ public class RecipeItemArgument extends CustomArgument<ItemStack, NamespacedKey>
             }
 
             // Fail
-            throw CustomArgumentHelper.minecraftLikeException("item", info);
+            throw CustomArgumentHelper.minecraftLikeException((arg) -> Component.text("Unknow item '" + arg + "'"), info);
         });
 
         this.customItemRegistry = customItemRegistry;
