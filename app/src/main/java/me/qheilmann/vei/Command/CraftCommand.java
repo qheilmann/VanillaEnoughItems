@@ -19,6 +19,7 @@ import dev.jorel.commandapi.arguments.MultiLiteralArgument;
 import dev.jorel.commandapi.arguments.NamespacedKeyArgument;
 import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
 import me.qheilmann.vei.VanillaEnoughItems;
+import me.qheilmann.vei.Command.CustomArguments.ProcessArgument;
 import me.qheilmann.vei.Command.CustomArguments.RecipeItemArgument;
 import me.qheilmann.vei.Core.Process.Process;
 import me.qheilmann.vei.Core.Recipe.Index.RecipeIndexService;
@@ -89,6 +90,8 @@ public class CraftCommand implements ICommand{
         this.recipeIndex = recipeIndex;
         this.customItemRegistry = customItemRegistry;
     }
+
+    //#region Command
 
     public CommandAPICommand createBaseCraftCommand() {
         return new CommandAPICommand(NAME)
@@ -182,6 +185,26 @@ public class CraftCommand implements ICommand{
 
             .withArguments(new RecipeItemArgument("resultItem", this.recipeIndex, customItemRegistry))
 
+            .withOptionalArguments(new ProcessArgument("process")
+                .replaceSuggestions(ArgumentSuggestions.stringCollectionAsync(info -> {
+                    ItemStack item = (ItemStack) info.previousArgs().get("resultItem");
+                    return ProcessArgument.suggestions(recipeIndex, item, SearchMode.AS_RESULT);
+                }))
+            )
+                    
+            //     ProcessArgument.suggestions(recipeIndex, null, null))
+            // )
+
+            // .withArguments(new StringArgument("temp")
+            //     .replaceSuggestions(ArgumentSuggestions.strings(
+            //         info -> {
+            //             ItemStack item = (ItemStack) info.previousArgs().get("resultItem");
+            //             String[] suggestions = new String[]{item.getType().toString()};
+            //             return suggestions;
+            //         }
+            //     ))
+            // )
+
             // .withArguments(VEICommandArguments.processArgument("process"))
 
             // .withOptionalArguments(VEICommandArguments.processArgument("process"))
@@ -197,14 +220,17 @@ public class CraftCommand implements ICommand{
                 // byItemAction(player, (ItemStack) args.get("item"), SearchMode.AS_RESULT, null, recipeId);
             })
             .register();
-
         
         // /craft --all [<process> [<recipeId>]]
         createBaseCraftCommand()
             .withArguments(new MultiLiteralArgument("all", "--all"))
+            .withOptionalArguments(new ProcessArgument("process")
+                .replaceSuggestions(ProcessArgument.argumentSuggestions(recipeIndex, null, null))
+            )
             .executesPlayer((player, args) -> {
-                    player.sendMessage(Component.text("--all not implemented yet", NamedTextColor.RED));
-                })
+                Process<?> process = (Process<?>) args.get("process");
+                player.sendMessage(Component.text(process.getProcessIcon().getType().toString(), NamedTextColor.BLUE));
+            })
             .register();
             
         // /craft --help
@@ -247,7 +273,9 @@ public class CraftCommand implements ICommand{
             .register();
     }
 
-    // Action
+    //#endregion Command
+
+    //#region Action
 
     private void byIdAction(@NotNull Player player, @NotNull NamespacedKey recipeId) throws WrapperCommandSyntaxException {
 
@@ -309,7 +337,9 @@ public class CraftCommand implements ICommand{
         player.sendMessage(Component.text("All recipes reloaded.", NamedTextColor.GREEN));
     }
 
-    // Utils
+    //#endregion Action
+
+    //#region Utils
 
     private void byResultAction(@NotNull Player player, @NotNull ItemStack resultItem, @Nullable Process<?> process, @NotNull NamespacedKey recipeId) throws WrapperCommandSyntaxException {
         MixedProcessRecipeReader mixedProcessRecipeReader = recipeIndex.getByResult(resultItem);
@@ -371,6 +401,8 @@ public class CraftCommand implements ICommand{
         menuManager.openRecipeMenu(player, mixedProcessRecipeReader);
     }
 
+    //#endregion Utils
+
     private ArgumentSuggestions<CommandSender> getRecipeIdSuggestions() {
         return ArgumentSuggestions.strings(
             info -> recipeIndex.getAllRecipeIds().stream()
@@ -403,7 +435,7 @@ public class CraftCommand implements ICommand{
     //     }
     // }
 
-    private enum SearchMode {
+    public enum SearchMode {
         AS_RESULT,
         AS_INGREDIENT;
 
