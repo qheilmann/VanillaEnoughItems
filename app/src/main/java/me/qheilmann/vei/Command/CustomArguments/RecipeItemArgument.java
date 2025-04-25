@@ -41,7 +41,7 @@ public class RecipeItemArgument extends CustomArgument<ItemStack, NamespacedKey>
             }
 
             // Fail
-            throw CustomArgumentException.fromString("Unknown item: " + key);
+            throw CustomArgumentHelper.minecraftLikeException("item", info);
         });
 
         this.customItemRegistry = customItemRegistry;
