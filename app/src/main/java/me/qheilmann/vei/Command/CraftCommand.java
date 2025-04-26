@@ -1,5 +1,6 @@
 package me.qheilmann.vei.Command;
 
+import java.util.Collection;
 import javax.annotation.Nullable;
 
 import org.bukkit.entity.Player;
@@ -8,18 +9,16 @@ import org.bukkit.inventory.Recipe;
 import org.jetbrains.annotations.NotNull;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
-import org.bukkit.command.CommandSender;
-
 import dev.jorel.commandapi.CommandAPIBukkit;
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.CommandPermission;
 import dev.jorel.commandapi.arguments.ArgumentSuggestions;
 import dev.jorel.commandapi.arguments.LiteralArgument;
 import dev.jorel.commandapi.arguments.MultiLiteralArgument;
-import dev.jorel.commandapi.arguments.NamespacedKeyArgument;
 import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
 import me.qheilmann.vei.VanillaEnoughItems;
 import me.qheilmann.vei.Command.CustomArguments.ProcessArgument;
+import me.qheilmann.vei.Command.CustomArguments.RecipeIdArgument;
 import me.qheilmann.vei.Command.CustomArguments.RecipeItemArgument;
 import me.qheilmann.vei.Command.CustomArguments.SearchModeArgument;
 import me.qheilmann.vei.Command.CustomArguments.SearchModeArgument.SearchMode;
@@ -108,121 +107,37 @@ public class CraftCommand implements ICommand{
 
         // /craft <item> [as-result | as-ingredient [<process> [<recipeId>]]]
         createBaseCraftCommand()
-
-            // Display name of the item but the ItemStack back conversion behind is missing
-            // .withArguments(new StringArgument("item").replaceSuggestions(
-            //     ArgumentSuggestions.strings(info -> VanillaEnoughItems.allRecipesMap.getItems().stream().map(t -> t.getI18NDisplayName()).toArray(String[]::new)))
-            // )
-            // A try with the brigadier builder 
-            // (next time try with the builder.sugget to maybe force suggestions even if the start doesn't match (minecraft: prefix and argument))
-            // https://commandapi.jorel.dev/9.6.0/brigadiersuggestions.html?highlight=emoji#example---making-an-emoji-broadcasting-message
-            // .withArguments(new GreedyStringArgument("item").replaceSuggestions((info, builder) -> {
-            //     builder = builder.createOffset(builder.getStart() + info.currentArg().length());
-            //     builder.suggest("item");
-            // }))
-            
-            // [] Like /give (perfect) 
-            // [] color working (with/without prefix) if the itemstack exists
-            // [] suggestion work with and without prefix (minecraft:)
-            // .withArguments(new ItemStackArgument("item")
-
-            // [] color working (with/without prefix) if the itemstack exists
-            // [] suggestion ONLY work WITH prefix (minecraft:)
-            // .withArguments(new ItemStackArgument("item")
-            //     .replaceSuggestions(ArgumentSuggestions.strings(
-            //         dummyItemsList
-            //     )
-            // ))
-            
-            // [] color working (with/without prefix) if the itemstack exists
-            // [] suggestion work with and without prefix (minecraft:)
-            // [] BUT custom namespaced key color doesn't work (only vanilla registered keys)
-            // .withArguments(new ItemStackArgument("item")
-            //     .replaceSuggestions((info, builder) -> {
-            //         String input = info.currentArg().toLowerCase();
-
-            //         for (String item : dummyItemsList) {
-            //             if (item.toLowerCase().contains(input)) {
-            //                 builder.suggest(item);
-            //             }
-            //         }
-
-            //         return builder.buildFuture();
-            //     })
-            // )
-
-
-
-
-            // [] sugestion work only with the prefix minecraft:
-            // .withArguments(new ItemStackArgument("item")
-                // .replaceSafeSuggestions(
-                //     SafeSuggestions.suggest(info -> {
-                //         return recipeIndex.getGlobalIndex().currentProcessRecipeReader().getAllRecipes().stream().map(recipe -> recipe.getResult()).collect(Collectors.toList()).toArray(ItemStack[]::new);
-                //         //  .stream().flatMap(a -> a.get) allRecipesMap.getItems().stream().filter(item ->
-                //             // This filter isn't really efficient: it compares the beginning of the argument with all possible elements
-                //             // BUT at the same time checks with the default prefix "minecraft:", so only minecraft:minecart works for a the 5 first characters.
-                //             // {
-                //             //     VanillaEnoughItems.LOGGER.info("item: " + item.getType().name().toLowerCase() + " input: " + info.currentArg().toLowerCase() + " match: " + item.getType().name().toLowerCase().startsWith(info.currentArg().toLowerCase()));
-                //             //     return item.getType().name().toLowerCase().startsWith(info.currentArg().toLowerCase());
-                //             // }
-                //         //     {
-                //         //         return true;
-                //         //     }
-                //         // ).toArray(ItemStack[]::new);
-                //     })
-                // )
-
-            // [] Actual working namespaced key argument (color only blue)
-            // .withArguments(new NamespacedKeyArgument("recipeId").replaceSuggestions(
-            //     ArgumentSuggestions.stringCollection(
-            //         info -> recipeIndex.getAllRecipeIds().stream()  
-            //             .map(t -> t.getNamespace() + ":" + t.getKey())
-            //             .toList()
-            //     ))
-            // )
-
-            // .withArguments(itemArg)
-            // .withArguments(safeItemArg)
-
-            // .withArguments(new RecipeItemArgument("resultItem", this.recipeIndex, customItemRegistry))
-            .withArguments(new RecipeItemArgument("resultItem", customItemRegistry)
-                .replaceSuggestions(RecipeItemArgument.argumentSuggestions(recipeIndex, customItemRegistry))
+            .withArguments(new RecipeItemArgument("resultItem", recipeIndex, customItemRegistry)
+                .replaceSuggestions(RecipeItemArgument.argumentSuggestionsFrom(recipeIndex, customItemRegistry))
             )
-
             .withOptionalArguments(new SearchModeArgument("searchMode")
-                .replaceSuggestions(SearchModeArgument.argumentSuggestions())
-            )
-
-            .withOptionalArguments(new ProcessArgument("process")
                 .replaceSuggestions(ArgumentSuggestions.stringCollectionAsync(info -> {
                     ItemStack item = (ItemStack) info.previousArgs().get("resultItem");
-                    return ProcessArgument.suggestions(recipeIndex, item, SearchMode.AS_RESULT);
+                    return SearchModeArgument.suggestionsFrom(recipeIndex, item);
                 }))
             )
-                    
-            //     ProcessArgument.suggestions(recipeIndex, null, null))
-            // )
-
-            // .withArguments(new StringArgument("temp")
-            //     .replaceSuggestions(ArgumentSuggestions.strings(
-            //         info -> {
-            //             ItemStack item = (ItemStack) info.previousArgs().get("resultItem");
-            //             String[] suggestions = new String[]{item.getType().toString()};
-            //             return suggestions;
-            //         }
-            //     ))
-            // )
-
-            // .withArguments(VEICommandArguments.processArgument("process"))
-
-            // .withOptionalArguments(VEICommandArguments.processArgument("process"))
-            // .withOptionalArguments(new IntegerArgument("variant"))
+            .withOptionalArguments(new ProcessArgument("process", recipeIndex)
+                .replaceSuggestions(ArgumentSuggestions.stringCollectionAsync(info -> {
+                    ItemStack item = (ItemStack) info.previousArgs().get("resultItem");
+                    SearchMode searchMode = (SearchMode) info.previousArgs().get("searchMode");
+                    return ProcessArgument.suggestionsFrom(recipeIndex, item, searchMode)
+                        .thenApply(treeSet -> (Collection<String>) treeSet);
+                }))
+            )
+            .withOptionalArguments(new RecipeIdArgument("recipeId", recipeIndex)
+                .replaceSuggestions(ArgumentSuggestions.stringCollectionAsync(info -> {
+                    ItemStack item = (ItemStack) info.previousArgs().get("resultItem");
+                    SearchMode searchMode = (SearchMode) info.previousArgs().get("searchMode");
+                    Process<?> process = (Process<?>) info.previousArgs().get("process");
+                    return RecipeIdArgument.suggestionsFrom(recipeIndex, item, searchMode, process);
+                }))
+            )
             .executesPlayer((player, args) -> {
                 // ItemStack itemStack = (ItemStack) args.get("item");
                 // Process<?> process = (Process<?>) args.get("process");
                 // int variant = (int) args.getOrDefault("variant", 1) - 1; // only 1-based for the final user, otherwise it's 0-based
                 ItemStack resultItemStack = (ItemStack) args.get("resultItem");
+                SearchModeArgument.SearchMode searchMode = (SearchModeArgument.SearchMode) args.get("searchMode");
                 player.getInventory().addItem(resultItemStack);
 
                 // byIdAction(player, recipeId);
@@ -233,8 +148,14 @@ public class CraftCommand implements ICommand{
         // /craft --all [<process> [<recipeId>]]
         createBaseCraftCommand()
             .withArguments(new MultiLiteralArgument("all", "--all"))
-            .withOptionalArguments(new ProcessArgument("process")
-                .replaceSuggestions(ProcessArgument.argumentSuggestions(recipeIndex, null, null))
+            .withOptionalArguments(new ProcessArgument("process", recipeIndex)
+                .replaceSuggestions(ProcessArgument.argumentSuggestionsFrom(recipeIndex, null, null))
+            )
+            .withOptionalArguments(new RecipeIdArgument("recipeId", recipeIndex)
+                .replaceSuggestions(ArgumentSuggestions.stringCollectionAsync(info -> {
+                    Process<?> process = (Process<?>) info.previousArgs().get("process");
+                    return RecipeIdArgument.suggestionsFrom(recipeIndex, null, null, process);
+                }))
             )
             .executesPlayer((player, args) -> {
                 Process<?> process = (Process<?>) args.get("process");
@@ -261,8 +182,8 @@ public class CraftCommand implements ICommand{
         // /craft --id <recipeId>
         createBaseCraftCommand()
             .withArguments(new MultiLiteralArgument("id", "--id"))
-            .withArguments(new NamespacedKeyArgument("recipeId")
-                .replaceSuggestions(getRecipeIdSuggestions())
+            .withArguments(new RecipeIdArgument("recipeId", recipeIndex)
+                .replaceSuggestions(RecipeIdArgument.argumentSuggestionsFrom(recipeIndex, null, null, null))
             )
             .executesPlayer((player, args) -> {
                 NamespacedKey recipeId = (NamespacedKey) args.get("recipeId");
@@ -411,36 +332,4 @@ public class CraftCommand implements ICommand{
     }
 
     //#endregion Utils
-
-    private ArgumentSuggestions<CommandSender> getRecipeIdSuggestions() {
-        return ArgumentSuggestions.strings(
-            info -> recipeIndex.getAllRecipeIds().stream()
-                .map(t -> t.getNamespace() + ":" + t.getKey())
-                .toArray(String[]::new)
-        );
-    }
-
-    // private ArgumentSuggestions<String> getRecipeIdSuggestions(Process<?> process, NamespacedKey item, SearchMode searchMode) {
-    //     if (process == null && item == null) {
-    //         return getRecipeIdSuggestions();
-    //     }
-
-    //     if (process != null && item == null) {
-    //         return ArgumentSuggestions.strings(
-    //             info -> recipeIndex.getByProcess(process).getAllRecipes().stream()
-    //                 .map(recipe -> {
-    //                     if(recipe instanceof Keyed) {
-    //                         return ((Keyed) recipe).getKey().toString();
-    //                     }
-    //                     return "";
-    //                 })
-    //                 .toArray(String[]::new)
-    //         );
-    //     } 
-    //     else if (item != null && searchMode == null) {
-    //         throw new IllegalArgumentException("Search mode is required when item is provided.");
-    //     } else {
-    //         return getRecipeIdSuggestions();
-    //     }
-    // }
 }

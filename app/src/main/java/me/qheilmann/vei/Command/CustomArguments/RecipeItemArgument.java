@@ -1,7 +1,9 @@
 package me.qheilmann.vei.Command.CustomArguments;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
@@ -9,7 +11,6 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.command.CommandSender;
 import org.bukkit.inventory.ItemStack;
-
 import dev.jorel.commandapi.arguments.ArgumentSuggestions;
 import dev.jorel.commandapi.arguments.CustomArgument;
 import dev.jorel.commandapi.arguments.NamespacedKeyArgument;
@@ -20,7 +21,7 @@ import net.kyori.adventure.text.Component;
 
 public class RecipeItemArgument extends CustomArgument<ItemStack, NamespacedKey> {
 
-    public RecipeItemArgument(String nodeName, CustomItemRegistry customItemRegistry) {
+    public RecipeItemArgument(String nodeName, RecipeIndexService recipeIndex , CustomItemRegistry customItemRegistry) {
         super(new NamespacedKeyArgument(nodeName), info -> {
             NamespacedKey key = info.currentInput();
 
@@ -41,23 +42,40 @@ public class RecipeItemArgument extends CustomArgument<ItemStack, NamespacedKey>
             // Fail
             throw CustomArgumentHelper.minecraftLikeException((arg) -> Component.text("Unknown item '" + arg + "'"), info);
         });
+
+        // Default suggestions
+        this.replaceSuggestions(RecipeItemArgument.argumentSuggestionsFrom(recipeIndex, customItemRegistry));
     }
 
     // This method is protected to prevent direct usage of the suggestion logic within CommandAPI's default suggestion checks.
     // Instead, the builder should be used to manually add suggestions while applying our custom checks.
-    public static CompletableFuture<Collection<String>> suggestions(RecipeIndexService recipeIndexService, CustomItemRegistry customItemRegistry, String input) {
+    protected static CompletableFuture<Collection<String>> suggestionsFrom(RecipeIndexService recipeIndex, CustomItemRegistry customItemRegistry, String input) {
+        Objects.requireNonNull(recipeIndex, "recipeIndex cannot be null");
+        
         return CompletableFuture.supplyAsync(() -> 
             // This is a resource-intensive operation, so it would be better to cache already calculated suggestions.
             // However, since we can have multiple RecipeIndex instances and this is a static method, implementing caching is a bit tricky.
             // Some caching implementations were done just after commit fbd4474649a04cdafb81c0c8d115ecda25db0ec0.
             // At least, this operation is currently performed on a separate thread, so the performance impact is mitigated.
-            recalculateSuggestions(input, recipeIndexService, customItemRegistry)
-        );
+            (Collection<String>) recalculateSuggestions(input, recipeIndex, customItemRegistry)
+        )
+        .exceptionally((e) -> {
+            VanillaEnoughItems.LOGGER.error("Error while generating suggestions for recipe item argument", e);
+            return new ArrayList<String>();
+        });
     }
 
-    public static ArgumentSuggestions<CommandSender> argumentSuggestions(RecipeIndexService recipeIndexService, CustomItemRegistry customItemRegistry) {
+    /**
+     * Provides a collection of suggestions for the recipe item argument using the given recipe index.
+     * Suggestions are generated based on the input string and filtered using a "contains" check instead of "startsWith" for better searching.
+     * 
+     * @param recipeIndex The RecipeIndexService to retrieve recipe data from.
+     * @param customItemRegistry The CustomItemRegistry to retrieve custom item data from.
+     * @return A CompletableFuture containing the generated collection of suggestions.
+     */
+    public static ArgumentSuggestions<CommandSender> argumentSuggestionsFrom(RecipeIndexService recipeIndex, CustomItemRegistry customItemRegistry) {
         return (info, builder) -> {
-            CompletableFuture<Collection<String>> suggestionsFuture = suggestions(recipeIndexService, customItemRegistry, info.currentArg());
+            CompletableFuture<Collection<String>> suggestionsFuture = suggestionsFrom(recipeIndex, customItemRegistry, info.currentArg());
 
             return suggestionsFuture.thenApply(suggestions -> {
                 for (String suggestion : suggestions) {
@@ -81,10 +99,10 @@ public class RecipeItemArgument extends CustomArgument<ItemStack, NamespacedKey>
         return filteredSuggestions;
     }
 
-    private static Set<String> recalculateSuggestions(String input, RecipeIndexService recipeIndexService, CustomItemRegistry customItemRegistry) {
+    private static Set<String> recalculateSuggestions(String input, RecipeIndexService recipeIndex, CustomItemRegistry customItemRegistry) {
         Set<NamespacedKey> availableNamespaceKey = new HashSet<>();
-        collectNamespaceKey(recipeIndexService.getAllResultItemStacks(), availableNamespaceKey, customItemRegistry);
-        collectNamespaceKey(recipeIndexService.getAllIngredientItemStacks(), availableNamespaceKey, customItemRegistry);
+        collectNamespaceKey(recipeIndex.getAllResultItemStacks(), availableNamespaceKey, customItemRegistry);
+        collectNamespaceKey(recipeIndex.getAllIngredientItemStacks(), availableNamespaceKey, customItemRegistry);
 
         Set<String> suggestions = new HashSet<>();
         for (NamespacedKey namespacedKey : availableNamespaceKey) {

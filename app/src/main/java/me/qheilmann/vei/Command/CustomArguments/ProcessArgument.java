@@ -1,16 +1,17 @@
 package me.qheilmann.vei.Command.CustomArguments;
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.NavigableSet;
+import java.util.stream.Collectors;
+import java.util.TreeSet;
 import java.util.concurrent.CompletableFuture;
-
 import org.apache.commons.lang3.NotImplementedException;
 import org.bukkit.command.CommandSender;
 import org.bukkit.inventory.ItemStack;
-
 import dev.jorel.commandapi.arguments.ArgumentSuggestions;
 import dev.jorel.commandapi.arguments.CustomArgument;
 import dev.jorel.commandapi.arguments.StringArgument;
+import me.qheilmann.vei.VanillaEnoughItems;
 import me.qheilmann.vei.Core.Process.Process;
 import me.qheilmann.vei.Core.Recipe.Index.RecipeIndexService;
 import me.qheilmann.vei.Core.Recipe.Index.Reader.MixedProcessRecipeReader;
@@ -31,17 +32,20 @@ public class ProcessArgument extends CustomArgument<Process<?>, String>{
      * converts the input string to a specific process type from the ProcessRegistry.
      * and throws a Minecraft-like exception if the process is not found.
      */    
-    public ProcessArgument(String nodeName) {
+    public ProcessArgument(String nodeName, RecipeIndexService recipeIndex) {
         super(new StringArgument(nodeName), (input) -> {
             String processName = input.currentInput().toLowerCase();
             Process<?> process = Process.ProcessRegistry.getProcessByName(processName);
 
             if (process == null) {
-                throw CustomArgumentHelper.minecraftLikeException((arg) -> Component.text("Unknow process '" + arg + "'"), input);
+                throw CustomArgumentHelper.minecraftLikeException((arg) -> Component.text("Unknown process '" + arg + "'"), input);
             }
 
             return process;
         });
+
+        // Default suggestions
+        this.replaceSuggestions(ProcessArgument.argumentSuggestionsFrom(recipeIndex, null, null));
     }
 
     /**
@@ -49,11 +53,38 @@ public class ProcessArgument extends CustomArgument<Process<?>, String>{
     * 
     * @param recipeIndex The RecipeIndexService to use
     * @param item The item to use for generating suggestions. If null, global index is used.
-    * @param searchMode The search mode to use for generating suggestions. If null, defaults to AS_RESULT.
+    * @param searchMode The search mode to use for generating suggestions. If null, defaults to AS_RESULT. If item is null, this parameter is ignored.
     * @return A CompletableFuture containing the collection of suggestions.
-    * @see #argumentSuggestions(RecipeIndexService, ItemStack, SearchModeArgument.SearchMode)
+    * @see #argumentSuggestionsFrom(RecipeIndexService, ItemStack, SearchModeArgument.SearchMode)
     */
-    public static CompletableFuture<Collection<String>> suggestions(RecipeIndexService recipeIndex, ItemStack item, SearchModeArgument.SearchMode searchMode) {
+    public static CompletableFuture<TreeSet<String>> suggestionsFrom(RecipeIndexService recipeIndex, ItemStack item, SearchModeArgument.SearchMode searchMode) {
+        return getProcesses(recipeIndex, item, searchMode).thenApply(processes -> {
+            return processes.stream()
+                .map(Process::getProcessName)
+                .collect(Collectors.toCollection(TreeSet::new));
+        })
+        .exceptionally((e) -> {
+            VanillaEnoughItems.LOGGER.warn("Error while generating process suggestions", e);
+            return new TreeSet<String>();
+        });
+    }
+
+    /**
+    * Generates argument suggestions for the process argument based on the provided item and search mode
+    * 
+    * @param recipeIndex The RecipeIndexService to use
+    * @param item The item to use for generating suggestions. If null, global index is used.
+    * @param searchMode The search mode to use for generating suggestions. If null, defaults to AS_RESULT. If item is null, this parameter is ignored.
+    * @return An ArgumentSuggestions object containing the suggestions.
+    * @see #suggestionsFrom(RecipeIndexService, ItemStack, SearchModeArgument.SearchMode)
+    */
+    public static ArgumentSuggestions<CommandSender> argumentSuggestionsFrom(RecipeIndexService recipeIndex, ItemStack item, SearchModeArgument.SearchMode searchMode) {
+        return ArgumentSuggestions.stringCollectionAsync((info) -> {
+            return suggestionsFrom(recipeIndex, item, searchMode).thenApply(treeSet -> (Collection<String>) treeSet);
+        });
+    }
+
+    private static CompletableFuture<NavigableSet<Process<?>>> getProcesses(RecipeIndexService recipeIndex, ItemStack item, SearchModeArgument.SearchMode searchMode) {
         if (recipeIndex == null) {
             throw new IllegalArgumentException("RecipeIndexService cannot be null");
         }
@@ -64,7 +95,6 @@ public class ProcessArgument extends CustomArgument<Process<?>, String>{
         return CompletableFuture.supplyAsync(() -> {
             SearchModeArgument.SearchMode mode = searchMode;
             MixedProcessRecipeReader recipeReader;
-            Collection<String> suggestions = new ArrayList<>();
 
             // Global index
             if (item == null && searchMode == null) {
@@ -85,27 +115,11 @@ public class ProcessArgument extends CustomArgument<Process<?>, String>{
                 }
             }
 
-            // Map to process names
-            if (recipeReader != null) {
-                suggestions.addAll(recipeReader.getAllProcess().stream()
-                    .map(Process::getProcessName)
-                    .toList());
+            if (recipeReader == null) {
+                return new TreeSet<>();
             }
 
-            return suggestions;
+            return recipeReader.getAllProcess();
         });
-    }
-
-    /**
-    * Generates argument suggestions for the process argument based on the provided item and search mode
-    * 
-    * @param recipeIndex The RecipeIndexService to use
-    * @param item The item to use for generating suggestions. If null, global index is used.
-    * @param searchMode The search mode to use for generating suggestions. If null, defaults to AS_RESULT.
-    * @return An ArgumentSuggestions object containing the suggestions.
-    * @see #suggestions(RecipeIndexService, ItemStack, SearchModeArgument.SearchMode)
-    */
-    public static ArgumentSuggestions<CommandSender> argumentSuggestions(RecipeIndexService recipeIndex, ItemStack item, SearchModeArgument.SearchMode searchMode) {
-        return ArgumentSuggestions.stringCollectionAsync((info) -> suggestions(recipeIndex, item, searchMode));
     }
 }

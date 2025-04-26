@@ -29,7 +29,7 @@ import me.qheilmann.vei.Core.Utils.NotNullSet;
  * <li>It can be represented by a block, item, or entity.</li>
  * </ul>
  */
-public class Process<R extends Recipe> {
+public class Process<R extends Recipe> implements Comparable<Process<?>> {
 
     private final String processName;
     private final ItemStack processIcon;
@@ -147,7 +147,7 @@ public class Process<R extends Recipe> {
          * In cases of inheritance (e.g., SmokingRecipe -> CookingRecipe), the child process must be added first (e.g., SmokingProcess before CookingProcess).
          * @param process the process to register.
          */
-        public static void registerProcesse(Process<?> process) {
+        public static void registerProcess(Process<?> process) {
             processRegistry.add(process);
         }
 
@@ -191,5 +191,14 @@ public class Process<R extends Recipe> {
 
             return VanillaProcesses.DUMMY_PROCESS;
         }
+    }
+
+
+    @Override
+    public int compareTo(Process<?> o) {
+        if (o == null) {
+            return 1;
+        }
+        return this.processName.compareToIgnoreCase(o.processName);
     }
 }
