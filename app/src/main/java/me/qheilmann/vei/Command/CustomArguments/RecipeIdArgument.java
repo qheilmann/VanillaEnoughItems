@@ -14,6 +14,7 @@ import org.bukkit.inventory.Recipe;
 import dev.jorel.commandapi.arguments.ArgumentSuggestions;
 import dev.jorel.commandapi.arguments.CustomArgument;
 import dev.jorel.commandapi.arguments.NamespacedKeyArgument;
+import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
 import me.qheilmann.vei.VanillaEnoughItems;
 import me.qheilmann.vei.Command.CustomArguments.SearchModeArgument.SearchMode;
 import me.qheilmann.vei.Core.Process.Process;
@@ -62,7 +63,7 @@ public class RecipeIdArgument extends CustomArgument<NamespacedKey, NamespacedKe
                         .map(NamespacedKey::toString)
                         .toList();
                 } else {
-                    ProcessRecipeReader<?> processRecipeReader = recipeIndex.getByProcess(process);
+                    ProcessRecipeReader<?> processRecipeReader = recipeIndex.getSingleProcess(process);
                     if (processRecipeReader == null) {
                         return new ArrayList<String>();
                     }
@@ -102,7 +103,10 @@ public class RecipeIdArgument extends CustomArgument<NamespacedKey, NamespacedKe
             if (process == null) {
                 processes = recipeReader.getAllProcess();
             } else {
-                recipeReader.setProcess(process); // throws exception if process is not valid
+                if (!recipeReader.getAllProcess().contains(process)) {
+                    return new ArrayList<String>();
+                }
+                recipeReader.setProcess(process);
                 processes = new java.util.TreeSet<>();
                 processes.add(recipeReader.currentProcess());
             }

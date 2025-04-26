@@ -89,7 +89,7 @@ public class RecipeIndexService {
         }
 
         // Index by process
-        Process<?> process = Process.ProcessRegistry.getProcesseByRecipe(recipe);
+        Process<?> process = Process.ProcessRegistry.getProcessByRecipe(recipe);
         recipesByProcess.computeIfAbsent(process, p -> new ProcessRecipeSet<>()).unsafeAdd(recipe);
     }
 
@@ -139,7 +139,7 @@ public class RecipeIndexService {
         }
 
         // Remove from process index
-        Process<?> process = Process.ProcessRegistry.getProcesseByRecipe(recipe);
+        Process<?> process = Process.ProcessRegistry.getProcessByRecipe(recipe);
         ProcessRecipeSet<?> processRecipeSet = recipesByProcess.get(process);
         if (processRecipeSet != null) {
             processRecipeSet.unsafeRemove(recipe);
@@ -205,7 +205,7 @@ public class RecipeIndexService {
 
         ItemStack recipeResult = recipe.getResult();
         if (recipeResult == null || recipeResult.isEmpty() || recipeResult.getType().isAir()) {
-            throw new RuntimeException("Recipe result is null or empty: " + recipeId + ", (complexe recipes are not supported yet).");
+            throw new RuntimeException("Recipe result is null or empty: " + recipeId + ", (complex recipes are not supported yet).");
         }
 
         MixedProcessRecipeMap mixedProcessRecipeMap = recipesByResult.get(recipeResult.asOne());
@@ -214,7 +214,7 @@ public class RecipeIndexService {
         }
 
         MixedProcessRecipeReader mixedProcessRecipeReader = new MixedProcessRecipeReader(mixedProcessRecipeMap);
-        mixedProcessRecipeReader.setProcess(Process.ProcessRegistry.getProcesseByRecipe(recipe));
+        mixedProcessRecipeReader.setProcess(Process.ProcessRegistry.getProcessByRecipe(recipe));
         mixedProcessRecipeReader.currentProcessRecipeReader().unsafeSetRecipe((Recipe) recipe);
         
         return mixedProcessRecipeReader;
@@ -242,7 +242,7 @@ public class RecipeIndexService {
 
     @Nullable
     @SuppressWarnings("unchecked")
-    public <R extends Recipe> ProcessRecipeReader<R> getByProcess(Process<R> process) {
+    public <R extends Recipe> ProcessRecipeReader<R> getSingleProcess(Process<R> process) {
         ProcessRecipeSet<?> processRecipeSet = recipesByProcess.get(process);
         if (processRecipeSet == null) {
             return null; // No recipes found for this process

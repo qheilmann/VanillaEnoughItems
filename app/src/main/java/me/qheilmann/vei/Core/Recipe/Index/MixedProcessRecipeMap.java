@@ -51,7 +51,7 @@ public class MixedProcessRecipeMap {
     public void addRecipe(@NotNull Recipe recipe) {
         Objects.requireNonNull(recipe, "Recipe cannot be null");
 
-        Process<?> process = Process.ProcessRegistry.getProcesseByRecipe(recipe);
+        Process<?> process = Process.ProcessRegistry.getProcessByRecipe(recipe);
         ProcessRecipeSet<?> processRecipeSet = recipes.computeIfAbsent(process, p -> new ProcessRecipeSet<>());
         processRecipeSet.unsafeAdd(recipe);
     }
@@ -78,7 +78,7 @@ public class MixedProcessRecipeMap {
      * the process itself is not in the map, no action is taken.
      */
     public void removeRecipe(@NotNull Recipe recipe) {
-        Process<?> process = Process.ProcessRegistry.getProcesseByRecipe(recipe);
+        Process<?> process = Process.ProcessRegistry.getProcessByRecipe(recipe);
         ProcessRecipeSet<?> processRecipeSet = recipes.get(process);
         if (processRecipeSet != null) {
             processRecipeSet.unsafeRemove(recipe);

@@ -180,7 +180,7 @@ public class Process<R extends Recipe> implements Comparable<Process<?>> {
             return null;
         }
 
-        public static @NotNull Process<?> getProcesseByRecipe(Recipe recipe) {
+        public static @NotNull Process<?> getProcessByRecipe(Recipe recipe) {
             for (Process<?> process : processRegistry) {
                 for (Class<? extends Recipe> recipeClass : process.getRecipeClasses()) {
                     if (recipeClass.isAssignableFrom(recipe.getClass())) {

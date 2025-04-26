@@ -1,6 +1,8 @@
 package me.qheilmann.vei.Command;
 
 import java.util.Collection;
+import java.util.Objects;
+
 import javax.annotation.Nullable;
 
 import org.bukkit.entity.Player;
@@ -133,15 +135,11 @@ public class CraftCommand implements ICommand{
                 }))
             )
             .executesPlayer((player, args) -> {
-                // ItemStack itemStack = (ItemStack) args.get("item");
-                // Process<?> process = (Process<?>) args.get("process");
-                // int variant = (int) args.getOrDefault("variant", 1) - 1; // only 1-based for the final user, otherwise it's 0-based
-                ItemStack resultItemStack = (ItemStack) args.get("resultItem");
+                ItemStack itemStack = (ItemStack) args.get("resultItem");
                 SearchModeArgument.SearchMode searchMode = (SearchModeArgument.SearchMode) args.get("searchMode");
-                player.getInventory().addItem(resultItemStack);
-
-                // byIdAction(player, recipeId);
-                // byItemAction(player, (ItemStack) args.get("item"), SearchMode.AS_RESULT, null, recipeId);
+                Process<?> process = (Process<?>) args.get("process");
+                NamespacedKey recipeId = (NamespacedKey) args.get("recipeId");
+                byItemAction(player, itemStack, searchMode, process, recipeId);
             })
             .register();
         
@@ -159,7 +157,8 @@ public class CraftCommand implements ICommand{
             )
             .executesPlayer((player, args) -> {
                 Process<?> process = (Process<?>) args.get("process");
-                player.sendMessage(Component.text(process.getProcessIcon().getType().toString(), NamedTextColor.BLUE));
+                NamespacedKey recipeId = (NamespacedKey) args.get("recipeId");
+                allItemAction(player, process, recipeId);
             })
             .register();
             
@@ -208,25 +207,7 @@ public class CraftCommand implements ICommand{
     //#region Action
 
     private void byIdAction(@NotNull Player player, @NotNull NamespacedKey recipeId) throws WrapperCommandSyntaxException {
-
         MixedProcessRecipeReader recipeReader;
-
-        // // TODO TEMP
-        // ItemStack resultItem;
-        // try {
-        //     resultItem = recipeIndex.getSingleRecipeById(recipeId).getResult();
-        // } catch (Exception e) {
-        //     throw CommandAPIBukkit.failWithAdventureComponent(Component.text("Failed to retrieve the first ItemStack of the recipe: " + e.getMessage(), NamedTextColor.RED));
-        // }
-
-        // if (resultItem == null) {
-        //     throw CommandAPIBukkit.failWithAdventureComponent(Component.text("No result ItemStack found for recipe ID: " + recipeId.toString(), NamedTextColor.RED));
-        // }
-
-        // recipeReader = recipeIndex.getByIngredient(resultItem);
-
-        // // TODO TEMP
-
         try {
             recipeReader = recipeIndex.getById(recipeId);
         } catch (Exception e) {
@@ -234,22 +215,77 @@ public class CraftCommand implements ICommand{
         }
 
         if (recipeReader == null) {
-            throw CommandAPIBukkit.failWithAdventureComponent(Component.text("Recipe ID not found: " + recipeId.toString(), NamedTextColor.RED));
+            throw CommandAPIBukkit.failWithAdventureComponent(Component.text("No recipe found with the ID '" + recipeId.toString() + "'.", NamedTextColor.RED));
         }
 
         menuManager.openRecipeMenu(player, recipeReader);
     }
 
-    private void byItemAction(@NotNull Player player, @NotNull ItemStack item, SearchModeArgument.SearchMode searchMode, @Nullable Process<?> process, @NotNull NamespacedKey recipeId) throws WrapperCommandSyntaxException {
-        if (searchMode == SearchMode.AS_RESULT) {
-            byResultAction(player, item, process, recipeId);
+    private void byItemAction(@NotNull Player player, @NotNull ItemStack item, @Nullable SearchModeArgument.SearchMode searchMode, @Nullable Process<?> process, @NotNull NamespacedKey recipeId) throws WrapperCommandSyntaxException {
+        MixedProcessRecipeReader recipeReader;
+        if (searchMode == SearchMode.AS_RESULT || searchMode == null) {
+            recipeReader = recipeIndex.getByResult(item);
         } else if (searchMode == SearchMode.AS_INGREDIENT) {
-            byIngredientAction(player, item, process, recipeId);
+            recipeReader = recipeIndex.getByIngredient(item);
         } else {
-            throw CommandAPIBukkit.failWithAdventureComponent(Component.text("Invalid search mode: " + searchMode.toString() + "." +
-            " Use '" + SearchMode.AS_RESULT.toString() + "' or '" + SearchMode.AS_INGREDIENT.toString() + "'."
-            , NamedTextColor.RED));
+            throw CommandAPIBukkit.failWithAdventureComponent(Component.text("Invalid search mode '" + searchMode.toString() + "'." +
+            "Use '" + SearchMode.AS_RESULT.toString() + "' or '" + SearchMode.AS_INGREDIENT.toString() + "'.", NamedTextColor.RED));
         }
+
+        if (recipeReader == null) {
+            throw CommandAPIBukkit.failWithAdventureComponent(Component.text("No recipes found for the item '" + item.getType().name() + "'.", NamedTextColor.RED));
+        }
+
+        recipeAction(player, recipeReader, process, recipeId);
+    }
+
+    private void allItemAction(Player player, Process<?> process, NamespacedKey recipeId) throws WrapperCommandSyntaxException {
+       
+        MixedProcessRecipeReader recipeReader = recipeIndex.getGlobalIndex();
+        if (recipeReader == null) {
+            throw CommandAPIBukkit.failWithAdventureComponent(Component.text("No recipes found in the current recipe index.", NamedTextColor.RED));
+        }
+
+        recipeAction(player, recipeReader, process, recipeId);
+    }
+
+    private void recipeAction(@NotNull Player player, @NotNull MixedProcessRecipeReader recipeReader, @Nullable Process<?> process, @Nullable NamespacedKey recipeId) throws WrapperCommandSyntaxException {
+        Objects.requireNonNull(player, "The player cannot be null.");
+        Objects.requireNonNull(recipeReader, "The recipeReader cannot be null.");
+
+        if(process == null && recipeId != null) {
+            throw new IllegalArgumentException("A recipe ID cannot be used without specifying a process.");
+        }
+
+        if (process != null) {
+            if(!recipeReader.contains(process)) {
+                throw CommandAPIBukkit.failWithAdventureComponent(Component.text("No process named '" + process.getProcessName() + "' exists in the current recipe index.", NamedTextColor.RED));
+            }
+
+            recipeReader.setProcess(process);
+
+            if (recipeId != null) {
+                Recipe recipe = recipeIndex.getSingleRecipeById(recipeId);
+                if (recipe == null) {
+                    throw CommandAPIBukkit.failWithAdventureComponent(Component.text("No recipe found with the ID '" + recipeId.toString() + "'.", NamedTextColor.RED));
+                }
+
+                ProcessRecipeReader<?> processRecipeReader = recipeReader.currentProcessRecipeReader();
+
+                boolean isRecipeSet = false;
+                try {
+                    isRecipeSet = processRecipeReader.unsafeSetRecipe(recipe);
+                } catch (ClassCastException ex) {
+                    throw CommandAPIBukkit.failWithAdventureComponent(Component.text("The recipe ID '" + recipeId.toString() + "' could not be found in the process '" + process.getProcessName() + "' within the current recipe index.", NamedTextColor.RED));
+                }
+
+                if (!isRecipeSet) {
+                    throw CommandAPIBukkit.failWithAdventureComponent(Component.text("Failed to set the recipe with ID '" + recipeId.toString() + "'.", NamedTextColor.RED));
+                }
+            }
+        }
+
+        menuManager.openRecipeMenu(player, recipeReader);
     }
 
     private void helpAction(Player player) {
@@ -268,68 +304,4 @@ public class CraftCommand implements ICommand{
     }
 
     //#endregion Action
-
-    //#region Utils
-
-    private void byResultAction(@NotNull Player player, @NotNull ItemStack resultItem, @Nullable Process<?> process, @NotNull NamespacedKey recipeId) throws WrapperCommandSyntaxException {
-        MixedProcessRecipeReader mixedProcessRecipeReader = recipeIndex.getByResult(resultItem);
-        if (mixedProcessRecipeReader == null) {
-            throw CommandAPIBukkit.failWithAdventureComponent(Component.text("No recipes with result: " + resultItem.getType().name(), NamedTextColor.RED));
-        }
-
-        if (process != null) {
-            try {
-                mixedProcessRecipeReader.setProcess(process);
-            } catch (IllegalArgumentException e) {
-                throw CommandAPIBukkit.failWithAdventureComponent(Component.text("No process found with name: " + process.getProcessName()
-                + " for this recipe.", NamedTextColor.RED));
-            }
-        }
-
-        if (recipeId != null) {
-            Recipe recipe = recipeIndex.getSingleRecipeById(recipeId);
-            if (recipe == null) {
-                throw CommandAPIBukkit.failWithAdventureComponent(Component.text("Recipe ID not found: " + recipeId.toString(), NamedTextColor.RED));
-            }
-            ProcessRecipeReader<?> processRecipeReader = mixedProcessRecipeReader.currentProcessRecipeReader();
-            boolean isRecipeSet = processRecipeReader.unsafeSetRecipe(recipe);
-            if (!isRecipeSet) {
-                throw CommandAPIBukkit.failWithAdventureComponent(Component.text("Recipe ID not found in the process: " + recipeId.toString(), NamedTextColor.RED));
-            }
-        }
-
-        menuManager.openRecipeMenu(player, mixedProcessRecipeReader);
-    }
-
-    private void byIngredientAction(@NotNull Player player, @NotNull ItemStack ingredientItem, @Nullable Process<?> process, @NotNull NamespacedKey recipeId) throws WrapperCommandSyntaxException {
-        MixedProcessRecipeReader mixedProcessRecipeReader = recipeIndex.getByIngredient(ingredientItem);
-        if (mixedProcessRecipeReader == null) {
-            throw CommandAPIBukkit.failWithAdventureComponent(Component.text("No recipes with ingredient: " + ingredientItem.getType().name(), NamedTextColor.RED));
-        }
-
-        if (process != null) {
-            try {
-                mixedProcessRecipeReader.setProcess(process);
-            } catch (IllegalArgumentException e) {
-                throw CommandAPIBukkit.failWithAdventureComponent(Component.text("No process found with name: " + process.getProcessName()
-                + " for this recipe.", NamedTextColor.RED));
-            }
-        }
-
-        if (recipeId != null) {
-            Recipe recipe = recipeIndex.getSingleRecipeById(recipeId);
-            if (recipe == null) {
-                throw CommandAPIBukkit.failWithAdventureComponent(Component.text("Recipe ID not found: " + recipeId.toString(), NamedTextColor.RED));
-            }
-            ProcessRecipeReader<?> processRecipeReader = mixedProcessRecipeReader.currentProcessRecipeReader();
-            boolean isRecipeSet = processRecipeReader.unsafeSetRecipe(recipe);
-            if (!isRecipeSet) {
-                throw CommandAPIBukkit.failWithAdventureComponent(Component.text("Recipe ID not found in the process: " + recipeId.toString(), NamedTextColor.RED));
-            }
-        }
-
-        menuManager.openRecipeMenu(player, mixedProcessRecipeReader);
-    }
-
-    //#endregion Utils
 }
