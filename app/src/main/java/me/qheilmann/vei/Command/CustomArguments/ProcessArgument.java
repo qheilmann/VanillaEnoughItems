@@ -3,14 +3,16 @@ package me.qheilmann.vei.Command.CustomArguments;
 import java.util.Collection;
 import java.util.NavigableSet;
 import java.util.stream.Collectors;
+
 import java.util.TreeSet;
 import java.util.concurrent.CompletableFuture;
 import org.apache.commons.lang3.NotImplementedException;
+import org.bukkit.NamespacedKey;
 import org.bukkit.command.CommandSender;
 import org.bukkit.inventory.ItemStack;
 import dev.jorel.commandapi.arguments.ArgumentSuggestions;
 import dev.jorel.commandapi.arguments.CustomArgument;
-import dev.jorel.commandapi.arguments.StringArgument;
+import dev.jorel.commandapi.arguments.NamespacedKeyArgument;
 import me.qheilmann.vei.VanillaEnoughItems;
 import me.qheilmann.vei.Core.Process.Process;
 import me.qheilmann.vei.Core.Recipe.Index.RecipeIndexService;
@@ -25,7 +27,7 @@ import net.kyori.adventure.text.Component;
  * @see Process
  * @see CustomArgument
  */
-public class ProcessArgument extends CustomArgument<Process<?>, String>{
+public class ProcessArgument extends CustomArgument<Process<?>, NamespacedKey>{
 
     /**
      * Constructs a new ProcessArgument with the specified node name.
@@ -33,9 +35,9 @@ public class ProcessArgument extends CustomArgument<Process<?>, String>{
      * and throws a Minecraft-like exception if the process is not found.
      */    
     public ProcessArgument(String nodeName, RecipeIndexService recipeIndex) {
-        super(new StringArgument(nodeName), (input) -> {
-            String processName = input.currentInput().toLowerCase();
-            Process<?> process = Process.ProcessRegistry.getProcessByName(processName);
+        super(new NamespacedKeyArgument(nodeName), (input) -> {
+            NamespacedKey processkey = input.currentInput();
+            Process<?> process = Process.ProcessRegistry.getProcessByKey(processkey);
 
             if (process == null) {
                 throw CustomArgumentHelper.minecraftLikeException((arg) -> Component.text("Unknown process '" + arg + "'"), input);
@@ -60,7 +62,7 @@ public class ProcessArgument extends CustomArgument<Process<?>, String>{
     public static CompletableFuture<TreeSet<String>> suggestionsFrom(RecipeIndexService recipeIndex, ItemStack item, SearchModeArgument.SearchMode searchMode) {
         return getProcesses(recipeIndex, item, searchMode).thenApply(processes -> {
             return processes.stream()
-                .map(Process::getProcessName)
+                .map(process -> process.getKey().toString())
                 .collect(Collectors.toCollection(TreeSet::new));
         })
         .exceptionally((e) -> {

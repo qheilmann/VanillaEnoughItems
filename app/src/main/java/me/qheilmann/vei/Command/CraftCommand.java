@@ -259,7 +259,7 @@ public class CraftCommand implements ICommand{
 
         if (process != null) {
             if(!recipeReader.contains(process)) {
-                throw CommandAPIBukkit.failWithAdventureComponent(Component.text("No process named '" + process.getProcessName() + "' exists in the current recipe index.", NamedTextColor.RED));
+                throw CommandAPIBukkit.failWithAdventureComponent(Component.text("No process named '" + process.getKey() + "' exists in the current recipe index.", NamedTextColor.RED));
             }
 
             recipeReader.setProcess(process);
@@ -276,11 +276,14 @@ public class CraftCommand implements ICommand{
                 try {
                     isRecipeSet = processRecipeReader.unsafeSetRecipe(recipe);
                 } catch (ClassCastException ex) {
-                    throw CommandAPIBukkit.failWithAdventureComponent(Component.text("The recipe ID '" + recipeId.toString() + "' could not be found in the process '" + process.getProcessName() + "' within the current recipe index.", NamedTextColor.RED));
+                    isRecipeSet = false;
                 }
 
                 if (!isRecipeSet) {
-                    throw CommandAPIBukkit.failWithAdventureComponent(Component.text("Failed to set the recipe with ID '" + recipeId.toString() + "'.", NamedTextColor.RED));
+                    throw CommandAPIBukkit.failWithAdventureComponent(Component.text(
+                        "The recipe ID '" + recipeId.toString() + "' could not be found in the process '" + process.getKey() + "' within the current recipe index.",
+                        NamedTextColor.RED
+                    ));
                 }
             }
         }

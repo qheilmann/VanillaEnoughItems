@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.BlastingRecipe;
 import org.bukkit.inventory.CampfireRecipe;
 import org.bukkit.inventory.CraftingRecipe;
@@ -16,12 +17,9 @@ import org.bukkit.inventory.SmithingTrimRecipe;
 import org.bukkit.inventory.SmokingRecipe;
 import org.bukkit.inventory.StonecuttingRecipe;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.Recipe;
-
 import me.qheilmann.vei.Core.ProcessPanel.Panels.BlastingProcessPanel;
 import me.qheilmann.vei.Core.ProcessPanel.Panels.CampfireProcessPanel;
 import me.qheilmann.vei.Core.ProcessPanel.Panels.CraftingProcessPanel;
-import me.qheilmann.vei.Core.ProcessPanel.Panels.DummyProcessPanel;
 import me.qheilmann.vei.Core.ProcessPanel.Panels.SmeltingProcessPanel;
 import me.qheilmann.vei.Core.ProcessPanel.Panels.SmithingProcessPanel;
 import me.qheilmann.vei.Core.ProcessPanel.Panels.SmokingProcessPanel;
@@ -30,12 +28,7 @@ import net.kyori.adventure.text.Component;
 
 public class VanillaProcesses {
     
-    /**
-     * A dummy process that is used when no other process is found, it the default process.
-     */
-    public static Process<?> DUMMY_PROCESS = DummyProcessHelper.getDummyProcess();
-    public static String DUMMY_PROCESS_NAME = DummyProcessHelper.PROCESS_NAME;
-    public static String CRAFTING_PROCESS_NAME = CraftingProcessHelper.PROCESS_NAME;
+    public static NamespacedKey CRAFTING_PROCESS_KEY = CraftingProcessHelper.PROCESS_KEY;
 
 
     public static LinkedHashSet<Process<?>> getAllVanillaProcesses() {
@@ -58,6 +51,7 @@ public class VanillaProcesses {
 
         private static Process<BlastingRecipe> getBlastingProcess() {
             return new Process<>(
+                new NamespacedKey(NamespacedKey.MINECRAFT_NAMESPACE, "blasting"),
                 PROCESS_NAME,
                 generateIcon(),
                 getWorkbenchOptions(),
@@ -94,6 +88,7 @@ public class VanillaProcesses {
 
         private static Process<CampfireRecipe> getCampfireProcess() {
             return new Process<>(
+                new NamespacedKey(NamespacedKey.MINECRAFT_NAMESPACE, "campfire_cooking"),
                 PROCESS_NAME,
                 generateIcon(),
                 getWorkbenchOptions(),
@@ -129,9 +124,11 @@ public class VanillaProcesses {
     private static class CraftingProcessHelper {
 
         private static final String PROCESS_NAME = "Crafting";
+        private static final NamespacedKey PROCESS_KEY = new NamespacedKey(NamespacedKey.MINECRAFT_NAMESPACE, "crafting");
 
         private static Process<CraftingRecipe> getCraftingProcess() {
             return new Process<CraftingRecipe>(
+                PROCESS_KEY,
                 PROCESS_NAME,
                 generateIcon(),
                 getWorkbenchOptions(),
@@ -169,6 +166,7 @@ public class VanillaProcesses {
 
         private static Process<FurnaceRecipe> getSmeltingProcess() {
             return new Process<>(
+                new NamespacedKey(NamespacedKey.MINECRAFT_NAMESPACE, "smelting"),
                 PROCESS_NAME,
                 generateIcon(),
                 getWorkbenchOptions(),
@@ -205,6 +203,7 @@ public class VanillaProcesses {
 
         private static Process<SmithingRecipe> getSmithingProcess() {
             return new Process<>(
+                new NamespacedKey(NamespacedKey.MINECRAFT_NAMESPACE, "smithing"),
                 PROCESS_NAME,
                 generateIcon(),
                 getWorkbenchOptions(),
@@ -215,7 +214,7 @@ public class VanillaProcesses {
 
         private static ItemStack generateIcon() {
             ItemStack icon =
-                new ItemStack(Material.FURNACE);
+                new ItemStack(Material.SMITHING_TABLE);
             icon.editMeta(meta -> {
                 meta.displayName(Component.text(PROCESS_NAME));
                 meta.setMaxStackSize(1);
@@ -225,7 +224,7 @@ public class VanillaProcesses {
 
         private static Collection<ItemStack> getWorkbenchOptions() {
             return Arrays.asList(
-                new ItemStack(Material.FURNACE)
+                new ItemStack(Material.SMITHING_TABLE)
             );
         }
 
@@ -242,6 +241,7 @@ public class VanillaProcesses {
 
         private static Process<SmokingRecipe> getSmokingProcess() {
             return new Process<>(
+                new NamespacedKey(NamespacedKey.MINECRAFT_NAMESPACE, "smoking"),
                 PROCESS_NAME,
                 generateIcon(),
                 getWorkbenchOptions(),
@@ -278,6 +278,7 @@ public class VanillaProcesses {
 
         private static Process<StonecuttingRecipe> getStonecuttingProcess() {
             return new Process<>(
+                new NamespacedKey(NamespacedKey.MINECRAFT_NAMESPACE, "stonecutting"),
                 PROCESS_NAME,
                 generateIcon(),
                 getWorkbenchOptions(),
@@ -305,39 +306,6 @@ public class VanillaProcesses {
         private static Collection<Class<? extends StonecuttingRecipe>> getRecipeClasses() {
             return Arrays.asList(
                 StonecuttingRecipe.class
-            );
-        }
-    }
-
-    private static class DummyProcessHelper {
-        private static final String PROCESS_NAME = "Undefined";
-
-        private static Process<Recipe> getDummyProcess() {
-            return new Process<>(
-                PROCESS_NAME,
-                generateIcon(),
-                getWorkbenchOptions(),
-                getRecipeClasses(),
-                (style, recipeIndex, recipeReader) -> new DummyProcessPanel(style, recipeIndex, recipeReader)
-            );
-        }
-
-        private static ItemStack generateIcon() {
-            ItemStack icon = new ItemStack(Material.BARRIER);
-            icon.editMeta(meta -> {
-                meta.displayName(Component.text(PROCESS_NAME));
-                meta.setMaxStackSize(1);
-            });
-            return icon;
-        }
-
-        private static Collection<ItemStack> getWorkbenchOptions() {
-            return Arrays.asList(); // empty list for the dummy process
-        }
-
-        private static Collection<Class<? extends Recipe>> getRecipeClasses() {
-            return Arrays.asList(
-                Recipe.class
             );
         }
     }

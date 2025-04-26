@@ -45,7 +45,7 @@ public class MixedProcessRecipeReader {
         }
 
         if (!mixedProcessMap.getAllProcess().contains(process)) {
-            throw new IllegalArgumentException("Process not found in the recipe map: " + process.getProcessName());
+            throw new IllegalArgumentException("Process not found in the recipe map '" + process.getKey() + "'.");
         }
 
         this.currentProcess = process;

@@ -1,7 +1,6 @@
 package me.qheilmann.vei.Core.Recipe.Index;
 
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -10,22 +9,19 @@ import java.util.Objects;
 import java.util.SequencedSet;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.ConcurrentSkipListSet;
-
 import javax.annotation.Nullable;
 
+import org.bukkit.Keyed;
 import org.bukkit.inventory.Recipe;
 import org.jetbrains.annotations.NotNull;
 
 import me.qheilmann.vei.Core.Process.Process;
-import me.qheilmann.vei.Core.Process.VanillaProcesses;
 
 /**
  * Contains a collection of recipes witch are grouped by Process.
  */
 public class MixedProcessRecipeMap {
     
-    public static final Comparator<Process<?>> PROCESS_COMPARATOR = processComparator();
-
     /**
      * A map that organizes recipes by their associated processes.
      * Keys and values in this map must be non-null and this constraint must be strictly enforced.
@@ -41,7 +37,7 @@ public class MixedProcessRecipeMap {
             throw new IllegalArgumentException("The map cannot contain null keys or values %s".formatted(recipeCollection));
         }
 
-        this.recipes = new ConcurrentSkipListMap<>(PROCESS_COMPARATOR);
+        this.recipes = new ConcurrentSkipListMap<>(Process.comparator());
         recipes.putAll(recipeCollection);
     }
 
@@ -162,7 +158,7 @@ public class MixedProcessRecipeMap {
     /**
      * Adds a new recipe set with the specified process to the map without type
      * checking. The Process generic type must match the ProcessRecipeSet generic
-     * type, otherwise undefined behavior may occur.
+     * type.
      * 
      * @param process the process to add
      * @param recipeSet the recipe set to add
@@ -175,13 +171,21 @@ public class MixedProcessRecipeMap {
     @SuppressWarnings("unused")
     private ProcessRecipeSet<?> unsafePutProcessRecipeSet(@NotNull Process<?> process, @NotNull ProcessRecipeSet<?> recipeSet) {
         // Check if the recipe set is compatible with the process
-        var classes = process.getRecipeClasses();
-        for (var recipeClass : classes) {
-            if (recipeSet.iterator().next().getClass().isAssignableFrom(recipeClass)) {
-                break;
+        for (Recipe recipe : recipeSet.getAllRecipes()) {
+            Process<?> recipeProcess = Process.ProcessRegistry.getProcessByRecipe(recipe);
+            if (recipeProcess == null) {
+                if (recipe instanceof Keyed keyedRecipe) {
+                    throw new IllegalArgumentException("Recipe %s has no process type".formatted(keyedRecipe.getKey()));
+                } else {
+                    throw new IllegalArgumentException("Recipe %s has no process type".formatted(recipe.getClass().getSimpleName()));
+                }
             }
-            throw new IllegalArgumentException("Recipe set (%s also %s) is not compatible with process (%s also %s)"
-                    .formatted(recipeSet.getClass(), recipeSet.getClass().getGenericSuperclass(), process.getClass(), process.getClass().getGenericSuperclass()));
+
+            // main logic
+            if (!recipeProcess.equals(process)) {
+                throw new IllegalArgumentException("Recipe %s (also %s) is not compatible with process %s (also %s)"
+                    .formatted(recipe.getClass(), recipe.getClass().getGenericSuperclass(), process.getClass(), process.getClass().getGenericSuperclass()));
+            }
         }
 
         return recipes.put(process, recipeSet);
@@ -209,7 +213,7 @@ public class MixedProcessRecipeMap {
 
     /**
      * Provides an unmodifiable NavigableMap view of the recipes map.
-     * The map is ordered using the {@link #PROCESS_COMPARATOR}.
+     * The map is ordered using the {@link Process#comparator()}.
      * 
      * @return an unmodifiable NavigableMap view of the recipes map
      */
@@ -220,7 +224,7 @@ public class MixedProcessRecipeMap {
 
     /**
      * Returns an unmodifiable NavigableSet of all processes contained in the map.
-     * The processes are ordered using the {@link #PROCESS_COMPARATOR}.
+     * The processes are ordered using the {@link Process#comparator()}.
      * 
      * @return an unmodifiable NavigableSet of all processes in the map
      */
@@ -232,7 +236,7 @@ public class MixedProcessRecipeMap {
     /**
      * Returns an unmodifiable SequencedSet of ProcessRecipeSets contained in 
      * the collection. The order matches the sequence of their associated 
-     * processes, which are ordered using the {@link #PROCESS_COMPARATOR}.
+     * processes, which are ordered using the {@link Process#comparator()}.
      * 
      * @return an unmodifiable SequencedSet of ProcessRecipeSets in the collection
      */
@@ -267,30 +271,5 @@ public class MixedProcessRecipeMap {
      */
     public String toString() {
         return recipes.toString();
-    }
-
-    /**
-     * Provides a custom comparator for ordering processes.
-     * The CraftingProcess is prioritized first, followed by all other processes in lexicographical order, and finally the DummyProcess.
-     * 
-     * @return a comparator for ordering processes
-     */
-    private static Comparator<Process<?>> processComparator() {
-        return new Comparator<Process<?>>() {
-            @Override
-            public int compare(Process<?> p1, Process<?> p2) {
-                if (p1.getProcessName().equals(VanillaProcesses.CRAFTING_PROCESS_NAME) && !p2.getProcessName().equals(VanillaProcesses.CRAFTING_PROCESS_NAME)) {
-                    return -1;
-                } else if (!p1.getProcessName().equals(VanillaProcesses.CRAFTING_PROCESS_NAME) && p2.getProcessName().equals(VanillaProcesses.CRAFTING_PROCESS_NAME)) {
-                    return 1;
-                } else if (p1.getProcessName().equals(VanillaProcesses.DUMMY_PROCESS_NAME) && !p2.getProcessName().equals(VanillaProcesses.DUMMY_PROCESS_NAME)) {
-                    return 1;
-                } else if (!p1.getProcessName().equals(VanillaProcesses.DUMMY_PROCESS_NAME) && p2.getProcessName().equals(VanillaProcesses.DUMMY_PROCESS_NAME)) {
-                    return -1;
-                } else {
-                    return p1.getProcessName().compareTo(p2.getProcessName());
-                }
-            }
-        };
     }
 }

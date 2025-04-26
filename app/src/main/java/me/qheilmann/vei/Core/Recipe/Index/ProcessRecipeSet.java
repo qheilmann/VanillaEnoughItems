@@ -279,8 +279,8 @@ public class ProcessRecipeSet<R extends Recipe> {
     }
 
     /**
-     * Provides a custom comparator for ordering processes.
-     * The CraftingProcess is prioritized first, followed by all other processes in lexicographical order, and finally the DummyProcess.
+     * Provides a custom comparator for ordering recipes.
+     * By key, if both recipes are keyed, then by hash code.
      * 
      * @return a comparator for ordering processes
      */

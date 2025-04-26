@@ -29,7 +29,7 @@ public class RecipeIndexService {
         recipesById = new ConcurrentSkipListMap<>(Key.comparator());
         recipesByResult = new ConcurrentHashMap<>(); // ItemStack#hashcode are not really reliable between sessions, at least we regenerate them each time
         recipesByIngredient = new ConcurrentHashMap<>();
-        recipesByProcess = new ConcurrentSkipListMap<>(MixedProcessRecipeMap.PROCESS_COMPARATOR);
+        recipesByProcess = new ConcurrentSkipListMap<>(Process.comparator());
     }
 
     //#region Indexing / Unindexing

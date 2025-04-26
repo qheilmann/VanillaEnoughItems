@@ -14,7 +14,6 @@ import org.bukkit.inventory.Recipe;
 import dev.jorel.commandapi.arguments.ArgumentSuggestions;
 import dev.jorel.commandapi.arguments.CustomArgument;
 import dev.jorel.commandapi.arguments.NamespacedKeyArgument;
-import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
 import me.qheilmann.vei.VanillaEnoughItems;
 import me.qheilmann.vei.Command.CustomArguments.SearchModeArgument.SearchMode;
 import me.qheilmann.vei.Core.Process.Process;

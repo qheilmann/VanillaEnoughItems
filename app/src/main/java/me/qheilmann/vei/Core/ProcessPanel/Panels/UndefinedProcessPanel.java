@@ -23,14 +23,14 @@ import me.qheilmann.vei.Core.Style.Styles.Style;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
-public final class DummyProcessPanel extends ProcessPanel<Recipe> {
+public final class UndefinedProcessPanel extends ProcessPanel<Recipe> {
 
     private static final ProcessPanelSlot INFORMATIVE_ITEM_SLOT = new ProcessPanelSlot(3, 2);
     private static final SlotSequence<ProcessPanelSlot> DUMMY = new SlotSequence<>(List.of(INFORMATIVE_ITEM_SLOT));
 
     private static final Material INFORMATIVE_ITEM_MATERIAL = Material.BARRIER;
 
-    public DummyProcessPanel(@NotNull Style style, @NotNull RecipeIndexService recipeIndex, @NotNull ProcessRecipeReader<Recipe> recipeReader) {
+    public UndefinedProcessPanel(@NotNull Style style, @NotNull RecipeIndexService recipeIndex, @NotNull ProcessRecipeReader<Recipe> recipeReader) {
         super(style, recipeIndex, recipeReader);
     }
 
@@ -64,7 +64,7 @@ public final class DummyProcessPanel extends ProcessPanel<Recipe> {
     @Override
     public void render(EnumSet<AttachedButtonType> buttonsVisibility) {
         
-        // Dummy process is a special case, it does need to use the super.render() method
+        // Undefined process is a special case, it does need to use the super.render() method
         clear();
 
         NavigableSet<Recipe> recipes = getRecipeVariants();
