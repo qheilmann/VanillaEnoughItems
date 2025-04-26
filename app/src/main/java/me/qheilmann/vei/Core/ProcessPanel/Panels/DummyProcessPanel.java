@@ -2,8 +2,11 @@ package me.qheilmann.vei.Core.ProcessPanel.Panels;
 
 import java.util.EnumSet;
 import java.util.List;
+import java.util.NavigableSet;
+
 import javax.annotation.Nullable;
 
+import org.bukkit.Keyed;
 import org.bukkit.Material;
 import org.bukkit.inventory.Recipe;
 import org.jetbrains.annotations.NotNull;
@@ -64,19 +67,33 @@ public final class DummyProcessPanel extends ProcessPanel<Recipe> {
         // Dummy process is a special case, it does need to use the super.render() method
         clear();
 
-        int nbOfRecipe = getVariantCount();
+        NavigableSet<Recipe> recipes = getRecipeVariants();
+        int nbOfRecipe = recipes.size();
         
         GuiItem<RecipeMenu> informativeItem = new GuiItem<>(INFORMATIVE_ITEM_MATERIAL);
         boolean check = informativeItem.editMeta(meta -> {
             String message = (nbOfRecipe == 1 )
-            ? "Sorry there is %d recipe for this item without a recipe view".formatted(nbOfRecipe) 
-            : "Sorry there are %d recipes for this item without a recipe view".formatted(nbOfRecipe);
+            ? "Sorry there is %d recipe without a recipe view".formatted(nbOfRecipe) 
+            : "Sorry there are %d recipes without a recipe view".formatted(nbOfRecipe);
             meta.displayName(Component.text(message, NamedTextColor.RED));
         });
         
         if (!check) {
             VanillaEnoughItems.LOGGER.warn("Failed to edit the meta of the informative item");
         }
+
+        informativeItem.setAction((event, menu) -> {
+            StringBuilder message = new StringBuilder("The item to tell the user about the recipes without a recipe view was clicked\n");
+            message.append("The recipes without recipe view are:\n");
+            for (Recipe recipe : recipes) {
+                if (recipe instanceof Keyed keyedRecipe) {
+                    message.append(keyedRecipe.getKey()).append("\n");
+                } else {
+                    message.append(recipe.getClass().getSimpleName()).append("\n");
+                }
+            }
+            VanillaEnoughItems.LOGGER.info(message.toString());
+        });
         
         recipePanelSlots.put(INFORMATIVE_ITEM_SLOT, informativeItem);
     }

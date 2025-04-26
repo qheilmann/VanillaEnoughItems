@@ -1,8 +1,11 @@
 package me.qheilmann.vei.Core.ProcessPanel;
 
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NavigableSet;
+
 import javax.annotation.Nullable;
 
 import org.bukkit.Material;
@@ -184,8 +187,8 @@ public abstract class ProcessPanel<R extends Recipe> { // TODO maybe need to dep
         return ProcessPanel.DEFAULT_WORKBENCH_MATERIAL;
     }
 
-    public int getVariantCount() {
-        return recipeReader.getAllRecipes().size();
+    public NavigableSet<R> getRecipeVariants() {
+        return Collections.unmodifiableNavigableSet(recipeReader.getAllRecipes());
     }
 
     /**
