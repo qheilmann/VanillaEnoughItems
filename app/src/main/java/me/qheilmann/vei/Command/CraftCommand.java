@@ -185,7 +185,10 @@ public class CraftCommand implements ICommand{
             // .withArguments(itemArg)
             // .withArguments(safeItemArg)
 
-            .withArguments(new RecipeItemArgument("resultItem", this.recipeIndex, customItemRegistry))
+            // .withArguments(new RecipeItemArgument("resultItem", this.recipeIndex, customItemRegistry))
+            .withArguments(new RecipeItemArgument("resultItem", customItemRegistry)
+                .replaceSuggestions(RecipeItemArgument.argumentSuggestions(recipeIndex, customItemRegistry))
+            )
 
             .withOptionalArguments(new SearchModeArgument("searchMode")
                 .replaceSuggestions(SearchModeArgument.argumentSuggestions())

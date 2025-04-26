@@ -1,13 +1,16 @@
 package me.qheilmann.vei.Command.CustomArguments;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.command.CommandSender;
 import org.bukkit.inventory.ItemStack;
 
+import dev.jorel.commandapi.arguments.ArgumentSuggestions;
 import dev.jorel.commandapi.arguments.CustomArgument;
 import dev.jorel.commandapi.arguments.NamespacedKeyArgument;
 import me.qheilmann.vei.VanillaEnoughItems;
@@ -15,15 +18,9 @@ import me.qheilmann.vei.Core.Recipe.Index.RecipeIndexService;
 import me.qheilmann.vei.Service.CustomItemRegistry;
 import net.kyori.adventure.text.Component;
 
-public class RecipeItemArgument extends CustomArgument<ItemStack, NamespacedKey>{
+public class RecipeItemArgument extends CustomArgument<ItemStack, NamespacedKey> {
 
-    CustomItemRegistry customItemRegistry;
-
-    // Cache to store the last input and suggestions
-    private String lastInput = null;
-    private Set<String> lastSuggestions = null;
-
-    public RecipeItemArgument(String nodeName, RecipeIndexService recipeIndexService, CustomItemRegistry customItemRegistry) {
+    public RecipeItemArgument(String nodeName, CustomItemRegistry customItemRegistry) {
         super(new NamespacedKeyArgument(nodeName), info -> {
             NamespacedKey key = info.currentInput();
 
@@ -42,40 +39,39 @@ public class RecipeItemArgument extends CustomArgument<ItemStack, NamespacedKey>
             }
 
             // Fail
-            throw CustomArgumentHelper.minecraftLikeException((arg) -> Component.text("Unknow item '" + arg + "'"), info);
-        });
-
-        this.customItemRegistry = customItemRegistry;
-
-        // Generate the suggestions for the argument in a separate thread to avoid blocking the main thread
-        this.replaceSuggestions((info, builder) -> {
-            return CompletableFuture.supplyAsync(() -> {
-                
-                String input = info.currentArg().toLowerCase();
-                Set<String> suggestions = new HashSet<>();
-
-                // Check if the input is a prefix of the last input, if so, use the cached suggestions
-                if (lastInput != null && (input.startsWith(lastInput) || input.endsWith(lastInput))) {
-                    suggestions = filterCachedSuggestions(input, lastSuggestions);
-                } else { // Otherwise, recalculate the suggestions
-                    suggestions = recalculateSuggestions(input, recipeIndexService);
-                }
-
-                for (String suggestion : suggestions) {
-                    if (suggestion.contains(input)) {
-                        builder.suggest(suggestion);
-                    }
-                }
-
-                lastInput = input;
-                lastSuggestions = suggestions;
-
-                return builder;
-            }).thenApply(b -> b.build());
+            throw CustomArgumentHelper.minecraftLikeException((arg) -> Component.text("Unknown item '" + arg + "'"), info);
         });
     }
 
-    private Set<String> filterCachedSuggestions(String input, Set<String> lastSuggestions) {
+    // This method is protected to prevent direct usage of the suggestion logic within CommandAPI's default suggestion checks.
+    // Instead, the builder should be used to manually add suggestions while applying our custom checks.
+    public static CompletableFuture<Collection<String>> suggestions(RecipeIndexService recipeIndexService, CustomItemRegistry customItemRegistry, String input) {
+        return CompletableFuture.supplyAsync(() -> 
+            // This is a resource-intensive operation, so it would be better to cache already calculated suggestions.
+            // However, since we can have multiple RecipeIndex instances and this is a static method, implementing caching is a bit tricky.
+            // Some caching implementations were done just after commit fbd4474649a04cdafb81c0c8d115ecda25db0ec0.
+            // At least, this operation is currently performed on a separate thread, so the performance impact is mitigated.
+            recalculateSuggestions(input, recipeIndexService, customItemRegistry)
+        );
+    }
+
+    public static ArgumentSuggestions<CommandSender> argumentSuggestions(RecipeIndexService recipeIndexService, CustomItemRegistry customItemRegistry) {
+        return (info, builder) -> {
+            CompletableFuture<Collection<String>> suggestionsFuture = suggestions(recipeIndexService, customItemRegistry, info.currentArg());
+
+            return suggestionsFuture.thenApply(suggestions -> {
+                for (String suggestion : suggestions) {
+                    builder.suggest(suggestion);
+                }
+                return builder.build();
+            });
+        };
+    }
+
+    //#region Utility
+
+    @SuppressWarnings("unused")
+    private static Set<String> filterCachedSuggestions(String input, Set<String> lastSuggestions) {
         Set<String> filteredSuggestions = new HashSet<>();
         for (String suggestion : lastSuggestions) {
             if (suggestion.contains(input)) {
@@ -85,22 +81,22 @@ public class RecipeItemArgument extends CustomArgument<ItemStack, NamespacedKey>
         return filteredSuggestions;
     }
 
-    private Set<String> recalculateSuggestions(String input, RecipeIndexService recipeIndexService) {
+    private static Set<String> recalculateSuggestions(String input, RecipeIndexService recipeIndexService, CustomItemRegistry customItemRegistry) {
         Set<NamespacedKey> availableNamespaceKey = new HashSet<>();
-        collectNamespaceKey(recipeIndexService.getAllResultItemStacks(), availableNamespaceKey);
-        collectNamespaceKey(recipeIndexService.getAllIngredientItemStacks(), availableNamespaceKey);
+        collectNamespaceKey(recipeIndexService.getAllResultItemStacks(), availableNamespaceKey, customItemRegistry);
+        collectNamespaceKey(recipeIndexService.getAllIngredientItemStacks(), availableNamespaceKey, customItemRegistry);
 
         Set<String> suggestions = new HashSet<>();
         for (NamespacedKey namespacedKey : availableNamespaceKey) {
             String namespaceKeyStr = namespacedKey.toString().toLowerCase();
-            if (namespaceKeyStr.contains(input)) {
+            if (namespaceKeyStr.contains(input.toLowerCase())) {
                 suggestions.add(namespaceKeyStr);
             }
         }
 
         return suggestions;
     }
-
+    
     /**
      * Collects NamespacedKeys from ItemStacks and adds them to the existing set.
      * Adds Material's key for vanilla items, custom key for custom items, or logs a
@@ -109,15 +105,11 @@ public class RecipeItemArgument extends CustomArgument<ItemStack, NamespacedKey>
      * @param existingSet Existing set of NamespacedKeys, or null to create a new set
      * @return Set of NamespacedKeys
      */
-    private Set<NamespacedKey> collectNamespaceKey(Set<ItemStack> itemStacks, Set<NamespacedKey> existingSet) {        
-        if (existingSet == null) {
-            existingSet = new HashSet<>();
-        }
-        
+    private static void collectNamespaceKey(Set<ItemStack> itemStacks, Set<NamespacedKey> existingSet, CustomItemRegistry customItemRegistry) {
         if (itemStacks == null || itemStacks.isEmpty()) {
-            return existingSet;
+            return;
         }
-        
+
         for (ItemStack item : itemStacks) {
             // Check if the item is a vanilla one
             ItemStack dummyVanillaItem = new ItemStack(item.getType());
@@ -136,7 +128,5 @@ public class RecipeItemArgument extends CustomArgument<ItemStack, NamespacedKey>
             // Log a warning if the item is neither vanilla nor custom
             VanillaEnoughItems.LOGGER.warn("Item " + item + " is not found inside the vanilla and the custom registry, so it won't be suggested. Consider adding it to the custom registry.");
         }
-
-        return existingSet;
     }
 }
