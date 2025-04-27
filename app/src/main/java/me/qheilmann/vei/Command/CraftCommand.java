@@ -11,6 +11,8 @@ import org.bukkit.inventory.Recipe;
 import org.jetbrains.annotations.NotNull;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
+import org.bukkit.command.CommandSender;
+
 import dev.jorel.commandapi.CommandAPIBukkit;
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.CommandPermission;
@@ -31,8 +33,11 @@ import me.qheilmann.vei.Core.Recipe.Index.Reader.ProcessRecipeReader;
 import me.qheilmann.vei.Menu.MenuManager;
 import me.qheilmann.vei.Service.CustomItemRegistry;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent.Builder;
+import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 
 public class CraftCommand implements ICommand{
     public static final String NAME = "craft";
@@ -53,10 +58,10 @@ public class CraftCommand implements ICommand{
                                     - [<process>]: If provided, opens directly to that process tab. Default: the first available process.  
                                     - [<recipeId>]: If provided, opens directly to that specific recipe ID. Default: the first recipe of the process.  
 
-                                /craft --id=<recipeId>  
+                                /craft --id <recipeId>  
                                     Opens the recipe specified by <recipeId> and displays it alongside other recipes with the same result.  
                                     Arguments:  
-                                    - --id=<recipeId>: The unique ID of the recipe to open.  
+                                    - --id <recipeId>: The unique ID of the recipe to open.  
 
                                 /craft --all [<process> [<recipeId>]]  
                                     Displays all recipes grouped by process.  
@@ -74,11 +79,11 @@ public class CraftCommand implements ICommand{
                                     Reloads the plugin configuration and recipes.  
 
                                 Example Usage:  
-                                - `/craft iron_ingot as-result smelting minecraft:iron_ingot_from_blasting_iron_ore` → Opens recipes for an item as a result  
-                                - `/craft iron_ingot as-ingredient crafting minecraft:iron_helmet` → Opens recipes for an item as an ingredient  
-                                - `/craft --id=minecraft:cake` → Opens a specific recipe by ID  
-                                - `/craft --all smelting` → Shows all recipes for a process  
-                                - `/craft --all smelting minecraft:baked_potato` → Shows all recipes for a process and opens a specific recipe  
+                                - `/craft iron_ingot as-result minecraft:blasting minecraft:iron_ingot_from_blasting_iron_ore` → Opens recipes for an item as a result  
+                                - `/craft iron_ingot as-ingredient minecraft:crafting minecraft:iron_helmet` → Opens recipes for an item as an ingredient  
+                                - `/craft --id minecraft:cake` → Opens a specific recipe by ID  
+                                - `/craft --all minecraft:smelting` → Shows all recipes for a process  
+                                - `/craft --all minecraft:smelting minecraft:baked_potato` → Shows all recipes for a process and opens a specific recipe  
 
                                 Notes:  
                                 - The command sender must be a player to open the GUI.  
@@ -165,16 +170,16 @@ public class CraftCommand implements ICommand{
         // /craft --help
         createBaseCraftCommand()
             .withArguments(new MultiLiteralArgument("help", "--help"))
-            .executesPlayer((player, args) -> {
-                helpAction(player);
+            .executes((sender, args) -> {
+                helpAction(sender);
             })
             .register();
 
         // /craft --version
         createBaseCraftCommand()
             .withArguments(new MultiLiteralArgument("version", "--version"))
-            .executesPlayer((player, args) -> {
-                versionAction(player);
+            .executes((sender, args) -> {
+                versionAction(sender);
             })
             .register();
 
@@ -196,8 +201,8 @@ public class CraftCommand implements ICommand{
             .withArguments(new LiteralArgument("--reload")
                 .withPermission(CommandPermission.OP)
             )
-            .executesPlayer((player, args) -> {
-                reloadAction(player);
+            .executes((sender, args) -> {
+                reloadAction(sender);
             })
             .register();
     }
@@ -291,20 +296,143 @@ public class CraftCommand implements ICommand{
         menuManager.openRecipeMenu(player, recipeReader);
     }
 
-    private void helpAction(Player player) {
-        player.sendMessage(Component.text(USAGE, NamedTextColor.YELLOW));
+    private void helpAction(CommandSender sender) {
+        sender.sendMessage(buildUsage());
     }
 
-    private void versionAction(Player player) {
-        player.sendMessage(Component.text("Version: " + VanillaEnoughItems.getVersion(), NamedTextColor.YELLOW));
+    private void versionAction(CommandSender sender) {
+        sender.sendMessage(Component.text("Version: " + VanillaEnoughItems.getVersion(), NamedTextColor.YELLOW));
     }
 
-    private void reloadAction(@NotNull Player player) {
-        player.sendMessage(Component.text("All recipes will be cleared and reloaded, excluding non-vanilla processes.", TextColor.color(0xff7777)));
+    private void reloadAction(@NotNull CommandSender sender) {
+        sender.sendMessage(Component.text("All recipes will be cleared and reloaded. (Note: custom non-vanilla process types will not be restored automatically)", TextColor.color(0xff7777)));
         recipeIndex.unindexAll();
         recipeIndex.indexRecipes(Bukkit.getServer().recipeIterator());
-        player.sendMessage(Component.text("All recipes reloaded.", NamedTextColor.GREEN));
+        sender.sendMessage(Component.text("All recipes reloaded.", NamedTextColor.GREEN));
     }
 
     //#endregion Action
+
+    //#region Usage
+
+    private Component buildUsage() {
+        Builder usage = Component.text();
+
+        usage.append(ComponentHeaderLarge("Usage:"))
+            .append(Component.newline())
+
+            .append(ComponentHeaderMedium("By item"))
+            .append(ComponentUsageCommand("/craft <item> [as-result | as-ingredient [<process> [<recipeId>]]]", "/craft iron_ingot as-result minecraft:blasting minecraft:iron_ingot_from_blasting_iron_ore"))
+            .append(ComponentDescription("Opens the possible recipes involving the specified <item>."))
+            .append(ComponentHeaderSmall("Arguments"))
+            .append(ComponentArgumentDescription("<item>", "The item to search for in recipes."))
+            .append(ComponentArgumentDescription("[as-result | as-ingredient]", "Whether to search for recipes where the item is the result or an ingredient. Default: as-result."))
+            .append(ComponentArgumentDescription("[<process>]", "If provided, opens directly to that process tab. Default: the first available process."))
+            .append(ComponentArgumentDescription("[<recipeId>]", "If provided, opens directly to that specific recipe ID. Default: the first recipe of the process."))
+            .append(Component.newline())
+            
+            .append(ComponentHeaderMedium("By process"))
+            .append(ComponentUsageCommand("/craft --all [<process> [<recipeId>]]", "/craft --all minecraft:smelting"))
+            .append(ComponentDescription("Displays all recipes grouped by process."))
+            .append(ComponentHeaderSmall("Arguments"))
+            .append(ComponentArgumentDescription("[<process>]", "If provided, opens directly to that process tab. Default: the first available process."))
+            .append(ComponentArgumentDescription("[<recipeId>]", "If provided, opens directly to that specific recipe ID. Default: the first recipe of the process."))
+            .append(Component.newline())
+            
+            .append(ComponentHeaderMedium("By recipe ID:"))
+            .append(ComponentUsageCommand("/craft --id <recipeId>", "/craft --id minecraft:cake"))
+            .append(ComponentDescription("Opens the recipe specified by <recipeId> and displays it alongside other recipes with the same result."))
+            .append(ComponentHeaderSmall("Arguments"))
+            .append(ComponentArgumentDescription("<recipeId>", "The unique ID of the recipe to open."))
+            .append(Component.newline())
+            
+            .append(ComponentHeaderMedium("Other commands"))
+            .append(ComponentUsageCommand("/craft --help", "/craft --help"))
+            .append(ComponentDescription("Displays the help message for the /craft command."))
+            .append(ComponentUsageCommand("/craft --version", "/craft --version"))
+            .append(ComponentDescription("Displays the version of the plugin."))
+            .append(ComponentUsageCommand("/craft --reload", "/craft --reload"))
+            .append(ComponentDescription("Reloads the plugin configuration and recipes."))
+            .append(Component.newline())
+            
+            .append(ComponentHeaderMedium("Examples"))
+            .append(ComponentExampleCommand("/craft iron_ingot"))
+            .append(ComponentExampleCommand("/craft iron_ingot as-ingredient"))
+            .append(ComponentExampleCommand("/craft iron_ingot as-result minecraft:blasting minecraft:iron_ingot_from_blasting_iron_ore"))
+            .append(ComponentExampleCommand("/craft --all"))
+            .append(ComponentExampleCommand("/craft --all minecraft:smelting"))
+            .append(ComponentExampleCommand("/craft --all minecraft:smelting minecraft:baked_potato"))
+            .append(ComponentExampleCommand("/craft --id minecraft:cake"))
+            .append(Component.newline())
+
+            .append(ComponentHeaderSmall("Notes"))
+            .append(ComponentDescription("The command sender must be a player to open the GUI."));
+            
+            return usage.build();
+        }
+        
+        private Component ComponentHeaderLarge(String title) {
+        return Component.text(title, NamedTextColor.YELLOW, TextDecoration.BOLD).appendNewline();
+    }
+
+    private Component ComponentHeaderMedium(String title) {
+        return Component.text(title, NamedTextColor.YELLOW).appendNewline();
+    }
+
+    private Component ComponentHeaderSmall(String title) {
+        return Component.text(title, NamedTextColor.GRAY, TextDecoration.BOLD).appendNewline();
+    }
+
+    /*
+     * Builds a component with the usage format and the suggested command.
+     * Similar to ComponentCommand, but specifically for usage commands, 
+     * the suggested command can be different from the visible format.
+     */
+    private Component ComponentUsageCommand(String visibleFormat, String sugestCommand) {
+        Builder usage = Component.text();
+
+        usage.append(Component.text(visibleFormat, NamedTextColor.DARK_GREEN));
+            addHoverAndSuggest(usage, sugestCommand)
+            .appendNewline();
+        
+        return usage.build();
+    }
+
+    /*
+     * Builds a component with an example command format and the suggested command.
+     * Similar to ComponentUsageCommand, but specifically for example commands.
+     */
+    private Component ComponentExampleCommand(String exampleCommand) {
+        Builder usage = Component.text();
+
+        usage.append(Component.text("- ", NamedTextColor.GRAY))
+            .append(Component.text(exampleCommand, NamedTextColor.GREEN));
+                addHoverAndSuggest(usage, exampleCommand)
+            .appendNewline();
+        
+        return usage.build();
+    }
+
+    private Component ComponentDescription(String description) {
+        return Component.text(description, NamedTextColor.GRAY).appendNewline();
+    }
+
+
+
+    private Component ComponentArgumentDescription(String node, String description) {
+        Builder component = Component.text();
+
+        component.append(Component.text("- ", NamedTextColor.GRAY))
+            .append(Component.text(node, NamedTextColor.GRAY, TextDecoration.UNDERLINED))
+            .append(Component.text(": " + description, NamedTextColor.GRAY))
+            .appendNewline();
+
+        return component.build();
+    }
+
+    private Builder addHoverAndSuggest(Builder baseComponent, String suggestCommand) {
+        return baseComponent.hoverEvent(Component.text("Click to suggest: ", NamedTextColor.GRAY)
+            .append(Component.text(suggestCommand, NamedTextColor.GREEN)))
+            .clickEvent(ClickEvent.suggestCommand(suggestCommand));
+    }
 }
