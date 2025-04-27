@@ -112,7 +112,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
     private final MixedProcessRecipeReader mixedProcessRecipeReader;
     private ProcessPanel<?> processPanel;
     private int workbenchOptionOffset = 0;
-    private int processOptionOffset = 0;
+    private int processOptionOffset;
 
     // menu items
     private GuiItem<RecipeMenu> processScrollLeftItem;
@@ -161,6 +161,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         this.style = style;
         this.recipeIndex = reicpeIndex;
         this.mixedProcessRecipeReader = mixedProcessRecipeReader;
+        this.processOptionOffset = getInitalProcessOptionOffset(mixedProcessRecipeReader);
 
         // Menu configuration
         initAllItem();
@@ -808,6 +809,8 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
 
     //#endregion Button actions
 
+    //#region Others
+
     @Override
     @Nullable
     public InventoryView open(@NotNull HumanEntity humanEntity) {
@@ -891,6 +894,31 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         return set;
     }
 
+    private int getInitalProcessOptionOffset(MixedProcessRecipeReader mixedProcessRecipeReader) {
+        Process<?> currentProcess = mixedProcessRecipeReader.currentProcess();
+        NavigableSet<Process<?>> processOptions = mixedProcessRecipeReader.getAllProcess();
+        
+        int offset = 0;
+        for (Process<?> process : processOptions) {
+            if (process.equals(currentProcess)) {
+                break; // Found the current process, stop iterating
+            }
+            offset++;
+        }
+
+        offset = offset - PROCESS_SLOT_RANGE.size() / 2; // Center the current process in the visible range
+
+        // edge case: current process is next to the start or end of the list
+        int maxOffset = Math.max(processOptions.size() - PROCESS_SLOT_RANGE.size(), 0);
+        if (offset < 0) {
+            offset = 0; // Clamp to the min offset
+        } else if (offset > maxOffset) {
+            offset = maxOffset; // Clamp to the max offset
+        }
+
+        return offset;
+    }
+
     /**
      * Get the quick link string to open the recipe menu with the current item, process and variant.
      * @return the quick link string with something like "/craft minecraft:iron_ingot smelting 2"
@@ -912,4 +940,6 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         StringSelection strSel = new StringSelection(str);
         clipboard.setContents(strSel, null);
     }
+
+    //#endregion Others
 }
