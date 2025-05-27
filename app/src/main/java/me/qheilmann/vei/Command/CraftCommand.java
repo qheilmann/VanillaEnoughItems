@@ -45,49 +45,10 @@ public class CraftCommand implements ICommand{
     public static final String SHORT_DESCRIPTION = "Show item recipe";
     public static final String LONG_DESCRIPTION = "Open a GUI showing the recipe of an item, it can be crafting, smelting, brewing, etc.";
     public static final CommandPermission PERMISSION = CommandPermission.NONE;
-    // TODO: implement a better help system with the command API (separated --help with adventure component, and /help craft just show really basic help + "type /craft --help for more information")
     public static final String USAGE = """
-                                [WORK IN PROGRESS]
-                                Not all arguments are implemented yet.
-
-                                /craft <item> [as-result | as-ingredient [<process> [<recipeId>]]]  
-                                    Opens the possible recipes involving the specified <item>.  
-                                    Arguments:  
-                                    - <item>: The item to search for in recipes.  
-                                    - [as-result | as-ingredient]: Whether to search for recipes where the item is the result or an ingredient. Default: as-result.  
-                                    - [<process>]: If provided, opens directly to that process tab. Default: the first available process.  
-                                    - [<recipeId>]: If provided, opens directly to that specific recipe ID. Default: the first recipe of the process.  
-
-                                /craft --id <recipeId>  
-                                    Opens the recipe specified by <recipeId> and displays it alongside other recipes with the same result.  
-                                    Arguments:  
-                                    - --id <recipeId>: The unique ID of the recipe to open.  
-
-                                /craft --all [<process> [<recipeId>]]  
-                                    Displays all recipes grouped by process.  
-                                    Arguments:  
-                                    - [<process>]: If provided, opens directly to that process tab. Default: the first available process.  
-                                    - [<recipeId>]: If provided, opens directly to that specific recipe ID. Default: the first recipe of the process.  
-
-                                /craft --help  
-                                    Displays the help message for the /craft command.  
-
-                                /craft --version  
-                                    Displays the version of the plugin.  
-
-                                /craft --reload  
-                                    Reloads the plugin configuration and recipes.  
-
-                                Example Usage:  
-                                - `/craft iron_ingot as-result minecraft:blasting minecraft:iron_ingot_from_blasting_iron_ore` → Opens recipes for an item as a result  
-                                - `/craft iron_ingot as-ingredient minecraft:crafting minecraft:iron_helmet` → Opens recipes for an item as an ingredient  
-                                - `/craft --id minecraft:cake` → Opens a specific recipe by ID  
-                                - `/craft --all minecraft:smelting` → Shows all recipes for a process  
-                                - `/craft --all minecraft:smelting minecraft:baked_potato` → Shows all recipes for a process and opens a specific recipe  
-
-                                Notes:  
-                                - The command sender must be a player to open the GUI.  
-                                        """;
+                                    /craft <item>
+                                    Type /craft --help for detailed usage instructions and examples.
+                                       """;
 
     private MenuManager menuManager;
     private RecipeIndexService recipeIndex;
