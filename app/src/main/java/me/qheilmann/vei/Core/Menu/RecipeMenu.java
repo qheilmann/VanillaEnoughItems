@@ -618,7 +618,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
             .build();
 
         this.close(humanEntity);
-        setClipBoard(getQuickLinkString());
+        setClipBoard(quickLink);
         humanEntity.sendMessage(message);
     }
 
@@ -928,7 +928,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
 
         if (currentRecipe instanceof Keyed keyedRecipe) {
             String recipeId = keyedRecipe.key().toString();
-            return "/" + CraftCommand.NAME + " " + "--id=" + recipeId;
+            return "/" + CraftCommand.NAME + " " + "--id " + recipeId;
         } else {
             return "No quick link available for this recipe type";
         }
