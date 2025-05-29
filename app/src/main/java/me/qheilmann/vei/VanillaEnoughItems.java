@@ -332,7 +332,6 @@ public class VanillaEnoughItems extends JavaPlugin {
 // /craft " " (server craft list) or (player if server not existe)
 // /craft player_bookmark (player craft list) pb
 // /craft server_bookmark (server craft list) sb
-// /craft itemStack
 
 // [Addon de craft possibles]
 // Shears sur un blocs pour le changé (+ actual recipe like carved pumpkin)
