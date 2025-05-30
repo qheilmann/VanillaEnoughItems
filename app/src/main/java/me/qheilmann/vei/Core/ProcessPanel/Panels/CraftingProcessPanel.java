@@ -147,7 +147,7 @@ public class CraftingProcessPanel extends ProcessPanel<CraftingRecipe> {
         }
 
         // Result
-        recipePanelSlots.put(RESULT_SLOT, new GuiItem<>(currentRecipe.getResult()));
+        recipePanelSlots.put(RESULT_SLOT, buildNewRecipeGuiItem(currentRecipe.getResult()));
     }
 
     private void populateShapedRecipeCraftingsSlot(ShapedRecipe shapedRecipe) {

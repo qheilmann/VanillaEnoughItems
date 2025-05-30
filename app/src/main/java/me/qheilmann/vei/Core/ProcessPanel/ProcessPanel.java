@@ -5,10 +5,13 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NavigableSet;
+import java.util.UUID;
 
 import javax.annotation.Nullable;
 
 import org.bukkit.Material;
+import org.bukkit.entity.HumanEntity;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.jetbrains.annotations.NotNull;
@@ -17,11 +20,13 @@ import com.google.common.base.Preconditions;
 import me.qheilmann.vei.Core.GUI.GuiItem;
 import me.qheilmann.vei.Core.Menu.RecipeMenu;
 import me.qheilmann.vei.Core.ProcessPanel.Panels.CraftingProcessPanel;
+import me.qheilmann.vei.Core.Recipe.Bookmark.Bookmark;
 import me.qheilmann.vei.Core.Recipe.Index.RecipeIndexService;
 import me.qheilmann.vei.Core.Recipe.Index.Reader.MixedProcessRecipeReader;
 import me.qheilmann.vei.Core.Recipe.Index.Reader.ProcessRecipeReader;
 import me.qheilmann.vei.Core.Slot.Collection.SlotSequence;
 import me.qheilmann.vei.Core.Style.Styles.Style;
+import net.kyori.adventure.key.Keyed;
 
 /**
  * <h1>ProcessPanel</h1>
@@ -365,9 +370,27 @@ public abstract class ProcessPanel<R extends Recipe> { // TODO maybe need to dep
     protected GuiItem<RecipeMenu> buildNewRecipeGuiItem(ItemStack item) {
         GuiItem<RecipeMenu> guiItem = new GuiItem<>(item);
         guiItem.setAction((event, menu) -> {
-            MixedProcessRecipeReader recipeReader = recipeIndex.getByResult(item);
+            boolean isLeftClick = event.isLeftClick();
+            boolean isRightClick = event.isRightClick();
+            boolean isSwapOffhand = event.getClick() == ClickType.SWAP_OFFHAND;
+            boolean isMiddleClick = event.getClick() == ClickType.MIDDLE;
+            boolean isDrop = event.getClick() == ClickType.DROP;
+
+            MixedProcessRecipeReader recipeReader;
+
+            if (isLeftClick || isSwapOffhand) {
+                recipeReader = recipeIndex.getByResult(item);
+            } else if (isRightClick || isMiddleClick) {
+                recipeReader = recipeIndex.getByIngredient(item);
+            } else if (isDrop) {
+                toggleBookmarkRecipe(event.getWhoClicked(), item);
+                return; // No other action
+            } else {
+                return; // No action for other clicks
+            }
+
             if (recipeReader == null) {
-                return;
+                return; // Silently ignore if no recipe found
             }
 
             RecipeMenu recipeMenu = new RecipeMenu(style, recipeIndex, recipeReader);
@@ -375,6 +398,30 @@ public abstract class ProcessPanel<R extends Recipe> { // TODO maybe need to dep
         });
 
         return guiItem;
+    }
+
+    private void toggleBookmarkRecipe(HumanEntity player, ItemStack item) {
+
+        UUID playerId = player.getUniqueId();
+
+        MixedProcessRecipeReader recipeReader = recipeIndex.getByResult(item);
+        if (recipeReader == null) {
+            return; // Silently ignore if no recipe found
+        }
+
+        Recipe currentRecipe = recipeReader.currentProcessRecipeReader().currentRecipe();
+
+        if(!(currentRecipe instanceof Keyed keyedRecipe)) {
+            player.sendMessage("This recipe cannot be bookmarked");
+        }
+
+        else {
+            if (Bookmark.hasBookmarkAsync(playerId, keyedRecipe).join()) {
+                Bookmark.removeBookmarkAsync(playerId, keyedRecipe).join(); // TODO async bookmark add
+            } else {
+                Bookmark.addBookmarkAsync(playerId, keyedRecipe).join();
+            }
+        }
     }
 
     private void putSlotIfNotNull(ProcessPanelSlot coord, GuiItem<RecipeMenu> parentButton) {
