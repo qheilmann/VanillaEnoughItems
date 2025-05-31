@@ -147,7 +147,7 @@ public class CraftingProcessPanel extends ProcessPanel<CraftingRecipe> {
         }
 
         // Result
-        recipePanelSlots.put(RESULT_SLOT, buildNewRecipeGuiItem(currentRecipe.getResult()));
+        recipePanelSlots.put(RESULT_SLOT, buildRecipeResultGuiItem(currentRecipe.getResult()));
     }
 
     private void populateShapedRecipeCraftingsSlot(ShapedRecipe shapedRecipe) {
@@ -161,7 +161,7 @@ public class CraftingProcessPanel extends ProcessPanel<CraftingRecipe> {
                     continue;
                 }
                 if (recipeChoice instanceof RecipeChoice.MaterialChoice materialChoice) {
-                    GuiItem<RecipeMenu> recipeGuiItem = buildNewRecipeGuiItem(materialChoice.getItemStack());
+                    GuiItem<RecipeMenu> recipeGuiItem = buildRecipeNonResultGuiItem(materialChoice.getItemStack());
                     recipePanelSlots.put(new ProcessPanelSlot(x+1,y+1), recipeGuiItem); // +1 +1 is because of the crafting grid offset
                 }
                 else {
@@ -193,7 +193,7 @@ public class CraftingProcessPanel extends ProcessPanel<CraftingRecipe> {
         // Crafting grid
         for(RecipeChoice recipeChoice : recipeChoices) {
             if(recipeChoice instanceof RecipeChoice.MaterialChoice materialChoice) {
-                GuiItem<RecipeMenu> recipeGuiItem = buildNewRecipeGuiItem(materialChoice.getItemStack());
+                GuiItem<RecipeMenu> recipeGuiItem = buildRecipeNonResultGuiItem(materialChoice.getItemStack());
                 recipePanelSlots.put(new ProcessPanelSlot(x+1, y+1), recipeGuiItem); // +1 +1 is because of the crafting grid offset
             }
             else {

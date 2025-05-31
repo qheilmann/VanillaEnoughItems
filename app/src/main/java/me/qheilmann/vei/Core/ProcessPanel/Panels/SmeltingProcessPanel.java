@@ -110,12 +110,12 @@ public class SmeltingProcessPanel extends ProcessPanel<FurnaceRecipe> {
         FurnaceRecipe recipe = getCurrentRecipe();
         RecipeChoice recipeChoice = recipe.getInputChoice();
         if (recipeChoice instanceof RecipeChoice.MaterialChoice materialChoice) {
-            GuiItem<RecipeMenu> inputGuiItem = buildNewRecipeGuiItem(materialChoice.getItemStack());
+            GuiItem<RecipeMenu> inputGuiItem = buildRecipeNonResultGuiItem(materialChoice.getItemStack());
             recipePanelSlots.put(INGREDIENT_SLOT, inputGuiItem);
         }
 
-        GuiItem<RecipeMenu> combustibleGuiItem = buildNewRecipeGuiItem(new ItemStack(Material.COAL));
-        GuiItem<RecipeMenu> resultGuiItem = buildNewRecipeGuiItem(recipe.getResult());
+        GuiItem<RecipeMenu> combustibleGuiItem = buildRecipeNonResultGuiItem(new ItemStack(Material.COAL));
+        GuiItem<RecipeMenu> resultGuiItem = buildRecipeResultGuiItem(recipe.getResult());
         recipePanelSlots.put(COMBUSTIBLE_SLOT, combustibleGuiItem);
         recipePanelSlots.put(RESULT_SLOT, resultGuiItem);        
     }

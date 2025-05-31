@@ -602,7 +602,7 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
     //#endregion Button setup
     //#region Button actions
 
-    private void quickLinkAction(InventoryClickEvent event, RecipeMenu menu) {
+    public void quickLinkAction(InventoryClickEvent event, RecipeMenu menu) {
         HumanEntity humanEntity = event.getWhoClicked();
         String quickLink = getQuickLinkString();
         Component message = Component.text()

@@ -108,11 +108,11 @@ public class CampfireProcessPanel extends ProcessPanel<CampfireRecipe> {
         CampfireRecipe recipe = getCurrentRecipe();
         RecipeChoice recipeChoice = recipe.getInputChoice();
         if (recipeChoice instanceof RecipeChoice.MaterialChoice materialChoice) {
-            GuiItem<RecipeMenu> inputGuiItem = buildNewRecipeGuiItem(materialChoice.getItemStack());
+            GuiItem<RecipeMenu> inputGuiItem = buildRecipeNonResultGuiItem(materialChoice.getItemStack());
             recipePanelSlots.put(INGREDIENT_SLOT, inputGuiItem);
         }
 
-        GuiItem<RecipeMenu> resultGuiItem = buildNewRecipeGuiItem(recipe.getResult());
+        GuiItem<RecipeMenu> resultGuiItem = buildRecipeResultGuiItem(recipe.getResult());
         recipePanelSlots.put(RESULT_SLOT, resultGuiItem);        
     }
 

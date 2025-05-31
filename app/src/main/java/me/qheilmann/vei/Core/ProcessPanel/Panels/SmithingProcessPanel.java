@@ -123,7 +123,7 @@ public class SmithingProcessPanel extends ProcessPanel<SmithingRecipe> {
             populateSmithingTransformAndTrimRecipe(templateChoice, baseChoice, additionChoice);
         }
 
-        recipePanelSlots.put(RESULT_SLOT, new GuiItem<>(recipe.getResult()));        
+        recipePanelSlots.put(RESULT_SLOT, buildRecipeResultGuiItem(recipe.getResult()));
     }
 
     private void populateSmithingTransformAndTrimRecipe(RecipeChoice templateChoice, RecipeChoice baseChoice, RecipeChoice additionChoice) {
@@ -132,7 +132,7 @@ public class SmithingProcessPanel extends ProcessPanel<SmithingRecipe> {
         GuiItem<RecipeMenu> additionItem;
         
         if (templateChoice instanceof RecipeChoice.MaterialChoice) {
-            templateItem = buildNewRecipeGuiItem(((RecipeChoice.MaterialChoice) templateChoice).getItemStack());
+            templateItem = buildRecipeNonResultGuiItem(((RecipeChoice.MaterialChoice) templateChoice).getItemStack());
         } else {
             // TODO remove the use a deprecated method for generating the warning item
             templateItem = new GuiItem<>(new GuiItemService().CreateWarningItem(
@@ -140,14 +140,14 @@ public class SmithingProcessPanel extends ProcessPanel<SmithingRecipe> {
             ));
         }
         if (baseChoice instanceof RecipeChoice.MaterialChoice) {
-            baseItem = buildNewRecipeGuiItem(((RecipeChoice.MaterialChoice) baseChoice).getItemStack());
+            baseItem = buildRecipeNonResultGuiItem(((RecipeChoice.MaterialChoice) baseChoice).getItemStack());
         } else {
             baseItem = new GuiItem<>(new GuiItemService().CreateWarningItem(
                 "Conversion of the base item to a MaterialChoice is not supported. The current base type is %s".formatted(baseChoice.getClass().getName())
             ));
         }
         if (additionChoice instanceof RecipeChoice.MaterialChoice) {
-            additionItem = buildNewRecipeGuiItem(((RecipeChoice.MaterialChoice) additionChoice).getItemStack());
+            additionItem = buildRecipeNonResultGuiItem(((RecipeChoice.MaterialChoice) additionChoice).getItemStack());
         } else {
             additionItem = new GuiItem<>(new GuiItemService().CreateWarningItem(
                 "Conversion of the addition item to a MaterialChoice is not supported. The current addition type is %s".formatted(additionChoice.getClass().getName())

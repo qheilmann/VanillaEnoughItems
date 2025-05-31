@@ -363,13 +363,53 @@ public abstract class ProcessPanel<R extends Recipe> { // TODO maybe need to dep
     }
 
     /**
-     * Creates a GuiItem that opens the recipe inside the recipeMenu for the given item.
-     * @param processRecipeSet The item to show and open the recipe for.
+     * Creates a GuiItem that opens the recipes (only by ingrediaent) inside the recipeMenu for the given item.
      * @return The new GuiItem instance.
      */
-    protected GuiItem<RecipeMenu> buildNewRecipeGuiItem(ItemStack item) {
-        GuiItem<RecipeMenu> guiItem = new GuiItem<>(item);
+    protected GuiItem<RecipeMenu> buildRecipeResultGuiItem(ItemStack item) {
+        GuiItem<RecipeMenu> guiItem = buildRecipeGuiItem(item);
         guiItem.setAction((event, menu) -> {
+
+            boolean isLeftClick = event.isLeftClick();
+            boolean isRightClick = event.isRightClick();
+            boolean isSwapOffhand = event.getClick() == ClickType.SWAP_OFFHAND;
+            boolean isMiddleClick = event.getClick() == ClickType.MIDDLE;
+            boolean isDrop = event.getClick() == ClickType.DROP;
+
+            MixedProcessRecipeReader recipeReader;
+
+            if (isLeftClick || isSwapOffhand) {
+                menu.quickLinkAction(event, menu);
+                return; // No other action
+            } else if (isRightClick || isMiddleClick) {
+                recipeReader = recipeIndex.getByIngredient(item);
+            } else if (isDrop) {
+                toggleBookmarkRecipe(event.getWhoClicked(), item);
+                menu.render(); // Refresh the menu to show the updated bookmark state
+                return; // No other action
+            } else {
+                return; // No action for other clicks
+            }
+
+            if (recipeReader == null) {
+                return; // Silently ignore if no recipe found
+            }
+
+            RecipeMenu recipeMenu = new RecipeMenu(style, recipeIndex, recipeReader);
+            recipeMenu.open(event.getWhoClicked());
+        });
+
+        return guiItem;
+    }
+
+    /**
+     * Creates a GuiItem that opens the recipes inside the recipeMenu for the given item.
+     * @return The new GuiItem instance.
+     */
+    protected GuiItem<RecipeMenu> buildRecipeNonResultGuiItem(ItemStack item) {
+        GuiItem<RecipeMenu> guiItem = buildRecipeGuiItem(item);
+        guiItem.setAction((event, menu) -> {
+
             boolean isLeftClick = event.isLeftClick();
             boolean isRightClick = event.isRightClick();
             boolean isSwapOffhand = event.getClick() == ClickType.SWAP_OFFHAND;
@@ -399,6 +439,10 @@ public abstract class ProcessPanel<R extends Recipe> { // TODO maybe need to dep
         });
 
         return guiItem;
+    }
+
+    private GuiItem<RecipeMenu> buildRecipeGuiItem(ItemStack item) {
+        return new GuiItem<>(item);
     }
 
     private void toggleBookmarkRecipe(HumanEntity player, ItemStack item) {
