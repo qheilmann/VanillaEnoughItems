@@ -384,6 +384,7 @@ public abstract class ProcessPanel<R extends Recipe> { // TODO maybe need to dep
                 recipeReader = recipeIndex.getByIngredient(item);
             } else if (isDrop) {
                 toggleBookmarkRecipe(event.getWhoClicked(), item);
+                menu.render(); // Refresh the menu to show the updated bookmark state
                 return; // No other action
             } else {
                 return; // No action for other clicks
@@ -409,17 +410,17 @@ public abstract class ProcessPanel<R extends Recipe> { // TODO maybe need to dep
             return; // Silently ignore if no recipe found
         }
 
-        Recipe currentRecipe = recipeReader.currentProcessRecipeReader().currentRecipe();
+        Recipe firstRecipe = recipeReader.currentProcessRecipeReader().currentRecipe();
 
-        if(!(currentRecipe instanceof Keyed keyedRecipe)) {
+        if(!(firstRecipe instanceof Keyed keyedFirstRecipe)) {
             player.sendMessage("This recipe cannot be bookmarked");
         }
 
         else {
-            if (Bookmark.hasBookmarkAsync(playerId, keyedRecipe).join()) {
-                Bookmark.removeBookmarkAsync(playerId, keyedRecipe).join(); // TODO async bookmark add
+            if (Bookmark.hasBookmarkAsync(playerId, keyedFirstRecipe).join()) {
+                Bookmark.removeBookmarkAsync(playerId, keyedFirstRecipe).join(); // TODO async bookmark add
             } else {
-                Bookmark.addBookmarkAsync(playerId, keyedRecipe).join();
+                Bookmark.addBookmarkAsync(playerId, keyedFirstRecipe).join();
             }
         }
     }
