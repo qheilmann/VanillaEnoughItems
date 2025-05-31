@@ -167,7 +167,16 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
         initAllItem();
     }
 
-    void initAllItem() {
+    @SuppressWarnings("unchecked")
+    public Process<Recipe> getCurrentProcess() {
+        return (Process<Recipe>)mixedProcessRecipeReader.currentProcess();
+    }
+
+    public Recipe getCurrentRecipe() {
+        return mixedProcessRecipeReader.currentProcessRecipeReader().currentRecipe();
+    }
+
+    private void initAllItem() {
         // Global action
         setDefaultClickAction((event, context) -> event.setCancelled(true)); // Cancel the event for the entire GUI
 
