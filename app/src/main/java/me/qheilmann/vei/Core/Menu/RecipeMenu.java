@@ -617,7 +617,6 @@ public class RecipeMenu extends BaseGui<RecipeMenu, MaxChestSlot> {
             .append(Component.text(" copied"))
             .build();
 
-        this.close(humanEntity);
         setClipBoard(quickLink);
         humanEntity.sendMessage(message);
     }
