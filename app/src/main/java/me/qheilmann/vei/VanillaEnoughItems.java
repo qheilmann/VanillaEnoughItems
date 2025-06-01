@@ -19,6 +19,7 @@ import dev.jorel.commandapi.CommandAPIBukkitConfig;
 import me.qheilmann.vei.Command.CraftCommand;
 import me.qheilmann.vei.Command.TestCommand;
 import me.qheilmann.vei.Core.GUI.BaseGui;
+import me.qheilmann.vei.Core.PlayerInventory.Listener.PlayerInventoryListener;
 import me.qheilmann.vei.Core.Process.Process;
 import me.qheilmann.vei.Core.Process.VanillaProcesses;
 import me.qheilmann.vei.Core.Recipe.Bookmark.Bookmark;
@@ -71,8 +72,9 @@ public class VanillaEnoughItems extends JavaPlugin {
         Bookmark.init(new InMemoryBookmarkRepository());
 
         // Event registration
-        getServer().getPluginManager().registerEvents(new InventoryClickListener(menuManager), this);
-        getServer().getPluginManager().registerEvents(new InventoryDragListener(this), this);
+        getServer().getPluginManager().registerEvents(new PlayerInventoryListener(recipeIndex, menuManager, this), this);
+        getServer().getPluginManager().registerEvents(new InventoryClickListener(menuManager), this); // old
+        getServer().getPluginManager().registerEvents(new InventoryDragListener(this), this); // old
 
         LOGGER.info(NAME+ " has been enabled!");
     }

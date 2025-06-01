@@ -96,7 +96,7 @@ public class TestMenu extends BaseGui<TestMenu, MaxChestSlot> {
         lapisBlock.lore(List.of(Component.text("Click me to add a lapis block here")));
         lapisBlock.setAction(this::handleLapisBlockClick);
 
-    setItem(new MaxChestSlot(0, 5), lapisBlock);
+        setItem(new MaxChestSlot(0, 5), lapisBlock);
     }
 
     @Override
