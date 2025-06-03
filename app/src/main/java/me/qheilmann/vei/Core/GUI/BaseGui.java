@@ -902,6 +902,7 @@ public abstract class BaseGui<G extends BaseGui<G, S>, S extends Slot> implement
     }
 }
 
+// NOUVELLE LIB de GUI
 // This library can be globally rewritten
 // - Make a pane system (multiple layer index with a background etc, (thinks about empty case over background (null vs ItemStack(air:Empty))), no necessarely at the size of the board, adn can be move on the board)
 // - Add a system with board (like infinite board) then each viewer can have a different view of a part of the board (max 9x6 chest)
@@ -918,3 +919,30 @@ public abstract class BaseGui<G extends BaseGui<G, S>, S extends Slot> implement
 // - https://github.com/TriumphTeam/triumph-gui
 // - https://github.com/stefvanschie/IF/
 // - also see https://github.com/DevNatan/inventory-framework
+
+// Second jet d'idées
+// - Eviter les objets compliquer avec du CRTP (si possible, dans le cas de sous class avec des sous view c'est encore besoin pour get le context > repalce par data context ?)
+// - Découpler completement l'interface (type inventory et le stock de pixel (GuiItem)
+//     - Genre pouvoir set dans un cadriage geant les item
+//     - Puis décider d'afficher dans n'import quelle conteneru de gui (inventory (chest), dialogue, chat ?)
+// - Pouvoir simplement déplacer le vue d'un GUI (genre un board de 100x100, et on peut se déplacer dans le board)
+// - Prendre en compte les interactions de l'inventaire du joueur, si click dans un menu chest faut l'enlever de du conteneur
+//     - Lors d'un dépot, prise d'item, swap, drop, etc
+//     - Trouver un moyen d'avoir le même system que dans les coffres (en reprenant l'interation mc sans le re implémenter)
+//     - Ne pas oublier que dans pas possible de prendre dans toute les interations (genre dialogue/chat)
+//     - Donc implementer que ces methodes dans le InventoryGui
+// - Prendre en compte les multi vue open (genre plusieurs joueurs peuvent ouvrir le même GUI (donc trace les viewers))
+//     - A la manière d'un chest ou tout le monde peut ouvrir le même coffre
+// - S'inspirer des vrai framework de GUI (comme Blazor, Angular, Swing, JavaFX, TriumphGui etc) pour faire un truc plus propre
+//     - Ex: en WPF il y  a les data context (permet de lier les données de l'interface et de la logique)
+//     - ou placer la logique de l'interface (item hide/show/enchante lorsque ... hover, plus de page suivante, temps exipré) (je ne parle pas ici de si pas débloqué car x,qui est plus logique métier)
+//     - refléchir ou placer quelle code. 
+//         - Comment créer son gui, (niveau client), comment ajouter la logique (open, close, click top, click view, click slot, click item, drag, etc)
+//         - Ou placer le view model
+//         - Ou placer la définition de la vue (et lien avec le view model)
+//         - Ou placer la logique métier (et lien avec le view model)
+//         - La logique métier doit update le view model, qui doit s'avoir si faut update la vue (re render() (avec un event ?) (uniquement si 1+ viewer et max 1/tick si bulk update), skip si hors zone ? (après faut quand même update si re entrer zone donc jsp))
+//         - Quand un viewer open il render en fonction du view model
+//     - La view render grace au pattern définie dedans et grace au view model pour render les données dynamic (hide/show item, item name, etc)
+// - Maybe juste read only GUI for all gui + extend gui (with player inv) and only make the gui writtable if classic 6*9 chest with no view, pannel things ? (look other lib to see of they handle this stuff or if the just use chest and not do any high level gui stuff)
+
