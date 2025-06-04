@@ -945,4 +945,5 @@ public abstract class BaseGui<G extends BaseGui<G, S>, S extends Slot> implement
 //         - Quand un viewer open il render en fonction du view model
 //     - La view render grace au pattern définie dedans et grace au view model pour render les données dynamic (hide/show item, item name, etc)
 // - Maybe juste read only GUI for all gui + extend gui (with player inv) and only make the gui writtable if classic 6*9 chest with no view, pannel things ? (look other lib to see of they handle this stuff or if the just use chest and not do any high level gui stuff)
-
+// - Ajoute dans GUiItem la possibilité de bloquer l'item (InteractionModifier de TriumphGui) (pour éviter de le prendre, swap, drop, etc juste cette item) et laisse les autres pour faire du stock facilement (docn eviter de faire sur tout les item du cancel etc.)
+// IF et Triumph GUI sont qausi pareil et l'idée des Pane est pas mal
