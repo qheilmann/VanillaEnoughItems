@@ -1,14 +1,34 @@
 {
-    // User settings
-    "serverPluginFolderPath": "../PaperServer/plugins/", // can be absolute path or relative from the workspace
-
-    // Auto-synchronized settings
-    "pluginNameShadowLess": "VanillaEnoughItems-ShadowLess", // (ea92)  This will be updated by the Gradle task; modify in the gradle.properties file if changes are needed.
-    "pluginName": "VanillaEnoughItems", // (bbda)  This will be updated by the Gradle task; modify in the gradle.properties file if changes are needed.
-    "pluginVersion": "0.0.4-snapshot", // (0dca)  This will be updated by the Gradle task; modify in the gradle.properties file if changes are needed.
-
-    // Config
+    "java.settings.url": ".vscode/jdt.core.prefs",
     "java.configuration.updateBuildConfiguration": "automatic",
-    "java.compile.nullAnalysis.mode": "automatic",
-    "java.settings.url": ".vscode/settings.prefs"
+    "terminal.integrated.defaultProfile.windows": "Git Bash",
+    "java.compile.nullAnalysis.nullable": [
+        "org.jspecify.annotations.Nullable",
+        "javax.annotation.Nullable",
+        "org.jetbrains.annotations.Nullable",
+        "org.eclipse.jdt.annotation.Nullable",
+        "org.springframework.lang.Nullable",
+        "org.checkerframework.checker.nullness.qual.Nullable",
+        "org.sonatype.inject.Nullable",
+    ],
+    "java.compile.nullAnalysis.nonnull": [
+        "org.jspecify.annotations.NonNull",
+        "javax.annotation.Nonnull",
+        "org.jetbrains.annotations.NotNull",
+        "org.eclipse.jdt.annotation.NonNull",
+        "org.springframework.lang.NonNull",
+        "org.checkerframework.checker.nullness.qual.NonNull",
+        "org.sonatype.inject.NonNull",
+    ],
+    "java.compile.nullAnalysis.nonnullbydefault" : [
+        "org.jspecify.annotations.NullMarked",
+        "javax.annotation.ParametersAreNonnullByDefault",
+        "org.jetbrains.annotations.NotNullByDefault",
+        "org.eclipse.jdt.annotation.NonNullByDefault",
+        "org.springframework.lang.NonNullApi",
+    ],
+    "java.compile.nullAnalysis.mode": "automatic", // If hotswap fails, temporarily disable this, reload window/hotswap, then re-automatic. Conflicts with hotCodeReplace "auto"
+    
+    "java.autobuild.enabled": true, // Necessary to use HotSwap
+    "java.debug.settings.hotCodeReplace": "manual", // When Triggers HCR. Conflicts with nullAnalysis "automatic"
 }
