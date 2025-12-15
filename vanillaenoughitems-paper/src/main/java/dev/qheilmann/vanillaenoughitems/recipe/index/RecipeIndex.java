@@ -1,4 +1,4 @@
-package dev.qheilmann.vanillaenoughitems.index;
+package dev.qheilmann.vanillaenoughitems.recipe.index;
 
 import java.util.Collections;
 import java.util.Map;
@@ -11,16 +11,13 @@ import org.bukkit.inventory.Recipe;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
-import dev.qheilmann.vanillaenoughitems.index.processrecipe.MultiProcessRecipeMap;
-import dev.qheilmann.vanillaenoughitems.index.processrecipe.ProcessRecipeSet;
-import dev.qheilmann.vanillaenoughitems.index.processrecipe.reader.MultiProcessRecipeReader;
-import dev.qheilmann.vanillaenoughitems.index.process.Process;
+import dev.qheilmann.vanillaenoughitems.recipe.helper.RecipeHelper;
+import dev.qheilmann.vanillaenoughitems.recipe.process.Process;
 import net.kyori.adventure.key.Key;
 
 /**
- * Index for all recipes
- * The main entry to walk over recipes.
- * Contain set of recipes depending of your search (ingredient, output, process, id, etc)
+ * Index all recipes by different criteria.
+ * ingredient, result, process, id...
  */
 @NullMarked
 public class RecipeIndex {
@@ -37,7 +34,7 @@ public class RecipeIndex {
     /**
      * Store the first compatible process for a recipe depending {@link Process#COMPARATOR}.
      */
-    private final ConcurrentHashMap<Recipe, Process> processByRecipe = new ConcurrentHashMap<>();
+    private final ConcurrentSkipListMap<Recipe, Process> processByRecipe = new ConcurrentSkipListMap<>(RecipeHelper.RECIPE_COMPARATOR);
 
     /**
      * Create an empty RecipeIndex
@@ -97,120 +94,6 @@ public class RecipeIndex {
     }
 
     //#endregion Indexing
-
-    //#region Searching
-
-    /**
-     * Get a MultiProcessRecipeReader by the result of this recipe key
-     * @param key the recipe key
-     * @return the MultiProcessRecipeReader, or null if not found, or complex recipes
-     */
-    @Nullable
-    public MultiProcessRecipeReader readerByKey(Key key) {
-        // Get the recipe by its key
-        Recipe recipe = recipesById.get(key);
-        if (recipe == null) {
-            return null;
-        }
-
-        // Get the result of the recipe
-        ItemStack recipeResult = recipe.getResult();
-        if (recipeResult == null || recipeResult.isEmpty()) {
-            return null;
-        }
-
-        // Get the MultiProcessRecipeMap by the result
-        MultiProcessRecipeMap multiProcessRecipeMap = recipesByResult.get(recipeResult);
-        if (multiProcessRecipeMap == null) {
-            // No recipes found for this result
-            // Should not happen if the index is consistent
-            return null; 
-        }
-
-        // Preset the reader to the right process and recipe
-        MultiProcessRecipeReader reader = new MultiProcessRecipeReader(multiProcessRecipeMap, processByRecipe.get(recipe));
-        reader.getCurrentProcessRecipeReader().setCurrent(recipe);
-        return reader;
-    }
-
-    /**
-     * Return a MultiProcessRecipeReader with only one entry for the specified process.
-     * The reader will contain only recipes for that single process.
-     *
-     * @param process the target process
-     * @return a MultiProcessRecipeReader for the process, or null if none exist
-     */
-    @Nullable
-    public MultiProcessRecipeReader readerByProcess(Process process) {
-        ProcessRecipeSet processRecipeSet = recipesByProcess.getProcessRecipeSet(process);
-        if (processRecipeSet == null) {
-            return null;
-        }
-
-        MultiProcessRecipeMap singleProcessRecipeMap = new MultiProcessRecipeMap(Collections.singleton(processRecipeSet));
-        return new MultiProcessRecipeReader(singleProcessRecipeMap, process);
-    }
-
-    /**
-     * Return a MultiProcessRecipeReader for the specified result.
-     * All recipes are categorized by their process.
-     *
-     * @param result the target result
-     * @return a MultiProcessRecipeReader for the result, or null if none exist
-     */
-    @Nullable
-    public MultiProcessRecipeReader readerByResult(ItemStack result) {
-        MultiProcessRecipeMap multiProcessRecipeMap = recipesByResult.get(result);
-        if (multiProcessRecipeMap == null) {
-            return null;
-        }
-
-        return new MultiProcessRecipeReader(multiProcessRecipeMap);
-    }
-
-    // TODO add byResult + starting process (+ throw if not found)
-    // same for byIngredient, etc
-
-    /**
-     * Return a MultiProcessRecipeReader for the specified ingredient.
-     * All recipes are categorized by their process.
-     *
-     * @param ingredient the target ingredient
-     * @return a MultiProcessRecipeReader for the ingredient, or null if none exist
-     */
-    @Nullable
-    public MultiProcessRecipeReader readerByIngredient(ItemStack ingredient) {
-        MultiProcessRecipeMap multiProcessRecipeMap = recipesByIngredient.get(ingredient);
-        if (multiProcessRecipeMap == null) {
-            return null;
-        }
-
-        return new MultiProcessRecipeReader(multiProcessRecipeMap);
-    }
-
-    /**
-     * Return a MultiProcessRecipeReader for all recipes in the index.
-     * All recipes are categorized by their process.
-     *
-     * @return a MultiProcessRecipeReader for all recipes
-     */
-    public MultiProcessRecipeReader readerWithAllRecipes() {
-        return new MultiProcessRecipeReader(recipesByProcess);
-    }
-
-    /**
-     * Return a MultiProcessRecipeReader for all recipes in the index,
-     * starting at the specified default process.
-     * All recipes are categorized by their process.
-     *
-     * @param defaultProcess the process to start at
-     * @return a MultiProcessRecipeReader for all recipes
-     */
-    public MultiProcessRecipeReader readerWithAllRecipes(Process defaultProcess) {
-        return new MultiProcessRecipeReader(recipesByProcess, defaultProcess);
-    }
-
-    //#endregion Searching
 
     //#region Exporting
 
@@ -278,6 +161,10 @@ public class RecipeIndex {
     @Nullable
     public Recipe getSingleRecipeByKey(Key key) {
         return recipesById.get(key);
+    }
+
+    public NavigableMap<Recipe, Process> getAllProcessByRecipeMap() {
+        return Collections.unmodifiableNavigableMap(processByRecipe);
     }
 
     //#endregion Exporting

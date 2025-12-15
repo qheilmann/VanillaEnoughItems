@@ -1,11 +1,11 @@
-package dev.qheilmann.vanillaenoughitems.index.processrecipe.reader;
+package dev.qheilmann.vanillaenoughitems.recipe.index.reader;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
-import dev.qheilmann.vanillaenoughitems.index.process.Process;
-import dev.qheilmann.vanillaenoughitems.index.processrecipe.MultiProcessRecipeMap;
-import dev.qheilmann.vanillaenoughitems.index.processrecipe.ProcessRecipeSet;
+import dev.qheilmann.vanillaenoughitems.recipe.index.MultiProcessRecipeMap;
+import dev.qheilmann.vanillaenoughitems.recipe.index.ProcessRecipeSet;
+import dev.qheilmann.vanillaenoughitems.recipe.process.Process;
 
 /**
  * Walk over an MultiProcessRecipeMap and save current process position.
@@ -37,8 +37,8 @@ public class MultiProcessRecipeReader {
 
     /**
      * Set the current process
-     * @param process the process to set as current.<br>
-     * Use {@link #containsProcess(Process)} to check if the process exists in the MultiProcessRecipeMap
+     * @param process the process to set as current. Use {@link #containsProcess(Process)} to check if the process exists in the MultiProcessRecipeMap
+     * @return the ProcessRecipeReader for the current process
      * @throws IllegalArgumentException if the process does not exist in the MultiProcessRecipeMap
      */
     public ProcessRecipeReader setCurrentProcess(Process process) {

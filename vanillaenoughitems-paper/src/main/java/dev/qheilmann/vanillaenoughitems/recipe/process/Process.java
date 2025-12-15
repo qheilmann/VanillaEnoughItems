@@ -1,4 +1,4 @@
-package dev.qheilmann.vanillaenoughitems.index.process;
+package dev.qheilmann.vanillaenoughitems.recipe.process;
 
 import java.util.Comparator;
 import java.util.Set;
@@ -10,8 +10,8 @@ import org.bukkit.inventory.Recipe;
 import org.jspecify.annotations.NullMarked;
 
 import dev.qheilmann.vanillaenoughitems.VanillaEnoughItems;
-import dev.qheilmann.vanillaenoughitems.index.process.impl.CraftingProcess;
-import dev.qheilmann.vanillaenoughitems.index.process.Process;
+import dev.qheilmann.vanillaenoughitems.recipe.process.Process;
+import dev.qheilmann.vanillaenoughitems.recipe.process.impl.CraftingProcess;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.key.Keyed;
 import net.kyori.adventure.text.Component;

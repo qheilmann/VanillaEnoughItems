@@ -1,4 +1,4 @@
-package dev.qheilmann.vanillaenoughitems.index.processrecipe;
+package dev.qheilmann.vanillaenoughitems.recipe.index;
 
 import java.util.Collections;
 import java.util.NavigableSet;
@@ -8,8 +8,8 @@ import java.util.concurrent.ConcurrentSkipListSet;
 import org.bukkit.inventory.Recipe;
 import org.jspecify.annotations.NullMarked;
 
-import dev.qheilmann.vanillaenoughitems.index.process.Process;
-import dev.qheilmann.vanillaenoughitems.index.recipe.RecipeHelper;
+import dev.qheilmann.vanillaenoughitems.recipe.helper.RecipeHelper;
+import dev.qheilmann.vanillaenoughitems.recipe.process.Process;
 
 /**
  * Store multiple recipes. All recipes undergo the same unique process.

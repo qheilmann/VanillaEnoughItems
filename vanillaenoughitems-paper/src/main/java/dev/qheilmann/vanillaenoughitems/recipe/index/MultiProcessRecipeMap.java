@@ -1,9 +1,8 @@
-package dev.qheilmann.vanillaenoughitems.index.processrecipe;
+package dev.qheilmann.vanillaenoughitems.recipe.index;
 
 import java.util.Collections;
 import java.util.NavigableMap;
 import java.util.NavigableSet;
-import java.util.Set;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -13,8 +12,8 @@ import org.jetbrains.annotations.UnmodifiableView;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
-import dev.qheilmann.vanillaenoughitems.index.process.Process;
-import dev.qheilmann.vanillaenoughitems.index.recipe.RecipeHelper;
+import dev.qheilmann.vanillaenoughitems.recipe.helper.RecipeHelper;
+import dev.qheilmann.vanillaenoughitems.recipe.process.Process;
 
 /**
  * Store multiple ProcessRecipeSet. Typically all the underway recipe are linked in some way, (e.g. same result)
@@ -34,7 +33,7 @@ public class MultiProcessRecipeMap {
      * Create a MultiProcessRecipeMap with initial ProcessRecipeSets
      * @param processRecipeSets the initial ProcessRecipeSets
      */
-    public MultiProcessRecipeMap(Set<ProcessRecipeSet> processRecipeSets) {
+    public MultiProcessRecipeMap(Iterable<ProcessRecipeSet> processRecipeSets) {
         for (ProcessRecipeSet processRecipeSet : processRecipeSets) {
             putProcessRecipeSet(processRecipeSet);
         }

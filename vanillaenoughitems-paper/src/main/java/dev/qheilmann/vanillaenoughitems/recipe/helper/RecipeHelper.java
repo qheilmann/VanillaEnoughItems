@@ -1,4 +1,4 @@
-package dev.qheilmann.vanillaenoughitems.index.recipe;
+package dev.qheilmann.vanillaenoughitems.recipe.helper;
 
 import java.util.Comparator;
 

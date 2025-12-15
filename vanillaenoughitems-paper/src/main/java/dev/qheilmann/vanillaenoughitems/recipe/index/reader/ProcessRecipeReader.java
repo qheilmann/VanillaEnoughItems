@@ -1,11 +1,11 @@
-package dev.qheilmann.vanillaenoughitems.index.processrecipe.reader;
+package dev.qheilmann.vanillaenoughitems.recipe.index.reader;
 
 import org.bukkit.inventory.Recipe;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
-import dev.qheilmann.vanillaenoughitems.index.process.Process;
-import dev.qheilmann.vanillaenoughitems.index.processrecipe.ProcessRecipeSet;
+import dev.qheilmann.vanillaenoughitems.recipe.index.ProcessRecipeSet;
+import dev.qheilmann.vanillaenoughitems.recipe.process.Process;
 
 /**
  * Walk over an ProcessRecipeSet and save current recipe position.

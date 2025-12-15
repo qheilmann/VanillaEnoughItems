@@ -1,4 +1,4 @@
-package dev.qheilmann.vanillaenoughitems.index.process;
+package dev.qheilmann.vanillaenoughitems.recipe.process;
 
 import java.util.HashMap;
 import java.util.Map;

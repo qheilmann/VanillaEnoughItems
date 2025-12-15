@@ -1,4 +1,4 @@
-package dev.qheilmann.vanillaenoughitems.index.process;
+package dev.qheilmann.vanillaenoughitems.recipe.process;
 
 import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;

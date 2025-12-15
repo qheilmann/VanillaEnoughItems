@@ -1,4 +1,4 @@
-package dev.qheilmann.vanillaenoughitems.index.process;
+package dev.qheilmann.vanillaenoughitems.recipe.process;
 
 import org.jspecify.annotations.NullMarked;
 import net.kyori.adventure.key.Key;

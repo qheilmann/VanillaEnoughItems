@@ -1,4 +1,4 @@
-package dev.qheilmann.vanillaenoughitems.index.process.impl;
+package dev.qheilmann.vanillaenoughitems.recipe.process.impl;
 
 import java.util.Arrays;
 import java.util.List;
@@ -10,8 +10,8 @@ import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.SmokingRecipe;
 import org.jspecify.annotations.NullMarked;
 
-import dev.qheilmann.vanillaenoughitems.index.process.AbstractProcess;
-import dev.qheilmann.vanillaenoughitems.index.process.Workbench;
+import dev.qheilmann.vanillaenoughitems.recipe.process.AbstractProcess;
+import dev.qheilmann.vanillaenoughitems.recipe.process.Workbench;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 
