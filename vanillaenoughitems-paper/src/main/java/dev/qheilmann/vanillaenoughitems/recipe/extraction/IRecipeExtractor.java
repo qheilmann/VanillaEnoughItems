@@ -7,6 +7,7 @@ import org.bukkit.inventory.Recipe;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
 
+import net.kyori.adventure.key.Key;
 import net.kyori.adventure.key.Keyed;
 
 /**
@@ -22,6 +23,19 @@ public interface IRecipeExtractor<R extends @NonNull Recipe> extends Keyed{
      */
     boolean canHandle(Recipe recipe);
     
+    /**
+     * Get the key of this recipe
+     * @param recipe the recipe to get the key from
+     * @return the key of this recipe
+     * @throws IllegalArgumentException if the recipe is not Keyed
+     */
+    default Key extractKey(R recipe){
+        if (recipe instanceof Keyed keyed) {
+            return keyed.key();
+        }
+        throw new IllegalArgumentException("Recipe is not Keyed: " + recipe.getClass().getSimpleName());
+    }
+
     /**
      * Extract the ingredients from the given recipe
      * @param recipe the recipe to extract from

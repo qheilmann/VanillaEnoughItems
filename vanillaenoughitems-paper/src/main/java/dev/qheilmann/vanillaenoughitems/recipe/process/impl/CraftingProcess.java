@@ -9,6 +9,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
+import org.bukkit.inventory.TransmuteRecipe;
 import org.jspecify.annotations.NullMarked;
 
 import dev.qheilmann.vanillaenoughitems.recipe.process.AbstractProcess;
@@ -29,7 +30,8 @@ public class CraftingProcess extends AbstractProcess {
     public boolean canHandleRecipe(Recipe recipe) {
         List<Class<? extends Recipe>> valideClass = Arrays.asList(
             ShapedRecipe.class,
-            ShapelessRecipe.class
+            ShapelessRecipe.class,
+            TransmuteRecipe.class
         );
 
         return valideClass.stream().anyMatch(c -> c.isInstance(recipe));

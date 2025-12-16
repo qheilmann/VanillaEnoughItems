@@ -5,7 +5,7 @@ import java.util.Set;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
-import org.bukkit.inventory.SmokingRecipe;
+import org.bukkit.inventory.SmithingTrimRecipe;
 import org.jspecify.annotations.NullMarked;
 
 import dev.qheilmann.vanillaenoughitems.recipe.process.AbstractProcess;
@@ -14,32 +14,32 @@ import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 
 @NullMarked
-public class SmokingProcess extends AbstractProcess {
+public class SmithingTrimProcess extends AbstractProcess {
 
-    public static final Key KEY = Key.key("smoking");
+    public static final Key KEY = Key.key("smithing_trim");
 
-    public SmokingProcess() {
+    public SmithingTrimProcess() {
         super(KEY);
     }
 
     @Override
     public boolean canHandleRecipe(Recipe recipe) {
-        return recipe instanceof SmokingRecipe;
+        return recipe instanceof SmithingTrimRecipe;
     }
 
     @Override
     public Component displayName() {
-        return Component.text("Smoking");
+        return Component.text("Smithing Trim");
     }
 
     @Override
     public ItemStack symbol() {
-        return new ItemStack(Material.SMOKER);
+        return new ItemStack(Material.SMITHING_TABLE);
     }
 
     @Override
     public Set<Workbench> workbenches() {
-        Workbench smoker = new Workbench(new ItemStack(Material.SMOKER));
-        return Set.of(smoker);
+        Workbench smithingTable = new Workbench(new ItemStack(Material.SMITHING_TABLE));
+        return Set.of(smithingTable);
     }
 }

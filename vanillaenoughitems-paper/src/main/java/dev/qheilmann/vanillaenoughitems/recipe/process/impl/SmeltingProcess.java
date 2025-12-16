@@ -1,7 +1,5 @@
 package dev.qheilmann.vanillaenoughitems.recipe.process.impl;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Set;
 
 import org.bukkit.Material;
@@ -26,11 +24,7 @@ public class SmeltingProcess extends AbstractProcess {
 
     @Override
     public boolean canHandleRecipe(Recipe recipe) {
-        List<Class<? extends Recipe>> valideClass = Arrays.asList(
-            FurnaceRecipe.class // Blast Furnace and Smoker recipes are instances of FurnaceRecipe
-        );
-
-        return valideClass.stream().anyMatch(c -> c.isInstance(recipe));
+        return recipe instanceof FurnaceRecipe; // Blast Furnace and Smoker recipes are instances of CookingRecipe
     }
 
     @Override

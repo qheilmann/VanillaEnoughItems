@@ -3,6 +3,7 @@ package dev.qheilmann.vanillaenoughitems.recipe.index;
 import java.util.Collections;
 import java.util.Map;
 import java.util.NavigableMap;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
@@ -11,9 +12,13 @@ import org.bukkit.inventory.Recipe;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
+import dev.qheilmann.vanillaenoughitems.VanillaEnoughItems;
+import dev.qheilmann.vanillaenoughitems.recipe.extraction.RecipeExtractor;
 import dev.qheilmann.vanillaenoughitems.recipe.helper.RecipeHelper;
 import dev.qheilmann.vanillaenoughitems.recipe.process.Process;
+import dev.qheilmann.vanillaenoughitems.recipe.process.ProcessRegistry;
 import net.kyori.adventure.key.Key;
+import net.kyori.adventure.key.Keyed;
 
 /**
  * Index all recipes by different criteria.
@@ -22,6 +27,9 @@ import net.kyori.adventure.key.Key;
 @NullMarked
 public class RecipeIndex {
     
+    private final ProcessRegistry processRegistry;
+    private final RecipeExtractor recipeExtractor;
+    
     // Search indexes
     private final ConcurrentSkipListMap<Key, Recipe> recipesById = new ConcurrentSkipListMap<>(Key.comparator());
     // private final ConcurrentSkipListMap<Process, ProcessRecipeSet> recipesByProcess = new ConcurrentSkipListMap<>();
@@ -29,6 +37,7 @@ public class RecipeIndex {
     // ItemStack#hashcode are not really reliable between sessions, at least we regenerate them each time
     private final ConcurrentHashMap<ItemStack, MultiProcessRecipeMap> recipesByResult = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<ItemStack, MultiProcessRecipeMap> recipesByIngredient = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<ItemStack, MultiProcessRecipeMap> recipesByOther = new ConcurrentHashMap<>();
 
     // Inverse index for fast lookup
     /**
@@ -39,14 +48,17 @@ public class RecipeIndex {
     /**
      * Create an empty RecipeIndex
      */
-    public RecipeIndex() {
+    // TODO make RecipeExtractor and ProcessRegistry interfaces to allow custom implementations (but need to rename registered classes/interfaces then)
+    public RecipeIndex(ProcessRegistry processRegistry, RecipeExtractor recipeExtractor) {
+        this.processRegistry = processRegistry;
+        this.recipeExtractor = recipeExtractor;
     }
 
     //#region Indexing
 
     /**
      * Index multiple recipes with an iterable.
-     * You can use a lambda {@code () -> iterator} to pass an iterator instance
+     * You can use a lambda {@code () -> iterator} to consume an iterator instance
      * @param recipes the recipes to index
      */
     public void indexRecipe(Iterable<Recipe> recipes) {
@@ -60,13 +72,48 @@ public class RecipeIndex {
      * @param recipe the recipe to index
      */
     public void indexRecipe(Recipe recipe) {
-        // TODO implement indexing
-        // need extractor things from recipe (result, ingredients, other)
+
+        if (!recipeExtractor.canHandle(recipe)) {
+            // TODO log an optional warning about unhandled recipe
+            String key = (recipe instanceof Keyed) ? ((Keyed) recipe).key().asString() : "no key available";
+            VanillaEnoughItems.LOGGER.warn("No extractor found for recipe: " + recipe.getClass().getSimpleName() + " (" + key + ")");
+            return;
+        }
+
+        // Index by id
+        Key recipeKey = recipeExtractor.extractKey(recipe);
+        recipesById.put(recipeKey, recipe);
+
+        // Index by process
+        Process process = processRegistry.getRecipeProcess(recipe);
+        processByRecipe.put(recipe, process);
+        recipesByProcess.addRecipe(process, recipe);
+
+        // Index by result
+        Set<ItemStack> results = recipeExtractor.extractResults(recipe);
+        for (ItemStack result : results) {
+            MultiProcessRecipeMap multiProcessRecipeMap = recipesByResult.computeIfAbsent(result, r -> new MultiProcessRecipeMap());
+            multiProcessRecipeMap.addRecipe(process, recipe);
+        }
+
+        // Index by ingredient
+        Set<ItemStack> ingredients = recipeExtractor.extractIngredients(recipe);
+        for (ItemStack ingredient : ingredients) {
+            MultiProcessRecipeMap multiProcessRecipeMap = recipesByIngredient.computeIfAbsent(ingredient, i -> new MultiProcessRecipeMap());
+            multiProcessRecipeMap.addRecipe(process, recipe);
+        }
+
+        // Index by other
+        Set<ItemStack> others = recipeExtractor.extractOthers(recipe);
+        for (ItemStack other : others) {
+            MultiProcessRecipeMap multiProcessRecipeMap = recipesByOther.computeIfAbsent(other, o -> new MultiProcessRecipeMap());
+            multiProcessRecipeMap.addRecipe(process, recipe);
+        }
     }
 
     /**
      * Unindex multiple recipes with an iterable.
-     * You can use a lambda {@code () -> iterator} to pass an iterator instance
+     * You can use a lambda {@code () -> iterator} to consume an iterator instance
      * @param recipes the recipes to unindex
      */
     public void unindexRecipe(Iterable<Recipe> recipes) {
@@ -80,7 +127,42 @@ public class RecipeIndex {
      * @param recipe the recipe to unindex
      */
     public void unindexRecipe(Recipe recipe) {
-        // TODO implement unindexing
+        // Unindex by id
+        Key recipeKey = recipeExtractor.extractKey(recipe);
+        recipesById.remove(recipeKey);
+
+        // Unindex by process
+        Process process = processByRecipe.remove(recipe);
+        if (process != null) {
+            recipesByProcess.removeRecipe(process,  recipe);
+        }
+
+        // Unindex by result
+        Set<ItemStack> results = recipeExtractor.extractResults(recipe);
+        for (ItemStack result : results) {
+            MultiProcessRecipeMap multiProcessRecipeMap = recipesByResult.get(result);
+            if (multiProcessRecipeMap != null && process != null) {
+                multiProcessRecipeMap.removeRecipe(process, recipe);
+            }
+        }
+
+        // Unindex by ingredient
+        Set<ItemStack> ingredients = recipeExtractor.extractIngredients(recipe);
+        for (ItemStack ingredient : ingredients) {
+            MultiProcessRecipeMap multiProcessRecipeMap = recipesByIngredient.get(ingredient);
+            if (multiProcessRecipeMap != null && process != null) {
+                multiProcessRecipeMap.removeRecipe(process, recipe);
+            }
+        }
+
+        // Unindex by other
+        Set<ItemStack> others = recipeExtractor.extractOthers(recipe);
+        for (ItemStack other : others) {
+            MultiProcessRecipeMap multiProcessRecipeMap = recipesByOther.get(other);
+            if (multiProcessRecipeMap != null && process != null) {
+                multiProcessRecipeMap.removeRecipe(process, recipe);
+            }
+        }
     }
 
     /**
@@ -165,6 +247,127 @@ public class RecipeIndex {
 
     public NavigableMap<Recipe, Process> getAllProcessByRecipeMap() {
         return Collections.unmodifiableNavigableMap(processByRecipe);
+    }
+
+    public void logSummary() {
+        VanillaEnoughItems.LOGGER.info("==================== Recipe Index Summary ====================");
+        
+        // Overall totals
+        int totalRecipes = recipesById.size();
+        int totalProcesses = recipesByProcess.getAllProcesses().size();
+        int totalResultTypes = recipesByResult.size();
+        int totalIngredientTypes = recipesByIngredient.size();
+        int totalOtherTypes = recipesByOther.size();
+        
+        VanillaEnoughItems.LOGGER.info("Total Recipes Indexed: " + totalRecipes);
+        VanillaEnoughItems.LOGGER.info("Total Processes: " + totalProcesses);
+        VanillaEnoughItems.LOGGER.info("Total Unique Result Types: " + totalResultTypes);
+        VanillaEnoughItems.LOGGER.info("Total Unique Ingredient Types: " + totalIngredientTypes);
+        VanillaEnoughItems.LOGGER.info("Total Unique Other Types: " + totalOtherTypes);
+        
+        // Per-process breakdown
+        VanillaEnoughItems.LOGGER.info("---------- Recipes by Process ----------");
+        NavigableMap<Process, ProcessRecipeSet> processMap = recipesByProcess.getAllProcessRecipeSets();
+        for (Map.Entry<Process, ProcessRecipeSet> entry : processMap.entrySet()) {
+            Process process = entry.getKey();
+            ProcessRecipeSet recipeSet = entry.getValue();
+            int recipeCount = recipeSet.size();
+            
+            String processKey = process.key().asString();
+            
+            VanillaEnoughItems.LOGGER.info("  " + processKey + ": " + recipeCount + " recipes");
+            
+            // Show first 5 recipes for this process
+            int count = 0;
+            for (Recipe recipe : recipeSet.getRecipes()) {
+                if (count >= 5) break;
+                
+                Key recipeKey = recipeExtractor.extractKey(recipe);
+                ItemStack result = recipe.getResult();
+                String itemType = result.getType().name();
+                
+                VanillaEnoughItems.LOGGER.info("    - " + recipeKey.asString() + " -> " + itemType + " x" + result.getAmount());
+                count++;
+            }
+            
+            if (recipeCount > 5) {
+                VanillaEnoughItems.LOGGER.info("    ... and " + (recipeCount - 5) + " more");
+            }
+        }
+        
+        // Results index summary
+        VanillaEnoughItems.LOGGER.info("---------- Recipes by Result (Top 5) ----------");
+        recipesByResult.entrySet().stream()
+            .sorted((e1, e2) -> Integer.compare(
+                e2.getValue().getAllRecipes().size(), 
+                e1.getValue().getAllRecipes().size()
+            ))
+            .limit(5)
+            .forEach(entry -> {
+                ItemStack result = entry.getKey();
+                MultiProcessRecipeMap recipes = entry.getValue();
+                int recipeCount = recipes.getAllRecipes().size();
+                int processCount = recipes.getAllProcesses().size();
+                
+                String resultName = result.getType().name();
+                VanillaEnoughItems.LOGGER.info("  " + resultName + ": " + recipeCount + " recipes across " + processCount + " processes");
+                
+                // Show process breakdown for this result
+                for (Process process : recipes.getAllProcesses()) {
+                    ProcessRecipeSet processRecipes = recipes.getProcessRecipeSet(process);
+                    if (processRecipes != null) {
+                        VanillaEnoughItems.LOGGER.info("    - " + process.key() + " -> " + processRecipes.size() + " recipes");
+                    }
+                }
+            });
+        
+        // Ingredients index summary
+        VanillaEnoughItems.LOGGER.info("---------- Recipes by Ingredient (Top 5) ----------");
+        recipesByIngredient.entrySet().stream()
+            .sorted((e1, e2) -> Integer.compare(
+                e2.getValue().getAllRecipes().size(), 
+                e1.getValue().getAllRecipes().size()
+            ))
+            .limit(5)
+            .forEach(entry -> {
+                ItemStack ingredient = entry.getKey();
+                MultiProcessRecipeMap recipes = entry.getValue();
+                int recipeCount = recipes.getAllRecipes().size();
+                int processCount = recipes.getAllProcesses().size();
+                
+                String ingredientType = ingredient.getType().name();
+                VanillaEnoughItems.LOGGER.info("  " + ingredientType + ": " + recipeCount + " recipes across " + processCount + " processes");
+                
+                // Show process breakdown for this ingredient
+                for (Process process : recipes.getAllProcesses()) {
+                    ProcessRecipeSet processRecipes = recipes.getProcessRecipeSet(process);
+                    if (processRecipes != null) {
+                        VanillaEnoughItems.LOGGER.info("    - " + process.key() + " -> " + processRecipes.size() + " recipes");
+                    }
+                }
+            });
+        
+        // Others index summary (e.g., fuels)
+        if (!recipesByOther.isEmpty()) {
+            VanillaEnoughItems.LOGGER.info("---------- Recipes by Other Items (Top 5) ----------");
+            recipesByOther.entrySet().stream()
+                .sorted((e1, e2) -> Integer.compare(
+                    e2.getValue().getAllRecipes().size(), 
+                    e1.getValue().getAllRecipes().size()
+                ))
+                .limit(5)
+                .forEach(entry -> {
+                    ItemStack other = entry.getKey();
+                    MultiProcessRecipeMap recipes = entry.getValue();
+                    int recipeCount = recipes.getAllRecipes().size();
+                    int processCount = recipes.getAllProcesses().size();
+                    
+                    String otherType = other.getType().name();
+                    VanillaEnoughItems.LOGGER.info("  " + otherType + ": " + recipeCount + " recipes across " + processCount + " processes");
+                });
+        }
+        
+        VanillaEnoughItems.LOGGER.info("==============================================================");
     }
 
     //#endregion Exporting

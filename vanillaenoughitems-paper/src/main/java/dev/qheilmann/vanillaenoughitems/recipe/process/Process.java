@@ -34,6 +34,11 @@ public interface Process extends Keyed{
     public static final Comparator<Process> COMPARATOR = comparator();
 
     /**
+     * The undefined process instance
+     */
+    public static final UndefinedProcess UNDEFINED_PROCESS = UndefinedProcess.INSTANCE;
+
+    /**
      * Check if the process can handle a recipe
      * @param recipe the recipe to check
      * @return true if the process can handle the recipe, false otherwise
@@ -76,6 +81,9 @@ public interface Process extends Keyed{
     public static class UndefinedProcess implements Process {
 
         public static final Key KEY = Key.key(VanillaEnoughItems.NAMESPACE,"undefined");
+        public static final UndefinedProcess INSTANCE = new UndefinedProcess();
+
+        private UndefinedProcess() {} // singleton
 
         @Override
         public Key key() {

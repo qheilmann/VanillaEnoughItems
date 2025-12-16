@@ -1,7 +1,5 @@
 package dev.qheilmann.vanillaenoughitems.recipe.process.impl;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Set;
 
 import org.bukkit.Material;
@@ -26,11 +24,7 @@ public class BlastingProcess extends AbstractProcess {
 
     @Override
     public boolean canHandleRecipe(Recipe recipe) {
-        List<Class<? extends Recipe>> valideClass = Arrays.asList(
-            BlastingRecipe.class
-        );
-
-        return valideClass.stream().anyMatch(c -> c.isInstance(recipe));
+        return recipe instanceof BlastingRecipe;
     }
 
     @Override

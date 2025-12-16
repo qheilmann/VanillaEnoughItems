@@ -51,7 +51,7 @@ public class MultiProcessRecipeMap {
     }
 
     /**
-     * Remove a recipe from a ProcessRecipeSet
+     * Remove a recipe from a ProcessRecipeSet, removing the ProcessRecipeSet if it becomes empty
      * @param process the process associated to the ProcessRecipeSet
      * @param recipe the recipe to remove from the inner ProcessRecipeSet
      * @return true if the recipe was removed, false if the process or recipe does not exist
@@ -59,7 +59,11 @@ public class MultiProcessRecipeMap {
     public boolean removeRecipe(Process process, Recipe recipe) {
         ProcessRecipeSet processRecipeSet = processRecipeSets.get(process);
         if (processRecipeSet != null) {
-            return processRecipeSet.remove(recipe);
+            boolean removed = processRecipeSet.remove(recipe);
+            if (processRecipeSet.isEmpty()) {
+                processRecipeSets.remove(process);
+            }
+            return removed;
         }
         return false;
     }

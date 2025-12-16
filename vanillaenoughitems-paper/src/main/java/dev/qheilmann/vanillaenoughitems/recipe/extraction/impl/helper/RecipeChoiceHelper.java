@@ -9,13 +9,19 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.inventory.RecipeChoice.ExactChoice;
 import org.bukkit.inventory.RecipeChoice.MaterialChoice;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import dev.qheilmann.vanillaenoughitems.VanillaEnoughItems;
 
+@NullMarked
 public class RecipeChoiceHelper {
     
-    public static Set<ItemStack> getItemsFromChoice(RecipeChoice choice) {
-        if (choice instanceof ExactChoice exactChoice) {
+    public static Set<ItemStack> getItemsFromChoice(@Nullable RecipeChoice choice) {
+        if (choice == null) {
+            return Set.of();
+        }
+        else if (choice instanceof ExactChoice exactChoice) {
             return getItemsFromExactChoice(exactChoice);
         } else if (choice instanceof MaterialChoice materialChoice) {
             return getItemsFromMaterialChoice(materialChoice);

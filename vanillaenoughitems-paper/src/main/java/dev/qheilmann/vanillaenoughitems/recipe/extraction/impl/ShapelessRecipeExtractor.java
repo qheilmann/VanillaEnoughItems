@@ -7,7 +7,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.inventory.ShapelessRecipe;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
 
@@ -19,6 +18,11 @@ import net.kyori.adventure.key.Key;
 public class ShapelessRecipeExtractor implements IRecipeExtractor<@NonNull ShapelessRecipe> {
 
     public static final Key KEY = Key.key("shapeless");
+
+    @Override
+    public Key key() {
+        return KEY;
+    }
 
     @Override
     public boolean canHandle(Recipe recipe) {
@@ -38,10 +42,5 @@ public class ShapelessRecipeExtractor implements IRecipeExtractor<@NonNull Shape
     @Override
     public Set<ItemStack> extractOthers(ShapelessRecipe recipe) {
         return Set.of();
-    }
-
-    @Override
-    public @NotNull Key key() {
-        return KEY;
     }
 }

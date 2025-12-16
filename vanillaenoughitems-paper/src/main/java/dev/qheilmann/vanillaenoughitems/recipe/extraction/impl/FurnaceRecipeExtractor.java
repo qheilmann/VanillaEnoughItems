@@ -2,7 +2,7 @@ package dev.qheilmann.vanillaenoughitems.recipe.extraction.impl;
 
 import java.util.Set;
 
-import org.bukkit.inventory.BlastingRecipe;
+import org.bukkit.inventory.FurnaceRecipe;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.jspecify.annotations.NonNull;
@@ -14,9 +14,9 @@ import dev.qheilmann.vanillaenoughitems.recipe.extraction.impl.helper.RecipeChoi
 import net.kyori.adventure.key.Key;
 
 @NullMarked
-public class BlastingRecipeExtractor implements IRecipeExtractor<@NonNull BlastingRecipe> {
-
-    public static final Key KEY = Key.key("blasting");
+public class FurnaceRecipeExtractor implements IRecipeExtractor<@NonNull FurnaceRecipe> {
+    
+    public static final Key KEY = Key.key("furnace");
 
     @Override
     public Key key() {
@@ -25,16 +25,16 @@ public class BlastingRecipeExtractor implements IRecipeExtractor<@NonNull Blasti
 
     @Override
     public boolean canHandle(Recipe recipe) {
-        return recipe instanceof BlastingRecipe;
+        return recipe instanceof FurnaceRecipe;
     }
 
     @Override
-    public Set<ItemStack> extractIngredients(BlastingRecipe recipe) {
+    public Set<ItemStack> extractIngredients(FurnaceRecipe recipe) {
         return RecipeChoiceHelper.getItemsFromChoice(recipe.getInputChoice());
     }
 
     @Override
-    public Set<ItemStack> extractOthers(BlastingRecipe recipe) {
+    public Set<ItemStack> extractOthers(FurnaceRecipe recipe) {
         return Fuels.FUELS;
     }
 }

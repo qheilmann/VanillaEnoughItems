@@ -1,9 +1,7 @@
 package dev.qheilmann.vanillaenoughitems.recipe.extraction;
 
-import java.util.NavigableMap;
+import java.util.LinkedHashSet;
 import java.util.Set;
-import java.util.concurrent.ConcurrentSkipListMap;
-
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.jspecify.annotations.NonNull;
@@ -17,8 +15,8 @@ import net.kyori.adventure.key.Key;
 @NullMarked
 public class RecipeExtractor {
     
-    // Map of registered extractors ordered by their key
-    NavigableMap<Key, IRecipeExtractor<?>> extractors = new ConcurrentSkipListMap<>(Key.comparator());
+    // Map of registered extractors ordered by insertion order
+    LinkedHashSet<IRecipeExtractor<?>> extractors = new LinkedHashSet<>();
 
     /**
      * Create a new RecipeExtractor
@@ -30,7 +28,7 @@ public class RecipeExtractor {
      * @param extractor the extractor to register
      */
     public void registerExtractor(IRecipeExtractor<?> extractor) {
-        this.extractors.put(extractor.key(), extractor);
+        this.extractors.add(extractor);
     }
 
     /**
@@ -39,12 +37,23 @@ public class RecipeExtractor {
      * @return true if any extractor can handle the recipe, false otherwise
      */
     public boolean canHandle(Recipe recipe) {
-        for (IRecipeExtractor<?> extractor : extractors.values()) {
+        for (IRecipeExtractor<?> extractor : extractors) {
             if (extractor.canHandle(recipe)) {
                 return true;
             }
         }
         return false;
+    }
+
+    public Key extractKey(Recipe recipe) {
+        for (IRecipeExtractor<?> extractor : extractors) {
+            if (extractor.canHandle(recipe)) {
+                @SuppressWarnings("unchecked")
+                IRecipeExtractor<@NonNull Recipe> typedExtractor = (IRecipeExtractor<@NonNull Recipe>) extractor;
+                return typedExtractor.extractKey(recipe);
+            }
+        }
+        throw new IllegalArgumentException("No extractor found for recipe: " + recipe.getClass().getSimpleName());
     }
 
     /**
@@ -53,8 +62,8 @@ public class RecipeExtractor {
      * @return a set of ItemStacks representing the ingredients, or an empty set if no extractor could handle the recipe
      * @throws IllegalArgumentException if no extractor could handle the recipe, first check with {@link #canHandle(Recipe)} if needed
      */
-    Set<ItemStack> extractIngredients(Recipe recipe) {
-        for (IRecipeExtractor<?> extractor : extractors.values()) {
+    public Set<ItemStack> extractIngredients(Recipe recipe) {
+        for (IRecipeExtractor<?> extractor : extractors) {
             if (extractor.canHandle(recipe)) {
                 @SuppressWarnings("unchecked")
                 IRecipeExtractor<@NonNull Recipe> typedExtractor = (IRecipeExtractor<@NonNull Recipe>) extractor;
@@ -70,8 +79,8 @@ public class RecipeExtractor {
      * @return a set of ItemStacks representing the results
      * @throws IllegalArgumentException if no extractor could handle the recipe, first check with {@link #canHandle(Recipe)} if needed
      */
-    Set<ItemStack> extractResults(Recipe recipe) {
-        for (IRecipeExtractor<?> extractor : extractors.values()) {
+    public Set<ItemStack> extractResults(Recipe recipe) {
+        for (IRecipeExtractor<?> extractor : extractors) {
             if (extractor.canHandle(recipe)) {
                 @SuppressWarnings("unchecked")
                 IRecipeExtractor<@NonNull Recipe> typedExtractor = (IRecipeExtractor<@NonNull Recipe>) extractor;
@@ -87,8 +96,8 @@ public class RecipeExtractor {
      * @return a set of ItemStacks representing other relevant items
      * @throws IllegalArgumentException if no extractor could handle the recipe, first check with {@link #canHandle(Recipe)} if needed
      */
-    Set<ItemStack> extractOthers(Recipe recipe) {
-        for (IRecipeExtractor<?> extractor : extractors.values()) {
+    public Set<ItemStack> extractOthers(Recipe recipe) {
+        for (IRecipeExtractor<?> extractor : extractors) {
             if (extractor.canHandle(recipe)) {
                 @SuppressWarnings("unchecked")
                 IRecipeExtractor<@NonNull Recipe> typedExtractor = (IRecipeExtractor<@NonNull Recipe>) extractor;
