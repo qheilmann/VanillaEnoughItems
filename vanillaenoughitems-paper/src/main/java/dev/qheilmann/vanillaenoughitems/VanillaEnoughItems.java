@@ -31,6 +31,7 @@ import dev.qheilmann.vanillaenoughitems.recipe.process.impl.SmithingTransformPro
 import dev.qheilmann.vanillaenoughitems.recipe.process.impl.SmithingTrimProcess;
 import dev.qheilmann.vanillaenoughitems.recipe.process.impl.SmokingProcess;
 import dev.qheilmann.vanillaenoughitems.recipe.process.impl.StonecuttingProcess;
+import dev.qheilmann.vanillaenoughitems.utils.fastinv.FastInvManager;
 import dev.jorel.commandapi.CommandAPI;
 
 @NullMarked
@@ -60,6 +61,12 @@ public class VanillaEnoughItems extends JavaPlugin {
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
+
+        LOGGER.info("Enabling CommandAPI...");
+        CommandAPI.onEnable();
+
+        LOGGER.info("Enabling FastInv...");
+        FastInvManager.register(this);
         
         ProcessRegistry processRegistry = new ProcessRegistry();
         processRegistry.registerProcess(new BlastingProcess());
@@ -88,8 +95,6 @@ public class VanillaEnoughItems extends JavaPlugin {
         recipeIndex.indexRecipe(() -> recipeIterator);
 
         recipeIndex.logSummary();
-
-        CommandAPI.onEnable();
         
         DebugCommand.register();
         
