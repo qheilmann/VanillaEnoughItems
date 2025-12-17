@@ -5,6 +5,8 @@ import java.util.Map;
 
 import org.bukkit.inventory.Recipe;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
 import net.kyori.adventure.key.Key;
 
 @NullMarked
@@ -25,6 +27,7 @@ public class ProcessRegistry {
      * @param key the key of the process
      * @return the process, or null if not found
      */
+    @Nullable
     public Process getProcess(Key key) {
         return this.processes.get(key);
     }

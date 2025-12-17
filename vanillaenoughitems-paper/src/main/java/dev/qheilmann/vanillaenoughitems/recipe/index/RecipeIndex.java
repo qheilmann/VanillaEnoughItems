@@ -235,6 +235,8 @@ public class RecipeIndex {
         return Collections.unmodifiableMap(recipesByIngredient);
     }
 
+    //#endregion Exporting
+
     /**
      * Get a single recipe by its key
      * @param key the recipe key
@@ -247,6 +249,22 @@ public class RecipeIndex {
 
     public NavigableMap<Recipe, Process> getAllProcessByRecipeMap() {
         return Collections.unmodifiableNavigableMap(processByRecipe);
+    }
+
+    /**
+     * Get the associated RecipeExtractor
+     * @return the recipe extractor
+     */
+    public RecipeExtractor getAssociatedRecipeExtractor() {
+        return recipeExtractor;
+    }
+
+    /**
+     * Get the associated ProcessRegistry
+     * @return the process registry
+     */
+    public ProcessRegistry getAssociatedProcessRegistry() {
+        return processRegistry;
     }
 
     public void logSummary() {
@@ -369,6 +387,4 @@ public class RecipeIndex {
         
         VanillaEnoughItems.LOGGER.info("==============================================================");
     }
-
-    //#endregion Exporting
 }

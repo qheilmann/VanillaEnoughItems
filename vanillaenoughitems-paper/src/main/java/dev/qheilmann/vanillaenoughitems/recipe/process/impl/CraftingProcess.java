@@ -56,6 +56,7 @@ public class CraftingProcess extends AbstractProcess {
     public Set<Workbench> workbenches() {
         Workbench craftingTable = new Workbench(new ItemStack(Material.CRAFTING_TABLE));
         Workbench crafter = new Workbench(new ItemStack(Material.CRAFTER));
+
         return Set.of(craftingTable, crafter);
     }
 }

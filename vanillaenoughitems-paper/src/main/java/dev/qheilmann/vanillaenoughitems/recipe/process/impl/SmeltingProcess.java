@@ -40,6 +40,7 @@ public class SmeltingProcess extends AbstractProcess {
     @Override
     public Set<Workbench> workbenches() {
         Workbench furnace = new Workbench(new ItemStack(Material.FURNACE));
+
         // All furnace recipe can't be handled in blast furnace or smoker, there is other process for this
         return Set.of(furnace);
     }

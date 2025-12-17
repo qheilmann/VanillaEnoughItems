@@ -8,8 +8,13 @@ import java.io.File;
 import java.util.Iterator;
 
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger;
+import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPIPaperConfig;
 import dev.qheilmann.vanillaenoughitems.commands.DebugCommand;
+import dev.qheilmann.vanillaenoughitems.gui.RecipeGuiContext;
+import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPanelRegistry;
+import dev.qheilmann.vanillaenoughitems.gui.processpannel.provider.impl.CraftingProcessPanelProvider;
+import dev.qheilmann.vanillaenoughitems.gui.processpannel.provider.impl.SmeltingProcessPanelProvider;
 import dev.qheilmann.vanillaenoughitems.recipe.extraction.RecipeExtractor;
 import dev.qheilmann.vanillaenoughitems.recipe.extraction.impl.BlastingRecipeExtractor;
 import dev.qheilmann.vanillaenoughitems.recipe.extraction.impl.CampfireRecipeExtractor;
@@ -32,7 +37,6 @@ import dev.qheilmann.vanillaenoughitems.recipe.process.impl.SmithingTrimProcess;
 import dev.qheilmann.vanillaenoughitems.recipe.process.impl.SmokingProcess;
 import dev.qheilmann.vanillaenoughitems.recipe.process.impl.StonecuttingProcess;
 import dev.qheilmann.vanillaenoughitems.utils.fastinv.FastInvManager;
-import dev.jorel.commandapi.CommandAPI;
 
 @NullMarked
 public class VanillaEnoughItems extends JavaPlugin {
@@ -42,6 +46,8 @@ public class VanillaEnoughItems extends JavaPlugin {
     public static final ComponentLogger LOGGER = ComponentLogger.logger(PLUGIN_NAME);
 
     private boolean failOnload = false;
+    @SuppressWarnings("null")
+    private RecipeGuiContext recipeGuiContext;
 
     @Override
     public void onLoad() {
@@ -67,16 +73,6 @@ public class VanillaEnoughItems extends JavaPlugin {
 
         LOGGER.info("Enabling FastInv...");
         FastInvManager.register(this);
-        
-        ProcessRegistry processRegistry = new ProcessRegistry();
-        processRegistry.registerProcess(new BlastingProcess());
-        processRegistry.registerProcess(new CampfireProcess());
-        processRegistry.registerProcess(new CraftingProcess());
-        processRegistry.registerProcess(new SmeltingProcess());
-        processRegistry.registerProcess(new SmithingTransformProcess());
-        processRegistry.registerProcess(new SmithingTrimProcess());
-        processRegistry.registerProcess(new SmokingProcess());
-        processRegistry.registerProcess(new StonecuttingProcess());
 
         RecipeExtractor recipeExtractor = new RecipeExtractor();
         recipeExtractor.registerExtractor(new BlastingRecipeExtractor());
@@ -89,20 +85,41 @@ public class VanillaEnoughItems extends JavaPlugin {
         recipeExtractor.registerExtractor(new SmokingRecipeExtractor());
         recipeExtractor.registerExtractor(new StonecuttingRecipeExtractor());
         recipeExtractor.registerExtractor(new TransmuteRecipeExtractor());
+        
+        ProcessRegistry processRegistry = new ProcessRegistry();
+        processRegistry.registerProcess(new BlastingProcess());
+        processRegistry.registerProcess(new CampfireProcess());
+        processRegistry.registerProcess(new CraftingProcess());
+        processRegistry.registerProcess(new SmeltingProcess());
+        processRegistry.registerProcess(new SmithingTransformProcess());
+        processRegistry.registerProcess(new SmithingTrimProcess());
+        processRegistry.registerProcess(new SmokingProcess());
+        processRegistry.registerProcess(new StonecuttingProcess());
+        
+        ProcessPanelRegistry processPanelRegistry = new ProcessPanelRegistry(processRegistry);
+        processPanelRegistry.registerProvider(new CraftingProcessPanelProvider());
+        processPanelRegistry.registerProvider(new SmeltingProcessPanelProvider());
 
         RecipeIndex recipeIndex = new RecipeIndex(processRegistry, recipeExtractor);
+        recipeGuiContext = new RecipeGuiContext(this, recipeIndex, processPanelRegistry); // index reader here ?
+
         Iterator<Recipe> recipeIterator = getServer().recipeIterator();
         recipeIndex.indexRecipe(() -> recipeIterator);
-
         recipeIndex.logSummary();
         
-        DebugCommand.register();
+        // Initialize Recipe GUI Context
+        
+
+        DebugCommand.register(recipeGuiContext);
         
         LOGGER.info(PLUGIN_NAME + " enabled.");
     }
 
     @Override
     public void onDisable() {
+        if (recipeGuiContext != null) {
+            recipeGuiContext.clearAllPlayerData();
+        }
         LOGGER.info(PLUGIN_NAME + " disabled.");
     }
 

@@ -1,6 +1,8 @@
 package dev.qheilmann.vanillaenoughitems.recipe.extraction.impl.helper;
 
-import java.util.Set;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.SequencedSet;
 import java.util.stream.Collectors;
 
 import org.bukkit.Registry;
@@ -15,14 +17,14 @@ import io.papermc.paper.registry.RegistryKey;
 @NullMarked
 public class Fuels {
     
-    public static final Set<ItemStack> FUELS = fuels();
+    public static final SequencedSet<ItemStack> FUELS = fuels();
 
-    @SuppressWarnings("null")
-    private static final Set<ItemStack> fuels() {
+    private static final SequencedSet<ItemStack> fuels() {
         Registry<ItemType> registry = RegistryAccess.registryAccess().getRegistry(RegistryKey.ITEM);
-        return registry.stream()
+        LinkedHashSet<ItemStack> fuels = registry.stream()
             .filter(ItemType::isFuel)
             .map(ItemType::createItemStack)
-            .collect(Collectors.toUnmodifiableSet());
+            .collect(Collectors.toCollection(LinkedHashSet::new));
+        return Collections.unmodifiableSequencedSet(fuels);
     }
 }

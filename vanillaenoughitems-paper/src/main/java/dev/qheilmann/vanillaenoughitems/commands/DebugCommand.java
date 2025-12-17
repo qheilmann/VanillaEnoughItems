@@ -1,10 +1,14 @@
 package dev.qheilmann.vanillaenoughitems.commands;
 
+import org.bukkit.inventory.ItemType;
 import org.jspecify.annotations.NullMarked;
 
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.CommandPermission;
 import dev.qheilmann.vanillaenoughitems.gui.RecipeGui;
+import dev.qheilmann.vanillaenoughitems.gui.RecipeGuiContext;
+import dev.qheilmann.vanillaenoughitems.recipe.index.reader.MultiProcessRecipeReader;
+import dev.qheilmann.vanillaenoughitems.recipe.index.reader.RecipeIndexReader;
 
 @NullMarked
 public class DebugCommand {
@@ -20,7 +24,7 @@ public class DebugCommand {
 
     private DebugCommand() {}; // Prevent instantiation
 
-    public static void register() {
+    public static void register(RecipeGuiContext context) {
 
         new CommandAPICommand(NAME)
             .withAliases(ALIASES)
@@ -30,7 +34,12 @@ public class DebugCommand {
 
             // debugvei
             .executesPlayer((player, args) -> {
-                RecipeGui gui = new RecipeGui();
+
+                RecipeIndexReader recipeIndex = new RecipeIndexReader(context.getRecipeIndex());
+                MultiProcessRecipeReader reader = recipeIndex.readerByResult(ItemType.IRON_INGOT.createItemStack());
+
+                @SuppressWarnings("null")
+                RecipeGui gui = new RecipeGui(player, context, reader);
                 gui.render();
                 gui.open(player);
             })

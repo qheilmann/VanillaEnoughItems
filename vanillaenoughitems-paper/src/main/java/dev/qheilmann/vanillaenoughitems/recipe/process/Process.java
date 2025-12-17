@@ -8,6 +8,7 @@ import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import dev.qheilmann.vanillaenoughitems.VanillaEnoughItems;
 import dev.qheilmann.vanillaenoughitems.recipe.process.Process;
@@ -27,7 +28,9 @@ public interface Process extends Keyed{
 
     /**
      * Comparator to order processes.
-     * The CraftingProcess is prioritized first, followed by all other vanilla processes in lexicographical order, then all other non vanilla processes in lexicographical order and finally the UndefinedProcess.
+     * The CraftingProcess is prioritized first, followed by all other vanilla processes in lexicographical order,
+     * then all other non vanilla processes in lexicographical order and finally the UndefinedProcess.<br>
+     * Note: this is useful for ordered collections like NavigableSet.
      * 
      * @return a comparator for ordering processes
      */
@@ -115,6 +118,18 @@ public interface Process extends Keyed{
             Workbench undefined = new Workbench(undefiedItem);
 
             return Set.of(undefined);
+        }
+
+        @Override
+        public boolean equals(@Nullable Object obj) {
+            if (this == obj) return true;
+            if (!(obj instanceof Process other)) return false;
+            return this.key().equals(other.key());
+        }
+
+        @Override
+        public int hashCode() {
+            return key().hashCode();
         }
     }
 }

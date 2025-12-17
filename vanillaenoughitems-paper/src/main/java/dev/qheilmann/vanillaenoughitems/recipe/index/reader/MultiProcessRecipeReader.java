@@ -1,5 +1,6 @@
 package dev.qheilmann.vanillaenoughitems.recipe.index.reader;
 
+import java.util.NavigableSet;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -46,7 +47,7 @@ public class MultiProcessRecipeReader {
             throw new IllegalArgumentException("Process does not exist in the MultiProcessRecipeMap");
         }
 
-        if (getCurrentProcess().equals(process)) {
+        if (currentProcessRecipeReader != null && getCurrentProcess().equals(process)) {
             // Prevents replacing the currentProcessRecipeReader.
             // Ensures the current process and recipes are not reset if no changes are made.
             return currentProcessRecipeReader;
@@ -123,5 +124,13 @@ public class MultiProcessRecipeReader {
         }
         setCurrentProcess(nextProcess);
         return currentProcessRecipeReader;
+    }
+
+    /**
+     * Get all processes in the MultiProcessRecipeMap
+     * @return a NavigableSet of all processes
+     */
+    public NavigableSet<Process> getAllProcesses() {
+        return multiProcessRecipeMap.getAllProcesses();
     }
 }
