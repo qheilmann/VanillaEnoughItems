@@ -2,75 +2,54 @@ package dev.qheilmann.vanillaenoughitems.gui.processpannel;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.NavigableMap;
 
 import org.bukkit.inventory.Recipe;
 import org.jspecify.annotations.NullMarked;
 import dev.qheilmann.vanillaenoughitems.gui.RecipeGuiActions;
 import dev.qheilmann.vanillaenoughitems.gui.RecipeGuiContext;
 import dev.qheilmann.vanillaenoughitems.recipe.process.Process;
-import dev.qheilmann.vanillaenoughitems.recipe.process.ProcessRegistry;
-import net.kyori.adventure.key.Key;
 
 /**
- * Registry that maps Process types to their ProcessPanelProvider implementations.
- * Provides a factory method to create appropriate panels for recipes.
+ * Maintains a mapping between Process types and their corresponding ProcessPanelFactory implementations.
+ * Includes a factory method to create the correct panel for a given recipe.
  */
 @NullMarked
 public class ProcessPanelRegistry {
     
-    private final Map<Process, ProcessPanelProvider<?>> providers = new HashMap<>();
-    private final ProcessRegistry processRegistry;
-
-    public ProcessPanelRegistry(ProcessRegistry processRegistry) {
-        this.processRegistry = processRegistry;
-    }
+    private final Map<Process, ProcessPanelFactory> factories = new HashMap<>();
 
     /**
-     * Register a ProcessPanelProvider for a specific process
+     * Register a ProcessPanelProvider for the given process
+     * <b> IMPORTANT: The provided factory should handle any recipe supported by the associated process, {@link Process#canHandleRecipe(Recipe)}</b>
      * 
+     * @param process the process to register the provider for
      * @param provider the provider to register
      */
-    public void registerProvider(ProcessPanelProvider<?> provider) {
-        Key processKey = provider.getAssignedProcessKey();
-        Process process = processRegistry.getProcess(processKey);
-        if (process == null) {
-            throw new IllegalArgumentException("No process registered with key: " + processKey);
-        }
-
-        providers.put(process, provider);
+    public void registerProvider(Process process, ProcessPanelFactory provider) {
+        factories.put(process, provider);
     }
 
     /**
-     * Create a ProcessPanel for the given recipe and process
+     * Create a ProcessPanel for the given recipe under the associated process
      * 
-     * @param process the process for this recipe
-     * @param recipe the recipe to render
+     * @param process the process the recipe belongs to
+     * @param recipe the recipe to create the panel for
      * @param actions the action interface for navigation
      * @param context the global GUI context
-     * @return a new ProcessPanel, or null if no provider is registered
+     * @return a new ProcessPanel for the given recipe
+     * @throws IllegalArgumentException if no factory is registered for the given process
      */
-    public AbstractProcessPanel createPanel(Recipe recipe, RecipeGuiActions actions, RecipeGuiContext context) {
-        NavigableMap<Recipe, Process> allProcessByRecipeMap = context.getRecipeIndex().getAllProcessByRecipeMap();
-        Process process = allProcessByRecipeMap.get(recipe);
-        if (process == null) {
-            throw new IllegalArgumentException("No process found for recipe: " + recipe.getClass().getSimpleName());
+    public AbstractProcessPanel createPanel(Process process, Recipe recipe, RecipeGuiActions actions, RecipeGuiContext context) {       
+        // Non registered factory
+        if (!hasFactory(process)) {
+            throw new IllegalArgumentException("No ProcessPanelFactory registered for process: " + process.key());
         }
 
-        if (!hasProvider(process)) {
-            throw new IllegalStateException("No ProcessPanelProvider registered for process: " + process);
-        }
-        
-        return providers.get(process).createPanel(recipe, actions, context);
+        ProcessPanelFactory factory = factories.get(process);
+        return factory.create(recipe, actions, context);
     }
 
-    /**
-     * Check if a provider is registered for the given process
-     * 
-     * @param process the process to check
-     * @return true if a provider is registered
-     */
-    public boolean hasProvider(Process process) {
-        return providers.containsKey(process);
+    public boolean hasFactory(Process process) {
+        return factories.containsKey(process);
     }
 }

@@ -28,7 +28,6 @@ import dev.qheilmann.vanillaenoughitems.gui.processpannel.AbstractProcessPanel;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPannelSlot;
 import dev.qheilmann.vanillaenoughitems.recipe.extraction.RecipeExtractor;
 import dev.qheilmann.vanillaenoughitems.recipe.index.reader.MultiProcessRecipeReader;
-import dev.qheilmann.vanillaenoughitems.recipe.index.reader.RecipeIndexReader;
 import dev.qheilmann.vanillaenoughitems.recipe.process.Process;
 import dev.qheilmann.vanillaenoughitems.recipe.process.Workbench;
 import dev.qheilmann.vanillaenoughitems.utils.fastinv.FastInv;
@@ -76,6 +75,7 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
     private final RecipeGuiContext context;
     private final PlayerGuiData playerData;
     private MultiProcessRecipeReader reader;
+    private @Nullable AbstractProcessPanel currentPanel;
     private @Nullable BukkitTask tickTask;
 
     // Mutable state
@@ -90,7 +90,7 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
         this.reader = initialReader;
         
         render();
-        // startIngredientTicker();
+        startIngredientTicker();
     }
 
     public void render() {
@@ -107,53 +107,67 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
         renderWorkbenchScrollButtons();
         renderProcessScrollButtons();
         
-        // Generate shared buttons
-        Map<SharedButtonType, FastInvItem> sharedButtons = generateSharedButtons();
-        
-        // Regenerate current panel
+        // Generate current panel
         AbstractProcessPanel processPanel = regenerateCurrentPanel();
+        this.currentPanel = processPanel; // hmm i don't like this design very much
         
+        // refact all of this, make sub methodes
         // Render panel content
         if (processPanel != null) {
-            Map<ProcessPannelSlot, FastInvItem> panelItems = processPanel.renderRecipe(sharedButtons);
+            // Generate shared buttons
+            Map<RecipeGuiControlledButton, FastInvItem> sharedButtons = generateSharedButtons();
             
-            // Validate and apply panel items
-            for (Map.Entry<ProcessPannelSlot, FastInvItem> entry : panelItems.entrySet()) {
+            // Get panel's shared button slots
+            Map<RecipeGuiControlledButton, ProcessPannelSlot> sharedButtonSlots = processPanel.getRecipeGuiButtonMap();
+            
+            // Place shared buttons at panel-specified positions
+            for (Map.Entry<RecipeGuiControlledButton, ProcessPannelSlot> entry : sharedButtonSlots.entrySet()) {
+                RecipeGuiControlledButton buttonType = entry.getKey();
+                ProcessPannelSlot panelSlot = entry.getValue();
+                FastInvItem button = sharedButtons.get(buttonType);
+                if (button != null) {
+                    setItem(panelSlot.toSlotIndex(), button);
+                }
+            }
+            
+            // Place ticked ingredient slots
+            Map<ProcessPannelSlot, CyclicIngredient> tickedSlots = processPanel.getTickedItems();
+            for (Map.Entry<ProcessPannelSlot, CyclicIngredient> entry : tickedSlots.entrySet()) {
+                ProcessPannelSlot panelSlot = entry.getKey();
+                CyclicIngredient view = entry.getValue();
+                setItem(panelSlot.toSlotIndex(), new FastInvItem(view.getCurrentItem(), e -> changeRecipe(view.getCurrentItem())));
+            }
+            
+            // Place static decorative items
+            Map<ProcessPannelSlot, FastInvItem> staticItems = processPanel.getStaticItems();
+            for (Map.Entry<ProcessPannelSlot, FastInvItem> entry : staticItems.entrySet()) {
                 ProcessPannelSlot panelSlot = entry.getKey();
                 FastInvItem item = entry.getValue();
-                
-                // Validate shared buttons are unmodified
-                for (Map.Entry<SharedButtonType, FastInvItem> sharedEntry : sharedButtons.entrySet()) {
-                    if (sharedEntry.getValue() == item) {
-                        // This is a shared button - it's valid
-                        break;
-                    }
-                }
-                
                 setItem(panelSlot.toSlotIndex(), item);
             }
         }
     }
 
-    private Map<SharedButtonType, FastInvItem> generateSharedButtons() {
-        Map<SharedButtonType, FastInvItem> buttons = new HashMap<>();
+    // TODO hmm don't very like this name
+    private Map<RecipeGuiControlledButton, FastInvItem> generateSharedButtons() {
+        Map<RecipeGuiControlledButton, FastInvItem> buttons = new HashMap<>();
         
         // Next/Previous recipe buttons
-        buttons.put(SharedButtonType.NEXT_RECIPE, new FastInvItem(
+        buttons.put(RecipeGuiControlledButton.NEXT_RECIPE, new FastInvItem(
             ItemType.ACACIA_BOAT.createItemStack(),
             e -> nextRecipe()
         ));
-        buttons.put(SharedButtonType.PREVIOUS_RECIPE, new FastInvItem(
+        buttons.put(RecipeGuiControlledButton.PREVIOUS_RECIPE, new FastInvItem(
             ItemType.ACACIA_BOAT.createItemStack(),
             e -> previousRecipe()
         ));
         
         // History navigation
-        buttons.put(SharedButtonType.HISTORY_BACKWARD, new FastInvItem(
+        buttons.put(RecipeGuiControlledButton.HISTORY_BACKWARD, new FastInvItem(
             ItemType.BIRCH_BOAT.createItemStack(),
             e -> historyBackward()
         ));
-        buttons.put(SharedButtonType.HISTORY_FORWARD, new FastInvItem(
+        buttons.put(RecipeGuiControlledButton.HISTORY_FORWARD, new FastInvItem(
             ItemType.BIRCH_BOAT.createItemStack(),
             e -> historyForward()
         ));
@@ -162,8 +176,8 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
     }
 
     private AbstractProcessPanel regenerateCurrentPanel() {
-        
         AbstractProcessPanel newPanel = context.getProcessPanelRegistry().createPanel(
+            getCurrentProcess(),
             getCurrentRecipe(),
             this,
             context
@@ -172,20 +186,32 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
         return newPanel;
     }
 
-    private void startIngredientTicker(AbstractProcessPanel currentPanel) {
+    private void startIngredientTicker() {
+        if (tickTask != null) {
+            tickTask.cancel();
+        }
         tickTask = Bukkit.getScheduler().runTaskTimer(
             VanillaEnoughItems.getPlugin(VanillaEnoughItems.class),
-            () -> tickIngredients(currentPanel),
+            this::tickIngredients,
             INGREDIENT_TICK_INTERVAL,
             INGREDIENT_TICK_INTERVAL
         );
     }
 
-    private void tickIngredients(AbstractProcessPanel currentPanel) {
-        Map<ProcessPannelSlot, ItemStack> updates = currentPanel.tickIngredients();
-        for (Map.Entry<ProcessPannelSlot, ItemStack> entry : updates.entrySet()) {
-            int slot = entry.getKey().toSlotIndex();
-            getInventory().setItem(slot, entry.getValue());
+    private void tickIngredients() {
+        VanillaEnoughItems.LOGGER.info("Ticking ingredients in RecipeGui time since last tick" + System.currentTimeMillis()); // TEMP
+
+        AbstractProcessPanel panel = currentPanel;
+        if (panel == null) {
+            return;
+        }
+
+        for (Map.Entry<ProcessPannelSlot, CyclicIngredient> entry : panel.getTickedItems().entrySet()) {
+            ProcessPannelSlot panelSlot = entry.getKey();
+            CyclicIngredient cyclic = entry.getValue();
+            cyclic.tickForward();
+            ItemStack currentItem = cyclic.getCurrentItem();
+            setItem(panelSlot.toSlotIndex(), new FastInvItem(currentItem, e -> changeRecipe(currentItem)));
         }
     }
 
@@ -241,11 +267,10 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
         playerData.navigationHistory().pushForNavigation(reader);
         
         // Create new reader for the target recipe
-        RecipeIndexReader indexReader = new RecipeIndexReader(context.getRecipeIndex()); // TODO actuatly we should only have the reader ? and not the index
-        MultiProcessRecipeReader newReader = indexReader.readerByResult(resultItem);
+        MultiProcessRecipeReader newMultiRecipeReader = context.getRecipeIndexReader().readerByResult(resultItem);
         
-        if (newReader != null) {
-            this.reader = newReader;
+        if (newMultiRecipeReader != null) {
+            this.reader = newMultiRecipeReader;
             render();
         }
     }
@@ -641,7 +666,7 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
 
     private String getQuickLinkCmd() {
         Recipe currentRecipe = getCurrentRecipe();
-        RecipeExtractor extractor = context.getRecipeIndex().getAssociatedRecipeExtractor();
+        RecipeExtractor extractor = context.getRecipeIndexReader().getAssociatedRecipeExtractor();
 
         if (!extractor.canHandle(currentRecipe)) {
             return "No quick link available for this recipe";

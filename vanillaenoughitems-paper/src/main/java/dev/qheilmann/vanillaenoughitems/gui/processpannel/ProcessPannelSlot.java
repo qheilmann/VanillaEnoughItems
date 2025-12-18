@@ -1,5 +1,7 @@
 package dev.qheilmann.vanillaenoughitems.gui.processpannel;
 
+import java.util.Comparator;
+
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -11,7 +13,7 @@ import dev.qheilmann.vanillaenoughitems.utils.fastinv.Slots;
  * The panel area spans columns 1-7 and rows 1-5 in the RecipeGui (9x6 inventory).
  */
 @NullMarked
-public class ProcessPannelSlot {
+public class ProcessPannelSlot implements Comparable<ProcessPannelSlot> {
     private static final int PANEL_MIN_COLUMN = 0;
     private static final int PANEL_MAX_COLUMN = 6;
     private static final int PANEL_MIN_ROW = 0;
@@ -85,6 +87,16 @@ public class ProcessPannelSlot {
     @Override
     public String toString() {
         return "ProcessPannelSlot[column=" + column + ", row=" + row + "]";
+    }
+
+    @Override
+    public int compareTo(@SuppressWarnings("null") ProcessPannelSlot o) {
+        return comparator().compare(this, o);
+    }
+
+    public static Comparator<ProcessPannelSlot> comparator() {
+        return Comparator.comparingInt(ProcessPannelSlot::row)
+            .thenComparingInt(ProcessPannelSlot::column);
     }
 }
 

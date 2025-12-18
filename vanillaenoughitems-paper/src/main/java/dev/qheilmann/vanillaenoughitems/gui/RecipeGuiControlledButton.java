@@ -4,10 +4,10 @@ import org.jspecify.annotations.NullMarked;
 
 /**
  * Types of shared buttons that RecipeGui provides to ProcessPanel implementations.
- * These buttons are pre-built by RecipeGui and must be returned unmodified by panels.
+ * These buttons are built by RecipeGui
  */
 @NullMarked
-public enum SharedButtonType {
+public enum RecipeGuiControlledButton {
     /** Navigate to the next recipe in the current process */
     NEXT_RECIPE,
     
@@ -19,4 +19,7 @@ public enum SharedButtonType {
     
     /** Navigate forward in recipe history */
     HISTORY_FORWARD,
+
+    /** Quickly craft the current recipe */
+    QUICK_CRAFT,
 }

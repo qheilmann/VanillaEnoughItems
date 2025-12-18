@@ -18,6 +18,8 @@ public class RecipeExtractor {
     // Map of registered extractors ordered by insertion order
     LinkedHashSet<IRecipeExtractor<?>> extractors = new LinkedHashSet<>();
 
+    boolean locked = false;
+
     /**
      * Create a new RecipeExtractor
      */
@@ -28,7 +30,23 @@ public class RecipeExtractor {
      * @param extractor the extractor to register
      */
     public void registerExtractor(IRecipeExtractor<?> extractor) {
+        if (locked) {
+            throw new IllegalStateException("RecipeExtractor is locked, cannot register new extractors");
+        }
         this.extractors.add(extractor);
+    }
+
+    // TODO actualy extractor is used is in lot of place, and to avoid some issue we lock the registration after all the registration is done
+    // but this is not very clean, is it a better way to handle this ?
+    // 1. do a sub interface with just the extraction thing so we cast it after finalization
+    // 2. have a builder that handle the registration and then build a locked extractor
+    // 3. for a temporary time just a lock method that prevent further registration
+
+    /**
+     * Lock the extractor to prevent further registrations
+     */
+    public void lock() {
+        this.locked = true;
     }
 
     /**

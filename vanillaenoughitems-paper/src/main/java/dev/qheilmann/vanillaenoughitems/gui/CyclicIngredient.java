@@ -13,7 +13,7 @@ import java.util.List;
  * Used to animate ingredient slots that accept multiple items.
  */
 @NullMarked
-public class IngredientView {
+public class CyclicIngredient {
     private final ItemStack[] options;
     private int currentIndex;
 
@@ -21,23 +21,27 @@ public class IngredientView {
      * Create an IngredientView from a RecipeChoice
      * @param choice the recipe choice to create from
      */
-    public IngredientView(RecipeChoice choice) {
+    public CyclicIngredient(RecipeChoice choice) {
         List<ItemStack> items = RecipeChoiceHelper.getItemsFromChoice(choice).stream().toList();
         this.options = items.toArray(new ItemStack[0]);
-        this.currentIndex = 0;
+        setRandomIndex();
     }
 
     /**
      * Create an IngredientView from a single ItemStack
      * @param item the single item to display
      */
-    public IngredientView(ItemStack... item) {
+    public CyclicIngredient(ItemStack... item) {
         if (item.length == 0) {
             throw new IllegalArgumentException("IngredientView must have at least one item");
         }
         
         this.options = item.clone();
-        this.currentIndex = 0;
+        setRandomIndex();
+    }
+
+    public void setRandomIndex() {
+        this.currentIndex = (int) (Math.random() * options.length);
     }
 
     /**
@@ -86,7 +90,7 @@ public class IngredientView {
      * Set the current index to a specific option, wrapping if necessary
      * @param index the index to set
      */
-    public void set(int index) {
+    public void setIndex(int index) {
         currentIndex = index % options.length;
     }
 }

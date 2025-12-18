@@ -8,7 +8,6 @@ import dev.jorel.commandapi.CommandPermission;
 import dev.qheilmann.vanillaenoughitems.gui.RecipeGui;
 import dev.qheilmann.vanillaenoughitems.gui.RecipeGuiContext;
 import dev.qheilmann.vanillaenoughitems.recipe.index.reader.MultiProcessRecipeReader;
-import dev.qheilmann.vanillaenoughitems.recipe.index.reader.RecipeIndexReader;
 
 @NullMarked
 public class DebugCommand {
@@ -35,8 +34,7 @@ public class DebugCommand {
             // debugvei
             .executesPlayer((player, args) -> {
 
-                RecipeIndexReader recipeIndex = new RecipeIndexReader(context.getRecipeIndex());
-                MultiProcessRecipeReader reader = recipeIndex.readerByResult(ItemType.IRON_INGOT.createItemStack());
+                MultiProcessRecipeReader reader = context.getRecipeIndexReader().readerByResult(ItemType.IRON_INGOT.createItemStack());
 
                 @SuppressWarnings("null")
                 RecipeGui gui = new RecipeGui(player, context, reader);

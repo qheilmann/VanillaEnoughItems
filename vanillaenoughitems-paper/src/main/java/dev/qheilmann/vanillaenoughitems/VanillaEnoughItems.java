@@ -13,8 +13,9 @@ import dev.jorel.commandapi.CommandAPIPaperConfig;
 import dev.qheilmann.vanillaenoughitems.commands.DebugCommand;
 import dev.qheilmann.vanillaenoughitems.gui.RecipeGuiContext;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPanelRegistry;
-import dev.qheilmann.vanillaenoughitems.gui.processpannel.provider.impl.CraftingProcessPanelProvider;
-import dev.qheilmann.vanillaenoughitems.gui.processpannel.provider.impl.SmeltingProcessPanelProvider;
+import dev.qheilmann.vanillaenoughitems.gui.processpannel.impl.CraftingProcessPanel;
+import dev.qheilmann.vanillaenoughitems.gui.processpannel.impl.SmeltingProcessPanel;
+import dev.qheilmann.vanillaenoughitems.recipe.process.Process;
 import dev.qheilmann.vanillaenoughitems.recipe.extraction.RecipeExtractor;
 import dev.qheilmann.vanillaenoughitems.recipe.extraction.impl.BlastingRecipeExtractor;
 import dev.qheilmann.vanillaenoughitems.recipe.extraction.impl.CampfireRecipeExtractor;
@@ -27,6 +28,7 @@ import dev.qheilmann.vanillaenoughitems.recipe.extraction.impl.SmokingRecipeExtr
 import dev.qheilmann.vanillaenoughitems.recipe.extraction.impl.StonecuttingRecipeExtractor;
 import dev.qheilmann.vanillaenoughitems.recipe.extraction.impl.TransmuteRecipeExtractor;
 import dev.qheilmann.vanillaenoughitems.recipe.index.RecipeIndex;
+import dev.qheilmann.vanillaenoughitems.recipe.index.reader.RecipeIndexReader;
 import dev.qheilmann.vanillaenoughitems.recipe.process.ProcessRegistry;
 import dev.qheilmann.vanillaenoughitems.recipe.process.impl.BlastingProcess;
 import dev.qheilmann.vanillaenoughitems.recipe.process.impl.CampfireProcess;
@@ -74,6 +76,10 @@ public class VanillaEnoughItems extends JavaPlugin {
         LOGGER.info("Enabling FastInv...");
         FastInvManager.register(this);
 
+        // TODO when arch stable, make a allInOn methode to pass the Extractor, Process, PanelRegistry etc together
+        // or this will break the separtion like not very one to one, make a moduler system or so ?
+        // or ust part of it, like processRegistry with processPanelRegistry
+
         RecipeExtractor recipeExtractor = new RecipeExtractor();
         recipeExtractor.registerExtractor(new BlastingRecipeExtractor());
         recipeExtractor.registerExtractor(new CampfireRecipeExtractor());
@@ -86,22 +92,26 @@ public class VanillaEnoughItems extends JavaPlugin {
         recipeExtractor.registerExtractor(new StonecuttingRecipeExtractor());
         recipeExtractor.registerExtractor(new TransmuteRecipeExtractor());
         
+        Process craftingProcess = new CraftingProcess();
+        Process smeltingProcess = new SmeltingProcess();
+
         ProcessRegistry processRegistry = new ProcessRegistry();
         processRegistry.registerProcess(new BlastingProcess());
         processRegistry.registerProcess(new CampfireProcess());
-        processRegistry.registerProcess(new CraftingProcess());
-        processRegistry.registerProcess(new SmeltingProcess());
+        processRegistry.registerProcess(craftingProcess);
+        processRegistry.registerProcess(smeltingProcess);
         processRegistry.registerProcess(new SmithingTransformProcess());
         processRegistry.registerProcess(new SmithingTrimProcess());
         processRegistry.registerProcess(new SmokingProcess());
         processRegistry.registerProcess(new StonecuttingProcess());
         
-        ProcessPanelRegistry processPanelRegistry = new ProcessPanelRegistry(processRegistry);
-        processPanelRegistry.registerProvider(new CraftingProcessPanelProvider());
-        processPanelRegistry.registerProvider(new SmeltingProcessPanelProvider());
+        ProcessPanelRegistry processPanelRegistry = new ProcessPanelRegistry();
+        processPanelRegistry.registerProvider(craftingProcess, CraftingProcessPanel::new);
+        processPanelRegistry.registerProvider(smeltingProcess, SmeltingProcessPanel::new);
 
         RecipeIndex recipeIndex = new RecipeIndex(processRegistry, recipeExtractor);
-        recipeGuiContext = new RecipeGuiContext(this, recipeIndex, processPanelRegistry); // index reader here ?
+        RecipeIndexReader recipeIndexReader = new RecipeIndexReader(recipeIndex);
+        recipeGuiContext = new RecipeGuiContext(this, recipeIndexReader, processPanelRegistry);
 
         Iterator<Recipe> recipeIterator = getServer().recipeIterator();
         recipeIndex.indexRecipe(() -> recipeIterator);

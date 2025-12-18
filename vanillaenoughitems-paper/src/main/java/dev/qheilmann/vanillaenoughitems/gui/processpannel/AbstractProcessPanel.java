@@ -1,30 +1,29 @@
 package dev.qheilmann.vanillaenoughitems.gui.processpannel;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
-
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.jspecify.annotations.NullMarked;
 
-import dev.qheilmann.vanillaenoughitems.gui.IngredientView;
+import dev.qheilmann.vanillaenoughitems.gui.CyclicIngredient;
 import dev.qheilmann.vanillaenoughitems.gui.RecipeGuiActions;
 import dev.qheilmann.vanillaenoughitems.gui.RecipeGuiContext;
-import dev.qheilmann.vanillaenoughitems.gui.SharedButtonType;
+import dev.qheilmann.vanillaenoughitems.gui.RecipeGuiControlledButton;
 import dev.qheilmann.vanillaenoughitems.utils.fastinv.FastInvItem;
 
 /**
  * Abstract base class for process-specific recipe panel renderers.
  * Each implementation handles rendering a specific type of process (e.g., Crafting, Smelting).
- * Panels are stateful but regenerated on recipe change like nextRecipe().
+ * Panels are stateful but not change, a new ProcessPanel is regenerated on recipe change like nextRecipe().
  */
 @NullMarked
 public abstract class AbstractProcessPanel {
     protected final Recipe recipe;
     protected final RecipeGuiActions actions;
     protected final RecipeGuiContext context;
-    protected final List<IngredientView> ingredientViews = new ArrayList<>();
+
+    private final Map<RecipeGuiControlledButton, ProcessPannelSlot> sharedButtonSlots;
+    private final Map<ProcessPannelSlot, CyclicIngredient> tickedSlots;
+    private final Map<ProcessPannelSlot, FastInvItem> staticItems;
 
     /**
      * Create a ProcessPanel
@@ -37,42 +36,61 @@ public abstract class AbstractProcessPanel {
         this.recipe = recipe;
         this.actions = actions;
         this.context = context;
+
+        this.sharedButtonSlots = buildRecipeGuiButtonMap();
+        this.tickedSlots = buildTickedItems();
+        this.staticItems = buildStaticItems();
+    }
+
+    // Builders
+
+    /**
+     * Map the classic button types inside the panel slots
+     * @return map of shared button types to panel-relative slots
+     */
+    protected abstract Map<RecipeGuiControlledButton, ProcessPannelSlot> buildRecipeGuiButtonMap();
+
+    /**
+     * Build the ingredient slots that should animate by cycling through multiple options (like RecipeChoice).
+     * CyclicIngredient are built once per panel instantiation, and lived during the panel lifecycle. (regenerated on recipe change)
+     * @return map of panel-relative slots to ingredient views
+     */
+    protected abstract Map<ProcessPannelSlot, CyclicIngredient> buildTickedItems();
+    
+    /**
+     * Build static decorative items that don't change during recipe lifecycle.
+     * These can have custom click actions (e.g., show more info, send link to wiki).
+     * @return map of panel-relative slots to static items with optional actions
+     */
+    protected abstract Map<ProcessPannelSlot, FastInvItem> buildStaticItems();
+
+    // Getters
+
+    /**
+     * Get the recipe gui classic button mapping inside the panel slots.
+     * @return map of RecipeGuiControlledButton associated there panel-relative slots
+     */
+    public Map<RecipeGuiControlledButton, ProcessPannelSlot> getRecipeGuiButtonMap() {
+        return sharedButtonSlots;
     }
 
     /**
-     * Render the recipe into the panel area.
-     * Must return shared buttons unmodified at appropriate slots.
+     * Get item slots that should animate by cycling through multiple options (like RecipeChoice).
+     * CyclicIngredient are built once per panel instantiation, and lived during the panel lifecycle. (regenerated on recipe change)
      * 
-     * @param sharedButtons pre-built buttons that must be included in the result
-     * @return map of panel-relative slots to items
+     * @return map of panel-relative slots to ingredient views
      */
-    public abstract Map<ProcessPannelSlot, FastInvItem> renderRecipe(Map<SharedButtonType, FastInvItem> sharedButtons);
+    public Map<ProcessPannelSlot, CyclicIngredient> getTickedItems() {
+        return tickedSlots;
+    }
 
     /**
-     * Tick all ingredient views and return updated slots.
-     * Called periodically to animate RecipeChoice cycling.
+     * Get static decorative items that don't change during recipe lifecycle.
+     * These can have custom click actions (e.g., show more info, send link to wiki).
      * 
-     * @return map of panel-relative slots to updated item stacks, or empty if no changes
+     * @return map of panel-relative slots to static items with optional actions
      */
-    public Map<ProcessPannelSlot, ItemStack> tickIngredients() {
-        // Default implementation: no animation
-        return Map.of();
-    }
-
-    /**
-     * Get the recipe this panel is rendering
-     * @return the recipe
-     */
-    public Recipe getRecipe() {
-        return recipe;
-    }
-
-    /**
-     * Get all ingredient views managed by this panel
-     * @return list of ingredient views
-     */
-    protected List<IngredientView> getIngredientViews() {
-        return ingredientViews;
+    public Map<ProcessPannelSlot, FastInvItem> getStaticItems() {
+        return staticItems;
     }
 }
-

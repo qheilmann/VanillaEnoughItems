@@ -8,6 +8,7 @@ import org.bukkit.inventory.Recipe;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
+import dev.qheilmann.vanillaenoughitems.recipe.extraction.RecipeExtractor;
 import dev.qheilmann.vanillaenoughitems.recipe.index.MultiProcessRecipeMap;
 import dev.qheilmann.vanillaenoughitems.recipe.index.ProcessRecipeSet;
 import dev.qheilmann.vanillaenoughitems.recipe.index.RecipeIndex;
@@ -278,4 +279,10 @@ public class RecipeIndexReader {
     }
 
     //#endregion All Recipes
+
+    public RecipeExtractor getAssociatedRecipeExtractor() {
+        RecipeExtractor extractor = recipeIndex.getAssociatedRecipeExtractor();
+        extractor.lock();
+        return extractor;
+    }
 }
