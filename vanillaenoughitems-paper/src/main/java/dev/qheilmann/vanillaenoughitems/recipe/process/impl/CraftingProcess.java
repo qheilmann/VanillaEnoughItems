@@ -21,11 +21,11 @@ import net.kyori.adventure.text.Component;
 public class CraftingProcess extends AbstractProcess {
 
     public static final Key KEY = Key.key("crafting");
-    public static List<Class<? extends Recipe>> validRecipeClasses =  Arrays.asList(ShapedRecipe.class, ShapelessRecipe.class, TransmuteRecipe.class);
-
-    public static boolean canHandle(Recipe recipe) {
-        return validRecipeClasses.stream().anyMatch(c -> c.isInstance(recipe));
-    }
+    public static final List<Class<? extends Recipe>> VALID_RECIPE_CLASSES = Arrays.asList(
+        ShapedRecipe.class, 
+        ShapelessRecipe.class, 
+        TransmuteRecipe.class
+    );
 
     public CraftingProcess() {
         super(KEY);
@@ -33,7 +33,7 @@ public class CraftingProcess extends AbstractProcess {
 
     @Override
     public boolean canHandleRecipe(Recipe recipe) {
-        return canHandle(recipe);
+        return VALID_RECIPE_CLASSES.stream().anyMatch(c -> c.isInstance(recipe));
     }
 
     @Override

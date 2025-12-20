@@ -31,9 +31,9 @@ public class SmithingTrimRecipeRecipeExtractor implements IRecipeExtractor<@NonN
     @Override
     public Set<ItemStack> extractIngredients(SmithingTrimRecipe recipe) {
         Set<ItemStack> ingredients = new HashSet<>();
+        ingredients.addAll(RecipeChoiceHelper.getItemsFromChoice(recipe.getTemplate()));
         ingredients.addAll(RecipeChoiceHelper.getItemsFromChoice(recipe.getBase()));
         ingredients.addAll(RecipeChoiceHelper.getItemsFromChoice(recipe.getAddition()));
-        ingredients.addAll(RecipeChoiceHelper.getItemsFromChoice(recipe.getTemplate()));
         return ingredients;
     }
 

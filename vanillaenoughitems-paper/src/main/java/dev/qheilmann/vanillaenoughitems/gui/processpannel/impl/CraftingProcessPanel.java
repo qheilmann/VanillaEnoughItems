@@ -19,9 +19,11 @@ import dev.qheilmann.vanillaenoughitems.gui.RecipeGuiContext;
 import dev.qheilmann.vanillaenoughitems.gui.RecipeGuiSharedButton;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.AbstractProcessPanel;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPannelSlot;
-import dev.qheilmann.vanillaenoughitems.recipe.process.impl.CraftingProcess;
 import dev.qheilmann.vanillaenoughitems.utils.fastinv.FastInvItem;
 
+/**
+ * Panel for all crafting recipes.
+ */
 @NullMarked
 public class CraftingProcessPanel extends AbstractProcessPanel {
 
@@ -33,16 +35,8 @@ public class CraftingProcessPanel extends AbstractProcessPanel {
         { new ProcessPannelSlot(1, 3), new ProcessPannelSlot(2, 3), new ProcessPannelSlot(3, 3) }
     };
 
-    public static Recipe canHandleRecipe(Recipe recipe) {
-        if (!CraftingProcess.canHandle(recipe)) {
-            throw new IllegalArgumentException("CraftingProcessPanel requires a CraftingProcess recipe");
-        }
-
-        return recipe;
-    }
-
     public CraftingProcessPanel(Recipe recipe, RecipeGuiActions actions, RecipeGuiContext context) {
-        super(canHandleRecipe(recipe), actions, context);
+        super(recipe, actions, context);
     }
 
     public CraftingRecipe getCraftingRecipe() {

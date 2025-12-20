@@ -9,12 +9,14 @@ import dev.qheilmann.vanillaenoughitems.gui.RecipeGuiActions;
 import dev.qheilmann.vanillaenoughitems.gui.RecipeGuiContext;
 import dev.qheilmann.vanillaenoughitems.gui.RecipeGuiSharedButton;
 import dev.qheilmann.vanillaenoughitems.utils.fastinv.FastInvItem;
+import dev.qheilmann.vanillaenoughitems.recipe.process.Process;
 
 // TODO should realy this be a Abstact class or can it be an interface? or both stage ?
 /**
  * Abstract base class for process-specific recipe panel renderers.
  * Each implementation handles rendering a specific type of process (e.g., Crafting, Smelting).
  * Panels are stateful but not change, a new ProcessPanel is regenerated on recipe change like nextRecipe().
+ * IMPORTANT: The provided panel should handle any recipe supported by the associated process, {@link Process#canHandleRecipe(Recipe)}
  */
 @NullMarked
 public abstract class AbstractProcessPanel {

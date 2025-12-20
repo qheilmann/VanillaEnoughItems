@@ -737,7 +737,8 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
     //#region Helpers
 
     private static ItemStack fillerItem() {
-        ItemStack item = new ItemStack(Material.LIGHT_GRAY_STAINED_GLASS_PANE);
+        ItemStack item = ItemType.LIGHT_GRAY_STAINED_GLASS_PANE.createItemStack();
+
         item.editMeta(meta -> {
             meta.setMaxStackSize(1);
             meta.setHideTooltip(true);

@@ -12,9 +12,15 @@ import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPIPaperConfig;
 import dev.qheilmann.vanillaenoughitems.commands.DebugCommand;
 import dev.qheilmann.vanillaenoughitems.gui.RecipeGuiContext;
+import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPanelFactory;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPanelRegistry;
+import dev.qheilmann.vanillaenoughitems.gui.processpannel.impl.BlastingProcessPanel;
+import dev.qheilmann.vanillaenoughitems.gui.processpannel.impl.CampfireProcessPanel;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.impl.CraftingProcessPanel;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.impl.SmeltingProcessPanel;
+import dev.qheilmann.vanillaenoughitems.gui.processpannel.impl.SmithingProcessPanel;
+import dev.qheilmann.vanillaenoughitems.gui.processpannel.impl.SmokingProcessPanel;
+import dev.qheilmann.vanillaenoughitems.gui.processpannel.impl.StonecuttingProcessPanel;
 import dev.qheilmann.vanillaenoughitems.recipe.process.Process;
 import dev.qheilmann.vanillaenoughitems.recipe.extraction.RecipeExtractor;
 import dev.qheilmann.vanillaenoughitems.recipe.extraction.impl.BlastingRecipeExtractor;
@@ -91,21 +97,15 @@ public class VanillaEnoughItems extends JavaPlugin {
         recipeExtractor.registerExtractor(new StonecuttingRecipeExtractor());
         recipeExtractor.registerExtractor(new TransmuteRecipeExtractor());
         
-        Process craftingProcess = new CraftingProcess();
-        Process smeltingProcess = new SmeltingProcess();
-
         ProcessRegistry processRegistry = new ProcessRegistry();
-        processRegistry.registerProcess(new BlastingProcess());
-        processRegistry.registerProcess(new CampfireProcess());
-        processRegistry.registerProcess(craftingProcess);
-        processRegistry.registerProcess(smeltingProcess);
-        processRegistry.registerProcess(new SmithingProcess());
-        processRegistry.registerProcess(new SmokingProcess());
-        processRegistry.registerProcess(new StonecuttingProcess());
-        
         ProcessPanelRegistry processPanelRegistry = new ProcessPanelRegistry();
-        processPanelRegistry.registerProvider(craftingProcess, CraftingProcessPanel::new);
-        processPanelRegistry.registerProvider(smeltingProcess, SmeltingProcessPanel::new);
+        addProcessesAndPanels(processRegistry, processPanelRegistry, new CraftingProcess(), CraftingProcessPanel::new); // most common
+        addProcessesAndPanels(processRegistry, processPanelRegistry, new StonecuttingProcess(), StonecuttingProcessPanel::new);
+        addProcessesAndPanels(processRegistry, processPanelRegistry, new SmeltingProcess(), SmeltingProcessPanel::new);
+        addProcessesAndPanels(processRegistry, processPanelRegistry, new SmithingProcess(), SmithingProcessPanel::new);
+        addProcessesAndPanels(processRegistry, processPanelRegistry, new BlastingProcess(), BlastingProcessPanel::new);
+        addProcessesAndPanels(processRegistry, processPanelRegistry, new SmokingProcess(), SmokingProcessPanel::new);
+        addProcessesAndPanels(processRegistry, processPanelRegistry, new CampfireProcess(), CampfireProcessPanel::new);
 
         RecipeIndex recipeIndex = new RecipeIndex(processRegistry, recipeExtractor);
         RecipeIndexReader recipeIndexReader = new RecipeIndexReader(recipeIndex);
@@ -137,5 +137,10 @@ public class VanillaEnoughItems extends JavaPlugin {
         commandApiConfig.dispatcherFile(new File(getDataFolder(), "command_registration.json"));
 
         CommandAPI.onLoad(commandApiConfig);
+    }
+
+    private void addProcessesAndPanels(ProcessRegistry processRegistry, ProcessPanelRegistry processPanelRegistry, Process process, ProcessPanelFactory panelFactory) {
+           processRegistry.registerProcess(process);
+           processPanelRegistry.registerProvider(process, panelFactory);
     }
 }

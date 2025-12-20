@@ -31,6 +31,7 @@ public class SmithingTransformRecipeExtractor implements IRecipeExtractor<@NonNu
     @Override
     public Set<ItemStack> extractIngredients(SmithingTransformRecipe recipe) {
         Set<ItemStack> ingredients = new HashSet<>();
+        ingredients.addAll(RecipeChoiceHelper.getItemsFromChoice(recipe.getTemplate()));
         ingredients.addAll(RecipeChoiceHelper.getItemsFromChoice(recipe.getBase()));
         ingredients.addAll(RecipeChoiceHelper.getItemsFromChoice(recipe.getAddition()));
         return ingredients;
