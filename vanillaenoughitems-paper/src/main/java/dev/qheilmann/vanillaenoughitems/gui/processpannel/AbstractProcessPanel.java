@@ -7,9 +7,10 @@ import org.jspecify.annotations.NullMarked;
 import dev.qheilmann.vanillaenoughitems.gui.CyclicIngredient;
 import dev.qheilmann.vanillaenoughitems.gui.RecipeGuiActions;
 import dev.qheilmann.vanillaenoughitems.gui.RecipeGuiContext;
-import dev.qheilmann.vanillaenoughitems.gui.RecipeGuiControlledButton;
+import dev.qheilmann.vanillaenoughitems.gui.RecipeGuiSharedButton;
 import dev.qheilmann.vanillaenoughitems.utils.fastinv.FastInvItem;
 
+// TODO should realy this be a Abstact class or can it be an interface? or both stage ?
 /**
  * Abstract base class for process-specific recipe panel renderers.
  * Each implementation handles rendering a specific type of process (e.g., Crafting, Smelting).
@@ -21,7 +22,7 @@ public abstract class AbstractProcessPanel {
     protected final RecipeGuiActions actions;
     protected final RecipeGuiContext context;
 
-    private final Map<RecipeGuiControlledButton, ProcessPannelSlot> sharedButtonSlots;
+    private final Map<RecipeGuiSharedButton, ProcessPannelSlot> sharedButtonSlots;
     private final Map<ProcessPannelSlot, CyclicIngredient> tickedSlots;
     private final Map<ProcessPannelSlot, FastInvItem> staticItems;
 
@@ -48,7 +49,7 @@ public abstract class AbstractProcessPanel {
      * Map the classic button types inside the panel slots
      * @return map of shared button types to panel-relative slots
      */
-    protected abstract Map<RecipeGuiControlledButton, ProcessPannelSlot> buildRecipeGuiButtonMap();
+    protected abstract Map<RecipeGuiSharedButton, ProcessPannelSlot> buildRecipeGuiButtonMap();
 
     /**
      * Build the ingredient slots that should animate by cycling through multiple options (like RecipeChoice).
@@ -70,7 +71,7 @@ public abstract class AbstractProcessPanel {
      * Get the recipe gui classic button mapping inside the panel slots.
      * @return map of RecipeGuiControlledButton associated there panel-relative slots
      */
-    public Map<RecipeGuiControlledButton, ProcessPannelSlot> getRecipeGuiButtonMap() {
+    public Map<RecipeGuiSharedButton, ProcessPannelSlot> getRecipeGuiButtonMap() {
         return sharedButtonSlots;
     }
 

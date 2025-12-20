@@ -7,7 +7,7 @@ import org.jspecify.annotations.NullMarked;
  * These buttons are built by RecipeGui
  */
 @NullMarked
-public enum RecipeGuiControlledButton {
+public enum RecipeGuiSharedButton {
     /** Navigate to the next recipe in the current process */
     NEXT_RECIPE,
     

@@ -1,6 +1,5 @@
 package dev.qheilmann.vanillaenoughitems.gui;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -75,7 +74,6 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
     private final RecipeGuiContext context;
     private final PlayerGuiData playerData;
     private MultiProcessRecipeReader reader;
-    private @Nullable AbstractProcessPanel currentPanel;
     private @Nullable BukkitTask tickTask;
 
     // Mutable state
@@ -90,9 +88,12 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
         this.reader = initialReader;
         
         render();
-        startIngredientTicker();
     }
 
+    /**
+     * Render the entire GUI based on the current state<br>
+     * This is called initially and on each recipe change
+     */
     public void render() {
         // Clear inventory
         getInventory().clear(); // TODO maybe remove this if everything which needs to be updated is updated
@@ -106,36 +107,43 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
         renderQuickLinkButton();
         renderWorkbenchScrollButtons();
         renderProcessScrollButtons();
-        
-        // Generate current panel
+
         AbstractProcessPanel processPanel = regenerateCurrentPanel();
-        this.currentPanel = processPanel; // hmm i don't like this design very much
+        Map<RecipeGuiSharedButton, ProcessPannelSlot> sharedButtonSlots = processPanel.getRecipeGuiButtonMap();
+        
+        // Recipe reader dependent buttons
+        renderNextRecipeButton(sharedButtonSlots.get(RecipeGuiSharedButton.NEXT_RECIPE).toSlotIndex());
+        renderPreviousRecipeButton(sharedButtonSlots.get(RecipeGuiSharedButton.PREVIOUS_RECIPE).toSlotIndex());
+        renderForwardNavigationButton(sharedButtonSlots.get(RecipeGuiSharedButton.HISTORY_FORWARD).toSlotIndex());
+        renderBackwardNavigationButton(sharedButtonSlots.get(RecipeGuiSharedButton.HISTORY_BACKWARD).toSlotIndex());
         
         // refact all of this, make sub methodes
         // Render panel content
+        startIngredientTicker(processPanel);
+
         if (processPanel != null) {
-            // Generate shared buttons
-            Map<RecipeGuiControlledButton, FastInvItem> sharedButtons = generateSharedButtons();
+            // // Generate shared buttons
+            // Map<RecipeGuiSharedButton, FastInvItem> sharedButtons = generateSharedButtons();
             
-            // Get panel's shared button slots
-            Map<RecipeGuiControlledButton, ProcessPannelSlot> sharedButtonSlots = processPanel.getRecipeGuiButtonMap();
+            // // Get panel's shared button slots
+            // Map<RecipeGuiSharedButton, ProcessPannelSlot> sharedButtonSlots = processPanel.getRecipeGuiButtonMap();
             
-            // Place shared buttons at panel-specified positions
-            for (Map.Entry<RecipeGuiControlledButton, ProcessPannelSlot> entry : sharedButtonSlots.entrySet()) {
-                RecipeGuiControlledButton buttonType = entry.getKey();
-                ProcessPannelSlot panelSlot = entry.getValue();
-                FastInvItem button = sharedButtons.get(buttonType);
-                if (button != null) {
-                    setItem(panelSlot.toSlotIndex(), button);
-                }
-            }
+            // // Place shared buttons at panel-specified positions
+            // for (Map.Entry<RecipeGuiSharedButton, ProcessPannelSlot> entry : sharedButtonSlots.entrySet()) {
+            //     RecipeGuiSharedButton buttonType = entry.getKey();
+            //     ProcessPannelSlot panelSlot = entry.getValue();
+            //     FastInvItem button = sharedButtons.get(buttonType);
+            //     if (button != null) {
+            //         setItem(panelSlot.toSlotIndex(), button);
+            //     }
+            // }
             
             // Place ticked ingredient slots
             Map<ProcessPannelSlot, CyclicIngredient> tickedSlots = processPanel.getTickedItems();
             for (Map.Entry<ProcessPannelSlot, CyclicIngredient> entry : tickedSlots.entrySet()) {
                 ProcessPannelSlot panelSlot = entry.getKey();
                 CyclicIngredient view = entry.getValue();
-                setItem(panelSlot.toSlotIndex(), new FastInvItem(view.getCurrentItem(), e -> changeRecipe(view.getCurrentItem())));
+                setItem(panelSlot.toSlotIndex(), view.getCurrentItem(), e -> changeRecipe(view.getCurrentItem()));
             }
             
             // Place static decorative items
@@ -146,33 +154,6 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
                 setItem(panelSlot.toSlotIndex(), item);
             }
         }
-    }
-
-    // TODO hmm don't very like this name
-    private Map<RecipeGuiControlledButton, FastInvItem> generateSharedButtons() {
-        Map<RecipeGuiControlledButton, FastInvItem> buttons = new HashMap<>();
-        
-        // Next/Previous recipe buttons
-        buttons.put(RecipeGuiControlledButton.NEXT_RECIPE, new FastInvItem(
-            ItemType.ACACIA_BOAT.createItemStack(),
-            e -> nextRecipe()
-        ));
-        buttons.put(RecipeGuiControlledButton.PREVIOUS_RECIPE, new FastInvItem(
-            ItemType.ACACIA_BOAT.createItemStack(),
-            e -> previousRecipe()
-        ));
-        
-        // History navigation
-        buttons.put(RecipeGuiControlledButton.HISTORY_BACKWARD, new FastInvItem(
-            ItemType.BIRCH_BOAT.createItemStack(),
-            e -> historyBackward()
-        ));
-        buttons.put(RecipeGuiControlledButton.HISTORY_FORWARD, new FastInvItem(
-            ItemType.BIRCH_BOAT.createItemStack(),
-            e -> historyForward()
-        ));
-        
-        return buttons;
     }
 
     private AbstractProcessPanel regenerateCurrentPanel() {
@@ -186,29 +167,28 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
         return newPanel;
     }
 
-    private void startIngredientTicker() {
+    private void startIngredientTicker(AbstractProcessPanel processPanel) {
         if (tickTask != null) {
             tickTask.cancel();
         }
         tickTask = Bukkit.getScheduler().runTaskTimer(
             VanillaEnoughItems.getPlugin(VanillaEnoughItems.class),
-            this::tickIngredients,
+            () -> tickIngredients(processPanel),
             INGREDIENT_TICK_INTERVAL,
             INGREDIENT_TICK_INTERVAL
         );
     }
 
-    private void tickIngredients() {
+    private void tickIngredients(AbstractProcessPanel currentPanel) {
         VanillaEnoughItems.LOGGER.info("Ticking ingredients in RecipeGui time since last tick" + System.currentTimeMillis()); // TEMP
 
-        AbstractProcessPanel panel = currentPanel;
-        if (panel == null) {
-            return;
-        }
-
-        for (Map.Entry<ProcessPannelSlot, CyclicIngredient> entry : panel.getTickedItems().entrySet()) {
-            ProcessPannelSlot panelSlot = entry.getKey();
+        for (Map.Entry<ProcessPannelSlot, CyclicIngredient> entry : currentPanel.getTickedItems().entrySet()) {
             CyclicIngredient cyclic = entry.getValue();
+            if (!cyclic.hasMultipleOptions()) {
+                continue;
+            }
+
+            ProcessPannelSlot panelSlot = entry.getKey();
             cyclic.tickForward();
             ItemStack currentItem = cyclic.getCurrentItem();
             setItem(panelSlot.toSlotIndex(), new FastInvItem(currentItem, e -> changeRecipe(currentItem)));
@@ -243,24 +223,6 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
         render();
     }
 
-    // useless ?
-    public void nextProcess() {
-        if (!hasNextProcess()) {
-            return;
-        }
-        reader.next();
-        render();
-    }
-
-    // useless ?
-    public void previousProcess() {
-        if (!hasPreviousProcess()) {
-            return;
-        }
-        reader.previous();
-        render();
-    }
-
     @Override
     public void changeRecipe(ItemStack resultItem) {
         // Push current reader to history
@@ -273,6 +235,106 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
             this.reader = newMultiRecipeReader;
             render();
         }
+    }
+
+    @Override
+    public Recipe getCurrentRecipe() {
+        return reader.getCurrentProcessRecipeReader().getCurrent();
+    }
+
+    @Override
+    public Process getCurrentProcess() {
+        return reader.getCurrentProcess();
+    }
+
+    public boolean canGoBackward() {
+        return playerData.navigationHistory().canGoBackward();
+    }
+
+    public boolean canGoForward() {
+        return playerData.navigationHistory().canGoForward();
+    }
+
+    //#region Next/Previous Recipe
+    private void renderNextRecipeButton(int slot) {
+        if (!hasNextRecipe()) {
+            setItem(slot, FILLER_ITEM);
+            return;
+        }
+
+        // TODO make this style dependent
+        ItemStack item = ItemType.OAK_BOAT.createItemStack();
+        item.editMeta(meta -> {
+            meta.displayName(Component.text("Next Recipe", NamedTextColor.WHITE));
+        });
+
+        setItem(slot, item, e -> nextRecipe());
+    }
+
+    private void renderPreviousRecipeButton(int slot) {
+        if (!hasPreviousRecipe()) {
+            setItem(slot, FILLER_ITEM);
+            return;
+        }
+
+        // TODO make this style dependent
+        ItemStack item = ItemType.OAK_BOAT.createItemStack();
+        item.editMeta(meta -> {
+            meta.displayName(Component.text("Previous Recipe", NamedTextColor.WHITE));
+        });
+
+        setItem(slot, item, e -> previousRecipe());
+    }
+
+    
+    public boolean hasNextRecipe() {
+        return !reader.getCurrentProcessRecipeReader().isLast();
+    }
+
+    public boolean hasPreviousRecipe() {
+        return !reader.getCurrentProcessRecipeReader().isFirst();
+    }
+
+    //#endregion Next/Previous Recipe
+
+    //#region Forward/Backward Navigation
+
+    private void renderForwardNavigationButton(int slot) {
+        if (!hasForwardNavigation()) {
+            setItem(slot, FILLER_ITEM);
+            return;
+        }
+
+        // TODO make this style dependent
+        ItemStack item = new ItemStack(Material.ACACIA_BOAT);
+        item.editMeta(meta -> {
+            meta.displayName(Component.text("Forward in History", NamedTextColor.WHITE));
+        });
+
+        setItem(slot, item, e -> historyForward());
+    }
+
+    private void renderBackwardNavigationButton(int slot) {
+        if (!hasBackwardNavigation()) {
+            setItem(slot, FILLER_ITEM);
+            return;
+        }
+
+        // TODO make this style dependent
+        ItemStack item = new ItemStack(Material.ACACIA_BOAT);
+        item.editMeta(meta -> {
+            meta.displayName(Component.text("Backward in History", NamedTextColor.WHITE));
+        });
+
+        setItem(slot, item, e -> historyBackward());
+    }
+
+    private boolean hasForwardNavigation() {
+        return playerData.navigationHistory().canGoForward();
+    }
+
+    private boolean hasBackwardNavigation() {
+        return playerData.navigationHistory().canGoBackward();
     }
 
     @Override
@@ -293,39 +355,7 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
         }
     }
 
-    @Override
-    public Recipe getCurrentRecipe() {
-        return reader.getCurrentProcessRecipeReader().getCurrent();
-    }
-
-    @Override
-    public Process getCurrentProcess() {
-        return reader.getCurrentProcess();
-    }
-
-    public boolean hasNextRecipe() {
-        return !reader.getCurrentProcessRecipeReader().isLast();
-    }
-
-    public boolean hasPreviousRecipe() {
-        return !reader.getCurrentProcessRecipeReader().isFirst();
-    }
-
-    public boolean hasNextProcess() {
-        return !reader.isLast();
-    }
-
-    public boolean hasPreviousProcess() {
-        return !reader.isFirst();
-    }
-
-    public boolean canGoBackward() {
-        return playerData.navigationHistory().canGoBackward();
-    }
-
-    public boolean canGoForward() {
-        return playerData.navigationHistory().canGoForward();
-    }
+    //#endregion Forward/Backward Navigation
 
     //#region Process Scroll
 

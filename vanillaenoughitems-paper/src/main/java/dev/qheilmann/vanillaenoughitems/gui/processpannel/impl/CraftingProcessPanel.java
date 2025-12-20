@@ -11,7 +11,7 @@ import org.jspecify.annotations.NullMarked;
 import dev.qheilmann.vanillaenoughitems.gui.CyclicIngredient;
 import dev.qheilmann.vanillaenoughitems.gui.RecipeGuiActions;
 import dev.qheilmann.vanillaenoughitems.gui.RecipeGuiContext;
-import dev.qheilmann.vanillaenoughitems.gui.RecipeGuiControlledButton;
+import dev.qheilmann.vanillaenoughitems.gui.RecipeGuiSharedButton;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.AbstractProcessPanel;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPannelSlot;
 import dev.qheilmann.vanillaenoughitems.utils.fastinv.FastInvItem;
@@ -37,14 +37,8 @@ public class CraftingProcessPanel extends AbstractProcessPanel {
 
 
     @Override
-    protected Map<RecipeGuiControlledButton, ProcessPannelSlot> buildRecipeGuiButtonMap() {
-        Map<RecipeGuiControlledButton, ProcessPannelSlot> shared = new HashMap<>();
-        shared.put(RecipeGuiControlledButton.NEXT_RECIPE,      new ProcessPannelSlot(1, 0));
-        shared.put(RecipeGuiControlledButton.PREVIOUS_RECIPE,  new ProcessPannelSlot(3, 0));
-        shared.put(RecipeGuiControlledButton.HISTORY_BACKWARD, new ProcessPannelSlot(1, 4));
-        shared.put(RecipeGuiControlledButton.HISTORY_FORWARD,  new ProcessPannelSlot(3, 4));
-        shared.put(RecipeGuiControlledButton.QUICK_CRAFT,      new ProcessPannelSlot(5, 3));
-        return Map.copyOf(shared);
+    protected Map<RecipeGuiSharedButton, ProcessPannelSlot> buildRecipeGuiButtonMap() {
+        return ProcessPannelSlot.defaultSharedButtonMap();
     }
 
 

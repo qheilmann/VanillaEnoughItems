@@ -92,6 +92,7 @@ public class RecipeIndex {
         // Index by result
         Set<ItemStack> results = recipeExtractor.extractResults(recipe);
         for (ItemStack result : results) {
+            result = result.asOne(); // Normalize to amount 1 for indexing
             MultiProcessRecipeMap multiProcessRecipeMap = recipesByResult.computeIfAbsent(result, r -> new MultiProcessRecipeMap());
             multiProcessRecipeMap.addRecipe(process, recipe);
         }
@@ -99,6 +100,7 @@ public class RecipeIndex {
         // Index by ingredient
         Set<ItemStack> ingredients = recipeExtractor.extractIngredients(recipe);
         for (ItemStack ingredient : ingredients) {
+            ingredient = ingredient.asOne(); // Normalize to amount 1 for indexing
             MultiProcessRecipeMap multiProcessRecipeMap = recipesByIngredient.computeIfAbsent(ingredient, i -> new MultiProcessRecipeMap());
             multiProcessRecipeMap.addRecipe(process, recipe);
         }
@@ -106,6 +108,7 @@ public class RecipeIndex {
         // Index by other
         Set<ItemStack> others = recipeExtractor.extractOthers(recipe);
         for (ItemStack other : others) {
+            other = other.asOne(); // Normalize to amount 1 for indexing
             MultiProcessRecipeMap multiProcessRecipeMap = recipesByOther.computeIfAbsent(other, o -> new MultiProcessRecipeMap());
             multiProcessRecipeMap.addRecipe(process, recipe);
         }
@@ -140,6 +143,7 @@ public class RecipeIndex {
         // Unindex by result
         Set<ItemStack> results = recipeExtractor.extractResults(recipe);
         for (ItemStack result : results) {
+            result = result.asOne();
             MultiProcessRecipeMap multiProcessRecipeMap = recipesByResult.get(result);
             if (multiProcessRecipeMap != null && process != null) {
                 multiProcessRecipeMap.removeRecipe(process, recipe);
@@ -149,6 +153,7 @@ public class RecipeIndex {
         // Unindex by ingredient
         Set<ItemStack> ingredients = recipeExtractor.extractIngredients(recipe);
         for (ItemStack ingredient : ingredients) {
+            ingredient = ingredient.asOne();
             MultiProcessRecipeMap multiProcessRecipeMap = recipesByIngredient.get(ingredient);
             if (multiProcessRecipeMap != null && process != null) {
                 multiProcessRecipeMap.removeRecipe(process, recipe);
@@ -158,6 +163,7 @@ public class RecipeIndex {
         // Unindex by other
         Set<ItemStack> others = recipeExtractor.extractOthers(recipe);
         for (ItemStack other : others) {
+            other = other.asOne();
             MultiProcessRecipeMap multiProcessRecipeMap = recipesByOther.get(other);
             if (multiProcessRecipeMap != null && process != null) {
                 multiProcessRecipeMap.removeRecipe(process, recipe);

@@ -32,6 +32,7 @@ public interface RecipeGuiActions {
      * @param resultItem the result item of the target recipe
      */
     void changeRecipe(ItemStack resultItem);
+    // TODO repalce this with a left, right click action (usage/recipe)
     
     /**
      * Navigate backward in the recipe history stack.

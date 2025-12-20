@@ -1,10 +1,13 @@
 package dev.qheilmann.vanillaenoughitems.gui.processpannel;
 
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
+import dev.qheilmann.vanillaenoughitems.gui.RecipeGuiSharedButton;
 import dev.qheilmann.vanillaenoughitems.utils.fastinv.Slots;
 
 /**
@@ -14,6 +17,18 @@ import dev.qheilmann.vanillaenoughitems.utils.fastinv.Slots;
  */
 @NullMarked
 public class ProcessPannelSlot implements Comparable<ProcessPannelSlot> {
+
+    /** Default slot for the "Next Recipe" button */
+    public static final ProcessPannelSlot DEFAULT_NEXT_RECIPE_SLOT = new ProcessPannelSlot(3, 0);
+    /** Default slot for the "Previous Recipe" button */
+    public static final ProcessPannelSlot DEFAULT_PREVIOUS_RECIPE_SLOT = new ProcessPannelSlot(1, 0);
+    /** Default slot for the "History Forward" button */
+    public static final ProcessPannelSlot DEFAULT_HISTORY_FORWARD_SLOT = new ProcessPannelSlot(3, 4);
+    /** Default slot for the "History Backward" button */
+    public static final ProcessPannelSlot DEFAULT_HISTORY_BACKWARD_SLOT = new ProcessPannelSlot(1, 4);
+    /** Default slot for the "Quick Craft" button */
+    public static final ProcessPannelSlot DEFAULT_QUICK_CRAFT_SLOT = new ProcessPannelSlot(5, 3);
+
     private static final int PANEL_MIN_COLUMN = 0;
     private static final int PANEL_MAX_COLUMN = 6;
     private static final int PANEL_MIN_ROW = 0;
@@ -21,6 +36,30 @@ public class ProcessPannelSlot implements Comparable<ProcessPannelSlot> {
     
     private final int column;
     private final int row;
+
+    /**
+     * Get a comparator that orders ProcessPannelSlots by row, then by column.
+     * @return the comparator
+     */
+    public static Comparator<ProcessPannelSlot> comparator() {
+        return Comparator.comparingInt(ProcessPannelSlot::row)
+            .thenComparingInt(ProcessPannelSlot::column);
+    }
+
+    /**
+     * Get the default mapping of shared buttons to their panel slots.
+     * As used in most ProcessPanels, (e.g., Crafting, Smelting, etc).
+     * @return the default shared button map
+     */
+    public static Map<RecipeGuiSharedButton, ProcessPannelSlot> defaultSharedButtonMap() {
+        Map<RecipeGuiSharedButton, ProcessPannelSlot> shared = new HashMap<>();
+        shared.put(RecipeGuiSharedButton.NEXT_RECIPE,      DEFAULT_NEXT_RECIPE_SLOT);
+        shared.put(RecipeGuiSharedButton.PREVIOUS_RECIPE,  DEFAULT_PREVIOUS_RECIPE_SLOT);
+        shared.put(RecipeGuiSharedButton.HISTORY_FORWARD,  DEFAULT_HISTORY_FORWARD_SLOT);
+        shared.put(RecipeGuiSharedButton.HISTORY_BACKWARD, DEFAULT_HISTORY_BACKWARD_SLOT);
+        shared.put(RecipeGuiSharedButton.QUICK_CRAFT,      DEFAULT_QUICK_CRAFT_SLOT);
+        return Map.copyOf(shared);
+    }
 
     /**
      * Create a ProcessPannelSlot at the specified position
@@ -93,10 +132,4 @@ public class ProcessPannelSlot implements Comparable<ProcessPannelSlot> {
     public int compareTo(@SuppressWarnings("null") ProcessPannelSlot o) {
         return comparator().compare(this, o);
     }
-
-    public static Comparator<ProcessPannelSlot> comparator() {
-        return Comparator.comparingInt(ProcessPannelSlot::row)
-            .thenComparingInt(ProcessPannelSlot::column);
-    }
 }
-

@@ -197,17 +197,17 @@ public class Slots {
      * @param startRow the starting row index (0-based, inclusive)
      * @param endCol the ending column index (0-based, inclusive)
      * @param endRow the ending row index (0-based, inclusive)
-     * @param columns the number of columns in the inventory
+     * @param inventoryColumnsNb the number of columns in the inventory
      * @return a set of slot indices in the specified grid range
      */
-    public static LinkedHashSet<Integer> gridRange(int startCol, int startRow, int endCol, int endRow, int columns) {
-        checkColumnBounds(startCol, columns);
-        checkColumnBounds(endCol, columns);
+    public static LinkedHashSet<Integer> gridRange(int startCol, int startRow, int endCol, int endRow, int inventoryColumnsNb) {
+        checkColumnBounds(startCol, inventoryColumnsNb);
+        checkColumnBounds(endCol, inventoryColumnsNb);
         
         LinkedHashSet<Integer> slots = new LinkedHashSet<>();
         for (int row = startRow; row <= endRow; row++) {
             for (int col = startCol; col <= endCol; col++) {
-                slots.add(row * columns + col);
+                slots.add(row * inventoryColumnsNb + col);
             }
         }
         return slots;
