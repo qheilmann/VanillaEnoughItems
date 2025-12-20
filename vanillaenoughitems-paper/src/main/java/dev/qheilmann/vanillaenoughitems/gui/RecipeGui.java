@@ -206,32 +206,13 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
     // RecipeGuiActions implementation
 
     @Override
-    public void nextRecipe() {
-        if (!hasNextRecipe()) {
-            return;
-        }
-        reader.getCurrentProcessRecipeReader().next();
-        render();
-    }
-
-    @Override
-    public void previousRecipe() {
-        if (!hasPreviousRecipe()) {
-            return;
-        }
-        reader.getCurrentProcessRecipeReader().previous();
-        render();
-    }
-
-    @Override
     public void changeRecipe(ItemStack resultItem) {
-        // Push current reader to history
-        playerData.navigationHistory().pushForNavigation(reader);
-        
         // Create new reader for the target recipe
         MultiProcessRecipeReader newMultiRecipeReader = context.getRecipeIndexReader().readerByResult(resultItem);
         
         if (newMultiRecipeReader != null) {
+            // Only push to history if we're actually navigating to a different recipe view
+            playerData.navigationHistory().pushForNavigation(reader, newMultiRecipeReader);
             this.reader = newMultiRecipeReader;
             render();
         }
@@ -247,15 +228,8 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
         return reader.getCurrentProcess();
     }
 
-    public boolean canGoBackward() {
-        return playerData.navigationHistory().canGoBackward();
-    }
-
-    public boolean canGoForward() {
-        return playerData.navigationHistory().canGoForward();
-    }
-
     //#region Next/Previous Recipe
+
     private void renderNextRecipeButton(int slot) {
         if (!hasNextRecipe()) {
             setItem(slot, FILLER_ITEM);
@@ -293,6 +267,24 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
 
     public boolean hasPreviousRecipe() {
         return !reader.getCurrentProcessRecipeReader().isFirst();
+    }
+
+    @Override
+    public void nextRecipe() {
+        if (!hasNextRecipe()) {
+            return;
+        }
+        reader.getCurrentProcessRecipeReader().next();
+        render();
+    }
+
+    @Override
+    public void previousRecipe() {
+        if (!hasPreviousRecipe()) {
+            return;
+        }
+        reader.getCurrentProcessRecipeReader().previous();
+        render();
     }
 
     //#endregion Next/Previous Recipe

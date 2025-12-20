@@ -30,10 +30,28 @@ public class MultiProcessRecipeReader {
      * @param multiProcessRecipeMap the MultiProcessRecipeMap to read from
      * @param startProcess the process to start at
      */
-    @SuppressWarnings("null")
     public MultiProcessRecipeReader(MultiProcessRecipeMap multiProcessRecipeMap, Process startProcess) {
         this.multiProcessRecipeMap = multiProcessRecipeMap;
-        setCurrentProcess(startProcess);
+        this.currentProcessRecipeReader = initializeProcess(startProcess);
+    }
+
+    /**
+     * Initialize and validate a process, creating a new ProcessRecipeReader
+     * @param process the process to initialize
+     * @return a new ProcessRecipeReader for the process
+     * @throws IllegalArgumentException if the process does not exist in the MultiProcessRecipeMap
+     */
+    private ProcessRecipeReader initializeProcess(Process process) {
+        if (!multiProcessRecipeMap.getAllProcesses().contains(process)) {
+            throw new IllegalArgumentException("Process does not exist in the MultiProcessRecipeMap");
+        }
+
+        ProcessRecipeSet processRecipeSet = multiProcessRecipeMap.getProcessRecipeSet(process);
+        if (processRecipeSet == null) {
+            throw new IllegalArgumentException("ProcessRecipeSet does not exist for the given process");
+        }
+
+        return new ProcessRecipeReader(processRecipeSet);
     }
 
     /**
@@ -43,22 +61,14 @@ public class MultiProcessRecipeReader {
      * @throws IllegalArgumentException if the process does not exist in the MultiProcessRecipeMap
      */
     public ProcessRecipeReader setCurrentProcess(Process process) {
-        if (!multiProcessRecipeMap.getAllProcesses().contains(process)) {
-            throw new IllegalArgumentException("Process does not exist in the MultiProcessRecipeMap");
-        }
-
-        if (currentProcessRecipeReader != null && getCurrentProcess().equals(process)) {
+        if (getCurrentProcess().equals(process)) {
             // Prevents replacing the currentProcessRecipeReader.
             // Ensures the current process and recipes are not reset if no changes are made.
             return currentProcessRecipeReader;
         }
 
-        ProcessRecipeSet processRecipeSet = multiProcessRecipeMap.getProcessRecipeSet(process);
-        if (processRecipeSet == null) {
-            throw new IllegalArgumentException("ProcessRecipeSet does not exist for the given process");
-        }
-
-        return currentProcessRecipeReader = new ProcessRecipeReader(processRecipeSet);
+        currentProcessRecipeReader = initializeProcess(process);
+        return currentProcessRecipeReader;
     }
 
     /**
