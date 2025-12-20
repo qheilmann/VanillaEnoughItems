@@ -34,8 +34,7 @@ import dev.qheilmann.vanillaenoughitems.recipe.process.impl.BlastingProcess;
 import dev.qheilmann.vanillaenoughitems.recipe.process.impl.CampfireProcess;
 import dev.qheilmann.vanillaenoughitems.recipe.process.impl.CraftingProcess;
 import dev.qheilmann.vanillaenoughitems.recipe.process.impl.SmeltingProcess;
-import dev.qheilmann.vanillaenoughitems.recipe.process.impl.SmithingTransformProcess;
-import dev.qheilmann.vanillaenoughitems.recipe.process.impl.SmithingTrimProcess;
+import dev.qheilmann.vanillaenoughitems.recipe.process.impl.SmithingProcess;
 import dev.qheilmann.vanillaenoughitems.recipe.process.impl.SmokingProcess;
 import dev.qheilmann.vanillaenoughitems.recipe.process.impl.StonecuttingProcess;
 import dev.qheilmann.vanillaenoughitems.utils.fastinv.FastInvManager;
@@ -100,8 +99,7 @@ public class VanillaEnoughItems extends JavaPlugin {
         processRegistry.registerProcess(new CampfireProcess());
         processRegistry.registerProcess(craftingProcess);
         processRegistry.registerProcess(smeltingProcess);
-        processRegistry.registerProcess(new SmithingTransformProcess());
-        processRegistry.registerProcess(new SmithingTrimProcess());
+        processRegistry.registerProcess(new SmithingProcess());
         processRegistry.registerProcess(new SmokingProcess());
         processRegistry.registerProcess(new StonecuttingProcess());
         
