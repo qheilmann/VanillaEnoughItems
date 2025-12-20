@@ -33,6 +33,7 @@ import dev.qheilmann.vanillaenoughitems.utils.fastinv.FastInv;
 import dev.qheilmann.vanillaenoughitems.utils.fastinv.FastInvItem;
 import dev.qheilmann.vanillaenoughitems.utils.fastinv.Slots;
 import net.kyori.adventure.key.Key;
+import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -68,6 +69,9 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
 
     // Static item
     private static final ItemStack FILLER_ITEM = fillerItem();
+
+    // Sounds
+    private static final Sound UI_CLICK_SOUND = Sound.sound(org.bukkit.Sound.UI_BUTTON_CLICK, Sound.Source.UI, 0.25f, 1.0f);
 
     @SuppressWarnings("unused")
     private final Player player;
@@ -197,6 +201,7 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
         renderPreviousRecipeButton(sharedButtonSlots.get(RecipeGuiSharedButton.PREVIOUS_RECIPE).toSlotIndex());
         renderForwardNavigationButton(sharedButtonSlots.get(RecipeGuiSharedButton.HISTORY_FORWARD).toSlotIndex());
         renderBackwardNavigationButton(sharedButtonSlots.get(RecipeGuiSharedButton.HISTORY_BACKWARD).toSlotIndex());
+        renderQuickCraftButton(sharedButtonSlots.get(RecipeGuiSharedButton.QUICK_CRAFT).toSlotIndex());
         
         // refact all of this, make sub methodes
         startIngredientTicker(processPanel);
@@ -289,7 +294,7 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
             meta.displayName(Component.text("Next Recipe", NamedTextColor.WHITE));
         });
 
-        setItem(slot, item, e -> nextRecipe());
+        setItem(slot, item, event -> nextRecipeAction(event));
     }
 
     private void renderPreviousRecipeButton(int slot) {
@@ -304,7 +309,7 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
             meta.displayName(Component.text("Previous Recipe", NamedTextColor.WHITE));
         });
 
-        setItem(slot, item, e -> previousRecipe());
+        setItem(slot, item, event -> previousRecipeAction(event));
     }
 
     
@@ -316,6 +321,11 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
         return !reader.getCurrentProcessRecipeReader().isFirst();
     }
 
+    private void nextRecipeAction(InventoryClickEvent event) {
+        event.getWhoClicked().playSound(UI_CLICK_SOUND);
+        nextRecipe();
+    }
+
     @Override
     public void nextRecipe() {
         if (!hasNextRecipe()) {
@@ -323,6 +333,11 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
         }
         reader.getCurrentProcessRecipeReader().next();
         render();
+    }
+
+    private void previousRecipeAction(InventoryClickEvent event) {
+        event.getWhoClicked().playSound(UI_CLICK_SOUND);
+        previousRecipe();
     }
 
     @Override
@@ -350,7 +365,7 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
             meta.displayName(Component.text("Forward in History", NamedTextColor.WHITE));
         });
 
-        setItem(slot, item, e -> historyForward());
+        setItem(slot, item, event -> historyForwardAction(event));
     }
 
     private void renderBackwardNavigationButton(int slot) {
@@ -365,7 +380,7 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
             meta.displayName(Component.text("Backward in History", NamedTextColor.WHITE));
         });
 
-        setItem(slot, item, e -> historyBackward());
+        setItem(slot, item, event -> historyBackwardAction(event));
     }
 
     private boolean hasForwardNavigation() {
@@ -376,6 +391,11 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
         return playerData.navigationHistory().canGoBackward();
     }
 
+    private void historyBackwardAction(InventoryClickEvent event) {
+        event.getWhoClicked().playSound(UI_CLICK_SOUND);
+        historyBackward();
+    }
+
     @Override
     public void historyBackward() {
         MultiProcessRecipeReader previousReader = playerData.navigationHistory().goBackward(reader);
@@ -383,6 +403,11 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
             this.reader = previousReader;
             render();
         }
+    }
+
+    private void historyForwardAction(InventoryClickEvent event) {
+        event.getWhoClicked().playSound(UI_CLICK_SOUND);
+        historyForward();
     }
 
     @Override
@@ -395,6 +420,28 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
     }
 
     //#endregion Forward/Backward Navigation
+
+    //#region Quick Craft
+
+    private void renderQuickCraftButton(int slot) {
+        // TODO make this style dependent
+        ItemStack item = new ItemStack(Material.WHITE_DYE);
+        item.editMeta(meta -> {
+            meta.displayName(Component.text("Quick Craft", NamedTextColor.WHITE));
+        });
+
+        setItem(slot, item, event -> quickCraftAction().accept(event));
+    }
+
+    private Consumer<InventoryClickEvent> quickCraftAction() {
+        return event -> {
+            HumanEntity humanEntity = event.getWhoClicked();
+            humanEntity.playSound(UI_CLICK_SOUND);
+            humanEntity.sendMessage(Component.text("Quick Craft is not yet implemented!", NamedTextColor.RED));
+        };
+    }
+
+    //#endregion Quick Craft
 
     //#region Process Scroll
 
@@ -418,7 +465,7 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
                 }
                 Process process = processIterator.next();
                 ItemStack symbolItem = process.symbol();
-                setItem(slot, symbolItem, e -> changeProcess(process));
+                setItem(slot, symbolItem, event -> changeProcessAction(event, process));
             });
         } 
 
@@ -445,9 +492,14 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
                 Process process = processIterator.next();
                 int slot = slotIterator.next();
                 ItemStack symbolItem = process.symbol();
-                setItem(slot, symbolItem, e -> changeProcess(process));
+                setItem(slot, symbolItem, event -> changeProcessAction(event, process));
             }
         }
+    }
+
+    private void changeProcessAction(InventoryClickEvent event, Process process) {
+        event.getWhoClicked().playSound(UI_CLICK_SOUND);
+        changeProcess(process);
     }
 
     private void changeProcess(Process process) {
@@ -483,6 +535,7 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
         return event -> {
             int newOffset = processScrollOffset - 1;
             this.processScrollOffset = Math.max(0, newOffset);
+            event.getWhoClicked().playSound(UI_CLICK_SOUND);
             renderProcessScrollButtons();
         };
     }
@@ -492,6 +545,7 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
             int numberOfProcesses = reader.getAllProcesses().size();
             int newOffset = processScrollOffset + 1;
             this.processScrollOffset = Math.min(numberOfProcesses - MAX_SCROLLABLE_PROCESSES, newOffset);
+            event.getWhoClicked().playSound(UI_CLICK_SOUND);
             renderProcessScrollButtons();
         };
     }
@@ -580,6 +634,7 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
         return event -> {
             int newOffset = workbenchScrollOffset - 1;
             this.workbenchScrollOffset = Math.max(0, newOffset);
+            event.getWhoClicked().playSound(UI_CLICK_SOUND);
             renderWorkbenchScrollButtons();
         };
     }
@@ -589,6 +644,7 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
             int numberOfWorkbenches = reader.getCurrentProcess().workbenches().size();
             int newOffset = workbenchScrollOffset + 1;
             this.workbenchScrollOffset = Math.min(numberOfWorkbenches - MAX_SCROLLABLE_WORKBENCHES, newOffset);
+            event.getWhoClicked().playSound(UI_CLICK_SOUND);
             renderWorkbenchScrollButtons();
         };
     }
@@ -617,6 +673,7 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
     private Consumer<InventoryClickEvent> bookmarkAction() {
         return event -> {
             playerData.bookmarkCollection().toggleBookmark(getCurrentRecipe());
+            event.getWhoClicked().playSound(UI_CLICK_SOUND);
             renderBookmarkButton(); // Re-render only the bookmark button to update icon
         };
     }
@@ -644,11 +701,12 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
         return event -> {
             // Open bookmark list GUI
             RecipeGuiContext context = this.context;
-            Player player = (Player) event.getWhoClicked();
-            PlayerGuiData playerData = context.getPlayerData(player.getUniqueId());
+            HumanEntity humanEntity = event.getWhoClicked();
+            PlayerGuiData playerData = context.getPlayerData(humanEntity.getUniqueId());
             Set<Key> bookmarks = playerData.bookmarkCollection().getBookmarkedKeys();
 
-            player.closeInventory();
+            humanEntity.playSound(UI_CLICK_SOUND);
+            humanEntity.closeInventory();
 
             TextComponent.Builder text = Component.text();
             text.append(Component.text("All your Bookmarked Recipes:", NamedTextColor.GOLD).style(Style.style(TextDecoration.BOLD))).append(Component.newline());
@@ -662,7 +720,7 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
                 ).append(Component.newline());
             }
 
-            player.sendMessage(text.build());
+            humanEntity.sendMessage(text.build());
         };
     }
 
@@ -689,8 +747,9 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
 
     private Consumer<InventoryClickEvent> bookmarkServerListAction() {
         return event -> {
-            HumanEntity human = event.getWhoClicked();
-            human.sendMessage(Component.text("Server bookmarked recipes feature is not implemented yet.", NamedTextColor.RED));
+            HumanEntity humanEntity = event.getWhoClicked();
+            humanEntity.playSound(UI_CLICK_SOUND);
+            humanEntity.sendMessage(Component.text("Server bookmarked recipes feature is not implemented yet.", NamedTextColor.RED));
         };
     }
 
@@ -729,7 +788,9 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
                 )
                 .build();
 
-            event.getWhoClicked().sendMessage(message);
+            HumanEntity humanEntity = event.getWhoClicked();
+            humanEntity.sendMessage(message);
+            humanEntity.playSound(UI_CLICK_SOUND);
         };
     } 
 
@@ -766,8 +827,9 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
 
     private Consumer<InventoryClickEvent> infoAction() {
         return event -> {
-            HumanEntity human = event.getWhoClicked();
-            human.sendMessage(Component.text(VanillaEnoughItems.PLUGIN_NAME + " info feature is not implemented yet.", NamedTextColor.RED));
+            HumanEntity humanEntity = event.getWhoClicked();
+            humanEntity.playSound(UI_CLICK_SOUND);
+            humanEntity.sendMessage(Component.text(VanillaEnoughItems.PLUGIN_NAME + " info feature is not implemented yet.", NamedTextColor.RED));
         };
     }
 
