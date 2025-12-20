@@ -87,21 +87,24 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
         this.playerData = context.getPlayerData(player.getUniqueId());
         this.reader = initialReader;
         
+        // Initial filling
+        fillRange(Slots.Generic9x6.all(), FILLER_ITEM);
+
+        // Static buttons
+        renderBookmarkListButton(); // maybe make them static ?
+        renderBookmarkServerListButton(); // maybe make them static ?
+        renderInfoButton(); // maybe make them static ?
+
+        // Dynamic render
         render();
     }
 
     /**
-     * Render the entire GUI based on the current state<br>
-     * This is called initially and on each recipe change
+     * Render the entire GUI based on the current recipe and process.
+     * This re-renders all dynamic parts of the GUI.
+     * @implNote This method don't erase previous items, it should place {@link #FILLER_ITEM} where a slot is unused.
      */
     public void render() {
-        // Clear inventory
-        getInventory().clear(); // TODO maybe remove this if everything which needs to be updated is updated
-
-        renderBookmarkListButton(); // maybe make them static ?
-        renderBookmarkServerListButton(); // maybe make them static ?
-        renderInfoButton(); // maybe make them static ?
-        
         // Recipe dependent buttons
         renderBookmarkButton();
         renderQuickLinkButton();
@@ -109,10 +112,86 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
         renderProcessScrollButtons();
 
         // Process panel content
+        renderProcessPanel(generateCurrentPanel());
+    }
 
-        AbstractProcessPanel processPanel = generateCurrentPanel();
+    /**
+     * Changes the current recipe based on the clicked item.
+     *
+     * @param event The inventory click event.
+     * @param resultItem The item that was clicked.
+     */
+    @Override
+    public void changeRecipeAction(InventoryClickEvent event) {
+        
+        boolean isLeftClick = event.getClick().isLeftClick();
+        boolean isRightClick = event.getClick().isRightClick();
+        ItemStack clickedItemStack = event.getCurrentItem();
+        MultiProcessRecipeReader newMultiRecipeReader = null;
+
+        if (isLeftClick) {
+            newMultiRecipeReader = context.getRecipeIndexReader().readerByResult(clickedItemStack);
+        } else if (isRightClick) {
+            newMultiRecipeReader = context.getRecipeIndexReader().readerByIngredient(clickedItemStack);
+        } 
+        // Ignore other click types
+
+        // If valide new reader found
+        if (newMultiRecipeReader != null) {
+            // Only push to history if we're actually navigating to a different recipe view
+            playerData.navigationHistory().pushForNavigation(reader, newMultiRecipeReader);
+            this.reader = newMultiRecipeReader;
+            render();
+        }
+    }
+
+    public void resultItemAction(InventoryClickEvent event) {
+
+        boolean isLeftClick = event.getClick().isLeftClick();
+        boolean isRightClick = event.getClick().isRightClick();
+        ItemStack clickedItemStack = event.getCurrentItem();
+        
+        // Show usage on right click
+        if (isRightClick) {
+            MultiProcessRecipeReader newMultiRecipeReader = context.getRecipeIndexReader().readerByIngredient(clickedItemStack);
+            if (newMultiRecipeReader != null) {
+                // Only push to history if we're actually navigating to a different recipe view
+                playerData.navigationHistory().pushForNavigation(reader, newMultiRecipeReader);
+                this.reader = newMultiRecipeReader;
+                render();
+            }
+        }
+
+        // Quick link on left click
+        if (isLeftClick) {
+            quickLinkAction().accept(event);
+        }
+
+        // Ignore other click types
+    }
+
+    @Override
+    public Recipe getCurrentRecipe() {
+        return reader.getCurrentProcessRecipeReader().getCurrent();
+    }
+
+    @Override
+    public Process getCurrentProcess() {
+        return reader.getCurrentProcess();
+    }
+
+    //#region Process Panel
+
+    /**
+     * Render the given process panel into the GUI
+     * 
+     * @param processPanel the panel to render
+     */
+    private void renderProcessPanel(AbstractProcessPanel processPanel) {
         Map<RecipeGuiSharedButton, ProcessPannelSlot> sharedButtonSlots = processPanel.getRecipeGuiButtonMap();
         
+        fillRange(ProcessPannelSlot.all(), FILLER_ITEM);
+
         // Recipe reader dependent buttons
         renderNextRecipeButton(sharedButtonSlots.get(RecipeGuiSharedButton.NEXT_RECIPE).toSlotIndex());
         renderPreviousRecipeButton(sharedButtonSlots.get(RecipeGuiSharedButton.PREVIOUS_RECIPE).toSlotIndex());
@@ -194,72 +273,7 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
         }
     }
 
-    // RecipeGuiActions implementation
-
-    /**
-     * Changes the current recipe based on the clicked item.
-     *
-     * @param event The inventory click event.
-     * @param resultItem The item that was clicked.
-     */
-    @Override
-    public void changeRecipeAction(InventoryClickEvent event) {
-        
-        boolean isLeftClick = event.getClick().isLeftClick();
-        boolean isRightClick = event.getClick().isRightClick();
-        ItemStack clickedItemStack = event.getCurrentItem();
-        MultiProcessRecipeReader newMultiRecipeReader = null;
-
-        if (isLeftClick) {
-            newMultiRecipeReader = context.getRecipeIndexReader().readerByResult(clickedItemStack);
-        } else if (isRightClick) {
-            newMultiRecipeReader = context.getRecipeIndexReader().readerByIngredient(clickedItemStack);
-        } 
-        // Ignore other click types
-
-        // If valide new reader found
-        if (newMultiRecipeReader != null) {
-            // Only push to history if we're actually navigating to a different recipe view
-            playerData.navigationHistory().pushForNavigation(reader, newMultiRecipeReader);
-            this.reader = newMultiRecipeReader;
-            render();
-        }
-    }
-
-    public void resultItemAction(InventoryClickEvent event) {
-
-        boolean isLeftClick = event.getClick().isLeftClick();
-        boolean isRightClick = event.getClick().isRightClick();
-        ItemStack clickedItemStack = event.getCurrentItem();
-        
-        // Show usage on right click
-        if (isRightClick) {
-            MultiProcessRecipeReader newMultiRecipeReader = context.getRecipeIndexReader().readerByIngredient(clickedItemStack);
-            if (newMultiRecipeReader != null) {
-                // Only push to history if we're actually navigating to a different recipe view
-                playerData.navigationHistory().pushForNavigation(reader, newMultiRecipeReader);
-                this.reader = newMultiRecipeReader;
-                render();
-            }
-        }
-
-        // Quick link on left click
-        if (isLeftClick) {
-            quickLinkAction().accept(event);
-        }
-
-        // Ignore other click types
-    }
-
-    @Override
-    public Recipe getCurrentRecipe() {
-        return reader.getCurrentProcessRecipeReader().getCurrent();
-    }
-
-    @Override
-    public Process getCurrentProcess() {
-        return reader.getCurrentProcess();
-    }
+    //#endregion Process Panel
 
     //#region Next/Previous Recipe
 
@@ -769,6 +783,12 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
             meta.setHideTooltip(true);
         });
         return item;
+    }
+
+    private void fillRange(Set<Integer> slots, ItemStack item) {
+        for (int slot : slots) {
+            setItem(slot, item);
+        }
     }
 
     //#endregion Helpers

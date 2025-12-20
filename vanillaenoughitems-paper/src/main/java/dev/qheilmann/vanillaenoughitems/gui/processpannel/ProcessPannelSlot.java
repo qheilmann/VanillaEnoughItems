@@ -2,6 +2,7 @@ package dev.qheilmann.vanillaenoughitems.gui.processpannel;
 
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 
 import org.jspecify.annotations.NullMarked;
@@ -59,6 +60,20 @@ public class ProcessPannelSlot implements Comparable<ProcessPannelSlot> {
         shared.put(RecipeGuiSharedButton.HISTORY_BACKWARD, DEFAULT_HISTORY_BACKWARD_SLOT);
         shared.put(RecipeGuiSharedButton.QUICK_CRAFT,      DEFAULT_QUICK_CRAFT_SLOT);
         return Map.copyOf(shared);
+    }
+
+    /**
+     * Get all slot indices within the panel area as absolute inventory slots.
+     * 
+     * @return set of all absolute slot indices in the panel area
+     */
+    public static LinkedHashSet<Integer> all() {
+        int invMinColumn = PANEL_MIN_COLUMN + 1; // Panel area starts at column 1
+        int invMaxColumn = PANEL_MAX_COLUMN + 1;
+        int invMinRow = PANEL_MIN_ROW + 1;       // Panel area starts at row 1
+        int invMaxRow = PANEL_MAX_ROW + 1;
+
+        return Slots.gridRange(invMinColumn, invMinRow, invMaxColumn, invMaxRow, 9);
     }
 
     /**
