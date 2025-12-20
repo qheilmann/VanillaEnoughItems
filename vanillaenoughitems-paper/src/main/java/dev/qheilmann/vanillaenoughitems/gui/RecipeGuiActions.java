@@ -1,6 +1,6 @@
 package dev.qheilmann.vanillaenoughitems.gui;
 
-import org.bukkit.inventory.ItemStack;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Recipe;
 import org.jspecify.annotations.NullMarked;
 
@@ -26,13 +26,12 @@ public interface RecipeGuiActions {
     void previousRecipe();
     
     /**
-     * Change the currently displayed recipe to the one producing the given result item.
+     * Change the currently displayed recipe based on the clicked item.
      * Pushes the current recipe reader onto the navigation history stack.
      * 
-     * @param resultItem the result item of the target recipe
+     * @param event the inventory click event containing the clicked item
      */
-    void changeRecipe(ItemStack resultItem);
-    // TODO repalce this with a left, right click action (usage/recipe)
+    void changeRecipeAction(InventoryClickEvent event);
     
     /**
      * Navigate backward in the recipe history stack.

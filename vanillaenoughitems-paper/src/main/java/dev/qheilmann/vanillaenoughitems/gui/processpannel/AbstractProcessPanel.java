@@ -25,7 +25,7 @@ public abstract class AbstractProcessPanel {
     protected final RecipeGuiContext context;
 
     private final Map<RecipeGuiSharedButton, ProcessPannelSlot> sharedButtonSlots;
-    private final Map<ProcessPannelSlot, CyclicIngredient> tickedSlots;
+    private final Map<ProcessPannelSlot, CyclicIngredient> tickedIngredientSlots;
     private final Map<ProcessPannelSlot, FastInvItem> staticItems;
 
     /**
@@ -41,7 +41,7 @@ public abstract class AbstractProcessPanel {
         this.context = context;
 
         this.sharedButtonSlots = buildRecipeGuiButtonMap();
-        this.tickedSlots = buildTickedItems();
+        this.tickedIngredientSlots = buildTickedIngredient();
         this.staticItems = buildStaticItems();
     }
 
@@ -58,8 +58,7 @@ public abstract class AbstractProcessPanel {
      * CyclicIngredient are built once per panel instantiation, and lived during the panel lifecycle. (regenerated on recipe change)
      * @return map of panel-relative slots to ingredient views
      */
-    protected abstract Map<ProcessPannelSlot, CyclicIngredient> buildTickedItems();
-    
+    protected abstract Map<ProcessPannelSlot, CyclicIngredient> buildTickedIngredient();
     /**
      * Build static decorative items that don't change during recipe lifecycle.
      * These can have custom click actions (e.g., show more info, send link to wiki).
@@ -83,8 +82,9 @@ public abstract class AbstractProcessPanel {
      * 
      * @return map of panel-relative slots to ingredient views
      */
-    public Map<ProcessPannelSlot, CyclicIngredient> getTickedItems() {
-        return tickedSlots;
+    public Map<ProcessPannelSlot, CyclicIngredient> getTickedIngredient() {
+        return tickedIngredientSlots;
+    }
     }
 
     /**
