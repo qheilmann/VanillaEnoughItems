@@ -24,9 +24,9 @@ import dev.qheilmann.vanillaenoughitems.utils.fastinv.FastInvItem;
 @NullMarked
 public class SmeltingProcessPanel extends AbstractProcessPanel {
     private static final ProcessPannelSlot INPUT_SLOT = new ProcessPannelSlot(2, 1);
-    private static final ProcessPannelSlot FUEL_SLOT = new ProcessPannelSlot(2, 3);
     private static final ProcessPannelSlot OUTPUT_SLOT = new ProcessPannelSlot(5, 2);
-    private static final ProcessPannelSlot FLAME_SLOT = new ProcessPannelSlot(2, 2);
+    private static final ProcessPannelSlot FUEL_SLOT = new ProcessPannelSlot(2, 3);
+    private static final ProcessPannelSlot DECORATION_FIRE_SLOT = new ProcessPannelSlot(2, 2);
 
     public SmeltingProcessPanel(Recipe recipe, RecipeGuiActions actions, RecipeGuiContext context) {
         super(checkRecipe(recipe), actions, context);
@@ -61,7 +61,7 @@ public class SmeltingProcessPanel extends AbstractProcessPanel {
     @Override
     protected Map<ProcessPannelSlot, FastInvItem> buildStaticItems() {
         Map<ProcessPannelSlot, FastInvItem> statics = new HashMap<>();
-        statics.put(FLAME_SLOT, new FastInvItem(new ItemStack(Material.FIRE_CHARGE), null));
+        statics.put(DECORATION_FIRE_SLOT, new FastInvItem(new ItemStack(Material.FIRE_CHARGE), null));
         return Map.copyOf(statics);
     }
 }
