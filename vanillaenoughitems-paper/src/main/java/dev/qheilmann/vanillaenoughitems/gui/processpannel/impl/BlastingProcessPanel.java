@@ -42,14 +42,19 @@ public class BlastingProcessPanel extends AbstractProcessPanel {
     }
 
     @Override
-    protected Map<ProcessPannelSlot, CyclicIngredient> buildTickedItems() {
+    protected Map<ProcessPannelSlot, CyclicIngredient> buildTickedIngredient() {
         Map<ProcessPannelSlot, CyclicIngredient> ticked = new HashMap<>();
         ticked.put(INPUT_SLOT, new CyclicIngredient(getBlastingRecipe().getInputChoice()));
         ticked.put(FUEL_SLOT, new CyclicIngredient(Fuels.FUELS.toArray(new ItemStack[0])));
-        ticked.put(OUTPUT_SLOT, new CyclicIngredient(getBlastingRecipe().getResult()));
         return Map.copyOf(ticked);
     }
 
+    @Override
+    @SuppressWarnings("null")
+    protected Map<ProcessPannelSlot, CyclicIngredient> buildTickedResult() {
+        return Map.of(OUTPUT_SLOT, new CyclicIngredient(getBlastingRecipe().getResult()));
+    }
+    
     @Override
     protected Map<ProcessPannelSlot, FastInvItem> buildStaticItems() {
         Map<ProcessPannelSlot, FastInvItem> statics = new HashMap<>();

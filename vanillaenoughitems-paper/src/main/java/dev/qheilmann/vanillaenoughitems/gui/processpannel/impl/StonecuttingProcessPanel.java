@@ -40,11 +40,16 @@ public class StonecuttingProcessPanel extends AbstractProcessPanel {
     }
 
     @Override
-    protected Map<ProcessPannelSlot, CyclicIngredient> buildTickedItems() {
+    protected Map<ProcessPannelSlot, CyclicIngredient> buildTickedIngredient() {
         Map<ProcessPannelSlot, CyclicIngredient> ticked = new HashMap<>();
         ticked.put(INPUT_SLOT, new CyclicIngredient(getStonecuttingRecipe().getInputChoice()));
-        ticked.put(OUTPUT_SLOT, new CyclicIngredient(getStonecuttingRecipe().getResult()));
         return Map.copyOf(ticked);
+    }
+
+    @Override
+    @SuppressWarnings("null")
+    protected Map<ProcessPannelSlot, CyclicIngredient> buildTickedResult() {
+        return Map.of(OUTPUT_SLOT, new CyclicIngredient(getStonecuttingRecipe().getResult()));
     }
 
     @Override

@@ -45,13 +45,18 @@ public class SmithingProcessPanel extends AbstractProcessPanel {
     }
 
     @Override
-    protected Map<ProcessPannelSlot, CyclicIngredient> buildTickedItems() {
+    protected Map<ProcessPannelSlot, CyclicIngredient> buildTickedIngredient() {
         Map<ProcessPannelSlot, CyclicIngredient> ticked = new HashMap<>();
         ticked.put(TEMPLATE_SLOT, new CyclicIngredient(getTemplateChoice(getSmithingRecipe())));
         ticked.put(BASE_SLOT, new CyclicIngredient(getSmithingRecipe().getBase()));
         ticked.put(ADDITION_SLOT, new CyclicIngredient(getSmithingRecipe().getAddition()));
-        ticked.put(OUTPUT_SLOT, new CyclicIngredient(getSmithingRecipe().getResult()));
         return Map.copyOf(ticked);
+    }
+
+    @Override
+    @SuppressWarnings("null")
+    protected Map<ProcessPannelSlot, CyclicIngredient> buildTickedResult() {
+        return Map.of(OUTPUT_SLOT, new CyclicIngredient(getSmithingRecipe().getResult()));
     }
 
     @Override

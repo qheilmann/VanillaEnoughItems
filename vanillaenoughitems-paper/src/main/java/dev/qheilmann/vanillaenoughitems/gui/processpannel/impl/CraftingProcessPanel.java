@@ -49,15 +49,16 @@ public class CraftingProcessPanel extends AbstractProcessPanel {
     }
 
     @Override
-    protected Map<ProcessPannelSlot, CyclicIngredient> buildTickedItems() {
+    protected Map<ProcessPannelSlot, CyclicIngredient> buildTickedIngredient() {
         Map<ProcessPannelSlot, CyclicIngredient> ticked = new HashMap<>();
-
-        // Putting the crafting grid items
         ticked.putAll(mapRecipeMatrixToSlots(getRecipeMatrix(getCraftingRecipe())));
-        // Put result item
-        ticked.put(OUTPUT_SLOT, new CyclicIngredient(getCraftingRecipe().getResult()));
-
         return Map.copyOf(ticked);
+    }
+
+    @Override
+    @SuppressWarnings("null")
+    protected Map<ProcessPannelSlot, CyclicIngredient> buildTickedResult() {
+        return Map.of(OUTPUT_SLOT, new CyclicIngredient(getCraftingRecipe().getResult()));
     }
 
     @Override

@@ -129,6 +129,14 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
             CyclicIngredient view = entry.getValue();
             setItem(panelSlot.toSlotIndex(), view.getCurrentItem(), event -> changeRecipeAction(event));
         }
+
+        // Place ticked result slots
+        Map<ProcessPannelSlot, CyclicIngredient> tickedResults = processPanel.getTickedResults();
+        for (Map.Entry<ProcessPannelSlot, CyclicIngredient> entry : tickedResults.entrySet()) {
+            ProcessPannelSlot panelSlot = entry.getKey();
+            CyclicIngredient view = entry.getValue();
+            setItem(panelSlot.toSlotIndex(), view.getCurrentItem(), event -> resultItemAction(event));
+        }
         
         // Place static decorative items
         Map<ProcessPannelSlot, FastInvItem> staticItems = processPanel.getStaticItems();
@@ -216,6 +224,31 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
             this.reader = newMultiRecipeReader;
             render();
         }
+    }
+
+    public void resultItemAction(InventoryClickEvent event) {
+
+        boolean isLeftClick = event.getClick().isLeftClick();
+        boolean isRightClick = event.getClick().isRightClick();
+        ItemStack clickedItemStack = event.getCurrentItem();
+        
+        // Show usage on right click
+        if (isRightClick) {
+            MultiProcessRecipeReader newMultiRecipeReader = context.getRecipeIndexReader().readerByIngredient(clickedItemStack);
+            if (newMultiRecipeReader != null) {
+                // Only push to history if we're actually navigating to a different recipe view
+                playerData.navigationHistory().pushForNavigation(reader, newMultiRecipeReader);
+                this.reader = newMultiRecipeReader;
+                render();
+            }
+        }
+
+        // Quick link on left click
+        if (isLeftClick) {
+            quickLinkAction().accept(event);
+        }
+
+        // Ignore other click types
     }
 
     @Override

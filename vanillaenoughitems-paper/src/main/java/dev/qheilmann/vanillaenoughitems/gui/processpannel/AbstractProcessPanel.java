@@ -26,6 +26,7 @@ public abstract class AbstractProcessPanel {
 
     private final Map<RecipeGuiSharedButton, ProcessPannelSlot> sharedButtonSlots;
     private final Map<ProcessPannelSlot, CyclicIngredient> tickedIngredientSlots;
+    private final Map<ProcessPannelSlot, CyclicIngredient> tickedResultSlots;
     private final Map<ProcessPannelSlot, FastInvItem> staticItems;
 
     /**
@@ -42,6 +43,7 @@ public abstract class AbstractProcessPanel {
 
         this.sharedButtonSlots = buildRecipeGuiButtonMap();
         this.tickedIngredientSlots = buildTickedIngredient();
+        this.tickedResultSlots = buildTickedResult();
         this.staticItems = buildStaticItems();
     }
 
@@ -59,6 +61,15 @@ public abstract class AbstractProcessPanel {
      * @return map of panel-relative slots to ingredient views
      */
     protected abstract Map<ProcessPannelSlot, CyclicIngredient> buildTickedIngredient();
+    
+    /**
+     * Build the result slots that should animate by cycling through multiple options (like RecipeChoice).
+     * CyclicIngredient are built once per panel instantiation, and lived during the panel lifecycle. (regenerated on recipe change)
+     * <p> On most panels, this will be a single static output slot, but some panels may have multiple result slots. </p>
+     * @return map of panel-relative slots to result views
+     */
+    protected abstract Map<ProcessPannelSlot, CyclicIngredient> buildTickedResult();
+
     /**
      * Build static decorative items that don't change during recipe lifecycle.
      * These can have custom click actions (e.g., show more info, send link to wiki).
@@ -85,6 +96,15 @@ public abstract class AbstractProcessPanel {
     public Map<ProcessPannelSlot, CyclicIngredient> getTickedIngredient() {
         return tickedIngredientSlots;
     }
+
+    /**
+     * Get result slots that should animate by cycling through multiple options (like RecipeChoice).
+     * CyclicIngredient are built once per panel instantiation, and lived during the panel lifecycle. (regenerated on recipe change)
+     * <p> On most panels, this will be a single static output slot, but some panels may have multiple result slots. </p>
+     * @return map of panel-relative slots to result views
+     */
+    public Map<ProcessPannelSlot, CyclicIngredient> getTickedResults() {
+        return tickedResultSlots;
     }
 
     /**
