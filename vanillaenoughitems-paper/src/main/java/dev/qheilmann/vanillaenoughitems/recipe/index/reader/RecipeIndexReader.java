@@ -128,6 +128,7 @@ public class RecipeIndexReader {
     public MultiProcessRecipeReader readerByResult(ItemStack result) {
         Map<ItemStack, MultiProcessRecipeMap> recipesByResult = recipeIndex.getAllRecipesByResult();
 
+        result = result.asOne();
         MultiProcessRecipeMap multiProcessRecipeMap = recipesByResult.get(result);
         if (multiProcessRecipeMap == null) {
             return null;
@@ -188,6 +189,7 @@ public class RecipeIndexReader {
     public MultiProcessRecipeReader readerByIngredient(ItemStack ingredient) {
         Map<ItemStack, MultiProcessRecipeMap> recipesByIngredient = recipeIndex.getAllRecipesByIngredient();
 
+        ingredient = ingredient.asOne();
         MultiProcessRecipeMap multiProcessRecipeMap = recipesByIngredient.get(ingredient);
         if (multiProcessRecipeMap == null) {
             return null;

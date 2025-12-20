@@ -1,13 +1,16 @@
 package dev.qheilmann.vanillaenoughitems.commands;
 
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ItemType;
 import org.jspecify.annotations.NullMarked;
 
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.CommandPermission;
+import dev.jorel.commandapi.arguments.ItemStackArgument;
 import dev.qheilmann.vanillaenoughitems.gui.RecipeGui;
 import dev.qheilmann.vanillaenoughitems.gui.RecipeGuiContext;
 import dev.qheilmann.vanillaenoughitems.recipe.index.reader.MultiProcessRecipeReader;
+import net.kyori.adventure.text.Component;
 
 @NullMarked
 public class DebugCommand {
@@ -32,11 +35,21 @@ public class DebugCommand {
             .withUsage(USAGE)
 
             // debugvei
+            .withArguments(new ItemStackArgument("item"))
             .executesPlayer((player, args) -> {
+                ItemStack itemStack = args.getUnchecked("item");
+                itemStack = itemStack.asOne(); // only one item to lookup recipes
+                MultiProcessRecipeReader reader = context.getRecipeIndexReader().readerByResult(itemStack);
 
-                MultiProcessRecipeReader reader = context.getRecipeIndexReader().readerByResult(ItemType.IRON_INGOT.createItemStack());
+                if (reader == null) {
+                    Component text = Component.text()
+                        .append(Component.text("No recipes found for "))
+                        .append(itemStack.displayName())
+                        .build();
+                    player.sendMessage(text);
+                    return;
+                }
 
-                @SuppressWarnings("null")
                 RecipeGui gui = new RecipeGui(player, context, reader);
                 gui.render();
                 gui.open(player);
