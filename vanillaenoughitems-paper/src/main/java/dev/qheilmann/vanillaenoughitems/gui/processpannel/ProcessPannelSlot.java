@@ -92,7 +92,7 @@ public class ProcessPannelSlot implements Comparable<ProcessPannelSlot> {
      */
     public int toSlotIndex() {
         // Panel area starts at column 1, row 1 (offset by 1 in both directions)
-        return Slots.maxChestSlot(column + 1, row + 1);
+        return Slots.Generic9x6.slot(column + 1, row + 1);
     }
     
     /**

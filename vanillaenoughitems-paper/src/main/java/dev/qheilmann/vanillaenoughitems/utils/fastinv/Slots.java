@@ -1,165 +1,8 @@
 package dev.qheilmann.vanillaenoughitems.utils.fastinv;
 
 import java.util.LinkedHashSet;
-import org.bukkit.inventory.MenuType;
-
-import net.kyori.adventure.key.Key;
 
 public class Slots {
-
-    public static int slot(int column, int row, MenuType menuType) {
-                
-        Key menuKey = menuType.key();
-
-        if (menuKey.equals(MenuType.GENERIC_9X1.key())) {
-            return generic9x1(column, row);
-        }
-        if (menuKey.equals(MenuType.GENERIC_9X2.key())) {
-            return generic9x2(column, row);
-        }
-        if (menuKey.equals(MenuType.GENERIC_9X3.key())) {
-            return generic9x3(column, row);
-        }
-        if (menuKey.equals(MenuType.GENERIC_9X4.key())) {
-            return generic9x4(column, row);
-        }
-        if (menuKey.equals(MenuType.GENERIC_9X5.key())) {
-            return generic9x5(column, row);
-        }
-        if (menuKey.equals(MenuType.GENERIC_9X6.key())) {
-            return generic9x6(column, row);
-        }        
-        if (menuKey.equals(MenuType.GENERIC_3X3.key())) {
-            return generic3x3(column, row);
-        }
-        throw new IllegalArgumentException("Unsupported MenuType: " + menuType);
-    }
-
-    /**
-     * Calculates the slot index for a 3x3 generic inventory.
-     *
-     * @param column the column index (0-based)
-     * @param row the row index (0-based)
-     * @return the slot index
-     * @throws IndexOutOfBoundsException if the row or column is out of bounds
-     */
-    public static int generic3x3(int column, int row) {
-        checkColumnBounds(column, 3);
-        checkRowBounds(row, 3);
-        return row * 3 + column;
-    }
-
-    /**
-     * Calculates the slot index for a 9x1 generic inventory.
-     *
-     * @param column the column index (0-based)
-     * @param row the row index (0-based)
-     * @return the slot index
-     * @throws IndexOutOfBoundsException if the row or column is out of bounds
-     */
-    public static int generic9x1(int column, int row) {
-        checkColumnBounds(column, 9);
-        checkRowBounds(row, 1);
-        return row * 9 + column;
-    }
-
-    /**
-     * Calculates the slot index for a 9x2 generic inventory.
-     *
-     * @param column the column index (0-based)
-     * @param row the row index (0-based)
-     * @return the slot index
-     * @throws IndexOutOfBoundsException if the row or column is out of bounds
-     */
-    public static int generic9x2(int column, int row) {
-        checkColumnBounds(column, 9);
-        checkRowBounds(row, 2);
-        return row * 9 + column;
-    }
-
-    /**
-     * Calculates the slot index for a 9x3 generic inventory.<br>
-     * Equivalent to {@link #smallChestSlot(int, int)}.
-     *
-     * @param column the column index (0-based)
-     * @param row the row index (0-based)
-     * @return the slot index
-     * @throws IndexOutOfBoundsException if the row or column is out of bounds
-     */
-    public static int generic9x3(int column, int row) {
-        checkColumnBounds(column, 9);
-        checkRowBounds(row, 3);
-        return row * 9 + column;
-    }
-
-    /**
-     * Calculates the slot index for a 9x4 generic inventory.
-     *
-     * @param column the column index (0-based)
-     * @param row the row index (0-based)
-     * @return the slot index
-     * @throws IndexOutOfBoundsException if the row or column is out of bounds
-     */
-    public static int generic9x4(int column, int row) {
-        checkColumnBounds(column, 9);
-        checkRowBounds(row, 4);
-        return row * 9 + column;
-    }
-
-    /**
-     * Calculates the slot index for a 9x5 generic inventory.
-     *
-     * @param column the column index (0-based)
-     * @param row the row index (0-based)
-     * @return the slot index
-     * @throws IndexOutOfBoundsException if the row or column is out of bounds
-     */
-    public static int generic9x5(int column, int row) {
-        checkColumnBounds(column, 9);
-        checkRowBounds(row, 5);
-        return row * 9 + column;
-    }
-
-    /**
-     * Calculates the slot index for a 9x6 generic inventory.<br>
-     * Equivalent to {@link #maxChestSlot(int, int)}.
-     *
-     * @param column the column index (0-based)
-     * @param row the row index (0-based)
-     * @return the slot index
-     * @throws IndexOutOfBoundsException if the row or column is out of bounds
-     */
-    public static int generic9x6(int column, int row) {
-        checkColumnBounds(column, 9);
-        checkRowBounds(row, 6);
-        return row * 9 + column;
-    }
-
-    /**
-     * Calculates the slot index for a small chest inventory (9x3).<br>
-     * Equivalent to {@link #generic9x3(int, int)}.
-     *
-     * @param column the column index (0-based)
-     * @param row the row index (0-based)
-     * @return the slot index
-     * @throws IndexOutOfBoundsException if the row or column is out of bounds
-     */
-    public static int smallChestSlot(int column, int row) {
-        return generic9x3(column, row);
-    }
-
-    /**
-     * Calculates the slot index for a large chest inventory (9x6).<br>
-     * Equivalent to {@link #generic9x6(int, int)}.
-     *
-     * @param column the column index (0-based)
-     * @param row the row index (0-based)
-     * @return the slot index
-     * @throws IndexOutOfBoundsException if the row or column is out of bounds
-     */
-    public static int maxChestSlot(int column, int row) {
-        return generic9x6(column, row);
-    }
 
     /**
      * Creates a set of slot indices in the specified range.
@@ -174,20 +17,6 @@ public class Slots {
             slots.add(i);
         }
         return slots;
-    }
-
-    /**
-     * Creates a set of slot indices in a grid range for a 9-column inventory.
-     *
-     * @param startCol the starting column index (0-based, inclusive)
-     * @param startRow the starting row index (0-based, inclusive)
-     * @param endCol the ending column index (0-based, inclusive)
-     * @param endRow the ending row index (0-based, inclusive)
-     * @return a set of slot indices in the specified grid range
-     */
-    public static LinkedHashSet<Integer> gridRange(int startCol, int startRow, int endCol, int endRow) {
-        final int columns = 9;
-        return gridRange(startCol, startRow, endCol, endRow, columns);
     }
 
     /**
@@ -222,6 +51,188 @@ public class Slots {
     private static void checkColumnBounds(int column, int maxColumns) {
         if (column < 0 || column >= maxColumns) {
             throw new IndexOutOfBoundsException("Column " + column + " is out of bounds (0-" + (maxColumns - 1) + ")");
+        }
+    }
+
+    /**
+     * Utility class for 9x1 generic inventories.
+     */
+    public static class Generic9x1 {
+        public static final int WIDTH = 9;
+        public static final int HEIGHT = 1;
+        
+        public static int slot(int column, int row) {
+            checkColumnBounds(column, WIDTH);
+            checkRowBounds(row, HEIGHT);
+            return row * WIDTH + column;
+        }
+
+        public static LinkedHashSet<Integer> gridRange(int startCol, int startRow, int endCol, int endRow) {
+            return Slots.gridRange(startCol, startRow, endCol, endRow, WIDTH);
+        }
+
+        public static LinkedHashSet<Integer> range(int start, int end) {
+            return Slots.range(start, end);
+        }
+
+        public static LinkedHashSet<Integer> all() {
+            return gridRange(0, 0, WIDTH - 1, HEIGHT - 1);
+        }
+    }
+
+    /**
+     * Utility class for 9x2 generic inventories.
+     */
+    public static class Generic9x2 {
+        public static final int WIDTH = 9;
+        public static final int HEIGHT = 2;
+        
+        public static int slot(int column, int row) {
+            checkColumnBounds(column, WIDTH);
+            checkRowBounds(row, HEIGHT);
+            return row * WIDTH + column;
+        }
+
+        public static LinkedHashSet<Integer> gridRange(int startCol, int startRow, int endCol, int endRow) {
+            return Slots.gridRange(startCol, startRow, endCol, endRow, WIDTH);
+        }
+
+        public static LinkedHashSet<Integer> range(int start, int end) {
+            return Slots.range(start, end);
+        }
+
+        public static LinkedHashSet<Integer> all() {
+            return gridRange(0, 0, WIDTH - 1, HEIGHT - 1);
+        }
+    }
+
+    /**
+     * Utility class for 9x3 generic inventories (e.g., Small Chest).
+     */
+    public static class Generic9x3 {
+        public static final int WIDTH = 9;
+        public static final int HEIGHT = 3;
+        
+        public static int slot(int column, int row) {
+            checkColumnBounds(column, WIDTH);
+            checkRowBounds(row, HEIGHT);
+            return row * WIDTH + column;
+        }
+
+        public static LinkedHashSet<Integer> gridRange(int startCol, int startRow, int endCol, int endRow) {
+            return Slots.gridRange(startCol, startRow, endCol, endRow, WIDTH);
+        }
+
+        public static LinkedHashSet<Integer> range(int start, int end) {
+            return Slots.range(start, end);
+        }
+
+        public static LinkedHashSet<Integer> all() {
+            return gridRange(0, 0, WIDTH - 1, HEIGHT - 1);
+        }
+    }
+
+    /**
+     * Utility class for 9x4 generic inventories.
+     */
+    public static class Generic9x4 {
+        public static final int WIDTH = 9;
+        public static final int HEIGHT = 4;
+        
+        public static int slot(int column, int row) {
+            checkColumnBounds(column, WIDTH);
+            checkRowBounds(row, HEIGHT);
+            return row * WIDTH + column;
+        }
+
+        public static LinkedHashSet<Integer> gridRange(int startCol, int startRow, int endCol, int endRow) {
+            return Slots.gridRange(startCol, startRow, endCol, endRow, WIDTH);
+        }
+
+        public static LinkedHashSet<Integer> range(int start, int end) {
+            return Slots.range(start, end);
+        }
+
+        public static LinkedHashSet<Integer> all() {
+            return gridRange(0, 0, WIDTH - 1, HEIGHT - 1);
+        }
+    }
+
+    /**
+     * Utility class for 9x5 generic inventories.
+     */
+    public static class Generic9x5 {
+        public static final int WIDTH = 9;
+        public static final int HEIGHT = 5;
+        
+        public static int slot(int column, int row) {
+            checkColumnBounds(column, WIDTH);
+            checkRowBounds(row, HEIGHT);
+            return row * WIDTH + column;
+        }
+
+        public static LinkedHashSet<Integer> gridRange(int startCol, int startRow, int endCol, int endRow) {
+            return Slots.gridRange(startCol, startRow, endCol, endRow, WIDTH);
+        }
+
+        public static LinkedHashSet<Integer> range(int start, int end) {
+            return Slots.range(start, end);
+        }
+
+        public static LinkedHashSet<Integer> all() {
+            return gridRange(0, 0, WIDTH - 1, HEIGHT - 1);
+        }
+    }
+
+    /**
+     * Utility class for 9x6 generic inventories (e.g., Large Chest).
+     */
+    public static class Generic9x6 {
+        public static final int WIDTH = 9;
+        public static final int HEIGHT = 6;
+        
+        public static int slot(int column, int row) {
+            checkColumnBounds(column, WIDTH);
+            checkRowBounds(row, HEIGHT);
+            return row * WIDTH + column;
+        }
+
+        public static LinkedHashSet<Integer> gridRange(int startCol, int startRow, int endCol, int endRow) {
+            return Slots.gridRange(startCol, startRow, endCol, endRow, WIDTH);
+        }
+
+        public static LinkedHashSet<Integer> range(int start, int end) {
+            return Slots.range(start, end);
+        }
+
+        public static LinkedHashSet<Integer> all() {
+            return gridRange(0, 0, WIDTH - 1, HEIGHT - 1);
+        }
+    }
+
+    /**
+     * Utility class for 3x3 generic inventories (e.g., Dispenser, Dropper, Crafting Table).
+     */
+    public static class Generic3x3 {
+        public static final int WIDTH = 3;
+        public static final int HEIGHT = 3;
+        
+        public static int slot(int column, int row) {
+            checkColumnBounds(column, WIDTH);
+            checkRowBounds(row, HEIGHT);
+            return row * WIDTH + column;
+        }
+
+        public static LinkedHashSet<Integer> gridRange(int startCol, int startRow, int endCol, int endRow) {
+            return Slots.gridRange(startCol, startRow, endCol, endRow, WIDTH);
+        }
+
+        public static LinkedHashSet<Integer> range(int start, int end) {
+            return Slots.range(start, end);
+        }
+
+        public static LinkedHashSet<Integer> all() {
+            return gridRange(0, 0, WIDTH - 1, HEIGHT - 1);
         }
     }
 }

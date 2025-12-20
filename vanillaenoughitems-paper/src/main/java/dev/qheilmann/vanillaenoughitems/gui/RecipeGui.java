@@ -49,17 +49,17 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
     private static final int INGREDIENT_TICK_INTERVAL = 20; // ticks (1 second)
     
     // Slots
-    private static final LinkedHashSet<Integer> PROCESSES_SCROLL_RANGE  = Slots.gridRange(1, 0, 7, 0);
-    private static final LinkedHashSet<Integer> WORKBENCHS_SCROLL_RANGE = Slots.gridRange(0, 1, 0, 5);
-    private static final int QUICK_LINK_SLOT            = Slots.maxChestSlot(0, 0);
+    private static final LinkedHashSet<Integer> PROCESSES_SCROLL_RANGE  = Slots.Generic9x6.gridRange(1, 0, 7, 0);
+    private static final LinkedHashSet<Integer> WORKBENCHS_SCROLL_RANGE = Slots.Generic9x6.gridRange(0, 1, 0, 5);
+    private static final int QUICK_LINK_SLOT            = Slots.Generic9x6.slot(0, 0);
     private static final int PROCESS_SCROLL_LEFT_SLOT   = PROCESSES_SCROLL_RANGE.getFirst();
     private static final int PROCESS_SCROLL_RIGHT_SLOT  = PROCESSES_SCROLL_RANGE.getLast();
-    private static final int INFO_SLOT                  = Slots.maxChestSlot(8, 0);
+    private static final int INFO_SLOT                  = Slots.Generic9x6.slot(8, 0);
     private static final int WORKBENCH_SCROLL_UP_SLOT   = WORKBENCHS_SCROLL_RANGE.getFirst();
     private static final int WORKBENCH_SCROLL_DOWN_SLOT = WORKBENCHS_SCROLL_RANGE.getLast();
-    private static final int BOOKMARK_THIS_RECIPE_SLOT  = Slots.maxChestSlot(8, 2);
-    private static final int BOOKMARK_LIST_SLOT         = Slots.maxChestSlot(8, 3);
-    private static final int BOOKMARK_SERVER_LIST_SLOT  = Slots.maxChestSlot(8, 4);
+    private static final int BOOKMARK_THIS_RECIPE_SLOT  = Slots.Generic9x6.slot(8, 2);
+    private static final int BOOKMARK_LIST_SLOT         = Slots.Generic9x6.slot(8, 3);
+    private static final int BOOKMARK_SERVER_LIST_SLOT  = Slots.Generic9x6.slot(8, 4);
     
     private static final int MAX_VISIBLE_PROCESSES = PROCESSES_SCROLL_RANGE.size();
     private static final int MAX_SCROLLABLE_PROCESSES = MAX_VISIBLE_PROCESSES - 2; // Account for scroll buttons
