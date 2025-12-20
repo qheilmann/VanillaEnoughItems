@@ -131,6 +131,12 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
         boolean isLeftClick = event.getClick().isLeftClick();
         boolean isRightClick = event.getClick().isRightClick();
         ItemStack clickedItemStack = event.getCurrentItem();
+
+        // Ignore if no item clicked
+        if (clickedItemStack == null) {
+            return;
+        }
+
         MultiProcessRecipeReader newMultiRecipeReader = null;
 
         if (isLeftClick) {
@@ -154,6 +160,11 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
         boolean isLeftClick = event.getClick().isLeftClick();
         boolean isRightClick = event.getClick().isRightClick();
         ItemStack clickedItemStack = event.getCurrentItem();
+        
+        // Ignore if no item clicked
+        if (clickedItemStack == null) {
+            return;
+        }
         
         // Show usage on right click
         if (isRightClick) {
