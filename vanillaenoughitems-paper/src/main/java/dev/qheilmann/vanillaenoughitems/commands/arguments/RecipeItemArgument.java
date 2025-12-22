@@ -43,6 +43,9 @@ public class RecipeItemArgument extends CustomArgument<ItemStack, NamespacedKey>
     // Uses reference equality (identity) since RecipeGuiContext instances are typically singletons
     private static final Map<RecipeContext, Collection<String>> suggestionsCache = new ConcurrentHashMap<>();
 
+    // Cache for unknown items, to allow the recipe item argument to parse the key to itemstack
+    private static final Map<Key, ItemStack> unknownItemCache = new ConcurrentHashMap<>();
+
     public RecipeItemArgument(String nodeName, RecipeContext context) {
         super(new NamespacedKeyArgument(nodeName), info -> {
             NamespacedKey key = info.currentInput();
@@ -57,9 +60,14 @@ public class RecipeItemArgument extends CustomArgument<ItemStack, NamespacedKey>
             }
 
             // Then check custom items
+            // [CUSTOM ITEM REGISTRY] impl custom item registry lookup here
             // ItemStack customItem = CustomItemRegistry.getItemByKey(key);
-            // TODO impl custom item registry
 
+            ItemStack unknownItemStack = unknownItemCache.get(key);
+            if (unknownItemStack != null) {
+                return unknownItemStack;
+            }
+            
             throw CustomArgumentHelper.minecraftLikeException((arg) -> Component.text("No item found for key: " + arg), info);
         });
 
@@ -140,7 +148,14 @@ public class RecipeItemArgument extends CustomArgument<ItemStack, NamespacedKey>
         }
 
         // Custom items
-        throw new NotImplementedException("Custom item registry not implemented yet");
+        // [CUSTOM ITEM REGISTRY] impl custom item registry lookup here
+
+        ItemType itemType = item.getType().asItemType();
+        int hashCode = item.hashCode();
+        String itemIdentifier = itemType.getKey().value() + "_0x" + Integer.toHexString(hashCode);
+        Key unidentifiedKey = Key.key("unknown", itemIdentifier);
+        unknownItemCache.put(unidentifiedKey, item);
+        return unidentifiedKey;
     }
 
     /**
