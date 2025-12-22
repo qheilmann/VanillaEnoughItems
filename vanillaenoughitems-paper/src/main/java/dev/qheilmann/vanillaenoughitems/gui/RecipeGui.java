@@ -142,7 +142,7 @@ public class RecipeGui extends FastInv {
         if (isLeftClick) {
             newMultiRecipeReader = context.getRecipeIndex().readerByResult(clickedItemStack);
         } else if (isRightClick) {
-            newMultiRecipeReader = context.getRecipeIndex().readerByIngredient(clickedItemStack);
+            newMultiRecipeReader = context.getRecipeIndex().readerByUsage(clickedItemStack);
         } 
         // Ignore other click types
 
@@ -168,7 +168,7 @@ public class RecipeGui extends FastInv {
         
         // Show usage on right click
         if (isRightClick) {
-            MultiProcessRecipeReader newMultiRecipeReader = context.getRecipeIndex().readerByIngredient(clickedItemStack);
+            MultiProcessRecipeReader newMultiRecipeReader = context.getRecipeIndex().readerByUsage(clickedItemStack);
             if (newMultiRecipeReader != null) {
                 // Only push to history if we're actually navigating to a different recipe view
                 playerData.navigationHistory().pushForNavigation(reader, newMultiRecipeReader);

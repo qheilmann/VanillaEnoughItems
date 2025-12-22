@@ -118,7 +118,7 @@ public class RecipeIdArgument extends CustomArgument<NamespacedKey, NamespacedKe
     
             reader = switch (searchMode) {
                 case RECIPE -> recipeIndex.readerByResult(item);
-                case USAGE -> recipeIndex.readerByIngredient(item);
+                case USAGE -> recipeIndex.readerByUsage(item);
                 default -> throw new UnsupportedOperationException("Search mode " + searchMode + " is not implemented");
             };
         }

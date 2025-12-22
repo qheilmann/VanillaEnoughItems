@@ -1,7 +1,6 @@
 package dev.qheilmann.vanillaenoughitems.recipe.index;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Set;
@@ -25,7 +24,7 @@ import net.kyori.adventure.key.Keyed;
 
 /**
  * Index all recipes by different criteria.
- * ingredient, result, process, id...
+ * usage, result, process, id...
  */
 @NullMarked
 public class RecipeIndex implements RecipeIndexView {
@@ -35,12 +34,10 @@ public class RecipeIndex implements RecipeIndexView {
     
     // Search indexes
     private final ConcurrentSkipListMap<Key, Recipe> recipesById = new ConcurrentSkipListMap<>(Key.comparator());
-    // private final ConcurrentSkipListMap<Process, ProcessRecipeSet> recipesByProcess = new ConcurrentSkipListMap<>();
     private final MultiProcessRecipeMap recipesByProcess = new MultiProcessRecipeMap();
     // ItemStack#hashcode are not really reliable between sessions, at least we regenerate them each time
     private final ConcurrentHashMap<ItemStack, MultiProcessRecipeMap> recipesByResult = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<ItemStack, MultiProcessRecipeMap> recipesByIngredient = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<ItemStack, MultiProcessRecipeMap> recipesByOther = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<ItemStack, MultiProcessRecipeMap> recipesByUsage = new ConcurrentHashMap<>();
 
     // Inverse index for fast lookup
     /**
@@ -99,19 +96,17 @@ public class RecipeIndex implements RecipeIndexView {
             multiProcessRecipeMap.addRecipe(process, recipe);
         }
 
-        // Index by ingredient
+        // Index by usage (ingredient and others)
         Set<ItemStack> ingredients = recipeExtractor.extractIngredients(recipe);
         for (ItemStack ingredient : ingredients) {
             ingredient = ingredient.asOne(); // Normalize to amount 1 for indexing
-            MultiProcessRecipeMap multiProcessRecipeMap = recipesByIngredient.computeIfAbsent(ingredient, i -> new MultiProcessRecipeMap());
+            MultiProcessRecipeMap multiProcessRecipeMap = recipesByUsage.computeIfAbsent(ingredient, i -> new MultiProcessRecipeMap());
             multiProcessRecipeMap.addRecipe(process, recipe);
         }
-
-        // Index by other
         Set<ItemStack> others = recipeExtractor.extractOthers(recipe);
         for (ItemStack other : others) {
             other = other.asOne(); // Normalize to amount 1 for indexing
-            MultiProcessRecipeMap multiProcessRecipeMap = recipesByOther.computeIfAbsent(other, o -> new MultiProcessRecipeMap());
+            MultiProcessRecipeMap multiProcessRecipeMap = recipesByUsage.computeIfAbsent(other, o -> new MultiProcessRecipeMap());
             multiProcessRecipeMap.addRecipe(process, recipe);
         }
     }
@@ -152,21 +147,19 @@ public class RecipeIndex implements RecipeIndexView {
             }
         }
 
-        // Unindex by ingredient
+        // Unindex by usage (ingredient and others)
         Set<ItemStack> ingredients = recipeExtractor.extractIngredients(recipe);
         for (ItemStack ingredient : ingredients) {
             ingredient = ingredient.asOne();
-            MultiProcessRecipeMap multiProcessRecipeMap = recipesByIngredient.get(ingredient);
+            MultiProcessRecipeMap multiProcessRecipeMap = recipesByUsage.get(ingredient);
             if (multiProcessRecipeMap != null && process != null) {
                 multiProcessRecipeMap.removeRecipe(process, recipe);
             }
         }
-
-        // Unindex by other
         Set<ItemStack> others = recipeExtractor.extractOthers(recipe);
         for (ItemStack other : others) {
             other = other.asOne();
-            MultiProcessRecipeMap multiProcessRecipeMap = recipesByOther.get(other);
+            MultiProcessRecipeMap multiProcessRecipeMap = recipesByUsage.get(other);
             if (multiProcessRecipeMap != null && process != null) {
                 multiProcessRecipeMap.removeRecipe(process, recipe);
             }
@@ -180,7 +173,7 @@ public class RecipeIndex implements RecipeIndexView {
         recipesById.clear();
         recipesByProcess.clear();
         recipesByResult.clear();
-        recipesByIngredient.clear();
+        recipesByUsage.clear();
     }
 
     //#endregion Indexing
@@ -228,35 +221,19 @@ public class RecipeIndex implements RecipeIndexView {
     }
 
     /**
-     * Get an unmodifiable view of all recipes by their ingredient.
+     * Get an unmodifiable view of all recipes by their usage.
      * <p>
      * <b>Warning:</b> The returned map is unmodifiable, but the {@link MultiProcessRecipeMap} values
      * within are <b>NOT</b> immutable. Do not modify the inner maps or recipes as this will break
-     * the index consistency. Use {@link #readerByIngredient(ItemStack)} for safe read-only access.
+     * the index consistency. Use {@link #readerByUsage(ItemStack)} for safe read-only access.
      * <p>
      * This method is intended for internal use or advanced use cases where you need direct access
      * to the underlying structure.
      *
-     * @return unmodifiable view of all recipes by their ingredient
+     * @return unmodifiable view of all recipes by their usage
      */
-    public Map<ItemStack, MultiProcessRecipeMap> getAllRecipesByIngredient() {
-        return Collections.unmodifiableMap(recipesByIngredient);
-    }
-
-    /**
-     * Get an unmodifiable view of all recipes by their other items.
-     * <p>
-     * <b>Warning:</b> The returned map is unmodifiable, but the {@link MultiProcessRecipeMap} values
-     * within are <b>NOT</b> immutable. Do not modify the inner maps or recipes as this will break
-     * the index consistency. Use appropriate reader methods for safe read-only access.
-     * <p>
-     * This method is intended for internal use or advanced use cases where you need direct access
-     * to the underlying structure.
-     *
-     * @return unmodifiable view of all recipes by their other items
-     */
-    public Map<ItemStack, MultiProcessRecipeMap> getAllRecipesByOther() {
-        return Collections.unmodifiableMap(recipesByOther);
+    public Map<ItemStack, MultiProcessRecipeMap> getAllRecipesByUsage() {
+        return Collections.unmodifiableMap(recipesByUsage);
     }
 
     //#endregion Exporting
@@ -270,10 +247,7 @@ public class RecipeIndex implements RecipeIndexView {
     }
 
     public Set<ItemStack> getAllUsedItems() {
-        Set<ItemStack> usedItems = new HashSet<>();
-        usedItems.addAll(recipesByIngredient.keySet());
-        usedItems.addAll(recipesByOther.keySet());
-        return Collections.unmodifiableSet(usedItems);
+        return Collections.unmodifiableSet(recipesByUsage.keySet());
     }
 
     /**
@@ -414,16 +388,16 @@ public class RecipeIndex implements RecipeIndexView {
 
     //#endregion By Result
 
-    //#region By Ingredient
+    //#region By Usage
 
     /**
      * {@inheritDoc}
      */
     @Override
     @Nullable
-    public MultiProcessRecipeReader readerByIngredient(ItemStack ingredient) {
-        ingredient = ingredient.asOne();
-        MultiProcessRecipeMap multiProcessRecipeMap = recipesByIngredient.get(ingredient);
+    public MultiProcessRecipeReader readerByUsage(ItemStack item) {
+        item = item.asOne();
+        MultiProcessRecipeMap multiProcessRecipeMap = recipesByUsage.get(item);
         if (multiProcessRecipeMap == null) {
             return null;
         }
@@ -436,8 +410,8 @@ public class RecipeIndex implements RecipeIndexView {
      */
     @Override
     @Nullable
-    public MultiProcessRecipeReader readerByIngredient(ItemStack ingredient, Process startProcess) {
-        MultiProcessRecipeReader reader = readerByIngredient(ingredient);
+    public MultiProcessRecipeReader readerByUsage(ItemStack item, Process startProcess) {
+        MultiProcessRecipeReader reader = readerByUsage(item);
         if (reader != null) {
             reader.setCurrentProcess(startProcess);
         }
@@ -449,15 +423,15 @@ public class RecipeIndex implements RecipeIndexView {
      */
     @Override
     @Nullable
-    public MultiProcessRecipeReader readerByIngredient(ItemStack ingredient, Process startProcess, Recipe startRecipe) {
-        MultiProcessRecipeReader reader = readerByIngredient(ingredient, startProcess);
+    public MultiProcessRecipeReader readerByUsage(ItemStack item, Process startProcess, Recipe startRecipe) {
+        MultiProcessRecipeReader reader = readerByUsage(item, startProcess);
         if (reader != null) {
             reader.getCurrentProcessRecipeReader().setCurrent(startRecipe);
         }
         return reader;
     }
 
-    //#endregion By Ingredient
+    //#endregion By Usage
 
     //#region All Recipes
 
@@ -502,14 +476,12 @@ public class RecipeIndex implements RecipeIndexView {
         int totalRecipes = recipesById.size();
         int totalProcesses = recipesByProcess.getAllProcesses().size();
         int totalResultTypes = recipesByResult.size();
-        int totalIngredientTypes = recipesByIngredient.size();
-        int totalOtherTypes = recipesByOther.size();
+        int totalUsedTypes = recipesByUsage.size();
         
         VanillaEnoughItems.LOGGER.info("Total Recipes Indexed: " + totalRecipes);
         VanillaEnoughItems.LOGGER.info("Total Processes: " + totalProcesses);
         VanillaEnoughItems.LOGGER.info("Total Unique Result Types: " + totalResultTypes);
-        VanillaEnoughItems.LOGGER.info("Total Unique Ingredient Types: " + totalIngredientTypes);
-        VanillaEnoughItems.LOGGER.info("Total Unique Other Types: " + totalOtherTypes);
+        VanillaEnoughItems.LOGGER.info("Total Unique Used Types: " + totalUsedTypes);
         
         // Per-process breakdown
         VanillaEnoughItems.LOGGER.info("---------- Recipes by Process ----------");
@@ -567,9 +539,9 @@ public class RecipeIndex implements RecipeIndexView {
                 }
             });
         
-        // Ingredients index summary
-        VanillaEnoughItems.LOGGER.info("---------- Recipes by Ingredient (Top 5) ----------");
-        recipesByIngredient.entrySet().stream()
+        // Usage index summary
+        VanillaEnoughItems.LOGGER.info("---------- Recipes by Used Item (Top 5) ----------");
+        recipesByUsage.entrySet().stream()
             .sorted((e1, e2) -> Integer.compare(
                 e2.getValue().getAllRecipes().size(), 
                 e1.getValue().getAllRecipes().size()
@@ -584,7 +556,7 @@ public class RecipeIndex implements RecipeIndexView {
                 String ingredientType = ingredient.getType().name();
                 VanillaEnoughItems.LOGGER.info("  " + ingredientType + ": " + recipeCount + " recipes across " + processCount + " processes");
                 
-                // Show process breakdown for this ingredient
+                // Show process breakdown for this used item
                 for (Process process : recipes.getAllProcesses()) {
                     ProcessRecipeSet processRecipes = recipes.getProcessRecipeSet(process);
                     if (processRecipes != null) {
@@ -592,26 +564,6 @@ public class RecipeIndex implements RecipeIndexView {
                     }
                 }
             });
-        
-        // Others index summary (e.g., fuels)
-        if (!recipesByOther.isEmpty()) {
-            VanillaEnoughItems.LOGGER.info("---------- Recipes by Other Items (Top 5) ----------");
-            recipesByOther.entrySet().stream()
-                .sorted((e1, e2) -> Integer.compare(
-                    e2.getValue().getAllRecipes().size(), 
-                    e1.getValue().getAllRecipes().size()
-                ))
-                .limit(5)
-                .forEach(entry -> {
-                    ItemStack other = entry.getKey();
-                    MultiProcessRecipeMap recipes = entry.getValue();
-                    int recipeCount = recipes.getAllRecipes().size();
-                    int processCount = recipes.getAllProcesses().size();
-                    
-                    String otherType = other.getType().name();
-                    VanillaEnoughItems.LOGGER.info("  " + otherType + ": " + recipeCount + " recipes across " + processCount + " processes");
-                });
-        }
         
         VanillaEnoughItems.LOGGER.info("==============================================================");
     }

@@ -203,7 +203,7 @@ public class CraftCommand {
         
         MultiProcessRecipeReader reader = switch (searchMode) {
             case RECIPE -> context.getRecipeIndex().readerByResult(item);
-            case USAGE -> context.getRecipeIndex().readerByIngredient(item);
+            case USAGE -> context.getRecipeIndex().readerByUsage(item);
             default -> throw new UnsupportedOperationException("Search mode " + searchMode + " is not implemented");
         };
 

@@ -2,6 +2,7 @@ package dev.qheilmann.vanillaenoughitems.recipe.extraction;
 
 import java.util.Set;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.jspecify.annotations.NonNull;
@@ -33,7 +34,7 @@ public interface RecipeExtractorStrategy<R extends @NonNull Recipe> extends Keye
         if (recipe instanceof Keyed keyed) {
             return keyed.key();
         }
-        throw new IllegalArgumentException("Recipe is not Keyed: " + recipe.getClass().getSimpleName());
+        throw new NotImplementedException("This extractor does not implement custom key extraction for non-Keyed recipes:" + recipe.getClass().getName());
     }
 
     /**
