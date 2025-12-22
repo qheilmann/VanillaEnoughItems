@@ -15,18 +15,21 @@ import dev.jorel.commandapi.CommandPermission;
 import dev.jorel.commandapi.arguments.ArgumentSuggestions;
 import dev.jorel.commandapi.arguments.MultiLiteralArgument;
 import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
+import dev.qheilmann.vanillaenoughitems.VanillaEnoughItems;
 import dev.qheilmann.vanillaenoughitems.commands.arguments.ProcessArgument;
 import dev.qheilmann.vanillaenoughitems.commands.arguments.RecipeIdArgument;
 import dev.qheilmann.vanillaenoughitems.commands.arguments.RecipeItemArgument;
 import dev.qheilmann.vanillaenoughitems.commands.arguments.SearchModeArgument;
 import dev.qheilmann.vanillaenoughitems.commands.arguments.SearchModeArgument.SearchMode;
+import dev.qheilmann.vanillaenoughitems.recipe.index.RecipeIndex;
 import dev.qheilmann.vanillaenoughitems.recipe.index.reader.MultiProcessRecipeReader;
 import dev.qheilmann.vanillaenoughitems.recipe.process.Process;
 import dev.qheilmann.vanillaenoughitems.gui.RecipeGui;
 import dev.qheilmann.vanillaenoughitems.gui.RecipeGuiContext;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.Style;
+import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
 @NullMarked
@@ -41,6 +44,11 @@ public class CraftCommand {
                                     /craft <item>
                                     Type /craft --help for detailled usage instructions and examples.
                                     """;
+
+    private static final TextColor COLOR_PRIMARY = TextColor.fromHexString("#AEA44d");
+    private static final TextColor COLOR_PRIMARY_VARIANT = TextColor.fromHexString("#959956");
+    private static final TextColor COLOR_SECONDARY = TextColor.fromHexString("#33658A");
+    private static final TextColor COLOR_SECONDARY_VARIANT = TextColor.fromHexString("#86BBD8");
 
     @SuppressWarnings("null")
     private static JavaPlugin plugin;
@@ -62,7 +70,7 @@ public class CraftCommand {
     public static void register(JavaPlugin plugin, RecipeGuiContext context) {
         init(plugin, context);
 
-        // craft <item> [as-result|as-ingredient] [<process>] [<recipeId>]
+        // craft <item> [recipe|usage] [<process>] [<recipeId>]
         createBaseCraftCommand()
             .withArguments(new RecipeItemArgument("resultItem", context)
                 .replaceSuggestions(RecipeItemArgument.argumentSuggestions(context))
@@ -142,6 +150,7 @@ public class CraftCommand {
 
         // craft --version
         createBaseCraftCommand()
+            .withPermission(CommandPermission.OP)
             .withArguments(new MultiLiteralArgument("version", "--version"))
             .executes((sender, args) -> {
                 versionAction(sender);
@@ -150,8 +159,20 @@ public class CraftCommand {
 
         // craft --id <recipeId>
 
-
         // craft --reload
+        createBaseCraftCommand()
+            .withPermission(CommandPermission.OP)
+            .withArguments(new MultiLiteralArgument("reload", "--reload"))
+            .executes((sender, args) -> {
+                sender.sendMessage(Component.text("Note: Recipe index reload, will only re-index all the recipe registered in the server.", NamedTextColor.GOLD));
+                sender.sendMessage(Component.text("Reloading recipe index...", NamedTextColor.YELLOW));
+                RecipeIndex recipeIndex = context.getRecipeIndex();
+                recipeIndex.clearIndex();
+                recipeIndex.indexRecipe(() -> (plugin.getServer().recipeIterator()));
+                sender.sendMessage(Component.text("Recipe index reload initiated...", NamedTextColor.YELLOW));
+            })
+            .register();
+
         // hmm that's a bit tricky, we don't know which recipe was indexed before reload
         // we can do all recipe in server, but who know if user register some more?
     }
@@ -174,7 +195,7 @@ public class CraftCommand {
         createAndOpenGui(player, reader, context);
     }
 
-    private static void byItemAction(Player player, ItemStack item, SearchModeArgument.@Nullable SearchMode searchMode, @Nullable Process process, @Nullable NamespacedKey recipeId, RecipeGuiContext context) throws WrapperCommandSyntaxException {
+    private static void byItemAction(Player player, ItemStack item, SearchModeArgument.@Nullable SearchMode searchMode, @Nullable Process startProcess, @Nullable NamespacedKey startRecipeId, RecipeGuiContext context) throws WrapperCommandSyntaxException {
         
         if (searchMode == null) {
             searchMode = SearchMode.DEFAULT;
@@ -198,40 +219,58 @@ public class CraftCommand {
             throw CommandAPIPaper.failWithAdventureComponent(noRecipesFoundMessage);
         }
 
-        recipeAction(player, reader, process, recipeId, context);
+        recipeAction(player, reader, startProcess, startRecipeId, context);
     }
 
-    private static void allItemAction(Player player, @Nullable Process process, @Nullable NamespacedKey recipeId, RecipeGuiContext context) throws WrapperCommandSyntaxException {
+    /**
+     * Show all recipes in the recipe index.
+     *
+     * @param player  the player to open the GUI for
+     * @param startProcess the Process to use, or null for all processes
+     * @param startRecipeId the NamespacedKey of the recipe to start with, or null for no specific recipe
+     * @param context the RecipeGuiContext for GUI configuration
+     */
+    private static void allItemAction(Player player, @Nullable Process startProcess, @Nullable NamespacedKey startRecipeId, RecipeGuiContext context) throws WrapperCommandSyntaxException {
         MultiProcessRecipeReader reader = context.getRecipeIndexReader().readerWithAllRecipes();
-        recipeAction(player, reader, process, recipeId, context);
+        recipeAction(player, reader, startProcess, startRecipeId, context);
     }
 
-    private static void recipeAction(Player player, MultiProcessRecipeReader reader, @Nullable Process process, @Nullable NamespacedKey recipeId, RecipeGuiContext context) throws WrapperCommandSyntaxException {
-        if(process == null && recipeId != null) {
+    /**
+     * Use the provided reader, set the starting process and starting recipe ID if provided, then open the GUI.
+     *
+     * @param player   the player to open the GUI for
+     * @param reader   the MultiProcessRecipeReader containing the recipes to display
+     * @param startProcess  the Process to use, or null for non starting process
+     * @param startRecipeId the NamespacedKey of the recipe to start with, or null for no specific recipe
+     * @param context  the RecipeGuiContext for GUI configuration
+     * @throws WrapperCommandSyntaxException if any errors occur during command execution
+     */
+    private static void recipeAction(Player player, MultiProcessRecipeReader reader, @Nullable Process startProcess, @Nullable NamespacedKey startRecipeId, RecipeGuiContext context) throws WrapperCommandSyntaxException {
+        if(startProcess == null && startRecipeId != null) {
             throw new IllegalArgumentException("A recipe ID cannot be used without specifying a process.");
         }
 
         // Set start process if provided
-        if (process != null) {
-            if(!reader.containsProcess(process)) {
+        if (startProcess != null) {
+            if(!reader.containsProcess(startProcess)) {
                 Component processNotFoundMessage = Component.text().applicableApply(NamedTextColor.RED)
                     .append(Component.text("No process named '"))
-                    .append(Component.text(process.key().asString()).decorate(TextDecoration.BOLD))
-                    .append(Component.text("' exists in the current recipe index."))
+                    .append(Component.text(startProcess.key().asString()).decorate(TextDecoration.BOLD))
+                    .append(Component.text("' found in your current search."))
                     .build();
 
                 throw CommandAPIPaper.failWithAdventureComponent(processNotFoundMessage);
             }
 
-            reader.setCurrentProcess(process);
+            reader.setCurrentProcess(startProcess);
 
             // Set start recipe if provided
-            if (recipeId != null) {
-                Recipe recipe = context.getRecipeIndexReader().getSingleRecipeByKey(recipeId);
+            if (startRecipeId != null) {
+                Recipe recipe = context.getRecipeIndexReader().getSingleRecipeByKey(startRecipeId);
                 if (recipe == null) {
                     Component recipeNotFoundMessage = Component.text().applicableApply(NamedTextColor.RED)
                         .append(Component.text("No recipe found with the ID '"))
-                        .append(Component.text(recipeId.asString()).decorate(TextDecoration.BOLD))
+                        .append(Component.text(startRecipeId.asString()).decorate(TextDecoration.BOLD))
                         .append(Component.text("'."))
                         .build();
 
@@ -241,10 +280,10 @@ public class CraftCommand {
                 if (!reader.getCurrentProcessRecipeReader().contains(recipe)) {
                     Component recipeNotFoundInProcessMessage = Component.text().applicableApply(NamedTextColor.RED)
                         .append(Component.text("The recipe ID '"))
-                        .append(Component.text(recipeId.asString()).decorate(TextDecoration.BOLD))
+                        .append(Component.text(startRecipeId.asString()).decorate(TextDecoration.BOLD))
                         .append(Component.text("' could not be found in the process '"))
-                        .append(Component.text(process.key().asString()).decorate(TextDecoration.BOLD))
-                        .append(Component.text("' within the current recipe index."))
+                        .append(Component.text(startProcess.key().asString()).decorate(TextDecoration.BOLD))
+                        .append(Component.text("' within your current search."))
                         .build();
 
                     throw CommandAPIPaper.failWithAdventureComponent(recipeNotFoundInProcessMessage);
@@ -270,21 +309,119 @@ public class CraftCommand {
 
     //#endregion Actions
 
-    //#region Help
-
-    private static void helpAction(CommandSender sender) {
-        Component title = Component.text("VanillaEnoughItems Help")
-            .style(Style.style(NamedTextColor.GOLD, TextDecoration.BOLD, TextDecoration.UNDERLINED));
-
-        // TODO add help
-
-        sender.sendMessage(title);
-    }
-
+    /**
+     * Create, render and open the recipe GUI for the player.
+     *
+     * @param player  the player to open the GUI for
+     * @param reader  the MultiProcessRecipeReader containing the recipes to display
+     * @param context the RecipeGuiContext for GUI configuration
+     */
     private static void createAndOpenGui(Player player, MultiProcessRecipeReader reader, RecipeGuiContext context) {
         RecipeGui gui = new RecipeGui(player, context, reader);
         gui.render();
         gui.open(player);
+    }
+
+    //#region Help
+
+    private static void helpAction(CommandSender sender) {
+        Component helpMessage = Component.text()
+            // Title
+            .append(Component.text(VanillaEnoughItems.PLUGIN_NAME + " Help", COLOR_PRIMARY, TextDecoration.BOLD).appendNewline())
+            .append(Component.text("------------------------------", COLOR_PRIMARY_VARIANT).appendNewline())
+            
+            // By Item
+            .appendNewline()
+            .append(helpCommandPrototype("/craft <item> [recipe|usage] [<process>] [<recipeId>]", "/craft "))
+            .append(helpDescription("Open the recipe GUI for a specific item, showing either recipes or usages."))
+            .append(helpSubTitle("Arguments:"))
+            .append(helpArgument("<item>", false, "The item to show recipes/usages for"))
+            .append(helpArgument("[recipe|usage]", true, "Search mode, default: 'recipe'"))
+            .append(helpArgument("[<process>]", true, "Preselect a process"))
+            .append(helpArgument("[<recipeId>]", true, "Preselect a recipe"))
+            .append(helpSubTitle("Examples:"))
+            .append(helpExample("/craft diamond_sword"))
+            .append(helpExample("/craft minecraft:iron_ingot usage"))
+            .append(helpExample("/craft minecraft:salmon usage minecraft:smoking minecraft:cooked_salmon_from_smoking"))
+
+            // All Items
+            .appendNewline()
+            .append(helpCommandPrototype("/craft --all [<process>] [<recipeId>]", "/craft --all"))
+            .append(helpDescription("Open the recipe GUI showing all recipes classified by process."))
+            .append(helpSubTitle("Arguments:"))
+            .append(helpArgument("[<process>]", true, "Preselect a process"))
+            .append(helpArgument("[<recipeId>]", true, "Preselect a recipe"))
+            .append(helpSubTitle("Examples:"))
+            .append(helpExample("/craft --all"))
+            .append(helpExample("/craft --all minecraft:smithing minecraft:netherite_axe_smithing"))
+
+            // By Recipe ID
+            .appendNewline()
+            .append(helpCommandPrototype("/craft --id <recipeId>", "/craft --id "))
+            .append(helpDescription("Open the recipe GUI for a specific recipe by its ID."))
+            .append(helpSubTitle("Argument:"))
+            .append(helpArgument("<recipeId>", false, "The recipe to display"))
+            .append(helpSubTitle("Example:"))
+            .append(helpExample("/craft --id minecraft:cooked_salmon_from_smoking"))
+
+            // Other Commands
+            .appendNewline()
+            .append(Component.text("Other Commands", COLOR_PRIMARY, TextDecoration.BOLD).appendNewline())
+            .append(helpShortStaticPrototypeAndDesc("/craft --help", "Show this help message"))
+            .append(helpShortStaticPrototypeAndDesc("/craft --version", "Show the plugin version"))
+
+            // Footer
+            .append(Component.text("------------------------------", COLOR_PRIMARY_VARIANT))
+
+            .build();
+
+        sender.sendMessage(helpMessage);
+    }
+
+    private static Component helpCommandPrototype(String prototype, String suggest) {
+        return Component.text(prototype, COLOR_SECONDARY, TextDecoration.BOLD)
+            .clickEvent(ClickEvent.suggestCommand(suggest))
+            .appendNewline();
+    }
+
+    private static Component helpDescription(String string) {
+        return Component.text(string, COLOR_PRIMARY_VARIANT).appendNewline();
+    }
+    
+    private static Component helpSubTitle(String string) {
+        return Component.text(string, COLOR_PRIMARY).appendNewline();
+    }
+
+    private static Component helpArgument(String arg, boolean optional, String desc) {
+        return Component.text()
+            .append(Component.text("  ")) // Indentation
+            .append(Component.text(arg, COLOR_SECONDARY))
+            .append(optional ? Component.text(" (Optional) ", COLOR_PRIMARY_VARIANT, TextDecoration.ITALIC) : Component.empty())
+            .append(Component.text(desc, COLOR_PRIMARY_VARIANT))
+            .appendNewline()
+            .build();
+    }
+
+    private static Component helpExample(String example) {
+        return Component.text()
+            .append(Component.text("  ")) // Indentation
+            .append(Component.text(example, COLOR_SECONDARY_VARIANT))
+            .hoverEvent(Component.text("Click to suggest this command", COLOR_SECONDARY_VARIANT))
+            .clickEvent(ClickEvent.suggestCommand(example))
+            .appendNewline()
+            .build();
+    }
+
+    private static Component helpShortStaticPrototypeAndDesc(String prototype, String desc) {
+        return Component.text()
+            .append(Component.text("  ")) // Indentation
+            .append(Component.text(prototype, COLOR_SECONDARY, TextDecoration.BOLD)
+                .hoverEvent(Component.text("Click to suggest this command", COLOR_SECONDARY_VARIANT))
+                .clickEvent(ClickEvent.suggestCommand(prototype))
+            )
+            .append(Component.text(desc, COLOR_PRIMARY_VARIANT))
+            .appendNewline()
+            .build();
     }
 
     //#endregion Help

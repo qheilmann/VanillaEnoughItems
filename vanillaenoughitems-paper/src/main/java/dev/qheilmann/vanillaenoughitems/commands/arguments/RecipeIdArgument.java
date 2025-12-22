@@ -11,6 +11,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.command.CommandSender;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 import dev.jorel.commandapi.arguments.ArgumentSuggestions;
@@ -33,6 +34,7 @@ import net.kyori.adventure.text.Component;
  * @see Recipe
  * @see CustomArgument
  */
+@NullMarked
 public class RecipeIdArgument extends CustomArgument<NamespacedKey, NamespacedKey> {
     public RecipeIdArgument(String nodeName, RecipeGuiContext context) {
         super(new NamespacedKeyArgument(nodeName), (input) -> {
@@ -73,6 +75,7 @@ public class RecipeIdArgument extends CustomArgument<NamespacedKey, NamespacedKe
      * @param process the Process to use, or null for all processes
      * @return a collection of available recipe ID strings for the item, search mode, and process
      */
+    @SuppressWarnings("null")
     public static Collection<String> suggestions(RecipeGuiContext context, @Nullable ItemStack item, @Nullable SearchMode searchMode, @Nullable Process process) {
         Collection<Key> recipeKeys = getRecipeIds(context, item, searchMode, process);
 

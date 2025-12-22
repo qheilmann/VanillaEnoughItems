@@ -2,6 +2,8 @@ package dev.qheilmann.vanillaenoughitems.commands.arguments;
 
 import java.util.function.Function;
 
+import org.jspecify.annotations.NullMarked;
+
 import dev.jorel.commandapi.arguments.CustomArgument.CustomArgumentException;
 import dev.jorel.commandapi.arguments.CustomArgument.CustomArgumentInfo;
 import dev.jorel.commandapi.arguments.CustomArgument.MessageBuilder;
@@ -9,6 +11,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
+@NullMarked
 public final class CustomArgumentHelper {
 
     // Private constructor prevents instantiation

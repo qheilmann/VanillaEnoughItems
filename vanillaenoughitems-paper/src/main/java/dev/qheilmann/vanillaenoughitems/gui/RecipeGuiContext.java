@@ -12,6 +12,7 @@ import org.jspecify.annotations.NullMarked;
 
 import dev.qheilmann.vanillaenoughitems.gui.player.PlayerGuiData;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPanelRegistry;
+import dev.qheilmann.vanillaenoughitems.recipe.index.RecipeIndex;
 import dev.qheilmann.vanillaenoughitems.recipe.index.reader.RecipeIndexReader;
 
 /**
@@ -21,22 +22,30 @@ import dev.qheilmann.vanillaenoughitems.recipe.index.reader.RecipeIndexReader;
  */
 @NullMarked
 public class RecipeGuiContext implements Listener {
-    private final RecipeIndexReader recipeIndexReader;
+    private final RecipeIndex recipeIndex;
     private final ProcessPanelRegistry processPanelRegistry;
     private final Map<UUID, PlayerGuiData> playerDataMap = new ConcurrentHashMap<>();
 
-    public RecipeGuiContext(JavaPlugin plugin, RecipeIndexReader recipeIndexReader, ProcessPanelRegistry processPanelRegistry) {
-        this.recipeIndexReader = recipeIndexReader;
+    public RecipeGuiContext(JavaPlugin plugin, RecipeIndex recipeIndex, ProcessPanelRegistry processPanelRegistry) {
+        this.recipeIndex = recipeIndex;
         this.processPanelRegistry = processPanelRegistry;
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
+    }
+
+    /**
+     * Get the global recipe index reader
+     * @return the recipe index
+     */
+    public RecipeIndexReader getRecipeIndexReader() {
+        return new RecipeIndexReader(recipeIndex);
     }
 
     /**
      * Get the global recipe index
      * @return the recipe index
      */
-    public RecipeIndexReader getRecipeIndexReader() {
-        return recipeIndexReader;
+    public RecipeIndex getRecipeIndex() {
+        return recipeIndex;
     }
 
     /**
@@ -53,7 +62,7 @@ public class RecipeGuiContext implements Listener {
      * @return the player's GUI data
      */
     public PlayerGuiData getPlayerData(UUID playerUuid) {
-        return playerDataMap.computeIfAbsent(playerUuid, uuid -> new PlayerGuiData(uuid, recipeIndexReader.getAssociatedRecipeExtractor()));
+        return playerDataMap.computeIfAbsent(playerUuid, uuid -> new PlayerGuiData(uuid, recipeIndex.getAssociatedRecipeExtractor()));
     }
 
     /**

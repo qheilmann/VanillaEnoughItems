@@ -11,7 +11,6 @@ import net.kyori.adventure.text.logger.slf4j.ComponentLogger;
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPIPaperConfig;
 import dev.qheilmann.vanillaenoughitems.commands.CraftCommand;
-import dev.qheilmann.vanillaenoughitems.commands.DebugCommand;
 import dev.qheilmann.vanillaenoughitems.gui.RecipeGuiContext;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPanelFactory;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPanelRegistry;
@@ -35,7 +34,6 @@ import dev.qheilmann.vanillaenoughitems.recipe.extraction.impl.SmokingRecipeExtr
 import dev.qheilmann.vanillaenoughitems.recipe.extraction.impl.StonecuttingRecipeExtractor;
 import dev.qheilmann.vanillaenoughitems.recipe.extraction.impl.TransmuteRecipeExtractor;
 import dev.qheilmann.vanillaenoughitems.recipe.index.RecipeIndex;
-import dev.qheilmann.vanillaenoughitems.recipe.index.reader.RecipeIndexReader;
 import dev.qheilmann.vanillaenoughitems.recipe.process.ProcessRegistry;
 import dev.qheilmann.vanillaenoughitems.recipe.process.impl.BlastingProcess;
 import dev.qheilmann.vanillaenoughitems.recipe.process.impl.CampfireProcess;
@@ -82,10 +80,6 @@ public class VanillaEnoughItems extends JavaPlugin {
         LOGGER.info("Enabling FastInv...");
         FastInvManager.register(this);
 
-        // TODO when arch stable, make a allInOn methode to pass the Extractor, Process, PanelRegistry etc together
-        // or this will break the separtion like not very one to one, make a moduler system or so ?
-        // or ust part of it, like processRegistry with processPanelRegistry
-
         RecipeExtractor recipeExtractor = new RecipeExtractor();
         recipeExtractor.registerExtractor(new BlastingRecipeExtractor());
         recipeExtractor.registerExtractor(new CampfireRecipeExtractor());
@@ -109,17 +103,14 @@ public class VanillaEnoughItems extends JavaPlugin {
         addProcessesAndPanels(processRegistry, processPanelRegistry, new CampfireProcess(), CampfireProcessPanel::new);
 
         RecipeIndex recipeIndex = new RecipeIndex(processRegistry, recipeExtractor);
-        RecipeIndexReader recipeIndexReader = new RecipeIndexReader(recipeIndex);
-        recipeGuiContext = new RecipeGuiContext(this, recipeIndexReader, processPanelRegistry);
+        recipeGuiContext = new RecipeGuiContext(this, recipeIndex, processPanelRegistry);
 
         Iterator<Recipe> recipeIterator = getServer().recipeIterator();
         recipeIndex.indexRecipe(() -> recipeIterator);
         recipeIndex.logSummary();
         
         // Initialize Recipe GUI Context
-        
 
-        DebugCommand.register(recipeGuiContext);
         CraftCommand.register(this, recipeGuiContext);
         
         LOGGER.info(PLUGIN_NAME + " enabled.");

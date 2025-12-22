@@ -293,7 +293,6 @@ public class RecipeIndexReader {
     public Recipe getSingleRecipeByKey(Key key) {
         return recipeIndex.getSingleRecipeByKey(key);
     }
-    // TODO same as another to do, here recipe are not immutable
 
     public RecipeExtractor getAssociatedRecipeExtractor() {
         RecipeExtractor extractor = recipeIndex.getAssociatedRecipeExtractor();

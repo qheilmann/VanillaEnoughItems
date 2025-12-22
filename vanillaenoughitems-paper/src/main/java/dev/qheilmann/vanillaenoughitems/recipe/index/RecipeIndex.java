@@ -48,7 +48,6 @@ public class RecipeIndex {
     /**
      * Create an empty RecipeIndex
      */
-    // TODO make RecipeExtractor and ProcessRegistry interfaces to allow custom implementations (but need to rename registered classes/interfaces then)
     public RecipeIndex(ProcessRegistry processRegistry, RecipeExtractor recipeExtractor) {
         this.processRegistry = processRegistry;
         this.recipeExtractor = recipeExtractor;

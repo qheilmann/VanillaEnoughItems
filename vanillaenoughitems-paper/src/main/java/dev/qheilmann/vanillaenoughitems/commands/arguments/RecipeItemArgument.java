@@ -2,7 +2,6 @@ package dev.qheilmann.vanillaenoughitems.commands.arguments;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -16,6 +15,7 @@ import org.bukkit.Registry;
 import org.bukkit.command.CommandSender;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ItemType;
+import org.jspecify.annotations.NullMarked;
 
 import dev.jorel.commandapi.arguments.ArgumentSuggestions;
 import dev.jorel.commandapi.arguments.CustomArgument;
@@ -36,6 +36,7 @@ import net.kyori.adventure.text.Component;
  * @see ItemStack
  * @see CustomArgument
  */
+@NullMarked
 public class RecipeItemArgument extends CustomArgument<ItemStack, NamespacedKey> {
 
     // Cache for suggestions per context
@@ -93,6 +94,7 @@ public class RecipeItemArgument extends CustomArgument<ItemStack, NamespacedKey>
      * @param context The RecipeGuiContext containing the RecipeIndexReader
      * @return A CompletableFuture containing the collection of suggestions.
      */
+    @SuppressWarnings("null")
     public static Collection<String> suggestions(RecipeGuiContext context) {
         return getAllItemKeys(context).stream()
             .map(Key::asString)
@@ -105,6 +107,7 @@ public class RecipeItemArgument extends CustomArgument<ItemStack, NamespacedKey>
      * @param context The RecipeGuiContext containing the RecipeIndexReader
      * @return A collection of all item keys.
      */
+    @SuppressWarnings("null")
     private static Collection<Key> getAllItemKeys(RecipeGuiContext context) {
         RecipeIndexReader recipeIndex = context.getRecipeIndexReader();
         Set<ItemStack> allItems = new HashSet<>();
@@ -141,19 +144,14 @@ public class RecipeItemArgument extends CustomArgument<ItemStack, NamespacedKey>
     }
 
     /**
-     * Determines if a suggestion should be included based on the current input in the SuggestionsBuilder.
+     * Determines if a suggestion should be included based on the current input.
      * 
      * @param suggestion The suggestion string to check
-     * @param builder The SuggestionsBuilder containing the current input
+     * @param currentInputLowerCase The current user input in lowercase
      * @return true if the suggestion matches the current input, false otherwise
      */
     private static boolean shouldSuggest(String suggestion, String currentInputLowerCase) {
-        return suggestion.toLowerCase(Locale.ROOT).contains(currentInputLowerCase);
-
-        // TODO add a better matching algorithm
-        // like contains match instead of startsWith
-        // or Levenshtein distance or similar
-
-        // also consider cachier previous input to avoid recomputing suggestions so if the input is just previous + one char recalc only the new char filtering
+        // No need to call toLowerCase() on suggestion since NamespacedKeys are always lowercase
+        return suggestion.contains(currentInputLowerCase);
     }
 }
