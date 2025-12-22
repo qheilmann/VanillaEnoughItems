@@ -1,5 +1,7 @@
 package dev.qheilmann.vanillaenoughitems.recipe.index.reader;
 
+import java.util.NavigableSet;
+
 import org.bukkit.inventory.Recipe;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -112,4 +114,14 @@ public class ProcessRecipeReader {
     public Process getAssociatedProcess() {
         return processRecipeSet.getProcess();
     }
+
+    /**
+     * Get all recipes in the ProcessRecipeSet being read
+     * @return all recipes
+     */
+    public NavigableSet<Recipe> getAllRecipes() {
+        return processRecipeSet.getRecipes();
+    }
+    // TODO recipe are not immutable, so we need to block modification of recipes outside of this class
+    // we only use it for key so maybe just send key ?, but this need extractor, or clone ?
 }

@@ -1,7 +1,6 @@
 package dev.qheilmann.vanillaenoughitems.commands;
 
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.ItemType;
 import org.jspecify.annotations.NullMarked;
 
 import dev.jorel.commandapi.CommandAPICommand;

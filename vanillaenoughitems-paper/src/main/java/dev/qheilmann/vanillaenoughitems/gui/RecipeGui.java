@@ -95,9 +95,9 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
         fillRange(Slots.Generic9x6.all(), FILLER_ITEM);
 
         // Static buttons
-        renderBookmarkListButton(); // maybe make them static ?
-        renderBookmarkServerListButton(); // maybe make them static ?
-        renderInfoButton(); // maybe make them static ?
+        renderBookmarkListButton();
+        renderBookmarkServerListButton();
+        renderInfoButton();
 
         // Dynamic render
         render();

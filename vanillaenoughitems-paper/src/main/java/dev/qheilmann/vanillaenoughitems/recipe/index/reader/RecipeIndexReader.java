@@ -3,6 +3,8 @@ package dev.qheilmann.vanillaenoughitems.recipe.index.reader;
 import java.util.Collections;
 import java.util.Map;
 import java.util.NavigableMap;
+import java.util.Set;
+
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.jspecify.annotations.NullMarked;
@@ -13,7 +15,7 @@ import dev.qheilmann.vanillaenoughitems.recipe.index.MultiProcessRecipeMap;
 import dev.qheilmann.vanillaenoughitems.recipe.index.ProcessRecipeSet;
 import dev.qheilmann.vanillaenoughitems.recipe.index.RecipeIndex;
 import dev.qheilmann.vanillaenoughitems.recipe.process.Process;
-
+import dev.qheilmann.vanillaenoughitems.recipe.process.ProcessRegistry;
 import net.kyori.adventure.key.Key;
 
 /**
@@ -100,15 +102,15 @@ public class RecipeIndexReader {
      * The reader will contain only recipes for that single process.
      *
      * @param process the target process
-     * @param recipe the recipe to start at
+     * @param startRecipe the recipe to start at
      * @return a MultiProcessRecipeReader for the process, or null if none exist
      * @throws IllegalArgumentException if the recipe does not exist in the ProcessRecipeSet
      */
     @Nullable
-    public MultiProcessRecipeReader readerByProcess(Process process, Recipe recipe) {
+    public MultiProcessRecipeReader readerByProcess(Process process, Recipe startRecipe) {
         MultiProcessRecipeReader reader = readerByProcess(process);
         if (reader != null) {
-            reader.getCurrentProcessRecipeReader().setCurrent(recipe);
+            reader.getCurrentProcessRecipeReader().setCurrent(startRecipe);
         }
         return reader;
     }
@@ -142,15 +144,15 @@ public class RecipeIndexReader {
      * The reader will contain only recipes for that single process.
      *
      * @param result the target result
-     * @param process the target process
+     * @param startProcess the target process
      * @return a MultiProcessRecipeReader for the result and process, or null if none exist
      * @throws IllegalArgumentException if the process does not exist in the MultiProcessRecipeMap
      */
     @Nullable
-    public MultiProcessRecipeReader readerByResult(ItemStack result, Process process) {
+    public MultiProcessRecipeReader readerByResult(ItemStack result, Process startProcess) {
         MultiProcessRecipeReader reader = readerByResult(result);
         if (reader != null) {
-            reader.setCurrentProcess(process);
+            reader.setCurrentProcess(startProcess);
         }
         return reader;
     }
@@ -160,16 +162,16 @@ public class RecipeIndexReader {
      * The reader will contain only recipes for that single process.
      *
      * @param result the target result
-     * @param process the target process
-     * @param recipe the recipe to start at
+     * @param startProcess the target process
+     * @param startRecipe the recipe to start at
      * @return a MultiProcessRecipeReader for the result, process and recipe, or null if none exist
      * @throws IllegalArgumentException if the process or recipe does not exist in the MultiProcessRecipeMap
      */    
     @Nullable
-    public MultiProcessRecipeReader readerByResult(ItemStack result, Process process, Recipe recipe) {
-        MultiProcessRecipeReader reader = readerByResult(result, process);
+    public MultiProcessRecipeReader readerByResult(ItemStack result, Process startProcess, Recipe startRecipe) {
+        MultiProcessRecipeReader reader = readerByResult(result, startProcess);
         if (reader != null) {
-            reader.getCurrentProcessRecipeReader().setCurrent(recipe);
+            reader.getCurrentProcessRecipeReader().setCurrent(startRecipe);
         }
         return reader;
     }
@@ -203,15 +205,15 @@ public class RecipeIndexReader {
      * The reader will contain only recipes for that single process.
      *
      * @param ingredient the target ingredient
-     * @param process the target process
+     * @param startProcess the target process
      * @return a MultiProcessRecipeReader for the ingredient and process, or null if none exist
      * @throws IllegalArgumentException if the process does not exist in the MultiProcessRecipeMap
      */
     @Nullable
-    public MultiProcessRecipeReader readerByIngredient(ItemStack ingredient, Process process) {
+    public MultiProcessRecipeReader readerByIngredient(ItemStack ingredient, Process startProcess) {
         MultiProcessRecipeReader reader = readerByIngredient(ingredient);
         if (reader != null) {
-            reader.setCurrentProcess(process);
+            reader.setCurrentProcess(startProcess);
         }
         return reader;
     }
@@ -221,16 +223,16 @@ public class RecipeIndexReader {
      * The reader will contain only recipes for that single process.
      *
      * @param ingredient the target ingredient
-     * @param process the target process
-     * @param recipe the recipe to start at
+     * @param startProcess the target process
+     * @param startRecipe the recipe to start at
      * @return a MultiProcessRecipeReader for the ingredient, process and recipe, or null if none exist
      * @throws IllegalArgumentException if the process or recipe does not exist in the MultiProcessRecipeMap
      */
     @Nullable
-    public MultiProcessRecipeReader readerByIngredient(ItemStack ingredient, Process process, Recipe recipe) {
-        MultiProcessRecipeReader reader = readerByIngredient(ingredient, process);
+    public MultiProcessRecipeReader readerByIngredient(ItemStack ingredient, Process startProcess, Recipe startRecipe) {
+        MultiProcessRecipeReader reader = readerByIngredient(ingredient, startProcess);
         if (reader != null) {
-            reader.getCurrentProcessRecipeReader().setCurrent(recipe);
+            reader.getCurrentProcessRecipeReader().setCurrent(startRecipe);
         }
         return reader;
     }
@@ -255,13 +257,13 @@ public class RecipeIndexReader {
      * Return a MultiProcessRecipeReader for all recipes in the index starting at the specified process.
      * All recipes are categorized by their process.
      *
-     * @param process the target process
+     * @param startProcess the target process
      * @return a MultiProcessRecipeReader for all recipes starting at the specified process
      * @throws IllegalArgumentException if the process does not exist in the MultiProcessRecipeMap
      */
-    public MultiProcessRecipeReader readerWithAllRecipes(Process process) {
+    public MultiProcessRecipeReader readerWithAllRecipes(Process startProcess) {
         MultiProcessRecipeReader reader = readerWithAllRecipes();
-        reader.setCurrentProcess(process);
+        reader.setCurrentProcess(startProcess);
         return reader;
     }
 
@@ -270,21 +272,44 @@ public class RecipeIndexReader {
      * All recipes are categorized by their process.
      *
      * @param process the target process
-     * @param recipe the recipe to start at
+     * @param startRecipe the recipe to start at
      * @return a MultiProcessRecipeReader for all recipes starting at the specified process and recipe
      * @throws IllegalArgumentException if the process or recipe does not exist in the MultiProcessRecipeMap
      */
-    public MultiProcessRecipeReader readerWithAllRecipes(Process process, Recipe recipe) {
-        MultiProcessRecipeReader reader = readerWithAllRecipes(process);
-        reader.getCurrentProcessRecipeReader().setCurrent(recipe);
+    public MultiProcessRecipeReader readerWithAllRecipes(Process startProcess, Recipe startRecipe) {
+        MultiProcessRecipeReader reader = readerWithAllRecipes(startProcess);
+        reader.getCurrentProcessRecipeReader().setCurrent(startRecipe);
         return reader;
     }
 
     //#endregion All Recipes
 
+    /**
+     * Get a single recipe by its key
+     * @param key the recipe key
+     * @return the recipe, or null if not found
+     */
+    @Nullable
+    public Recipe getSingleRecipeByKey(Key key) {
+        return recipeIndex.getSingleRecipeByKey(key);
+    }
+    // TODO same as another to do, here recipe are not immutable
+
     public RecipeExtractor getAssociatedRecipeExtractor() {
         RecipeExtractor extractor = recipeIndex.getAssociatedRecipeExtractor();
         extractor.lock();
         return extractor;
+    }
+
+    public ProcessRegistry getAssociatedProcessRegistry() {
+        return recipeIndex.getAssociatedProcessRegistry();
+    }
+
+    public Set<ItemStack> getAllResultItems() {
+        return recipeIndex.getAllRecipesByIngredient().keySet();
+    }
+
+    public Set<ItemStack> getAllUsedItems() {
+        return recipeIndex.getAllRecipesByIngredient().keySet();
     }
 }

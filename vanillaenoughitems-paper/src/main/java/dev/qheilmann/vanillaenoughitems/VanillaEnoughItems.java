@@ -10,6 +10,7 @@ import java.util.Iterator;
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger;
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPIPaperConfig;
+import dev.qheilmann.vanillaenoughitems.commands.CraftCommand;
 import dev.qheilmann.vanillaenoughitems.commands.DebugCommand;
 import dev.qheilmann.vanillaenoughitems.gui.RecipeGuiContext;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPanelFactory;
@@ -119,6 +120,7 @@ public class VanillaEnoughItems extends JavaPlugin {
         
 
         DebugCommand.register(recipeGuiContext);
+        CraftCommand.register(this, recipeGuiContext);
         
         LOGGER.info(PLUGIN_NAME + " enabled.");
     }
