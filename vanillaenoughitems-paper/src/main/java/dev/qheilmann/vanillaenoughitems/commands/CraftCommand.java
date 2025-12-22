@@ -21,11 +21,11 @@ import dev.qheilmann.vanillaenoughitems.commands.arguments.RecipeIdArgument;
 import dev.qheilmann.vanillaenoughitems.commands.arguments.RecipeItemArgument;
 import dev.qheilmann.vanillaenoughitems.commands.arguments.SearchModeArgument;
 import dev.qheilmann.vanillaenoughitems.commands.arguments.SearchModeArgument.SearchMode;
+import dev.qheilmann.vanillaenoughitems.recipe.RecipeContext;
 import dev.qheilmann.vanillaenoughitems.recipe.index.RecipeIndex;
 import dev.qheilmann.vanillaenoughitems.recipe.index.reader.MultiProcessRecipeReader;
 import dev.qheilmann.vanillaenoughitems.recipe.process.Process;
 import dev.qheilmann.vanillaenoughitems.gui.RecipeGui;
-import dev.qheilmann.vanillaenoughitems.gui.RecipeGuiContext;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -55,7 +55,7 @@ public class CraftCommand {
 
     private CraftCommand() {}; // Prevent instantiation
 
-    public static void init(JavaPlugin plugin, RecipeGuiContext context) {
+    public static void init(JavaPlugin plugin, RecipeContext context) {
         CraftCommand.plugin = plugin;
     }
 
@@ -67,7 +67,7 @@ public class CraftCommand {
             .withUsage(USAGE);
     }
 
-    public static void register(JavaPlugin plugin, RecipeGuiContext context) {
+    public static void register(JavaPlugin plugin, RecipeContext context) {
         init(plugin, context);
 
         // craft <item> [recipe|usage] [<process>] [<recipeId>]
@@ -179,8 +179,8 @@ public class CraftCommand {
 
     //#region Actions
 
-    private static void byIdAction(Player player, NamespacedKey recipeId, RecipeGuiContext context) throws WrapperCommandSyntaxException {
-        MultiProcessRecipeReader reader = context.getRecipeIndexReader().readerByKey(recipeId);
+    private static void byIdAction(Player player, NamespacedKey recipeId, RecipeContext context) throws WrapperCommandSyntaxException {
+        MultiProcessRecipeReader reader = context.getRecipeIndex().readerByKey(recipeId);
 
         if (reader == null) {
             Component noRecipeFoundMessage = Component.text().applicableApply(NamedTextColor.RED)
@@ -195,15 +195,15 @@ public class CraftCommand {
         createAndOpenGui(player, reader, context);
     }
 
-    private static void byItemAction(Player player, ItemStack item, SearchModeArgument.@Nullable SearchMode searchMode, @Nullable Process startProcess, @Nullable NamespacedKey startRecipeId, RecipeGuiContext context) throws WrapperCommandSyntaxException {
+    private static void byItemAction(Player player, ItemStack item, SearchModeArgument.@Nullable SearchMode searchMode, @Nullable Process startProcess, @Nullable NamespacedKey startRecipeId, RecipeContext context) throws WrapperCommandSyntaxException {
         
         if (searchMode == null) {
             searchMode = SearchMode.DEFAULT;
         }
         
         MultiProcessRecipeReader reader = switch (searchMode) {
-            case RECIPE -> context.getRecipeIndexReader().readerByResult(item);
-            case USAGE -> context.getRecipeIndexReader().readerByIngredient(item);
+            case RECIPE -> context.getRecipeIndex().readerByResult(item);
+            case USAGE -> context.getRecipeIndex().readerByIngredient(item);
             default -> throw new UnsupportedOperationException("Search mode " + searchMode + " is not implemented");
         };
 
@@ -230,8 +230,8 @@ public class CraftCommand {
      * @param startRecipeId the NamespacedKey of the recipe to start with, or null for no specific recipe
      * @param context the RecipeGuiContext for GUI configuration
      */
-    private static void allItemAction(Player player, @Nullable Process startProcess, @Nullable NamespacedKey startRecipeId, RecipeGuiContext context) throws WrapperCommandSyntaxException {
-        MultiProcessRecipeReader reader = context.getRecipeIndexReader().readerWithAllRecipes();
+    private static void allItemAction(Player player, @Nullable Process startProcess, @Nullable NamespacedKey startRecipeId, RecipeContext context) throws WrapperCommandSyntaxException {
+        MultiProcessRecipeReader reader = context.getRecipeIndex().readerWithAllRecipes();
         recipeAction(player, reader, startProcess, startRecipeId, context);
     }
 
@@ -245,7 +245,7 @@ public class CraftCommand {
      * @param context  the RecipeGuiContext for GUI configuration
      * @throws WrapperCommandSyntaxException if any errors occur during command execution
      */
-    private static void recipeAction(Player player, MultiProcessRecipeReader reader, @Nullable Process startProcess, @Nullable NamespacedKey startRecipeId, RecipeGuiContext context) throws WrapperCommandSyntaxException {
+    private static void recipeAction(Player player, MultiProcessRecipeReader reader, @Nullable Process startProcess, @Nullable NamespacedKey startRecipeId, RecipeContext context) throws WrapperCommandSyntaxException {
         if(startProcess == null && startRecipeId != null) {
             throw new IllegalArgumentException("A recipe ID cannot be used without specifying a process.");
         }
@@ -266,7 +266,7 @@ public class CraftCommand {
 
             // Set start recipe if provided
             if (startRecipeId != null) {
-                Recipe recipe = context.getRecipeIndexReader().getSingleRecipeByKey(startRecipeId);
+                Recipe recipe = context.getRecipeIndex().getSingleRecipeByKey(startRecipeId);
                 if (recipe == null) {
                     Component recipeNotFoundMessage = Component.text().applicableApply(NamedTextColor.RED)
                         .append(Component.text("No recipe found with the ID '"))
@@ -316,7 +316,7 @@ public class CraftCommand {
      * @param reader  the MultiProcessRecipeReader containing the recipes to display
      * @param context the RecipeGuiContext for GUI configuration
      */
-    private static void createAndOpenGui(Player player, MultiProcessRecipeReader reader, RecipeGuiContext context) {
+    private static void createAndOpenGui(Player player, MultiProcessRecipeReader reader, RecipeContext context) {
         RecipeGui gui = new RecipeGui(player, context, reader);
         gui.render();
         gui.open(player);

@@ -13,7 +13,7 @@ import org.jspecify.annotations.Nullable;
 import dev.jorel.commandapi.arguments.ArgumentSuggestions;
 import dev.jorel.commandapi.arguments.CustomArgument;
 import dev.jorel.commandapi.arguments.StringArgument;
-import dev.qheilmann.vanillaenoughitems.gui.RecipeGuiContext;
+import dev.qheilmann.vanillaenoughitems.recipe.RecipeContext;
 import dev.qheilmann.vanillaenoughitems.recipe.index.reader.MultiProcessRecipeReader;
 import net.kyori.adventure.text.Component;
 
@@ -36,7 +36,7 @@ public class SearchModeArgument extends CustomArgument<SearchModeArgument.Search
      * @param nodeName the name of the argument node
      * @param context the recipe context containing the RecipeIndexReader
      */
-    public SearchModeArgument(String nodeName, RecipeGuiContext context) {
+    public SearchModeArgument(String nodeName, RecipeContext context) {
         super(new StringArgument(nodeName), (input) -> {
             String argument = input.currentInput();
             SearchMode searchMode = SearchMode.fromNameIgnoreCase(argument);
@@ -59,7 +59,7 @@ public class SearchModeArgument extends CustomArgument<SearchModeArgument.Search
      * @param item the ItemStack to search for, or null for {@link SearchModeArgument.SearchMode#ALL}
      * @return ArgumentSuggestions providing available search mode names for the item, or {@link SearchModeArgument.SearchMode#ALL} if item is null
      */
-    public static ArgumentSuggestions<CommandSender> argumentSuggestions(RecipeGuiContext context, @Nullable ItemStack item) {
+    public static ArgumentSuggestions<CommandSender> argumentSuggestions(RecipeContext context, @Nullable ItemStack item) {
         return ArgumentSuggestions.stringCollection((info) -> suggestions(context, item));
     }
 
@@ -70,7 +70,7 @@ public class SearchModeArgument extends CustomArgument<SearchModeArgument.Search
      * @param item the ItemStack to search for, or null for {@link SearchModeArgument.SearchMode#ALL}
      * @return a collection of available search mode names for the item, or {@link SearchModeArgument.SearchMode#ALL} if item is null
      */
-    public static Collection<String> suggestions(RecipeGuiContext context, @Nullable ItemStack item) {
+    public static Collection<String> suggestions(RecipeContext context, @Nullable ItemStack item) {
         EnumSet<SearchMode> availableModes = getSearchModes(context, item);
         @SuppressWarnings("null")
         Set<String> availableModeNames = availableModes.stream()
@@ -87,7 +87,7 @@ public class SearchModeArgument extends CustomArgument<SearchModeArgument.Search
      * @param item the ItemStack to search for, or null for {@link SearchModeArgument.SearchMode#ALL}
      * @return an EnumSet of available SearchModes for the item, or {@link SearchModeArgument.SearchMode#ALL} if item is null
      */
-    private static EnumSet<SearchMode> getSearchModes(RecipeGuiContext context, @Nullable ItemStack item) {
+    private static EnumSet<SearchMode> getSearchModes(RecipeContext context, @Nullable ItemStack item) {
         if (item == null) {
             return SearchMode.ALL;
         }
@@ -96,13 +96,13 @@ public class SearchModeArgument extends CustomArgument<SearchModeArgument.Search
         EnumSet<SearchMode> availableModes = EnumSet.noneOf(SearchMode.class);
 
         // Recipe
-        MultiProcessRecipeReader reader = context.getRecipeIndexReader().readerByResult(item);
+        MultiProcessRecipeReader reader = context.getRecipeIndex().readerByResult(item);
         if (reader != null) {
             availableModes.add(SearchMode.RECIPE);
         }
 
         // Usage
-        reader = context.getRecipeIndexReader().readerByIngredient(item);
+        reader = context.getRecipeIndex().readerByIngredient(item);
         if (reader != null) {
             availableModes.add(SearchMode.USAGE);
         }

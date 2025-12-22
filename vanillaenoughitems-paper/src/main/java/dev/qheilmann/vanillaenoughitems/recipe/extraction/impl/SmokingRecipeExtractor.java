@@ -8,13 +8,13 @@ import org.bukkit.inventory.SmokingRecipe;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
 
-import dev.qheilmann.vanillaenoughitems.recipe.extraction.IRecipeExtractor;
+import dev.qheilmann.vanillaenoughitems.recipe.extraction.RecipeExtractorStrategy;
 import dev.qheilmann.vanillaenoughitems.recipe.extraction.impl.helper.Fuels;
 import dev.qheilmann.vanillaenoughitems.recipe.extraction.impl.helper.RecipeChoiceHelper;
 import net.kyori.adventure.key.Key;
 
 @NullMarked
-public class SmokingRecipeExtractor implements IRecipeExtractor<@NonNull SmokingRecipe> {
+public class SmokingRecipeExtractor implements RecipeExtractorStrategy<@NonNull SmokingRecipe> {
 
     public static final Key KEY = Key.key("smoking");
 

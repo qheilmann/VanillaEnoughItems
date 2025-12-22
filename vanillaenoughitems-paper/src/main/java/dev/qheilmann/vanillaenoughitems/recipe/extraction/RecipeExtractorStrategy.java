@@ -14,7 +14,7 @@ import net.kyori.adventure.key.Keyed;
  * Extract ingredients, results or other items from a recipe
  */
 @NullMarked
-public interface IRecipeExtractor<R extends @NonNull Recipe> extends Keyed{
+public interface RecipeExtractorStrategy<R extends @NonNull Recipe> extends Keyed{
 
     /**
      * Check if this extractor can handle the given recipe

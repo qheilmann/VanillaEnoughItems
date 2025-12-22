@@ -10,10 +10,8 @@ import org.bukkit.inventory.Recipe;
 import org.jspecify.annotations.NullMarked;
 
 import dev.qheilmann.vanillaenoughitems.gui.CyclicIngredient;
-import dev.qheilmann.vanillaenoughitems.gui.RecipeGuiActions;
-import dev.qheilmann.vanillaenoughitems.gui.RecipeGuiContext;
 import dev.qheilmann.vanillaenoughitems.gui.RecipeGuiSharedButton;
-import dev.qheilmann.vanillaenoughitems.gui.processpannel.AbstractProcessPanel;
+import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPanel;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPannelSlot;
 import dev.qheilmann.vanillaenoughitems.utils.fastinv.FastInvItem;
 
@@ -21,39 +19,53 @@ import dev.qheilmann.vanillaenoughitems.utils.fastinv.FastInvItem;
  * Panel for campfire recipes.
  */
 @NullMarked
-public class CampfireProcessPanel extends AbstractProcessPanel {
+public class CampfireProcessPanel implements ProcessPanel {
     private static final ProcessPannelSlot INPUT_SLOT = new ProcessPannelSlot(2, 1);
     private static final ProcessPannelSlot OUTPUT_SLOT = new ProcessPannelSlot(5, 2);
     private static final ProcessPannelSlot DECORATION_FIRE_SLOT = new ProcessPannelSlot(2, 2);
 
-    public CampfireProcessPanel(Recipe recipe, RecipeGuiActions actions, RecipeGuiContext context) {
-        super(recipe, actions, context);
+    private final Recipe recipe;
+
+    public CampfireProcessPanel(Recipe recipe) {
+        this.recipe = recipe;
     }
 
     private CampfireRecipe getCampfireRecipe() {
         return (CampfireRecipe) recipe;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    protected Map<RecipeGuiSharedButton, ProcessPannelSlot> buildRecipeGuiButtonMap() {
+    public Map<RecipeGuiSharedButton, ProcessPannelSlot> getRecipeGuiButtonMap() {
         return ProcessPannelSlot.defaultSharedButtonMap();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    protected Map<ProcessPannelSlot, CyclicIngredient> buildTickedIngredient() {
+    public Map<ProcessPannelSlot, CyclicIngredient> getTickedIngredient() {
         Map<ProcessPannelSlot, CyclicIngredient> ticked = new HashMap<>();
         ticked.put(INPUT_SLOT, new CyclicIngredient(getCampfireRecipe().getInputChoice()));
         return Map.copyOf(ticked);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     @SuppressWarnings("null")
-    protected Map<ProcessPannelSlot, CyclicIngredient> buildTickedResult() {
+    public Map<ProcessPannelSlot, CyclicIngredient> getTickedResults() {
         return Map.of(OUTPUT_SLOT, new CyclicIngredient(getCampfireRecipe().getResult()));
     }
-
+    
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    protected Map<ProcessPannelSlot, FastInvItem> buildStaticItems() {
+    public Map<ProcessPannelSlot, FastInvItem> getStaticItems() {
         Map<ProcessPannelSlot, FastInvItem> statics = new HashMap<>();
         statics.put(DECORATION_FIRE_SLOT, new FastInvItem(new ItemStack(Material.CAMPFIRE), null));
         return Map.copyOf(statics);

@@ -5,8 +5,6 @@ import java.util.Map;
 
 import org.bukkit.inventory.Recipe;
 import org.jspecify.annotations.NullMarked;
-import dev.qheilmann.vanillaenoughitems.gui.RecipeGuiActions;
-import dev.qheilmann.vanillaenoughitems.gui.RecipeGuiContext;
 import dev.qheilmann.vanillaenoughitems.recipe.process.Process;
 
 /**
@@ -34,19 +32,17 @@ public class ProcessPanelRegistry {
      * 
      * @param process the process the recipe belongs to
      * @param recipe the recipe to create the panel for
-     * @param actions the action interface for navigation
-     * @param context the global GUI context
      * @return a new ProcessPanel for the given recipe
      * @throws IllegalArgumentException if no factory is registered for the given process
      */
-    public AbstractProcessPanel createPanel(Process process, Recipe recipe, RecipeGuiActions actions, RecipeGuiContext context) {       
+    public ProcessPanel createPanel(Process process, Recipe recipe) {       
         // Non registered factory
         if (!hasFactory(process)) {
             throw new IllegalArgumentException("No ProcessPanelFactory registered for process: " + process.key());
         }
 
         ProcessPanelFactory factory = factories.get(process);
-        return factory.create(recipe, actions, context);
+        return factory.create(recipe);
     }
 
     public boolean hasFactory(Process process) {

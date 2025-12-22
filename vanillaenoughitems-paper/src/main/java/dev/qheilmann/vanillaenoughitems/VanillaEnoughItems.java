@@ -11,7 +11,6 @@ import net.kyori.adventure.text.logger.slf4j.ComponentLogger;
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPIPaperConfig;
 import dev.qheilmann.vanillaenoughitems.commands.CraftCommand;
-import dev.qheilmann.vanillaenoughitems.gui.RecipeGuiContext;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPanelFactory;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPanelRegistry;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.impl.BlastingProcessPanel;
@@ -22,7 +21,8 @@ import dev.qheilmann.vanillaenoughitems.gui.processpannel.impl.SmithingProcessPa
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.impl.SmokingProcessPanel;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.impl.StonecuttingProcessPanel;
 import dev.qheilmann.vanillaenoughitems.recipe.process.Process;
-import dev.qheilmann.vanillaenoughitems.recipe.extraction.RecipeExtractor;
+import dev.qheilmann.vanillaenoughitems.recipe.RecipeContext;
+import dev.qheilmann.vanillaenoughitems.recipe.extraction.RecipeExtractorRegistry;
 import dev.qheilmann.vanillaenoughitems.recipe.extraction.impl.BlastingRecipeExtractor;
 import dev.qheilmann.vanillaenoughitems.recipe.extraction.impl.CampfireRecipeExtractor;
 import dev.qheilmann.vanillaenoughitems.recipe.extraction.impl.FurnaceRecipeExtractor;
@@ -53,7 +53,7 @@ public class VanillaEnoughItems extends JavaPlugin {
 
     private boolean failOnload = false;
     @SuppressWarnings("null")
-    private RecipeGuiContext recipeGuiContext;
+    private RecipeContext recipeGuiContext;
 
     @Override
     public void onLoad() {
@@ -80,7 +80,7 @@ public class VanillaEnoughItems extends JavaPlugin {
         LOGGER.info("Enabling FastInv...");
         FastInvManager.register(this);
 
-        RecipeExtractor recipeExtractor = new RecipeExtractor();
+        RecipeExtractorRegistry recipeExtractor = new RecipeExtractorRegistry();
         recipeExtractor.registerExtractor(new BlastingRecipeExtractor());
         recipeExtractor.registerExtractor(new CampfireRecipeExtractor());
         recipeExtractor.registerExtractor(new FurnaceRecipeExtractor());
@@ -103,7 +103,7 @@ public class VanillaEnoughItems extends JavaPlugin {
         addProcessesAndPanels(processRegistry, processPanelRegistry, new CampfireProcess(), CampfireProcessPanel::new);
 
         RecipeIndex recipeIndex = new RecipeIndex(processRegistry, recipeExtractor);
-        recipeGuiContext = new RecipeGuiContext(this, recipeIndex, processPanelRegistry);
+        recipeGuiContext = new RecipeContext(this, recipeIndex, processPanelRegistry);
 
         Iterator<Recipe> recipeIterator = getServer().recipeIterator();
         recipeIndex.indexRecipe(() -> recipeIterator);

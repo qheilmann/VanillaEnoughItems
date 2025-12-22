@@ -8,12 +8,12 @@ import org.bukkit.inventory.Recipe;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
 
-import dev.qheilmann.vanillaenoughitems.recipe.extraction.IRecipeExtractor;
+import dev.qheilmann.vanillaenoughitems.recipe.extraction.RecipeExtractorStrategy;
 import dev.qheilmann.vanillaenoughitems.recipe.extraction.impl.helper.RecipeChoiceHelper;
 import net.kyori.adventure.key.Key;
 
 @NullMarked
-public class CampfireRecipeExtractor implements IRecipeExtractor<@NonNull CampfireRecipe> {
+public class CampfireRecipeExtractor implements RecipeExtractorStrategy<@NonNull CampfireRecipe> {
     
     public static final Key KEY = Key.key("campfire");
 

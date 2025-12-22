@@ -20,8 +20,8 @@ import org.jspecify.annotations.NullMarked;
 import dev.jorel.commandapi.arguments.ArgumentSuggestions;
 import dev.jorel.commandapi.arguments.CustomArgument;
 import dev.jorel.commandapi.arguments.NamespacedKeyArgument;
-import dev.qheilmann.vanillaenoughitems.gui.RecipeGuiContext;
-import dev.qheilmann.vanillaenoughitems.recipe.index.reader.RecipeIndexReader;
+import dev.qheilmann.vanillaenoughitems.recipe.RecipeContext;
+import dev.qheilmann.vanillaenoughitems.recipe.index.RecipeIndex;
 import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.registry.RegistryKey;
 import net.kyori.adventure.key.Key;
@@ -41,9 +41,9 @@ public class RecipeItemArgument extends CustomArgument<ItemStack, NamespacedKey>
 
     // Cache for suggestions per context
     // Uses reference equality (identity) since RecipeGuiContext instances are typically singletons
-    private static final Map<RecipeGuiContext, Collection<String>> suggestionsCache = new ConcurrentHashMap<>();
+    private static final Map<RecipeContext, Collection<String>> suggestionsCache = new ConcurrentHashMap<>();
 
-    public RecipeItemArgument(String nodeName, RecipeGuiContext context) {
+    public RecipeItemArgument(String nodeName, RecipeContext context) {
         super(new NamespacedKeyArgument(nodeName), info -> {
             NamespacedKey key = info.currentInput();
 
@@ -73,7 +73,7 @@ public class RecipeItemArgument extends CustomArgument<ItemStack, NamespacedKey>
      * @param context the recipe context containing the RecipeIndexReader
      * @return ArgumentSuggestions providing available item key strings
      */
-    public static ArgumentSuggestions<CommandSender> argumentSuggestions(RecipeGuiContext context) {
+    public static ArgumentSuggestions<CommandSender> argumentSuggestions(RecipeContext context) {
         return (info, builder) -> {
             // Get cached suggestions or compute them if not cached
             Collection<String> suggestions = suggestionsCache.computeIfAbsent(context, ctx -> suggestions(ctx));
@@ -95,7 +95,7 @@ public class RecipeItemArgument extends CustomArgument<ItemStack, NamespacedKey>
      * @return A CompletableFuture containing the collection of suggestions.
      */
     @SuppressWarnings("null")
-    public static Collection<String> suggestions(RecipeGuiContext context) {
+    public static Collection<String> suggestions(RecipeContext context) {
         return getAllItemKeys(context).stream()
             .map(Key::asString)
             .collect(Collectors.toSet());
@@ -108,8 +108,8 @@ public class RecipeItemArgument extends CustomArgument<ItemStack, NamespacedKey>
      * @return A collection of all item keys.
      */
     @SuppressWarnings("null")
-    private static Collection<Key> getAllItemKeys(RecipeGuiContext context) {
-        RecipeIndexReader recipeIndex = context.getRecipeIndexReader();
+    private static Collection<Key> getAllItemKeys(RecipeContext context) {
+        RecipeIndex recipeIndex = context.getRecipeIndex();
         Set<ItemStack> allItems = new HashSet<>();
 
         allItems.addAll(recipeIndex.getAllResultItems());

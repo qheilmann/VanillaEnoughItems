@@ -14,10 +14,8 @@ import org.bukkit.inventory.TransmuteRecipe;
 import org.jspecify.annotations.NullMarked;
 
 import dev.qheilmann.vanillaenoughitems.gui.CyclicIngredient;
-import dev.qheilmann.vanillaenoughitems.gui.RecipeGuiActions;
-import dev.qheilmann.vanillaenoughitems.gui.RecipeGuiContext;
 import dev.qheilmann.vanillaenoughitems.gui.RecipeGuiSharedButton;
-import dev.qheilmann.vanillaenoughitems.gui.processpannel.AbstractProcessPanel;
+import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPanel;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPannelSlot;
 import dev.qheilmann.vanillaenoughitems.utils.fastinv.FastInvItem;
 
@@ -25,7 +23,7 @@ import dev.qheilmann.vanillaenoughitems.utils.fastinv.FastInvItem;
  * Panel for all crafting recipes.
  */
 @NullMarked
-public class CraftingProcessPanel extends AbstractProcessPanel {
+public class CraftingProcessPanel implements ProcessPanel {
 
     private static final ProcessPannelSlot OUTPUT_SLOT = new ProcessPannelSlot(5, 2);
     public static final ProcessPannelSlot DECORATION_CRAFTING_TABLE_SLOT = new ProcessPannelSlot(4, 2);
@@ -35,8 +33,10 @@ public class CraftingProcessPanel extends AbstractProcessPanel {
         { new ProcessPannelSlot(1, 3), new ProcessPannelSlot(2, 3), new ProcessPannelSlot(3, 3) }
     };
 
-    public CraftingProcessPanel(Recipe recipe, RecipeGuiActions actions, RecipeGuiContext context) {
-        super(recipe, actions, context);
+    private final Recipe recipe;
+
+    public CraftingProcessPanel(Recipe recipe) {
+        this.recipe = recipe;
     }
 
     public CraftingRecipe getCraftingRecipe() {
@@ -44,12 +44,12 @@ public class CraftingProcessPanel extends AbstractProcessPanel {
     }
 
     @Override
-    protected Map<RecipeGuiSharedButton, ProcessPannelSlot> buildRecipeGuiButtonMap() {
+    public Map<RecipeGuiSharedButton, ProcessPannelSlot> getRecipeGuiButtonMap() {
         return ProcessPannelSlot.defaultSharedButtonMap();
     }
 
     @Override
-    protected Map<ProcessPannelSlot, CyclicIngredient> buildTickedIngredient() {
+    public Map<ProcessPannelSlot, CyclicIngredient> getTickedIngredient() {
         Map<ProcessPannelSlot, CyclicIngredient> ticked = new HashMap<>();
         ticked.putAll(mapRecipeMatrixToSlots(getRecipeMatrix(getCraftingRecipe())));
         return Map.copyOf(ticked);
@@ -57,12 +57,12 @@ public class CraftingProcessPanel extends AbstractProcessPanel {
 
     @Override
     @SuppressWarnings("null")
-    protected Map<ProcessPannelSlot, CyclicIngredient> buildTickedResult() {
+    public Map<ProcessPannelSlot, CyclicIngredient> getTickedResults() {
         return Map.of(OUTPUT_SLOT, new CyclicIngredient(getCraftingRecipe().getResult()));
     }
 
     @Override
-    protected Map<ProcessPannelSlot, FastInvItem> buildStaticItems() {
+    public Map<ProcessPannelSlot, FastInvItem> getStaticItems() {
         Map<ProcessPannelSlot, FastInvItem> statics = new HashMap<>();
         statics.put(DECORATION_CRAFTING_TABLE_SLOT, new FastInvItem(ItemType.CRAFTING_TABLE.createItemStack(), null));
         return Map.copyOf(statics);

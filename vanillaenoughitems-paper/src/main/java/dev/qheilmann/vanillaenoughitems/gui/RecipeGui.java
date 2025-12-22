@@ -23,8 +23,9 @@ import org.jspecify.annotations.Nullable;
 
 import dev.qheilmann.vanillaenoughitems.VanillaEnoughItems;
 import dev.qheilmann.vanillaenoughitems.gui.player.PlayerGuiData;
-import dev.qheilmann.vanillaenoughitems.gui.processpannel.AbstractProcessPanel;
+import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPanel;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPannelSlot;
+import dev.qheilmann.vanillaenoughitems.recipe.RecipeContext;
 import dev.qheilmann.vanillaenoughitems.recipe.extraction.RecipeExtractor;
 import dev.qheilmann.vanillaenoughitems.recipe.index.reader.MultiProcessRecipeReader;
 import dev.qheilmann.vanillaenoughitems.recipe.process.Process;
@@ -43,7 +44,7 @@ import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextDecoration;
 
 @NullMarked
-public class RecipeGui extends FastInv implements RecipeGuiActions {
+public class RecipeGui extends FastInv {
 
     // GUI size
     private static final int SIZE = FastInv.GENERIC_9X6_SIZE;
@@ -75,7 +76,7 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
 
     @SuppressWarnings("unused")
     private final Player player;
-    private final RecipeGuiContext context;
+    private final RecipeContext context;
     private final PlayerGuiData playerData;
     private MultiProcessRecipeReader reader;
     private @Nullable BukkitTask tickTask;
@@ -84,7 +85,7 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
     private int processScrollOffset = 0;
     private int workbenchScrollOffset = 0;
 
-    public RecipeGui(Player player, RecipeGuiContext context, MultiProcessRecipeReader initialReader) {
+    public RecipeGui(Player player, RecipeContext context, MultiProcessRecipeReader initialReader) {
         super(SIZE, Component.text("Recipes"));
         this.player = player;
         this.context = context;
@@ -125,7 +126,6 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
      * @param event The inventory click event.
      * @param resultItem The item that was clicked.
      */
-    @Override
     public void changeRecipeAction(InventoryClickEvent event) {
         
         boolean isLeftClick = event.getClick().isLeftClick();
@@ -140,9 +140,9 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
         MultiProcessRecipeReader newMultiRecipeReader = null;
 
         if (isLeftClick) {
-            newMultiRecipeReader = context.getRecipeIndexReader().readerByResult(clickedItemStack);
+            newMultiRecipeReader = context.getRecipeIndex().readerByResult(clickedItemStack);
         } else if (isRightClick) {
-            newMultiRecipeReader = context.getRecipeIndexReader().readerByIngredient(clickedItemStack);
+            newMultiRecipeReader = context.getRecipeIndex().readerByIngredient(clickedItemStack);
         } 
         // Ignore other click types
 
@@ -168,7 +168,7 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
         
         // Show usage on right click
         if (isRightClick) {
-            MultiProcessRecipeReader newMultiRecipeReader = context.getRecipeIndexReader().readerByIngredient(clickedItemStack);
+            MultiProcessRecipeReader newMultiRecipeReader = context.getRecipeIndex().readerByIngredient(clickedItemStack);
             if (newMultiRecipeReader != null) {
                 // Only push to history if we're actually navigating to a different recipe view
                 playerData.navigationHistory().pushForNavigation(reader, newMultiRecipeReader);
@@ -185,12 +185,10 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
         // Ignore other click types
     }
 
-    @Override
     public Recipe getCurrentRecipe() {
         return reader.getCurrentProcessRecipeReader().getCurrent();
     }
 
-    @Override
     public Process getCurrentProcess() {
         return reader.getCurrentProcess();
     }
@@ -202,7 +200,7 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
      * 
      * @param processPanel the panel to render
      */
-    private void renderProcessPanel(AbstractProcessPanel processPanel) {
+    private void renderProcessPanel(ProcessPanel processPanel) {
         Map<RecipeGuiSharedButton, ProcessPannelSlot> sharedButtonSlots = processPanel.getRecipeGuiButtonMap();
         
         fillRange(ProcessPannelSlot.all(), FILLER_ITEM);
@@ -242,18 +240,16 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
         }
     }
 
-    private AbstractProcessPanel generateCurrentPanel() {
-        AbstractProcessPanel newPanel = context.getProcessPanelRegistry().createPanel(
+    private ProcessPanel generateCurrentPanel() {
+        ProcessPanel newPanel = context.getProcessPanelRegistry().createPanel(
             getCurrentProcess(),
-            getCurrentRecipe(),
-            this,
-            context
+            getCurrentRecipe()
         );
 
         return newPanel;
     }
 
-    private void startIngredientTicker(AbstractProcessPanel processPanel) {
+    private void startIngredientTicker(ProcessPanel processPanel) {
         if (tickTask != null) {
             tickTask.cancel();
         }
@@ -265,7 +261,7 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
         );
     }
 
-    private void tickIngredients(AbstractProcessPanel currentPanel) {
+    private void tickIngredients(ProcessPanel currentPanel) {
         VanillaEnoughItems.LOGGER.info("Ticking ingredients in RecipeGui time since last tick" + System.currentTimeMillis()); // TEMP
 
         for (Map.Entry<ProcessPannelSlot, CyclicIngredient> entry : currentPanel.getTickedIngredient().entrySet()) {
@@ -337,7 +333,6 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
         nextRecipe();
     }
 
-    @Override
     public void nextRecipe() {
         if (!hasNextRecipe()) {
             return;
@@ -351,7 +346,6 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
         previousRecipe();
     }
 
-    @Override
     public void previousRecipe() {
         if (!hasPreviousRecipe()) {
             return;
@@ -407,7 +401,6 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
         historyBackward();
     }
 
-    @Override
     public void historyBackward() {
         MultiProcessRecipeReader previousReader = playerData.navigationHistory().goBackward(reader);
         if (previousReader != null) {
@@ -421,7 +414,6 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
         historyForward();
     }
 
-    @Override
     public void historyForward() {
         MultiProcessRecipeReader nextReader = playerData.navigationHistory().goForward(reader);
         if (nextReader != null) {
@@ -711,7 +703,7 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
     private Consumer<InventoryClickEvent> bookmarkListAction() {
         return event -> {
             // Open bookmark list GUI
-            RecipeGuiContext context = this.context;
+            RecipeContext context = this.context;
             HumanEntity humanEntity = event.getWhoClicked();
             PlayerGuiData playerData = context.getPlayerData(humanEntity.getUniqueId());
             Set<Key> bookmarks = playerData.bookmarkCollection().getBookmarkedKeys();
@@ -807,7 +799,7 @@ public class RecipeGui extends FastInv implements RecipeGuiActions {
 
     private String getQuickLinkCmd() {
         Recipe currentRecipe = getCurrentRecipe();
-        RecipeExtractor extractor = context.getRecipeIndexReader().getAssociatedRecipeExtractor();
+        RecipeExtractor extractor = context.getRecipeIndex().getAssociatedRecipeExtractor();
 
         if (!extractor.canHandle(currentRecipe)) {
             return "No quick link available for this recipe";

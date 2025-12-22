@@ -1,6 +1,7 @@
 package dev.qheilmann.vanillaenoughitems.recipe.index;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Set;
@@ -15,6 +16,8 @@ import org.jspecify.annotations.Nullable;
 import dev.qheilmann.vanillaenoughitems.VanillaEnoughItems;
 import dev.qheilmann.vanillaenoughitems.recipe.extraction.RecipeExtractor;
 import dev.qheilmann.vanillaenoughitems.recipe.helper.RecipeHelper;
+import dev.qheilmann.vanillaenoughitems.recipe.index.reader.MultiProcessRecipeReader;
+import dev.qheilmann.vanillaenoughitems.recipe.index.reader.RecipeIndexView;
 import dev.qheilmann.vanillaenoughitems.recipe.process.Process;
 import dev.qheilmann.vanillaenoughitems.recipe.process.ProcessRegistry;
 import net.kyori.adventure.key.Key;
@@ -25,7 +28,7 @@ import net.kyori.adventure.key.Keyed;
  * ingredient, result, process, id...
  */
 @NullMarked
-public class RecipeIndex {
+public class RecipeIndex implements RecipeIndexView {
     
     private final ProcessRegistry processRegistry;
     private final RecipeExtractor recipeExtractor;
@@ -240,20 +243,37 @@ public class RecipeIndex {
         return Collections.unmodifiableMap(recipesByIngredient);
     }
 
-    //#endregion Exporting
-
     /**
-     * Get a single recipe by its key
-     * @param key the recipe key
-     * @return the recipe, or null if not found
+     * Get an unmodifiable view of all recipes by their other items.
+     * <p>
+     * <b>Warning:</b> The returned map is unmodifiable, but the {@link MultiProcessRecipeMap} values
+     * within are <b>NOT</b> immutable. Do not modify the inner maps or recipes as this will break
+     * the index consistency. Use appropriate reader methods for safe read-only access.
+     * <p>
+     * This method is intended for internal use or advanced use cases where you need direct access
+     * to the underlying structure.
+     *
+     * @return unmodifiable view of all recipes by their other items
      */
-    @Nullable
-    public Recipe getSingleRecipeByKey(Key key) {
-        return recipesById.get(key);
+    public Map<ItemStack, MultiProcessRecipeMap> getAllRecipesByOther() {
+        return Collections.unmodifiableMap(recipesByOther);
     }
+
+    //#endregion Exporting
 
     public NavigableMap<Recipe, Process> getAllProcessByRecipeMap() {
         return Collections.unmodifiableNavigableMap(processByRecipe);
+    }
+
+    public Set<ItemStack> getAllResultItems() {
+        return Collections.unmodifiableSet(recipesByResult.keySet());
+    }
+
+    public Set<ItemStack> getAllUsedItems() {
+        Set<ItemStack> usedItems = new HashSet<>();
+        usedItems.addAll(recipesByIngredient.keySet());
+        usedItems.addAll(recipesByOther.keySet());
+        return Collections.unmodifiableSet(usedItems);
     }
 
     /**
@@ -271,6 +291,209 @@ public class RecipeIndex {
     public ProcessRegistry getAssociatedProcessRegistry() {
         return processRegistry;
     }
+
+    //#region RecipeIndexView
+    //#region By Key
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @Nullable
+    public MultiProcessRecipeReader readerByKey(Key key) {
+        // Get the recipe by its key
+        Recipe recipe = recipesById.get(key);
+        if (recipe == null) {
+            return null;
+        }
+
+        // Get the result of the recipe
+        ItemStack recipeResult = recipe.getResult();
+        if (recipeResult == null || recipeResult.isEmpty()) {
+            return null;
+        }
+
+        // Get the MultiProcessRecipeMap by the result
+        MultiProcessRecipeMap multiProcessRecipeMap = recipesByResult.get(recipeResult);
+        if (multiProcessRecipeMap == null) {
+            // No recipes found for this result
+            // Should not happen if the index is consistent
+            return null; 
+        }
+
+        // Preset the reader to the right process and recipe
+        MultiProcessRecipeReader reader = new MultiProcessRecipeReader(multiProcessRecipeMap, processByRecipe.get(recipe));
+        reader.getCurrentProcessRecipeReader().setCurrent(recipe);
+        return reader;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @Nullable
+    public Recipe getSingleRecipeByKey(Key key) {
+        return recipesById.get(key);
+    }
+
+    //#endregion By Key
+
+    //#region By Process
+
+    /**
+     * {@inheritDoc}
+     */
+    @Nullable
+    public MultiProcessRecipeReader readerByProcess(Process process) {
+        ProcessRecipeSet processRecipeSet = recipesByProcess.getProcessRecipeSet(process);
+        if (processRecipeSet == null) {
+            return null;
+        }
+
+        MultiProcessRecipeMap singleProcessRecipeMap = new MultiProcessRecipeMap(Collections.singleton(processRecipeSet));
+        return new MultiProcessRecipeReader(singleProcessRecipeMap, process);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @Nullable
+    public MultiProcessRecipeReader readerByProcess(Process process, Recipe startRecipe) {
+        MultiProcessRecipeReader reader = readerByProcess(process);
+        if (reader != null) {
+            reader.getCurrentProcessRecipeReader().setCurrent(startRecipe);
+        }
+        return reader;
+    }
+
+    //#endregion By Process
+
+    //#region By Result
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @Nullable
+    public MultiProcessRecipeReader readerByResult(ItemStack result) {
+        result = result.asOne();
+        MultiProcessRecipeMap multiProcessRecipeMap = recipesByResult.get(result);
+        if (multiProcessRecipeMap == null) {
+            return null;
+        }
+
+        return new MultiProcessRecipeReader(multiProcessRecipeMap);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @Nullable
+    public MultiProcessRecipeReader readerByResult(ItemStack result, Process startProcess) {
+        MultiProcessRecipeReader reader = readerByResult(result);
+        if (reader != null) {
+            reader.setCurrentProcess(startProcess);
+        }
+        return reader;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @Nullable
+    public MultiProcessRecipeReader readerByResult(ItemStack result, Process startProcess, Recipe startRecipe) {
+        MultiProcessRecipeReader reader = readerByResult(result, startProcess);
+        if (reader != null) {
+            reader.getCurrentProcessRecipeReader().setCurrent(startRecipe);
+        }
+        return reader;
+    }
+
+    //#endregion By Result
+
+    //#region By Ingredient
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @Nullable
+    public MultiProcessRecipeReader readerByIngredient(ItemStack ingredient) {
+        ingredient = ingredient.asOne();
+        MultiProcessRecipeMap multiProcessRecipeMap = recipesByIngredient.get(ingredient);
+        if (multiProcessRecipeMap == null) {
+            return null;
+        }
+
+        return new MultiProcessRecipeReader(multiProcessRecipeMap);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @Nullable
+    public MultiProcessRecipeReader readerByIngredient(ItemStack ingredient, Process startProcess) {
+        MultiProcessRecipeReader reader = readerByIngredient(ingredient);
+        if (reader != null) {
+            reader.setCurrentProcess(startProcess);
+        }
+        return reader;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @Nullable
+    public MultiProcessRecipeReader readerByIngredient(ItemStack ingredient, Process startProcess, Recipe startRecipe) {
+        MultiProcessRecipeReader reader = readerByIngredient(ingredient, startProcess);
+        if (reader != null) {
+            reader.getCurrentProcessRecipeReader().setCurrent(startRecipe);
+        }
+        return reader;
+    }
+
+    //#endregion By Ingredient
+
+    //#region All Recipes
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public MultiProcessRecipeReader readerWithAllRecipes() {
+        MultiProcessRecipeMap allProcessRecipeMap = new MultiProcessRecipeMap(recipesByProcess.getAllProcessRecipeSets().values());
+        return new MultiProcessRecipeReader(allProcessRecipeMap);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public MultiProcessRecipeReader readerWithAllRecipes(Process startProcess) {
+        MultiProcessRecipeReader reader = readerWithAllRecipes();
+        reader.setCurrentProcess(startProcess);
+        return reader;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public MultiProcessRecipeReader readerWithAllRecipes(Process startProcess, Recipe startRecipe) {
+        MultiProcessRecipeReader reader = readerWithAllRecipes(startProcess);
+        reader.getCurrentProcessRecipeReader().setCurrent(startRecipe);
+        return reader;
+    }
+    
+    //#endregion All Recipes
+    //#endregion RecipeIndexView
+
+    //#region Summary Logging
 
     public void logSummary() {
         VanillaEnoughItems.LOGGER.info("==================== Recipe Index Summary ====================");
@@ -392,4 +615,6 @@ public class RecipeIndex {
         
         VanillaEnoughItems.LOGGER.info("==============================================================");
     }
+
+    //#endregion Summary Logging
 }

@@ -18,10 +18,10 @@ import dev.jorel.commandapi.arguments.ArgumentSuggestions;
 import dev.jorel.commandapi.arguments.CustomArgument;
 import dev.jorel.commandapi.arguments.NamespacedKeyArgument;
 import dev.qheilmann.vanillaenoughitems.commands.arguments.SearchModeArgument.SearchMode;
-import dev.qheilmann.vanillaenoughitems.gui.RecipeGuiContext;
+import dev.qheilmann.vanillaenoughitems.recipe.RecipeContext;
 import dev.qheilmann.vanillaenoughitems.recipe.extraction.RecipeExtractor;
+import dev.qheilmann.vanillaenoughitems.recipe.index.RecipeIndex;
 import dev.qheilmann.vanillaenoughitems.recipe.index.reader.MultiProcessRecipeReader;
-import dev.qheilmann.vanillaenoughitems.recipe.index.reader.RecipeIndexReader;
 import dev.qheilmann.vanillaenoughitems.recipe.process.Process;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
@@ -36,12 +36,12 @@ import net.kyori.adventure.text.Component;
  */
 @NullMarked
 public class RecipeIdArgument extends CustomArgument<NamespacedKey, NamespacedKey> {
-    public RecipeIdArgument(String nodeName, RecipeGuiContext context) {
+    public RecipeIdArgument(String nodeName, RecipeContext context) {
         super(new NamespacedKeyArgument(nodeName), (input) -> {
             NamespacedKey key = input.currentInput();
 
             // Check if the key is a valid recipe ID
-            Recipe recipe = context.getRecipeIndexReader().getSingleRecipeByKey(key);
+            Recipe recipe = context.getRecipeIndex().getSingleRecipeByKey(key);
             if (recipe == null) {
                 throw CustomArgumentHelper.minecraftLikeException((arg) -> Component.text("No recipe found for ID: " + arg), input);
             }
@@ -62,7 +62,7 @@ public class RecipeIdArgument extends CustomArgument<NamespacedKey, NamespacedKe
      * @param process the Process to use, or null for all processes
      * @return ArgumentSuggestions providing available recipe IDs for the item, search mode, and process
      */
-    public static ArgumentSuggestions<CommandSender> argumentSuggestions(RecipeGuiContext context, @Nullable ItemStack item, @Nullable SearchMode searchMode, @Nullable Process process) {
+    public static ArgumentSuggestions<CommandSender> argumentSuggestions(RecipeContext context, @Nullable ItemStack item, @Nullable SearchMode searchMode, @Nullable Process process) {
         return ArgumentSuggestions.stringCollection((info) -> suggestions(context, item, searchMode, process));
     }
 
@@ -76,7 +76,7 @@ public class RecipeIdArgument extends CustomArgument<NamespacedKey, NamespacedKe
      * @return a collection of available recipe ID strings for the item, search mode, and process
      */
     @SuppressWarnings("null")
-    public static Collection<String> suggestions(RecipeGuiContext context, @Nullable ItemStack item, @Nullable SearchMode searchMode, @Nullable Process process) {
+    public static Collection<String> suggestions(RecipeContext context, @Nullable ItemStack item, @Nullable SearchMode searchMode, @Nullable Process process) {
         Collection<Key> recipeKeys = getRecipeIds(context, item, searchMode, process);
 
         return recipeKeys.stream()
@@ -93,8 +93,8 @@ public class RecipeIdArgument extends CustomArgument<NamespacedKey, NamespacedKe
      * @param process the Process to use, or null for all processes
      * @return a collection of recipe keys for the item, search mode, and process
      */
-    private static Collection<Key> getRecipeIds(RecipeGuiContext context, @Nullable ItemStack item, @Nullable SearchMode searchMode, @Nullable Process process) {
-        RecipeIndexReader recipeIndex = context.getRecipeIndexReader();
+    private static Collection<Key> getRecipeIds(RecipeContext context, @Nullable ItemStack item, @Nullable SearchMode searchMode, @Nullable Process process) {
+        RecipeIndex recipeIndex = context.getRecipeIndex();
         MultiProcessRecipeReader reader;
         Collection<Key> recipeKeys;
 
@@ -117,8 +117,8 @@ public class RecipeIdArgument extends CustomArgument<NamespacedKey, NamespacedKe
             }
     
             reader = switch (searchMode) {
-                case RECIPE -> context.getRecipeIndexReader().readerByResult(item);
-                case USAGE -> context.getRecipeIndexReader().readerByIngredient(item);
+                case RECIPE -> recipeIndex.readerByResult(item);
+                case USAGE -> recipeIndex.readerByIngredient(item);
                 default -> throw new UnsupportedOperationException("Search mode " + searchMode + " is not implemented");
             };
         }

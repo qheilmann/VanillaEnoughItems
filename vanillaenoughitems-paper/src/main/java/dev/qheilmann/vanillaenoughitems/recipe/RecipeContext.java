@@ -1,4 +1,4 @@
-package dev.qheilmann.vanillaenoughitems.gui;
+package dev.qheilmann.vanillaenoughitems.recipe;
 
 import java.util.Map;
 import java.util.UUID;
@@ -13,31 +13,22 @@ import org.jspecify.annotations.NullMarked;
 import dev.qheilmann.vanillaenoughitems.gui.player.PlayerGuiData;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPanelRegistry;
 import dev.qheilmann.vanillaenoughitems.recipe.index.RecipeIndex;
-import dev.qheilmann.vanillaenoughitems.recipe.index.reader.RecipeIndexReader;
 
 /**
- * Global context for the Recipe GUI system.
+ * Global context for the Recipe system.
  * Holds shared services like RecipeIndex and ProcessPanelRegistry,
  * and manages per-player data.
  */
 @NullMarked
-public class RecipeGuiContext implements Listener {
+public class RecipeContext implements Listener {
     private final RecipeIndex recipeIndex;
     private final ProcessPanelRegistry processPanelRegistry;
     private final Map<UUID, PlayerGuiData> playerDataMap = new ConcurrentHashMap<>();
 
-    public RecipeGuiContext(JavaPlugin plugin, RecipeIndex recipeIndex, ProcessPanelRegistry processPanelRegistry) {
+    public RecipeContext(JavaPlugin plugin, RecipeIndex recipeIndex, ProcessPanelRegistry processPanelRegistry) {
         this.recipeIndex = recipeIndex;
         this.processPanelRegistry = processPanelRegistry;
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
-    }
-
-    /**
-     * Get the global recipe index reader
-     * @return the recipe index
-     */
-    public RecipeIndexReader getRecipeIndexReader() {
-        return new RecipeIndexReader(recipeIndex);
     }
 
     /**

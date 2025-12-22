@@ -10,12 +10,12 @@ import org.bukkit.inventory.ShapedRecipe;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
 
-import dev.qheilmann.vanillaenoughitems.recipe.extraction.IRecipeExtractor;
+import dev.qheilmann.vanillaenoughitems.recipe.extraction.RecipeExtractorStrategy;
 import dev.qheilmann.vanillaenoughitems.recipe.extraction.impl.helper.RecipeChoiceHelper;
 import net.kyori.adventure.key.Key;
 
 @NullMarked
-public class ShapedRecipeExtractor implements IRecipeExtractor<@NonNull ShapedRecipe> {
+public class ShapedRecipeExtractor implements RecipeExtractorStrategy<@NonNull ShapedRecipe> {
 
     public static final Key KEY = Key.key("shaped");
 

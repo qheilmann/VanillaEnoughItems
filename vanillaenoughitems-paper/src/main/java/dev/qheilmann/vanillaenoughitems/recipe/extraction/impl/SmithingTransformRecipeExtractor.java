@@ -9,12 +9,12 @@ import org.bukkit.inventory.SmithingTransformRecipe;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
 
-import dev.qheilmann.vanillaenoughitems.recipe.extraction.IRecipeExtractor;
+import dev.qheilmann.vanillaenoughitems.recipe.extraction.RecipeExtractorStrategy;
 import dev.qheilmann.vanillaenoughitems.recipe.extraction.impl.helper.RecipeChoiceHelper;
 import net.kyori.adventure.key.Key;
 
 @NullMarked
-public class SmithingTransformRecipeExtractor implements IRecipeExtractor<@NonNull SmithingTransformRecipe> {
+public class SmithingTransformRecipeExtractor implements RecipeExtractorStrategy<@NonNull SmithingTransformRecipe> {
     
     public static final Key KEY = Key.key("smithing_transform");
 
