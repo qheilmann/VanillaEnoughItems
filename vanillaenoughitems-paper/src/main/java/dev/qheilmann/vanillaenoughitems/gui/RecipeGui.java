@@ -10,6 +10,7 @@ import java.util.function.Consumer;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -33,6 +34,7 @@ import dev.qheilmann.vanillaenoughitems.recipe.process.Workbench;
 import dev.qheilmann.vanillaenoughitems.utils.fastinv.FastInv;
 import dev.qheilmann.vanillaenoughitems.utils.fastinv.FastInvItem;
 import dev.qheilmann.vanillaenoughitems.utils.fastinv.Slots;
+import dev.qheilmann.vanillaenoughitems.utils.playerhead.PlayerHeadRegistry;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
@@ -69,6 +71,11 @@ public class RecipeGui extends FastInv {
     private static final int MAX_VISIBLE_WORKBENCHES = WORKBENCHS_SCROLL_RANGE.size();
     private static final int MAX_SCROLLABLE_WORKBENCHES = MAX_VISIBLE_WORKBENCHES - 2; // Account for scroll buttons
 
+    private static final TextColor COLOR_PRIMARY = VanillaEnoughItems.config().style().colorPrimary();
+    private static final TextColor COLOR_PRIMARY_VARIANT = VanillaEnoughItems.config().style().colorPrimaryVariant();
+    private static final TextColor COLOR_SECONDARY = VanillaEnoughItems.config().style().colorSecondary();
+    private static final TextColor COLOR_SECONDARY_VARIANT = VanillaEnoughItems.config().style().colorSecondaryVariant();
+
     // Static item
     private static final ItemStack FILLER_ITEM = fillerItem();
 
@@ -87,7 +94,8 @@ public class RecipeGui extends FastInv {
     private int workbenchScrollOffset = 0;
 
     public RecipeGui(Player player, RecipeContext context, MultiProcessRecipeReader initialReader) {
-        super(SIZE, Component.text("Recipes"));
+        // TODO add neg space here
+        super(SIZE, Component.text("\uF100", NamedTextColor.WHITE));
         this.player = player;
         this.context = context;
         this.playerData = context.getPlayerData(player.getUniqueId());
@@ -329,9 +337,16 @@ public class RecipeGui extends FastInv {
         return !reader.getCurrentProcessRecipeReader().isFirst();
     }
 
+    // ITEM
+
     private void nextRecipeAction(InventoryClickEvent event) {
         event.getWhoClicked().playSound(UI_CLICK_SOUND);
         nextRecipe();
+    }
+
+    private void previousRecipeAction(InventoryClickEvent event) {
+        event.getWhoClicked().playSound(UI_CLICK_SOUND);
+        previousRecipe();
     }
 
     public void nextRecipe() {
@@ -340,11 +355,6 @@ public class RecipeGui extends FastInv {
         }
         reader.getCurrentProcessRecipeReader().next();
         render();
-    }
-
-    private void previousRecipeAction(InventoryClickEvent event) {
-        event.getWhoClicked().playSound(UI_CLICK_SOUND);
-        previousRecipe();
     }
 
     public void previousRecipe() {
@@ -365,13 +375,7 @@ public class RecipeGui extends FastInv {
             return;
         }
 
-        // TODO make this style dependent
-        ItemStack item = new ItemStack(Material.ACACIA_BOAT);
-        item.editMeta(meta -> {
-            meta.displayName(Component.text("Forward in History", NamedTextColor.WHITE));
-        });
-
-        setItem(slot, item, event -> historyForwardAction(event));
+        setItem(slot, createForwardNavigationButton());
     }
 
     private void renderBackwardNavigationButton(int slot) {
@@ -380,13 +384,7 @@ public class RecipeGui extends FastInv {
             return;
         }
 
-        // TODO make this style dependent
-        ItemStack item = new ItemStack(Material.ACACIA_BOAT);
-        item.editMeta(meta -> {
-            meta.displayName(Component.text("Backward in History", NamedTextColor.WHITE));
-        });
-
-        setItem(slot, item, event -> historyBackwardAction(event));
+        setItem(slot, createBackwardNavigationButton());
     }
 
     private boolean hasForwardNavigation() {
@@ -396,29 +394,61 @@ public class RecipeGui extends FastInv {
     private boolean hasBackwardNavigation() {
         return playerData.navigationHistory().canGoBackward();
     }
-
+    
+    private void historyForwardAction(InventoryClickEvent event) {
+        event.getWhoClicked().playSound(UI_CLICK_SOUND);
+        historyForward();
+    }
+    
     private void historyBackwardAction(InventoryClickEvent event) {
         event.getWhoClicked().playSound(UI_CLICK_SOUND);
         historyBackward();
     }
 
-    public void historyBackward() {
-        MultiProcessRecipeReader previousReader = playerData.navigationHistory().goBackward(reader);
-        if (previousReader != null) {
-            this.reader = previousReader;
-            render();
+    private FastInvItem createForwardNavigationButton() {
+
+        ItemStack item = PlayerHeadRegistry.quartzForwardII();
+        item.editMeta(meta -> {
+            meta.displayName(Component.text("Forward in History", COLOR_PRIMARY).decoration(TextDecoration.ITALIC, false));
+        });
+
+        if (VanillaEnoughItems.config().hasRessourcePack()) {
+            item.editMeta(meta -> {
+                meta.setItemModel(new NamespacedKey(VanillaEnoughItems.NAMESPACE, "recipegui/right_arrow"));
+            });
         }
+
+        return new FastInvItem(item, event -> historyForwardAction(event));
     }
 
-    private void historyForwardAction(InventoryClickEvent event) {
-        event.getWhoClicked().playSound(UI_CLICK_SOUND);
-        historyForward();
+    private FastInvItem createBackwardNavigationButton() {
+
+        ItemStack item = PlayerHeadRegistry.quartzBackwardII();
+        item.editMeta(meta -> {
+            meta.displayName(Component.text("Backward in History", COLOR_PRIMARY).decoration(TextDecoration.ITALIC, false));
+        });
+
+        if (VanillaEnoughItems.config().hasRessourcePack()) {
+            item.editMeta(meta -> {
+                meta.setItemModel(new NamespacedKey(VanillaEnoughItems.NAMESPACE, "recipegui/left_arrow"));
+            });
+        }
+
+        return new FastInvItem(item, event -> historyBackwardAction(event));
     }
 
     public void historyForward() {
         MultiProcessRecipeReader nextReader = playerData.navigationHistory().goForward(reader);
         if (nextReader != null) {
             this.reader = nextReader;
+            render();
+        }
+    }
+
+    public void historyBackward() {
+        MultiProcessRecipeReader previousReader = playerData.navigationHistory().goBackward(reader);
+        if (previousReader != null) {
+            this.reader = previousReader;
             render();
         }
     }
@@ -847,6 +877,7 @@ public class RecipeGui extends FastInv {
         item.editMeta(meta -> {
             meta.setMaxStackSize(1);
             meta.setHideTooltip(true);
+            meta.setItemModel(new NamespacedKey(VanillaEnoughItems.NAMESPACE, "common/empty"));
         });
         return item;
     }
