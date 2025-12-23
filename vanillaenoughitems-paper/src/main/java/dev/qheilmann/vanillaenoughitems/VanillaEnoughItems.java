@@ -3,6 +3,7 @@ package dev.qheilmann.vanillaenoughitems;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import java.io.File;
 import java.util.Iterator;
@@ -11,6 +12,9 @@ import net.kyori.adventure.text.logger.slf4j.ComponentLogger;
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPIPaperConfig;
 import dev.qheilmann.vanillaenoughitems.commands.CraftCommand;
+import dev.qheilmann.vanillaenoughitems.commands.DebugVei;
+import dev.qheilmann.vanillaenoughitems.config.VanillaEnoughItemsConfig;
+import dev.qheilmann.vanillaenoughitems.config.style.Style;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPanelFactory;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPanelRegistry;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.impl.BlastingProcessPanel;
@@ -51,6 +55,9 @@ public class VanillaEnoughItems extends JavaPlugin {
     public static final String NAMESPACE = "vanillaenoughitems";
     public static final ComponentLogger LOGGER = ComponentLogger.logger(PLUGIN_NAME);
 
+    @Nullable
+    private static VanillaEnoughItemsConfig config;
+
     private boolean failOnload = false;
     @SuppressWarnings("null")
     private RecipeContext recipeGuiContext;
@@ -63,6 +70,16 @@ public class VanillaEnoughItems extends JavaPlugin {
             LOGGER.error("Failed to load " + PLUGIN_NAME + ": " + e.getMessage());
             failOnload = true;
         }
+
+        // VanillaEnoughItems config
+        Style style = new Style()
+            .setHasResourcePack(true);
+
+        config = new VanillaEnoughItemsConfig()
+            .setMissingImplementationWarnings(true)
+            .setMissingRecipeProcess(true)
+            .setStyle(style);
+
         LOGGER.info(PLUGIN_NAME + " loaded.");
     }
 
@@ -112,6 +129,7 @@ public class VanillaEnoughItems extends JavaPlugin {
         // Initialize Recipe GUI Context
 
         CraftCommand.register(this, recipeGuiContext);
+        DebugVei.register();
         
         LOGGER.info(PLUGIN_NAME + " enabled.");
     }
@@ -122,6 +140,18 @@ public class VanillaEnoughItems extends JavaPlugin {
             recipeGuiContext.clearAllPlayerData();
         }
         LOGGER.info(PLUGIN_NAME + " disabled.");
+    }
+
+    /**
+     * Gets the current VanillaEnoughItems configuration
+     * @return the VanillaEnoughItems configuration
+     */
+    @SuppressWarnings("null")
+    public static VanillaEnoughItemsConfig config() {
+        if (config == null) {
+            throw new IllegalStateException("Tried to access VanillaEnoughItems config, but it was not initialized! Are you using VanillaEnoughItems features before calling VanillaEnoughItems#onLoad?");
+        }
+        return config;
     }
 
     private void onLoadCommandAPI() {

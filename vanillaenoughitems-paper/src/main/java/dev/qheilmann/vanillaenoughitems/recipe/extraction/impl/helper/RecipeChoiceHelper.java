@@ -29,11 +29,10 @@ public class RecipeChoiceHelper {
             return Set.of();
         }
 
-        // TODO: Log an optional warning for unhandled RecipeChoice types.
-        //       Make the warning toggleable (configurable) and include the choice's
-        //       runtime class to aid debugging without spamming logs.
+        if (VanillaEnoughItems.config().hasMissingImplementationWarnings()) {
+            VanillaEnoughItems.LOGGER.warn("Unhandled RecipeChoice type: " + choice.getClass().getName());
+        }
         
-        VanillaEnoughItems.LOGGER.warn("Unhandled RecipeChoice type: " + choice.getClass().getName());
         return Set.of();
     }
 

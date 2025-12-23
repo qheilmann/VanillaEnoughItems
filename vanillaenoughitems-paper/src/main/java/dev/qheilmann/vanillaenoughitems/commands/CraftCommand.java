@@ -45,10 +45,10 @@ public class CraftCommand {
                                     Type /craft --help for detailled usage instructions and examples.
                                     """;
 
-    private static final TextColor COLOR_PRIMARY = TextColor.fromHexString("#AEA44d");
-    private static final TextColor COLOR_PRIMARY_VARIANT = TextColor.fromHexString("#959956");
-    private static final TextColor COLOR_SECONDARY = TextColor.fromHexString("#33658A");
-    private static final TextColor COLOR_SECONDARY_VARIANT = TextColor.fromHexString("#86BBD8");
+    private static final TextColor COLOR_PRIMARY = VanillaEnoughItems.config().style().colorPrimary();
+    private static final TextColor COLOR_PRIMARY_VARIANT = VanillaEnoughItems.config().style().colorPrimaryVariant();
+    private static final TextColor COLOR_SECONDARY = VanillaEnoughItems.config().style().colorSecondary();
+    private static final TextColor COLOR_SECONDARY_VARIANT = VanillaEnoughItems.config().style().colorSecondaryVariant();
 
     @SuppressWarnings("null")
     private static JavaPlugin plugin;
@@ -419,7 +419,7 @@ public class CraftCommand {
                 .hoverEvent(Component.text("Click to suggest this command", COLOR_SECONDARY_VARIANT))
                 .clickEvent(ClickEvent.suggestCommand(prototype))
             )
-            .append(Component.text(desc, COLOR_PRIMARY_VARIANT))
+            .append(Component.text(" " + desc, COLOR_PRIMARY_VARIANT))
             .appendNewline()
             .build();
     }

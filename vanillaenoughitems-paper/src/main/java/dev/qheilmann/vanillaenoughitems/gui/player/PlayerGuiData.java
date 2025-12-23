@@ -15,13 +15,11 @@ public class PlayerGuiData {
     private final UUID playerUuid;
     private final BookmarkCollection bookmarkCollection;
     private final RecipeNavigationHistory navigationHistory;
-    private final Style style;
 
     public PlayerGuiData(UUID playerUuid, RecipeExtractor recipeExtractor) {
         this.playerUuid = playerUuid;
         this.bookmarkCollection = new BookmarkCollection(playerUuid, recipeExtractor);
         this.navigationHistory = new RecipeNavigationHistory(playerUuid);
-        this.style = new Style();
     }
 
     /**
@@ -46,14 +44,6 @@ public class PlayerGuiData {
      */
     public RecipeNavigationHistory navigationHistory() {
         return navigationHistory;
-    }
-
-    /**
-     * Get the GUI style preferences
-     * @return the GUI style
-     */
-    public Style style() {
-        return style;
     }
 
     /**

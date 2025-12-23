@@ -73,10 +73,11 @@ public class RecipeIndex implements RecipeIndexView {
     public void indexRecipe(Recipe recipe) {
 
         if (!recipeExtractor.canHandle(recipe)) {
-            // TODO log an optional warning about unhandled recipe
-            String key = (recipe instanceof Keyed) ? ((Keyed) recipe).key().asString() : "no key available";
-            VanillaEnoughItems.LOGGER.warn("No extractor found for recipe: " + recipe.getClass().getSimpleName() + " (" + key + ")");
-            return;
+            if (VanillaEnoughItems.config().hasMissingRecipeProcess()) {
+                String key = (recipe instanceof Keyed) ? ((Keyed) recipe).key().asString() : "no key available";
+                VanillaEnoughItems.LOGGER.warn("No extractor found for recipe: " + recipe.getClass().getSimpleName() + " (" + key + ")");
+            }
+            return; // Skip index for non-extractable recipes
         }
 
         // Index by id
