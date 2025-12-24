@@ -26,6 +26,9 @@ import dev.qheilmann.vanillaenoughitems.VanillaEnoughItems;
 import dev.qheilmann.vanillaenoughitems.gui.player.PlayerGuiData;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPanel;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPannelSlot;
+import dev.qheilmann.vanillaenoughitems.pack.SpaceFont;
+import dev.qheilmann.vanillaenoughitems.pack.VEIPack;
+import dev.qheilmann.vanillaenoughitems.pack.VEIPack.Character.Gui.GuiIcon;
 import dev.qheilmann.vanillaenoughitems.recipe.RecipeContext;
 import dev.qheilmann.vanillaenoughitems.recipe.extraction.RecipeExtractor;
 import dev.qheilmann.vanillaenoughitems.recipe.index.reader.MultiProcessRecipeReader;
@@ -94,8 +97,7 @@ public class RecipeGui extends FastInv {
     private int workbenchScrollOffset = 0;
 
     public RecipeGui(Player player, RecipeContext context, MultiProcessRecipeReader initialReader) {
-        // TODO add neg space here
-        super(SIZE, Component.text("\uF100", NamedTextColor.WHITE));
+        super(SIZE, title());
         this.player = player;
         this.context = context;
         this.playerData = context.getPlayerData(player.getUniqueId());
@@ -111,6 +113,18 @@ public class RecipeGui extends FastInv {
 
         // Dynamic render
         render();
+    }
+
+    private static Component title() {
+        if (VanillaEnoughItems.config().hasRessourcePack()) {
+            GuiIcon guiIcon = VEIPack.Character.Gui.BLANK_54;
+            return Component.textOfChildren(
+                guiIcon.iconComponent(),
+                Component.text(guiIcon.resetString() + "Recipe")
+            );
+        } else {
+            return Component.text("Recipe");
+        }
     }
 
     /**

@@ -3,6 +3,10 @@
         {
             "type": "reference",
             "id": "vanillaenoughitems:default"
+        },
+        {
+            "type": "reference",
+            "id": "spacefont:space"
         }
     ]
 }
