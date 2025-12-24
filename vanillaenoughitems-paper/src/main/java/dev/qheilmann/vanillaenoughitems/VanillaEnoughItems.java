@@ -57,6 +57,8 @@ public class VanillaEnoughItems extends JavaPlugin {
 
     @Nullable
     private static VanillaEnoughItemsConfig config;
+    @Nullable // debug toggle
+    public static Style style;
 
     private boolean failOnload = false;
     @SuppressWarnings("null")
@@ -72,7 +74,7 @@ public class VanillaEnoughItems extends JavaPlugin {
         }
 
         // VanillaEnoughItems config
-        Style style = new Style()
+        style = new Style()
             .setHasResourcePack(true);
 
         config = new VanillaEnoughItemsConfig()

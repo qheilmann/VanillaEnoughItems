@@ -4,7 +4,8 @@ import org.jspecify.annotations.NullMarked;
 
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.CommandPermission;
-import dev.qheilmann.vanillaenoughitems.utils.playerhead.PlayerHeadRegistry;
+import dev.qheilmann.vanillaenoughitems.VanillaEnoughItems;
+import dev.qheilmann.vanillaenoughitems.config.style.Style;
 
 @NullMarked
 public class DebugVei {
@@ -30,22 +31,17 @@ public class DebugVei {
             .executesPlayer((player, args) -> {
                 // TEST CODE BEGIN
 
-                player.give(PlayerHeadRegistry.craftingTable());
-                player.give(PlayerHeadRegistry.fireworkStarCyan());
-                player.give(PlayerHeadRegistry.fireworkStarGreen());
-                player.give(PlayerHeadRegistry.quartzArrowDown());
-                player.give(PlayerHeadRegistry.quartzArrowLeft());
-                player.give(PlayerHeadRegistry.quartzArrowRight());
-                player.give(PlayerHeadRegistry.quartzArrowUp());
-                player.give(PlayerHeadRegistry.quartzBackwardII());
-                player.give(PlayerHeadRegistry.quartzBackward());
-                player.give(PlayerHeadRegistry.quartzForward());
-                player.give(PlayerHeadRegistry.quartzForwardII());
-                player.give(PlayerHeadRegistry.quartzPlus());
-                player.give(PlayerHeadRegistry.quartzReverseExclamationMark());
-                player.give(PlayerHeadRegistry.quartzSlash());
-                player.give(PlayerHeadRegistry.quartzX());
-                player.give(PlayerHeadRegistry.steve());
+                Style style = VanillaEnoughItems.style;
+
+                if (style == null) {
+                    player.sendMessage("VEI Style is null!");
+                    return;
+                }
+
+                boolean hasRessourcePack = style.hasResourcePack();
+                style.setHasResourcePack(!hasRessourcePack);
+                VanillaEnoughItems.config().setStyle(style);
+                player.sendMessage("VEI Resource Pack enabled: " + !hasRessourcePack);
 
                 // TEST CODE END
             })

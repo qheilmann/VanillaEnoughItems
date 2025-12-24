@@ -2,31 +2,26 @@ package dev.qheilmann.vanillaenoughitems.gui;
 
 import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.NavigableSet;
 import java.util.Set;
-import java.util.function.Consumer;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.scheduler.BukkitTask;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 import dev.qheilmann.vanillaenoughitems.VanillaEnoughItems;
+import dev.qheilmann.vanillaenoughitems.config.style.Style;
 import dev.qheilmann.vanillaenoughitems.gui.player.PlayerGuiData;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPanel;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPannelSlot;
-import dev.qheilmann.vanillaenoughitems.pack.SpaceFont;
 import dev.qheilmann.vanillaenoughitems.pack.VEIPack;
 import dev.qheilmann.vanillaenoughitems.pack.VEIPack.Character.Gui.GuiIcon;
 import dev.qheilmann.vanillaenoughitems.recipe.RecipeContext;
@@ -37,7 +32,6 @@ import dev.qheilmann.vanillaenoughitems.recipe.process.Workbench;
 import dev.qheilmann.vanillaenoughitems.utils.fastinv.FastInv;
 import dev.qheilmann.vanillaenoughitems.utils.fastinv.FastInvItem;
 import dev.qheilmann.vanillaenoughitems.utils.fastinv.Slots;
-import dev.qheilmann.vanillaenoughitems.utils.playerhead.PlayerHeadRegistry;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
@@ -45,8 +39,6 @@ import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.Style;
-import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
 @NullMarked
@@ -74,14 +66,6 @@ public class RecipeGui extends FastInv {
     private static final int MAX_VISIBLE_WORKBENCHES = WORKBENCHS_SCROLL_RANGE.size();
     private static final int MAX_SCROLLABLE_WORKBENCHES = MAX_VISIBLE_WORKBENCHES - 2; // Account for scroll buttons
 
-    private static final TextColor COLOR_PRIMARY = VanillaEnoughItems.config().style().colorPrimary();
-    private static final TextColor COLOR_PRIMARY_VARIANT = VanillaEnoughItems.config().style().colorPrimaryVariant();
-    private static final TextColor COLOR_SECONDARY = VanillaEnoughItems.config().style().colorSecondary();
-    private static final TextColor COLOR_SECONDARY_VARIANT = VanillaEnoughItems.config().style().colorSecondaryVariant();
-
-    // Static item
-    private static final ItemStack FILLER_ITEM = fillerItem();
-
     // Sounds
     private static final Sound UI_CLICK_SOUND = Sound.sound(org.bukkit.Sound.UI_BUTTON_CLICK, Sound.Source.UI, 0.25f, 1.0f);
 
@@ -89,6 +73,9 @@ public class RecipeGui extends FastInv {
     private final Player player;
     private final RecipeContext context;
     private final PlayerGuiData playerData;
+    private final Style style;
+    private final RecipeGuiComponent guiComponent;
+    private final ItemStack fillerItem;
     private MultiProcessRecipeReader reader;
     private @Nullable BukkitTask tickTask;
 
@@ -97,14 +84,17 @@ public class RecipeGui extends FastInv {
     private int workbenchScrollOffset = 0;
 
     public RecipeGui(Player player, RecipeContext context, MultiProcessRecipeReader initialReader) {
-        super(SIZE, title());
+        super(SIZE, title(VanillaEnoughItems.config().style()));
         this.player = player;
         this.context = context;
         this.playerData = context.getPlayerData(player.getUniqueId());
+        this.style = VanillaEnoughItems.config().style();
         this.reader = initialReader;
+        this.guiComponent = new RecipeGuiComponent(style);
+        this.fillerItem = guiComponent.createFillerItem();
         
         // Initial filling
-        fillRange(Slots.Generic9x6.all(), FILLER_ITEM);
+        fillRange(Slots.Generic9x6.all(), fillerItem);
 
         // Static buttons
         renderBookmarkListButton();
@@ -115,8 +105,8 @@ public class RecipeGui extends FastInv {
         render();
     }
 
-    private static Component title() {
-        if (VanillaEnoughItems.config().hasRessourcePack()) {
+    private static Component title(Style style) {
+        if (style.hasResourcePack()) {
             GuiIcon guiIcon = VEIPack.Character.Gui.BLANK_54;
             return Component.textOfChildren(
                 guiIcon.iconComponent(),
@@ -202,7 +192,7 @@ public class RecipeGui extends FastInv {
 
         // Quick link on left click
         if (isLeftClick) {
-            quickLinkAction().accept(event);
+            quickLinkAction(event);
         }
 
         // Ignore other click types
@@ -226,7 +216,7 @@ public class RecipeGui extends FastInv {
     private void renderProcessPanel(ProcessPanel processPanel) {
         Map<RecipeGuiSharedButton, ProcessPannelSlot> sharedButtonSlots = processPanel.getRecipeGuiButtonMap();
         
-        fillRange(ProcessPannelSlot.all(), FILLER_ITEM);
+        fillRange(ProcessPannelSlot.all(), fillerItem);
 
         // Recipe reader dependent buttons
         renderNextRecipeButton(sharedButtonSlots.get(RecipeGuiSharedButton.NEXT_RECIPE).toSlotIndex());
@@ -314,44 +304,21 @@ public class RecipeGui extends FastInv {
 
     private void renderNextRecipeButton(int slot) {
         if (!hasNextRecipe()) {
-            setItem(slot, FILLER_ITEM);
+            setItem(slot, fillerItem);
             return;
         }
 
-        // TODO make this style dependent
-        ItemStack item = ItemType.OAK_BOAT.createItemStack();
-        item.editMeta(meta -> {
-            meta.displayName(Component.text("Next Recipe", NamedTextColor.WHITE));
-        });
-
-        setItem(slot, item, event -> nextRecipeAction(event));
+        setItem(slot, guiComponent.createNextRecipeButton(), event -> nextRecipeAction(event));
     }
 
     private void renderPreviousRecipeButton(int slot) {
         if (!hasPreviousRecipe()) {
-            setItem(slot, FILLER_ITEM);
+            setItem(slot, fillerItem);
             return;
         }
 
-        // TODO make this style dependent
-        ItemStack item = ItemType.OAK_BOAT.createItemStack();
-        item.editMeta(meta -> {
-            meta.displayName(Component.text("Previous Recipe", NamedTextColor.WHITE));
-        });
-
-        setItem(slot, item, event -> previousRecipeAction(event));
+        setItem(slot, guiComponent.createPreviousRecipeButton(), event -> previousRecipeAction(event));
     }
-
-    
-    public boolean hasNextRecipe() {
-        return !reader.getCurrentProcessRecipeReader().isLast();
-    }
-
-    public boolean hasPreviousRecipe() {
-        return !reader.getCurrentProcessRecipeReader().isFirst();
-    }
-
-    // ITEM
 
     private void nextRecipeAction(InventoryClickEvent event) {
         event.getWhoClicked().playSound(UI_CLICK_SOUND);
@@ -379,36 +346,36 @@ public class RecipeGui extends FastInv {
         render();
     }
 
+    public boolean hasNextRecipe() {
+        return !reader.getCurrentProcessRecipeReader().isLast();
+    }
+
+    public boolean hasPreviousRecipe() {
+        return !reader.getCurrentProcessRecipeReader().isFirst();
+    }
+
     //#endregion Next/Previous Recipe
 
     //#region Forward/Backward Navigation
 
     private void renderForwardNavigationButton(int slot) {
         if (!hasForwardNavigation()) {
-            setItem(slot, FILLER_ITEM);
+            setItem(slot, fillerItem);
             return;
         }
 
-        setItem(slot, createForwardNavigationButton());
+        setItem(slot, guiComponent.createForwardNavigationButton(), event -> historyForwardAction(event));
     }
 
     private void renderBackwardNavigationButton(int slot) {
         if (!hasBackwardNavigation()) {
-            setItem(slot, FILLER_ITEM);
+            setItem(slot, fillerItem);
             return;
         }
 
-        setItem(slot, createBackwardNavigationButton());
+        setItem(slot, guiComponent.createBackwardNavigationButton(), event -> historyBackwardAction(event));
     }
 
-    private boolean hasForwardNavigation() {
-        return playerData.navigationHistory().canGoForward();
-    }
-
-    private boolean hasBackwardNavigation() {
-        return playerData.navigationHistory().canGoBackward();
-    }
-    
     private void historyForwardAction(InventoryClickEvent event) {
         event.getWhoClicked().playSound(UI_CLICK_SOUND);
         historyForward();
@@ -417,38 +384,6 @@ public class RecipeGui extends FastInv {
     private void historyBackwardAction(InventoryClickEvent event) {
         event.getWhoClicked().playSound(UI_CLICK_SOUND);
         historyBackward();
-    }
-
-    private FastInvItem createForwardNavigationButton() {
-
-        ItemStack item = PlayerHeadRegistry.quartzForwardII();
-        item.editMeta(meta -> {
-            meta.displayName(Component.text("Forward in History", COLOR_PRIMARY).decoration(TextDecoration.ITALIC, false));
-        });
-
-        if (VanillaEnoughItems.config().hasRessourcePack()) {
-            item.editMeta(meta -> {
-                meta.setItemModel(new NamespacedKey(VanillaEnoughItems.NAMESPACE, "recipegui/right_arrow"));
-            });
-        }
-
-        return new FastInvItem(item, event -> historyForwardAction(event));
-    }
-
-    private FastInvItem createBackwardNavigationButton() {
-
-        ItemStack item = PlayerHeadRegistry.quartzBackwardII();
-        item.editMeta(meta -> {
-            meta.displayName(Component.text("Backward in History", COLOR_PRIMARY).decoration(TextDecoration.ITALIC, false));
-        });
-
-        if (VanillaEnoughItems.config().hasRessourcePack()) {
-            item.editMeta(meta -> {
-                meta.setItemModel(new NamespacedKey(VanillaEnoughItems.NAMESPACE, "recipegui/left_arrow"));
-            });
-        }
-
-        return new FastInvItem(item, event -> historyBackwardAction(event));
     }
 
     public void historyForward() {
@@ -467,26 +402,26 @@ public class RecipeGui extends FastInv {
         }
     }
 
+    public boolean hasForwardNavigation() {
+        return playerData.navigationHistory().canGoForward();
+    }
+
+    public boolean hasBackwardNavigation() {
+        return playerData.navigationHistory().canGoBackward();
+    }
+
     //#endregion Forward/Backward Navigation
 
     //#region Quick Craft
 
     private void renderQuickCraftButton(int slot) {
-        // TODO make this style dependent
-        ItemStack item = new ItemStack(Material.WHITE_DYE);
-        item.editMeta(meta -> {
-            meta.displayName(Component.text("Quick Craft", NamedTextColor.WHITE));
-        });
-
-        setItem(slot, item, event -> quickCraftAction().accept(event));
+        setItem(slot, guiComponent.createQuickCraftButton(), event -> quickCraftAction(event));
     }
 
-    private Consumer<InventoryClickEvent> quickCraftAction() {
-        return event -> {
-            HumanEntity humanEntity = event.getWhoClicked();
-            humanEntity.playSound(UI_CLICK_SOUND);
-            humanEntity.sendMessage(Component.text("Quick Craft is not yet implemented!", NamedTextColor.RED));
-        };
+    private void quickCraftAction(InventoryClickEvent event) {
+        HumanEntity humanEntity = event.getWhoClicked();
+        humanEntity.playSound(UI_CLICK_SOUND);
+        humanEntity.sendMessage(Component.text("Quick Craft is not yet implemented!", NamedTextColor.RED));
     }
 
     //#endregion Quick Craft
@@ -508,7 +443,7 @@ public class RecipeGui extends FastInv {
 
             slotIterator.forEachRemaining(slot -> {
                 if (!processIterator.hasNext()) {
-                    setItem(slot, FILLER_ITEM);
+                    setItem(slot, fillerItem);
                     return;
                 }
                 Process process = processIterator.next();
@@ -521,15 +456,15 @@ public class RecipeGui extends FastInv {
         else {
             // Scroll Left button
             if (this.processScrollOffset > 0) {
-                setItem(PROCESS_SCROLL_LEFT_SLOT, processScrollLeftItem(), processScrollLeftAction());
+                setItem(PROCESS_SCROLL_LEFT_SLOT, processScrollLeftItem(), event -> processScrollLeftAction(event));
             } else {
-                setItem(PROCESS_SCROLL_LEFT_SLOT, FILLER_ITEM);
+                setItem(PROCESS_SCROLL_LEFT_SLOT, fillerItem);
             }
             // Scroll Right button
             if (this.processScrollOffset < numberOfProcesses - MAX_SCROLLABLE_PROCESSES) {
-                setItem(PROCESS_SCROLL_RIGHT_SLOT, processScrollRightItem(), processScrollRightAction());
+                setItem(PROCESS_SCROLL_RIGHT_SLOT, processScrollRightItem(), event -> processScrollRightAction(event));
             } else {
-                setItem(PROCESS_SCROLL_RIGHT_SLOT, FILLER_ITEM);
+                setItem(PROCESS_SCROLL_RIGHT_SLOT, fillerItem);
             }
             // Process items
             slotIterator.next(); // Skip scroll left slot
@@ -556,46 +491,28 @@ public class RecipeGui extends FastInv {
     }
 
     private ItemStack processScrollLeftItem() {
-        ItemStack item = new ItemStack(Material.ARROW);
-        item.editMeta(meta -> {
-            meta.displayName(Component.text("Scroll Left", NamedTextColor.WHITE));
-            meta.lore(List.of(
-                Component.text("+ " + this.processScrollOffset + " more to the left", NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)
-            ));
-        });
-        return item;
+        return guiComponent.createProcessScrollLeftButton(this.processScrollOffset);
     }
 
     private ItemStack processScrollRightItem() {
-        ItemStack item = new ItemStack(Material.ARROW);
         int numberOfProcesses = reader.getAllProcesses().size();
         int moreNumber = numberOfProcesses - MAX_SCROLLABLE_PROCESSES - this.processScrollOffset;
-        item.editMeta(meta -> {
-            meta.displayName(Component.text("Scroll Right", NamedTextColor.WHITE));
-            meta.lore(List.of(
-                Component.text("+ " + moreNumber + " more to the right", NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)
-            ));
-        });
-        return item;
+        return guiComponent.createProcessScrollRightButton(moreNumber);
     }
 
-    private Consumer<InventoryClickEvent> processScrollLeftAction() {
-        return event -> {
-            int newOffset = processScrollOffset - 1;
-            this.processScrollOffset = Math.max(0, newOffset);
-            event.getWhoClicked().playSound(UI_CLICK_SOUND);
-            renderProcessScrollButtons();
-        };
+    private void processScrollLeftAction(InventoryClickEvent event) {
+        int newOffset = processScrollOffset - 1;
+        this.processScrollOffset = Math.max(0, newOffset);
+        event.getWhoClicked().playSound(UI_CLICK_SOUND);
+        renderProcessScrollButtons();
     }
 
-    private Consumer<InventoryClickEvent> processScrollRightAction() {
-        return event -> {
-            int numberOfProcesses = reader.getAllProcesses().size();
-            int newOffset = processScrollOffset + 1;
-            this.processScrollOffset = Math.min(numberOfProcesses - MAX_SCROLLABLE_PROCESSES, newOffset);
-            event.getWhoClicked().playSound(UI_CLICK_SOUND);
-            renderProcessScrollButtons();
-        };
+    private void processScrollRightAction(InventoryClickEvent event) {
+        int numberOfProcesses = reader.getAllProcesses().size();
+        int newOffset = processScrollOffset + 1;
+        this.processScrollOffset = Math.min(numberOfProcesses - MAX_SCROLLABLE_PROCESSES, newOffset);
+        event.getWhoClicked().playSound(UI_CLICK_SOUND);
+        renderProcessScrollButtons();
     }
 
     //#endregion Process Scroll
@@ -617,7 +534,7 @@ public class RecipeGui extends FastInv {
 
             slotIterator.forEachRemaining(slot -> {
                 if (!workbenchIterator.hasNext()) {
-                    setItem(slot, FILLER_ITEM);
+                    setItem(slot, fillerItem);
                     return;
                 }
                 Workbench workbench = workbenchIterator.next();
@@ -630,15 +547,15 @@ public class RecipeGui extends FastInv {
         else {
             // Scroll Up button
             if (workbenchScrollOffset > 0) {
-                setItem(WORKBENCH_SCROLL_UP_SLOT, workbenchScrollUpItem(), workbenchScrollUpAction());
+                setItem(WORKBENCH_SCROLL_UP_SLOT, workbenchScrollUpItem(), event -> workbenchScrollUpAction(event));
             } else {
-                setItem(WORKBENCH_SCROLL_UP_SLOT, FILLER_ITEM);
+                setItem(WORKBENCH_SCROLL_UP_SLOT, fillerItem);
             }
             // Scroll Down button
             if (workbenchScrollOffset < numberOfWorkbenches - MAX_SCROLLABLE_WORKBENCHES) {
-                setItem(WORKBENCH_SCROLL_DOWN_SLOT, workbenchScrollDownItem(), workbenchScrollDownAction());
+                setItem(WORKBENCH_SCROLL_DOWN_SLOT, workbenchScrollDownItem(), event -> workbenchScrollDownAction(event));
             } else {
-                setItem(WORKBENCH_SCROLL_DOWN_SLOT, FILLER_ITEM);
+                setItem(WORKBENCH_SCROLL_DOWN_SLOT, fillerItem);
             }
             // Workbench items
             slotIterator.next(); // Skip scroll up slot
@@ -655,46 +572,28 @@ public class RecipeGui extends FastInv {
     }
 
     private ItemStack workbenchScrollUpItem() {
-        ItemStack item = new ItemStack(Material.ARROW);
-        item.editMeta(meta -> {
-            meta.displayName(Component.text("Scroll Up", NamedTextColor.WHITE));
-            meta.lore(List.of(
-                Component.text("+ " + workbenchScrollOffset + " more above", NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)
-            ));
-        });
-        return item;
+        return guiComponent.createWorkbenchScrollUpButton(this.workbenchScrollOffset);
     }
 
     private ItemStack workbenchScrollDownItem() {
-        ItemStack item = new ItemStack(Material.ARROW);
         int numberOfWorkbenches = reader.getCurrentProcess().workbenches().size();
         int moreNumber = numberOfWorkbenches - MAX_SCROLLABLE_WORKBENCHES - workbenchScrollOffset;
-        item.editMeta(meta -> {
-            meta.displayName(Component.text("Scroll Down", NamedTextColor.WHITE));
-            meta.lore(List.of(
-                Component.text("+ " + moreNumber + " more below", NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)
-            ));
-        });
-        return item;
+        return guiComponent.createWorkbenchScrollDownButton(moreNumber);
     }
 
-    private Consumer<InventoryClickEvent> workbenchScrollUpAction() {
-        return event -> {
-            int newOffset = workbenchScrollOffset - 1;
-            this.workbenchScrollOffset = Math.max(0, newOffset);
-            event.getWhoClicked().playSound(UI_CLICK_SOUND);
-            renderWorkbenchScrollButtons();
-        };
+    private void workbenchScrollUpAction(InventoryClickEvent event) {
+        int newOffset = workbenchScrollOffset - 1;
+        this.workbenchScrollOffset = Math.max(0, newOffset);
+        event.getWhoClicked().playSound(UI_CLICK_SOUND);
+        renderWorkbenchScrollButtons();
     }
 
-    private Consumer<InventoryClickEvent> workbenchScrollDownAction() {
-        return event -> {
-            int numberOfWorkbenches = reader.getCurrentProcess().workbenches().size();
-            int newOffset = workbenchScrollOffset + 1;
-            this.workbenchScrollOffset = Math.min(numberOfWorkbenches - MAX_SCROLLABLE_WORKBENCHES, newOffset);
-            event.getWhoClicked().playSound(UI_CLICK_SOUND);
-            renderWorkbenchScrollButtons();
-        };
+    private void workbenchScrollDownAction(InventoryClickEvent event) {
+        int numberOfWorkbenches = reader.getCurrentProcess().workbenches().size();
+        int newOffset = workbenchScrollOffset + 1;
+        this.workbenchScrollOffset = Math.min(numberOfWorkbenches - MAX_SCROLLABLE_WORKBENCHES, newOffset);
+        event.getWhoClicked().playSound(UI_CLICK_SOUND);
+        renderWorkbenchScrollButtons();
     }
 
     //#endregion Workbench Scroll
@@ -703,27 +602,17 @@ public class RecipeGui extends FastInv {
 
     private void renderBookmarkButton() {
         boolean isBookmarked = isCurrentRecipeBookmarked();
-        setItem(BOOKMARK_THIS_RECIPE_SLOT, bookmarkItem(isBookmarked), bookmarkAction());
+        setItem(BOOKMARK_THIS_RECIPE_SLOT, guiComponent.createBookmarkButton(isBookmarked), event -> bookmarkAction(event));
     }
 
     public boolean isCurrentRecipeBookmarked() {
         return playerData.bookmarkCollection().isBookmarked(getCurrentRecipe());
     }
 
-    private ItemStack bookmarkItem(boolean isBookmarked) {
-        ItemStack item =  isBookmarked ? ItemType.YELLOW_CANDLE.createItemStack() : ItemType.WHITE_CANDLE.createItemStack();
-        item.editMeta(meta -> {
-            meta.displayName(Component.text(isBookmarked ? "Remove Bookmark" : "Add Bookmark", NamedTextColor.WHITE));
-        });
-        return item;
-    }
-
-    private Consumer<InventoryClickEvent> bookmarkAction() {
-        return event -> {
-            playerData.bookmarkCollection().toggleBookmark(getCurrentRecipe());
-            event.getWhoClicked().playSound(UI_CLICK_SOUND);
-            renderBookmarkButton(); // Re-render only the bookmark button to update icon
-        };
+    private void bookmarkAction(InventoryClickEvent event) {
+        playerData.bookmarkCollection().toggleBookmark(getCurrentRecipe());
+        event.getWhoClicked().playSound(UI_CLICK_SOUND);
+        renderBookmarkButton(); // Re-render only the bookmark button to update icon
     }
 
     //#endregion Bookmark
@@ -731,45 +620,32 @@ public class RecipeGui extends FastInv {
     //#region Bookmark List
 
     private void renderBookmarkListButton() {
-        setItem(BOOKMARK_LIST_SLOT, bookmarkListItem(), bookmarkListAction());
+        setItem(BOOKMARK_LIST_SLOT, guiComponent.createBookmarkListButton(), event -> bookmarkListAction(event));
     }
 
-    private ItemStack bookmarkListItem() {
-        ItemStack item = new ItemStack(Material.BOOKSHELF);
-        item.editMeta(meta -> {
-            meta.displayName(Component.text("Bookmark List", NamedTextColor.WHITE));
-            meta.lore(List.of(
-                Component.text("View your bookmarked recipes", NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)
-            ));
-        });
-        return item;
-    }
+    private void bookmarkListAction(InventoryClickEvent event) {
+        // Open bookmark list GUI
+        RecipeContext context = this.context;
+        HumanEntity humanEntity = event.getWhoClicked();
+        PlayerGuiData playerData = context.getPlayerData(humanEntity.getUniqueId());
+        Set<Key> bookmarks = playerData.bookmarkCollection().getBookmarkedKeys();
 
-    private Consumer<InventoryClickEvent> bookmarkListAction() {
-        return event -> {
-            // Open bookmark list GUI
-            RecipeContext context = this.context;
-            HumanEntity humanEntity = event.getWhoClicked();
-            PlayerGuiData playerData = context.getPlayerData(humanEntity.getUniqueId());
-            Set<Key> bookmarks = playerData.bookmarkCollection().getBookmarkedKeys();
+        humanEntity.playSound(UI_CLICK_SOUND);
+        humanEntity.closeInventory();
 
-            humanEntity.playSound(UI_CLICK_SOUND);
-            humanEntity.closeInventory();
+        TextComponent.Builder text = Component.text();
+        text.append(Component.text("All your Bookmarked Recipes:", NamedTextColor.GOLD).decorate(TextDecoration.BOLD)).append(Component.newline());
 
-            TextComponent.Builder text = Component.text();
-            text.append(Component.text("All your Bookmarked Recipes:", NamedTextColor.GOLD).style(Style.style(TextDecoration.BOLD))).append(Component.newline());
+        for (Key key : bookmarks) {
+            text.append(Component.text("- ")).append(
+                Component.text(key.asMinimalString(), NamedTextColor.AQUA)
+                    .decorate(TextDecoration.UNDERLINED)
+                    .hoverEvent(HoverEvent.showText(Component.text("Click to view recipe")))
+                    .clickEvent(ClickEvent.runCommand(getQuickLinkCmd()))
+            ).append(Component.newline());
+        }
 
-            for (Key key : bookmarks) {
-                text.append(Component.text("- ")).append(
-                    Component.text(key.asMinimalString(), NamedTextColor.AQUA)
-                        .decorate(TextDecoration.UNDERLINED)
-                        .hoverEvent(HoverEvent.showText(Component.text("Click to view recipe")))
-                        .clickEvent(ClickEvent.runCommand(getQuickLinkCmd()))
-                ).append(Component.newline());
-            }
-
-            humanEntity.sendMessage(text.build());
-        };
+        humanEntity.sendMessage(text.build());
     }
 
     //#endregion Bookmark List
@@ -777,28 +653,13 @@ public class RecipeGui extends FastInv {
     //#region Bookmark Server List
 
     private void renderBookmarkServerListButton() {
-        setItem(BOOKMARK_SERVER_LIST_SLOT, bookmarkServerListItem(), bookmarkServerListAction());
+        setItem(BOOKMARK_SERVER_LIST_SLOT, guiComponent.createBookmarkServerListButton(), event -> bookmarkServerListAction(event));
     }
 
-    private ItemStack bookmarkServerListItem() {
-        ItemStack item = new ItemStack(Material.COMPASS);
-        item.editMeta(meta -> {
-            meta.displayName(Component.text("Server Bookmark List", NamedTextColor.WHITE));
-            meta.lore(List.of(
-                Component.text("View server-wide bookmarked recipes", NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false),
-                Component.text("Not implemented yet", NamedTextColor.RED).decoration(TextDecoration.ITALIC, false)
-            ));
-        });
-        // Maybe the toggle is just if there is no bookmarks on server don't show it
-        return item;
-    }
-
-    private Consumer<InventoryClickEvent> bookmarkServerListAction() {
-        return event -> {
-            HumanEntity humanEntity = event.getWhoClicked();
-            humanEntity.playSound(UI_CLICK_SOUND);
-            humanEntity.sendMessage(Component.text("Server bookmarked recipes feature is not implemented yet.", NamedTextColor.RED));
-        };
+    private void bookmarkServerListAction(InventoryClickEvent event) {
+        HumanEntity humanEntity = event.getWhoClicked();
+        humanEntity.playSound(UI_CLICK_SOUND);
+        humanEntity.sendMessage(Component.text("Server bookmarked recipes feature is not implemented yet.", NamedTextColor.RED));
     }
 
     //#endregion Bookmark Server List
@@ -806,40 +667,25 @@ public class RecipeGui extends FastInv {
     //#region QuickLink
 
     private void renderQuickLinkButton() {
-        setItem(QUICK_LINK_SLOT, quickLinkItem(), quickLinkAction());
+        setItem(QUICK_LINK_SLOT, guiComponent.createQuickLinkButton(), event -> quickLinkAction(event));
     }
 
-    private ItemStack quickLinkItem() {
+    private void quickLinkAction(InventoryClickEvent event) {
+        String quickLink = getQuickLinkCmd();
+        Component message = Component.text()
+            .color(NamedTextColor.GRAY)
+            .append(Component.text("Quick link "))
+            .append(Component
+                .text(quickLink)
+                .decorate(TextDecoration.UNDERLINED)
+                .hoverEvent(HoverEvent.showText(Component.text("Click to sugest")))
+                .clickEvent(ClickEvent.suggestCommand(quickLink))
+            )
+            .build();
 
-        ItemStack item = new ItemStack(Material.PAPER);
-        item.editMeta(meta -> {
-            meta.displayName(Component.text("Quick Link Command", NamedTextColor.WHITE));
-            meta.lore(List.of(
-                Component.text(getQuickLinkCmd(), NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false),
-                Component.text("Click to show in chat", NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)
-            ));
-        });
-        return item;
-    }
-
-    private Consumer<InventoryClickEvent> quickLinkAction() {
-        return event -> {
-            String quickLink = getQuickLinkCmd();
-            Component message = Component.text()
-                .color(NamedTextColor.GRAY)
-                .append(Component.text("Quick link "))
-                .append(Component
-                    .text(quickLink)
-                    .decorate(TextDecoration.UNDERLINED)
-                    .hoverEvent(HoverEvent.showText(Component.text("Click to sugest")))
-                    .clickEvent(ClickEvent.suggestCommand(quickLink))
-                )
-                .build();
-
-            HumanEntity humanEntity = event.getWhoClicked();
-            humanEntity.sendMessage(message);
-            humanEntity.playSound(UI_CLICK_SOUND);
-        };
+        HumanEntity humanEntity = event.getWhoClicked();
+        humanEntity.sendMessage(message);
+        humanEntity.playSound(UI_CLICK_SOUND);
     } 
 
     private String getQuickLinkCmd() {
@@ -858,43 +704,18 @@ public class RecipeGui extends FastInv {
     //#region Info
 
     private void renderInfoButton() {
-        setItem(INFO_SLOT, infoItem(), infoAction());
+        setItem(INFO_SLOT, guiComponent.createInfoButton(), event -> infoAction(event));
     }
 
-    private ItemStack infoItem() {
-        ItemStack item = new ItemStack(Material.OAK_SIGN);
-        item.editMeta(meta -> {
-            meta.displayName(Component.text(VanillaEnoughItems.PLUGIN_NAME + " Info", NamedTextColor.WHITE));
-            meta.lore(List.of(
-                Component.text("Not implemented yet", NamedTextColor.RED).decoration(TextDecoration.ITALIC, false)
-            ));
-        });
-        // maybe change to settings ?
-        return item;
-    }
-
-    private Consumer<InventoryClickEvent> infoAction() {
-        return event -> {
-            HumanEntity humanEntity = event.getWhoClicked();
-            humanEntity.playSound(UI_CLICK_SOUND);
-            humanEntity.sendMessage(Component.text(VanillaEnoughItems.PLUGIN_NAME + " info feature is not implemented yet.", NamedTextColor.RED));
-        };
+    private void infoAction(InventoryClickEvent event) {
+        HumanEntity humanEntity = event.getWhoClicked();
+        humanEntity.playSound(UI_CLICK_SOUND);
+        humanEntity.sendMessage(Component.text(VanillaEnoughItems.PLUGIN_NAME + " info feature is not implemented yet.", NamedTextColor.RED));
     }
 
     //#endregion Info
 
     //#region Helpers
-
-    private static ItemStack fillerItem() {
-        ItemStack item = ItemType.LIGHT_GRAY_STAINED_GLASS_PANE.createItemStack();
-
-        item.editMeta(meta -> {
-            meta.setMaxStackSize(1);
-            meta.setHideTooltip(true);
-            meta.setItemModel(new NamespacedKey(VanillaEnoughItems.NAMESPACE, "common/empty"));
-        });
-        return item;
-    }
 
     private void fillRange(Set<Integer> slots, ItemStack item) {
         for (int slot : slots) {

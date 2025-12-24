@@ -164,6 +164,8 @@ http-client.private.env.json
 ################## Project specific gitignore ##################
 ################################################################
 
+.assets_helper
+
 # Repository environment variables
 .env
 
