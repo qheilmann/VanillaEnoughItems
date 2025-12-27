@@ -191,7 +191,7 @@ public class FastInv implements InventoryHolder {
      * @param slot The slot where to add the item.
      * @param item The item to add.
      */
-    public void setItem(int slot, ItemStack item) {
+    public void setItem(int slot, @Nullable ItemStack item) {
         setItem(slot, item, null);
     }
 
@@ -201,7 +201,12 @@ public class FastInv implements InventoryHolder {
      * @param slot        The slot where to add the item.
      * @param fastInvItem The FastInvItem to add.
      */
-    public void setItem(int slot, FastInvItem fastInvItem) {
+    public void setItem(int slot, @Nullable FastInvItem fastInvItem) {
+        if (fastInvItem == null) {
+            setItem(slot, null, null);
+            return;
+        }
+
         setItem(slot, fastInvItem.itemStack(), fastInvItem.clickAction());
     }
 
@@ -212,7 +217,7 @@ public class FastInv implements InventoryHolder {
      * @param item    the item to add.
      * @param handler the click handler associated with this item
      */
-    public void setItem(int slot, ItemStack item, @Nullable Consumer<InventoryClickEvent> handler) {
+    public void setItem(int slot, @Nullable ItemStack item, @Nullable Consumer<InventoryClickEvent> handler) {
         this.inventory.setItem(slot, item);
 
         if (handler != null) {
@@ -229,7 +234,7 @@ public class FastInv implements InventoryHolder {
      * @param slotTo   ending slot (exclusive) to put the item in
      * @param item     The item to add.
      */
-    public void setItems(int slotFrom, int slotTo, ItemStack item) {
+    public void setItems(int slotFrom, int slotTo, @Nullable ItemStack item) {
         setItems(slotFrom, slotTo, item, null);
     }
 
@@ -240,7 +245,12 @@ public class FastInv implements InventoryHolder {
      * @param slotTo      ending slot (exclusive) to put the item in
      * @param fastInvItem The FastInvItem to add.
      */
-    public void setItems(int slotFrom, int slotTo, FastInvItem fastInvItem) {
+    public void setItems(int slotFrom, int slotTo, @Nullable FastInvItem fastInvItem) {
+        if (fastInvItem == null) {
+            setItems(slotFrom, slotTo, null, null);
+            return;
+        }
+
         setItems(slotFrom, slotTo, fastInvItem.itemStack(), fastInvItem.clickAction());
     }
 
@@ -252,7 +262,7 @@ public class FastInv implements InventoryHolder {
      * @param item     the item to add
      * @param handler  the click handler associated with these items
      */
-    public void setItems(int slotFrom, int slotTo, ItemStack item, @Nullable Consumer<InventoryClickEvent> handler) {
+    public void setItems(int slotFrom, int slotTo, @Nullable ItemStack item, @Nullable Consumer<InventoryClickEvent> handler) {
         for (int i = slotFrom; i < slotTo; i++) {
             setItem(i, item, handler);
         }
@@ -264,7 +274,7 @@ public class FastInv implements InventoryHolder {
      * @param slots the slots where to add the item
      * @param item  the item to add
      */
-    public void setItems(int[] slots, ItemStack item) {
+    public void setItems(int[] slots, @Nullable ItemStack item) {
         setItems(slots, item, null);
     }
 
@@ -274,7 +284,11 @@ public class FastInv implements InventoryHolder {
      * @param slots       the slots where to add the item
      * @param fastInvItem the FastInvItem to add
      */
-    public void setItems(int[] slots, FastInvItem fastInvItem) {
+    public void setItems(int[] slots, @Nullable FastInvItem fastInvItem) {
+        if (fastInvItem == null) {
+            setItems(slots, null, null);
+            return;
+        }
         setItems(slots, fastInvItem.itemStack(), fastInvItem.clickAction());
     }
 
@@ -285,7 +299,7 @@ public class FastInv implements InventoryHolder {
      * @param item    the item to add
      * @param handler the click handler associated with this item
      */
-    public void setItems(int[] slots, ItemStack item, @Nullable Consumer<InventoryClickEvent> handler) {
+    public void setItems(int[] slots, @Nullable ItemStack item, @Nullable Consumer<InventoryClickEvent> handler) {
         for (int slot : slots) {
             setItem(slot, item, handler);
         }
@@ -297,7 +311,7 @@ public class FastInv implements InventoryHolder {
      * @param slots the list of slots where to add the item
      * @param item  the item to add
      */
-    public void setItems(Iterable<Integer> slots, ItemStack item) {
+    public void setItems(Iterable<Integer> slots, @Nullable ItemStack item) {
         setItems(slots, item, null);
     }
 
@@ -307,7 +321,11 @@ public class FastInv implements InventoryHolder {
      * @param slots       the list of slots where to add the item
      * @param fastInvItem the FastInvItem to add
      */
-    public void setItems(Iterable<Integer> slots, FastInvItem fastInvItem) {
+    public void setItems(Iterable<Integer> slots, @Nullable FastInvItem fastInvItem) {
+        if (fastInvItem == null) {
+            setItems(slots, null, null);
+            return;
+        }
         setItems(slots, fastInvItem.itemStack(), fastInvItem.clickAction());
     }
 
@@ -318,7 +336,7 @@ public class FastInv implements InventoryHolder {
      * @param item    the item to add
      * @param handler the click handler associated with this item
      */
-    public void setItems(Iterable<Integer> slots, ItemStack item, @Nullable Consumer<InventoryClickEvent> handler) {
+    public void setItems(Iterable<Integer> slots, @Nullable ItemStack item, @Nullable Consumer<InventoryClickEvent> handler) {
         for (Integer slot : slots) {
             setItem(slot, item, handler);
         }
