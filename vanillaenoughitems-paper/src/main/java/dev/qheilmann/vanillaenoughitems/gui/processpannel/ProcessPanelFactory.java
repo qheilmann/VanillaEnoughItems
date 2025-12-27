@@ -3,6 +3,7 @@ package dev.qheilmann.vanillaenoughitems.gui.processpannel;
 import org.bukkit.inventory.Recipe;
 import org.jspecify.annotations.NullMarked;
 
+import dev.qheilmann.vanillaenoughitems.config.style.Style;
 import dev.qheilmann.vanillaenoughitems.recipe.process.Process;
 
 /**
@@ -19,5 +20,5 @@ public interface ProcessPanelFactory {
      * @param recipe the recipe to render
      * @return a new ProcessPanel
      */
-    ProcessPanel create(Recipe recipe);
+    ProcessPanel create(Recipe recipe, Style style);
 }

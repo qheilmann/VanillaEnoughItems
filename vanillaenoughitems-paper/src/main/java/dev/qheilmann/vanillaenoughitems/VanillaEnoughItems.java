@@ -112,7 +112,7 @@ public class VanillaEnoughItems extends JavaPlugin {
         recipeExtractor.registerExtractor(new TransmuteRecipeExtractor());
         
         ProcessRegistry processRegistry = new ProcessRegistry();
-        ProcessPanelRegistry processPanelRegistry = new ProcessPanelRegistry();
+        ProcessPanelRegistry processPanelRegistry = new ProcessPanelRegistry(recipeExtractor);
         addProcessesAndPanels(processRegistry, processPanelRegistry, new CraftingProcess(), CraftingProcessPanel::new); // most common
         addProcessesAndPanels(processRegistry, processPanelRegistry, new StonecuttingProcess(), StonecuttingProcessPanel::new);
         addProcessesAndPanels(processRegistry, processPanelRegistry, new SmeltingProcess(), SmeltingProcessPanel::new);

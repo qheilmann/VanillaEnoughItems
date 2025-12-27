@@ -5,6 +5,9 @@ import java.util.Map;
 
 import org.bukkit.inventory.Recipe;
 import org.jspecify.annotations.NullMarked;
+
+import dev.qheilmann.vanillaenoughitems.config.style.Style;
+import dev.qheilmann.vanillaenoughitems.recipe.extraction.RecipeExtractor;
 import dev.qheilmann.vanillaenoughitems.recipe.process.Process;
 
 /**
@@ -15,6 +18,11 @@ import dev.qheilmann.vanillaenoughitems.recipe.process.Process;
 public class ProcessPanelRegistry {
     
     private final Map<Process, ProcessPanelFactory> factories = new HashMap<>();
+    private final RecipeExtractor extractor;
+
+    public ProcessPanelRegistry(RecipeExtractor extractor) {
+        this.extractor = extractor;
+    }
 
     /**
      * Register a ProcessPanelProvider for the given process
@@ -35,14 +43,14 @@ public class ProcessPanelRegistry {
      * @return a new ProcessPanel for the given recipe
      * @throws IllegalArgumentException if no factory is registered for the given process
      */
-    public ProcessPanel createPanel(Process process, Recipe recipe) {       
+    public ProcessPanel createPanel(Process process, Recipe recipe, Style style) {       
         // Non registered factory
         if (!hasFactory(process)) {
-            throw new IllegalArgumentException("No ProcessPanelFactory registered for process: " + process.key());
+            return new ProcessPanel.UndefinedProcessPanel(recipe, style, extractor, process);
         }
 
         ProcessPanelFactory factory = factories.get(process);
-        return factory.create(recipe);
+        return factory.create(recipe, style);
     }
 
     public boolean hasFactory(Process process) {

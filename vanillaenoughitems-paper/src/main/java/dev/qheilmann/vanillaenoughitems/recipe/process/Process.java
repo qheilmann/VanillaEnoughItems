@@ -10,9 +10,9 @@ import org.bukkit.inventory.Recipe;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
-import dev.qheilmann.vanillaenoughitems.VanillaEnoughItems;
 import dev.qheilmann.vanillaenoughitems.recipe.process.Process;
 import dev.qheilmann.vanillaenoughitems.recipe.process.impl.CraftingProcess;
+import dev.qheilmann.vanillaenoughitems.utils.VeiKey;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.key.Keyed;
 import net.kyori.adventure.text.Component;
@@ -83,7 +83,7 @@ public interface Process extends Keyed{
 
     public static class UndefinedProcess implements Process {
 
-        public static final Key KEY = Key.key(VanillaEnoughItems.NAMESPACE,"undefined");
+        public static final Key KEY = VeiKey.key("undefined");
         public static final UndefinedProcess INSTANCE = new UndefinedProcess();
 
         private UndefinedProcess() {} // singleton
@@ -105,17 +105,22 @@ public interface Process extends Keyed{
 
         @Override
         public ItemStack symbol() {
-            return new ItemStack(Material.BARRIER);
+            ItemStack undefinedSymbol = new ItemStack(Material.BARRIER);
+            undefinedSymbol.editMeta(meta -> {
+                meta.displayName(Component.text("Undefined Process")); // [Translation]
+            });
+
+            return undefinedSymbol;
         }
 
         @Override
         public Set<Workbench> workbenches() {
-            ItemStack undefiedItem = new ItemStack(Material.BARRIER);
-            undefiedItem.editMeta(meta -> {
+            ItemStack undefiedWorkbench = new ItemStack(Material.BARRIER);
+            undefiedWorkbench.editMeta(meta -> {
                 meta.displayName(Component.text("Undefiened Workbench")); // [Translation]
             });
             
-            Workbench undefined = new Workbench(undefiedItem);
+            Workbench undefined = new Workbench(undefiedWorkbench);
 
             return Set.of(undefined);
         }
