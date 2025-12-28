@@ -9,10 +9,13 @@ import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.StonecuttingRecipe;
 import org.jspecify.annotations.NullMarked;
 
+import dev.qheilmann.vanillaenoughitems.config.style.Style;
 import dev.qheilmann.vanillaenoughitems.gui.CyclicIngredient;
+import dev.qheilmann.vanillaenoughitems.gui.RecipeGuiComponent;
 import dev.qheilmann.vanillaenoughitems.gui.RecipeGuiSharedButton;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPanel;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPannelSlot;
+import dev.qheilmann.vanillaenoughitems.pack.VeiPack;
 import dev.qheilmann.vanillaenoughitems.utils.fastinv.FastInvItem;
 
 /**
@@ -20,14 +23,17 @@ import dev.qheilmann.vanillaenoughitems.utils.fastinv.FastInvItem;
  */
 @NullMarked
 public class StonecuttingProcessPanel implements ProcessPanel {
-    private static final ProcessPannelSlot INPUT_SLOT = new ProcessPannelSlot(2, 2);
+    private static final ProcessPannelSlot INPUT_SLOT = new ProcessPannelSlot(1, 2);
     private static final ProcessPannelSlot OUTPUT_SLOT = new ProcessPannelSlot(5, 2);
-    private static final ProcessPannelSlot DECORATION_FIRE_SLOT = new ProcessPannelSlot(3, 2);
+    private static final ProcessPannelSlot DECORATION_STONECUTTER_SLOT = new ProcessPannelSlot(3, 2);
+    private static final ProcessPannelSlot BACKGROUND_SLOT = new ProcessPannelSlot(0, 0);
 
     private final Recipe recipe;
+    private final Style style;
 
-    public StonecuttingProcessPanel(Recipe recipe) {
+    public StonecuttingProcessPanel(Recipe recipe, Style style) {
         this.recipe = recipe;
+        this.style = style;
     }
 
     private StonecuttingRecipe getStonecuttingRecipe() {
@@ -39,7 +45,13 @@ public class StonecuttingProcessPanel implements ProcessPanel {
      */
     @Override
     public Map<RecipeGuiSharedButton, ProcessPannelSlot> getRecipeGuiButtonMap() {
-        return ProcessPannelSlot.defaultSharedButtonMap();
+        Map<RecipeGuiSharedButton, ProcessPannelSlot> shared = new HashMap<>();
+        shared.put(RecipeGuiSharedButton.NEXT_RECIPE,      ProcessPannelSlot.DEFAULT_NEXT_RECIPE_SLOT);
+        shared.put(RecipeGuiSharedButton.PREVIOUS_RECIPE,  ProcessPannelSlot.DEFAULT_PREVIOUS_RECIPE_SLOT);
+        shared.put(RecipeGuiSharedButton.HISTORY_FORWARD,  ProcessPannelSlot.DEFAULT_HISTORY_FORWARD_SLOT);
+        shared.put(RecipeGuiSharedButton.HISTORY_BACKWARD, ProcessPannelSlot.DEFAULT_HISTORY_BACKWARD_SLOT);
+        // No quick craft for stonecutting
+        return Map.copyOf(shared);
     }
 
     /**
@@ -67,7 +79,22 @@ public class StonecuttingProcessPanel implements ProcessPanel {
     @Override
     public Map<ProcessPannelSlot, FastInvItem> getStaticItems() {
         Map<ProcessPannelSlot, FastInvItem> statics = new HashMap<>();
-        statics.put(DECORATION_FIRE_SLOT, new FastInvItem(new ItemStack(Material.STONECUTTER), null));
-        return Map.copyOf(statics);
+
+        ItemStack backgroundItem = RecipeGuiComponent.createFillerItem(false);
+        ItemStack stonecutterItem = new ItemStack(Material.STONECUTTER);
+
+        if (style.hasResourcePack()) {
+            backgroundItem.editMeta(meta -> {
+                meta.setItemModel(VeiPack.ItemModel.Gui.Panel.StoneCutting.BACKGROUND);
+            });
+            stonecutterItem.editMeta(meta -> {
+                meta.setItemModel(VeiPack.ItemModel.Gui.Panel.RECIPE_ARROW);
+            });
+        }
+        
+        statics.put(BACKGROUND_SLOT, new FastInvItem(backgroundItem, null));
+        statics.put(DECORATION_STONECUTTER_SLOT, new FastInvItem(stonecutterItem, null));
+
+        return statics;
     }
 }

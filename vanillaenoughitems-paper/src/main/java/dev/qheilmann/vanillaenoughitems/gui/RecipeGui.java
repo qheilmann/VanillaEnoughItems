@@ -5,6 +5,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.NavigableSet;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.HumanEntity;
@@ -22,8 +23,8 @@ import dev.qheilmann.vanillaenoughitems.config.style.Style;
 import dev.qheilmann.vanillaenoughitems.gui.player.PlayerGuiData;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPanel;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPannelSlot;
-import dev.qheilmann.vanillaenoughitems.pack.VEIPack;
-import dev.qheilmann.vanillaenoughitems.pack.VEIPack.Character.Gui.GuiIcon;
+import dev.qheilmann.vanillaenoughitems.pack.VeiPack;
+import dev.qheilmann.vanillaenoughitems.pack.GuiIcon;
 import dev.qheilmann.vanillaenoughitems.recipe.RecipeContext;
 import dev.qheilmann.vanillaenoughitems.recipe.extraction.RecipeExtractor;
 import dev.qheilmann.vanillaenoughitems.recipe.index.reader.MultiProcessRecipeReader;
@@ -107,11 +108,8 @@ public class RecipeGui extends FastInv {
 
     private static Component title(Style style) {
         if (style.hasResourcePack()) {
-            GuiIcon guiIcon = VEIPack.Character.Gui.BLANK_54;
-            return Component.textOfChildren(
-                guiIcon.iconComponent(),
-                Component.text(guiIcon.resetString() + "Recipe")
-            );
+            GuiIcon guiIcon = VeiPack.Font.Gui.BLANK_54;
+            return guiIcon.iconComponent().append(Component.text(guiIcon.resetSpace() + "Recipe"));
         } else {
             return Component.text("Recipe");
         }
@@ -219,11 +217,11 @@ public class RecipeGui extends FastInv {
         fillRange(ProcessPannelSlot.all(), fillerItem);
 
         // Recipe reader dependent buttons
-        renderNextRecipeButton(sharedButtonSlots.get(RecipeGuiSharedButton.NEXT_RECIPE).toSlotIndex());
-        renderPreviousRecipeButton(sharedButtonSlots.get(RecipeGuiSharedButton.PREVIOUS_RECIPE).toSlotIndex());
-        renderForwardNavigationButton(sharedButtonSlots.get(RecipeGuiSharedButton.HISTORY_FORWARD).toSlotIndex());
-        renderBackwardNavigationButton(sharedButtonSlots.get(RecipeGuiSharedButton.HISTORY_BACKWARD).toSlotIndex());
-        renderQuickCraftButton(sharedButtonSlots.get(RecipeGuiSharedButton.QUICK_CRAFT).toSlotIndex());
+        renderSharedIfPresent(this::renderNextRecipeButton, sharedButtonSlots.get(RecipeGuiSharedButton.NEXT_RECIPE));
+        renderSharedIfPresent(this::renderPreviousRecipeButton, sharedButtonSlots.get(RecipeGuiSharedButton.PREVIOUS_RECIPE));
+        renderSharedIfPresent(this::renderForwardNavigationButton, sharedButtonSlots.get(RecipeGuiSharedButton.HISTORY_FORWARD));
+        renderSharedIfPresent(this::renderBackwardNavigationButton, sharedButtonSlots.get(RecipeGuiSharedButton.HISTORY_BACKWARD));
+        renderSharedIfPresent(this::renderQuickCraftButton, sharedButtonSlots.get(RecipeGuiSharedButton.QUICK_CRAFT));
         
         // refact all of this, make sub methodes
         startIngredientTicker(processPanel);
@@ -253,10 +251,19 @@ public class RecipeGui extends FastInv {
         }
     }
 
+    private void renderSharedIfPresent(Consumer<Integer> runnable, ProcessPannelSlot processPannelSlot) {
+        if (processPannelSlot != null) {
+            if (runnable != null) {
+                runnable.accept(processPannelSlot.toSlotIndex());
+            }
+        }
+    }
+
     private ProcessPanel generateCurrentPanel() {
         ProcessPanel newPanel = context.getProcessPanelRegistry().createPanel(
             getCurrentProcess(),
-            getCurrentRecipe()
+            getCurrentRecipe(),
+            style
         );
 
         return newPanel;

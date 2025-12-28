@@ -3,13 +3,12 @@ package dev.qheilmann.vanillaenoughitems.gui;
 import java.util.List;
 
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ItemType;
 import org.jspecify.annotations.NullMarked;
 
-import dev.qheilmann.vanillaenoughitems.VanillaEnoughItems;
 import dev.qheilmann.vanillaenoughitems.config.style.Style;
+import dev.qheilmann.vanillaenoughitems.pack.VeiPack;
 import dev.qheilmann.vanillaenoughitems.utils.playerhead.PlayerHeadRegistry;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -41,7 +40,7 @@ public class RecipeGuiComponent {
 
         if (hasResourcePack) {
             item.editMeta(meta -> {
-                meta.setItemModel(new NamespacedKey(VanillaEnoughItems.NAMESPACE, "recipegui/right_arrow"));
+                meta.setItemModel(VeiPack.ItemModel.Gui.Common.FORWARD);
             });
         }
 
@@ -56,7 +55,7 @@ public class RecipeGuiComponent {
 
         if (hasResourcePack) {
             item.editMeta(meta -> {
-                meta.setItemModel(new NamespacedKey(VanillaEnoughItems.NAMESPACE, "recipegui/left_arrow"));
+                meta.setItemModel(VeiPack.ItemModel.Gui.Common.BACKWARD);
             });
         }
 
@@ -64,14 +63,14 @@ public class RecipeGuiComponent {
     }
 
     public ItemStack createForwardNavigationButton() {
-        ItemStack item = PlayerHeadRegistry.quartzForwardII();
+        ItemStack item = PlayerHeadRegistry.quartzForwardDouble();
         item.editMeta(meta -> {
             meta.displayName(Component.text("Forward in History", colorPrimary).decoration(TextDecoration.ITALIC, false));
         });
 
         if (hasResourcePack) {
             item.editMeta(meta -> {
-                meta.setItemModel(new NamespacedKey(VanillaEnoughItems.NAMESPACE, "recipegui/right_arrow"));
+                meta.setItemModel(VeiPack.ItemModel.Gui.Common.FORWARD_DOUBLE);
             });
         }
 
@@ -79,14 +78,14 @@ public class RecipeGuiComponent {
     }
 
     public ItemStack createBackwardNavigationButton() {
-        ItemStack item = PlayerHeadRegistry.quartzBackwardII();
+        ItemStack item = PlayerHeadRegistry.quartzBackwardDouble();
         item.editMeta(meta -> {
             meta.displayName(Component.text("Backward in History", colorPrimary).decoration(TextDecoration.ITALIC, false));
         });
 
         if (hasResourcePack) {
             item.editMeta(meta -> {
-                meta.setItemModel(new NamespacedKey(VanillaEnoughItems.NAMESPACE, "recipegui/left_arrow"));
+                meta.setItemModel(VeiPack.ItemModel.Gui.Common.BACKWARD_DOUBLE);
             });
         }
 
@@ -98,10 +97,21 @@ public class RecipeGuiComponent {
     //#region Bookmark Buttons
 
     public ItemStack createBookmarkButton(boolean isBookmarked) {
-        ItemStack item = isBookmarked ? ItemType.YELLOW_CANDLE.createItemStack() : ItemType.WHITE_CANDLE.createItemStack();
+        ItemStack item = isBookmarked ? ItemType.ORANGE_CANDLE.createItemStack() : ItemType.WHITE_CANDLE.createItemStack();
         item.editMeta(meta -> {
             meta.displayName(Component.text("Bookmark this recipe", NamedTextColor.WHITE));
         });
+
+        if (hasResourcePack) {
+            item.editMeta(meta -> {
+                if (isBookmarked) {
+                    meta.setItemModel(VeiPack.ItemModel.Gui.Common.BOOKMARK_UNBOOKMARK);
+                } else {
+                    meta.setItemModel(VeiPack.ItemModel.Gui.Common.BOOKMARK_BOOKMARK);
+                }
+            });
+        }
+
         return item;
     }
 
@@ -113,6 +123,13 @@ public class RecipeGuiComponent {
                 Component.text("Click to open your bookmark list", NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)
             ));
         });
+
+        if (hasResourcePack) {
+            item.editMeta(meta -> {
+                meta.setItemModel(VeiPack.ItemModel.Gui.Common.BOOKMARK_LIST);
+            });
+        }
+
         return item;
     }
 
@@ -121,10 +138,16 @@ public class RecipeGuiComponent {
         item.editMeta(meta -> {
             meta.displayName(Component.text("Server Bookmarks", NamedTextColor.WHITE));
             meta.lore(List.of(
-                Component.text("Click to see server-wide bookmarks", NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false),
-                Component.text("(Recipes shared by the community)", NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)
+                Component.text("Click to see server-wide bookmarks", NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)
             ));
         });
+
+        if (hasResourcePack) {
+            item.editMeta(meta -> {
+                meta.setItemModel(VeiPack.ItemModel.Gui.Common.BOOKMARK_SERVER);
+            });
+        }
+
         return item;
     }
 
@@ -140,6 +163,13 @@ public class RecipeGuiComponent {
                 Component.text("+ " + moreCount + " more to the left", NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)
             ));
         });
+
+        if (hasResourcePack) {
+            item.editMeta(meta -> {
+                meta.setItemModel(VeiPack.ItemModel.Gui.Common.ARROW_LEFT);
+            });
+        }
+
         return item;
     }
 
@@ -151,6 +181,13 @@ public class RecipeGuiComponent {
                 Component.text("+ " + moreCount + " more to the right", NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)
             ));
         });
+
+        if (hasResourcePack) {
+            item.editMeta(meta -> {
+                meta.setItemModel(VeiPack.ItemModel.Gui.Common.ARROW_RIGHT);
+            });
+        }
+
         return item;
     }
 
@@ -162,6 +199,13 @@ public class RecipeGuiComponent {
                 Component.text("+ " + moreCount + " more above", NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)
             ));
         });
+
+        if (hasResourcePack) {
+            item.editMeta(meta -> {
+                meta.setItemModel(VeiPack.ItemModel.Gui.Common.ARROW_UP);
+            });
+        }
+
         return item;
     }
 
@@ -173,6 +217,13 @@ public class RecipeGuiComponent {
                 Component.text("+ " + moreCount + " more below", NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)
             ));
         });
+
+        if (hasResourcePack) {
+            item.editMeta(meta -> {
+                meta.setItemModel(VeiPack.ItemModel.Gui.Common.ARROW_DOWN);
+            });
+        }
+
         return item;
     }
 
@@ -188,6 +239,13 @@ public class RecipeGuiComponent {
                 Component.text("Click for more information", NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)
             ));
         });
+
+        if (hasResourcePack) {
+            item.editMeta(meta -> {
+                meta.setItemModel(VeiPack.ItemModel.Gui.Common.INFO);
+            });
+        }
+
         return item;
     }
 
@@ -200,6 +258,13 @@ public class RecipeGuiComponent {
                 Component.text("that opens this recipe", NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)
             ));
         });
+
+        if (hasResourcePack) {
+            item.editMeta(meta -> {
+                meta.setItemModel(VeiPack.ItemModel.Gui.Common.QUICKLINK);
+            });
+        }
+
         return item;
     }
 
@@ -208,6 +273,13 @@ public class RecipeGuiComponent {
         item.editMeta(meta -> {
             meta.displayName(Component.text("Quick Craft", NamedTextColor.WHITE));
         });
+
+        if (hasResourcePack) {
+            item.editMeta(meta -> {
+                meta.setItemModel(VeiPack.ItemModel.Gui.Common.PLUS);
+            });
+        }
+
         return item;
     }
 
@@ -216,6 +288,10 @@ public class RecipeGuiComponent {
     //#region Others
 
     public ItemStack createFillerItem() {
+        return createFillerItem(hasResourcePack);
+    }
+
+    public static ItemStack createFillerItem(boolean hasResourcePack) {
         ItemStack item = ItemType.LIGHT_GRAY_STAINED_GLASS_PANE.createItemStack();
         item.editMeta(meta -> {
             meta.setMaxStackSize(1);
@@ -224,9 +300,10 @@ public class RecipeGuiComponent {
 
         if (hasResourcePack) {
             item.editMeta(meta -> {
-                meta.setItemModel(new NamespacedKey(VanillaEnoughItems.NAMESPACE, "common/empty"));
+                meta.setItemModel(VeiPack.ItemModel.Common.EMPTY);
             });
         }
+
         return item;
     }
 

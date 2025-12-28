@@ -1,0 +1,6 @@
+{
+    "model": {
+        "type": "minecraft:model",
+        "model": "vanillaenoughitems:item/gui/panel/recipe_arrow_small"
+    }
+}

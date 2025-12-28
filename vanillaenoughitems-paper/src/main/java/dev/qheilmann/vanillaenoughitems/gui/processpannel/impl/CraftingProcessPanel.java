@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.bukkit.inventory.CraftingRecipe;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.RecipeChoice;
@@ -13,10 +14,14 @@ import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.inventory.TransmuteRecipe;
 import org.jspecify.annotations.NullMarked;
 
+import dev.qheilmann.vanillaenoughitems.VanillaEnoughItems;
+import dev.qheilmann.vanillaenoughitems.config.style.Style;
 import dev.qheilmann.vanillaenoughitems.gui.CyclicIngredient;
+import dev.qheilmann.vanillaenoughitems.gui.RecipeGuiComponent;
 import dev.qheilmann.vanillaenoughitems.gui.RecipeGuiSharedButton;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPanel;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPannelSlot;
+import dev.qheilmann.vanillaenoughitems.pack.VeiPack;
 import dev.qheilmann.vanillaenoughitems.utils.fastinv.FastInvItem;
 
 /**
@@ -27,6 +32,7 @@ public class CraftingProcessPanel implements ProcessPanel {
 
     private static final ProcessPannelSlot OUTPUT_SLOT = new ProcessPannelSlot(5, 2);
     public static final ProcessPannelSlot DECORATION_CRAFTING_TABLE_SLOT = new ProcessPannelSlot(4, 2);
+    public static final ProcessPannelSlot BACKGROUND_SLOT = new ProcessPannelSlot(0, 0);
     private static final ProcessPannelSlot[][] CRAFTING_GRID_SLOTS = {
         { new ProcessPannelSlot(1, 1), new ProcessPannelSlot(2, 1), new ProcessPannelSlot(3, 1) },
         { new ProcessPannelSlot(1, 2), new ProcessPannelSlot(2, 2), new ProcessPannelSlot(3, 2) },
@@ -34,9 +40,11 @@ public class CraftingProcessPanel implements ProcessPanel {
     };
 
     private final Recipe recipe;
+    private final Style style;
 
-    public CraftingProcessPanel(Recipe recipe) {
+    public CraftingProcessPanel(Recipe recipe, Style style) {
         this.recipe = recipe;
+        this.style = VanillaEnoughItems.config().style();
     }
 
     public CraftingRecipe getCraftingRecipe() {
@@ -64,8 +72,22 @@ public class CraftingProcessPanel implements ProcessPanel {
     @Override
     public Map<ProcessPannelSlot, FastInvItem> getStaticItems() {
         Map<ProcessPannelSlot, FastInvItem> statics = new HashMap<>();
-        statics.put(DECORATION_CRAFTING_TABLE_SLOT, new FastInvItem(ItemType.CRAFTING_TABLE.createItemStack(), null));
-        return Map.copyOf(statics);
+        
+        ItemStack backgroundItem = RecipeGuiComponent.createFillerItem(false);
+        ItemStack craftingTableItem = ItemType.CRAFTING_TABLE.createItemStack();
+        
+        if (style.hasResourcePack()) {
+            backgroundItem.editMeta(meta -> {
+                meta.setItemModel(VeiPack.ItemModel.Gui.Panel.Crafting.BACKGROUND);
+            });
+            craftingTableItem.editMeta(meta -> {
+                meta.setItemModel(VeiPack.ItemModel.Gui.Panel.RECIPE_ARROW_SMALL);
+            });
+        }
+
+        statics.put(BACKGROUND_SLOT, new FastInvItem(backgroundItem, null));
+        statics.put(DECORATION_CRAFTING_TABLE_SLOT, new FastInvItem(craftingTableItem, null));
+        return statics;
     }
 
     // Helpers

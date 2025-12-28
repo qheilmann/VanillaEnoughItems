@@ -4,9 +4,9 @@ import org.bukkit.inventory.ItemStack;
 
 public class PlayerHeadRegistry {
     private static final ItemStack QUARTZ_FORWARD                  = PlayerHead.fromTextureValue("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMTdiMDNiNzFkM2Y4NjIyMGVmMTIyZjk4MzFhNzI2ZWIyYjI4MzMxOWM3YjYyZTdkY2QyZDY0ZDk2ODIifX19");         // https://minecraft-heads.com/custom-heads/head/11210-quartz-forward
-    private static final ItemStack QUARTZ_FORWARD_II               = PlayerHead.fromTextureValue("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYjU0ZmFiYjE2NjRiOGI0ZDhkYjI4ODk0NzZjNmZlZGRiYjQ1MDVlYmE0Mjg3OGM2NTNhNWQ3OTNmNzE5YjE2In19fQ=="); // https://minecraft-heads.com/custom-heads/head/11211-quartz-forward-ii
+    private static final ItemStack QUARTZ_FORWARD_DOUBLE           = PlayerHead.fromTextureValue("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYjU0ZmFiYjE2NjRiOGI0ZDhkYjI4ODk0NzZjNmZlZGRiYjQ1MDVlYmE0Mjg3OGM2NTNhNWQ3OTNmNzE5YjE2In19fQ=="); // https://minecraft-heads.com/custom-heads/head/11211-quartz-forward-ii
     private static final ItemStack QUARTZ_BACKWARD                 = PlayerHead.fromTextureValue("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNDgzNDhhYTc3ZjlmYjJiOTFlZWY2NjJiNWM4MWI1Y2EzMzVkZGVlMWI5MDVmM2E4YjkyMDk1ZDBhMWYxNDEifX19");     // https://minecraft-heads.com/custom-heads/head/11212-quartz-backward
-    private static final ItemStack QUARTZ_BACKWARD_II              = PlayerHead.fromTextureValue("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNGMzMDFhMTdjOTU1ODA3ZDg5ZjljNzJhMTkyMDdkMTM5M2I4YzU4YzRlNmU0MjBmNzE0ZjY5NmE4N2ZkZCJ9fX0=");     // https://minecraft-heads.com/custom-heads/head/11213-quartz-backward-ii
+    private static final ItemStack QUARTZ_BACKWARD_DOUBLE          = PlayerHead.fromTextureValue("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNGMzMDFhMTdjOTU1ODA3ZDg5ZjljNzJhMTkyMDdkMTM5M2I4YzU4YzRlNmU0MjBmNzE0ZjY5NmE4N2ZkZCJ9fX0=");     // https://minecraft-heads.com/custom-heads/head/11213-quartz-backward-ii
     private static final ItemStack QUARTZ_ARROW_UP                 = PlayerHead.fromTextureValue("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYTk5YWFmMjQ1NmE2MTIyZGU4ZjZiNjI2ODNmMmJjMmVlZDlhYmI4MWZkNWJlYTFiNGMyM2E1ODE1NmI2NjkifX19");     // https://minecraft-heads.com/custom-heads/head/11214-quartz-arrow-up
     private static final ItemStack QUARTZ_ARROW_RIGHT              = PlayerHead.fromTextureValue("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZTNmYzUyMjY0ZDhhZDllNjU0ZjQxNWJlZjAxYTIzOTQ3ZWRiY2NjY2Y2NDkzNzMyODliZWE0ZDE0OTU0MWY3MCJ9fX0="); // https://minecraft-heads.com/custom-heads/head/11215-quartz-arrow-right
     private static final ItemStack QUARTZ_ARROW_LEFT               = PlayerHead.fromTextureValue("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNWYxMzNlOTE5MTlkYjBhY2VmZGMyNzJkNjdmZDg3YjRiZTg4ZGM0NGE5NTg5NTg4MjQ0NzRlMjFlMDZkNTNlNiJ9fX0="); // https://minecraft-heads.com/custom-heads/head/11218-quartz-arrow-left
@@ -22,9 +22,9 @@ public class PlayerHeadRegistry {
 
     // return defensive copies to prevent mutation
     public static ItemStack quartzForward()                { return QUARTZ_FORWARD.clone();                  }
-    public static ItemStack quartzForwardII()              { return QUARTZ_FORWARD_II.clone();               }
+    public static ItemStack quartzForwardDouble()          { return QUARTZ_FORWARD_DOUBLE.clone();           }
     public static ItemStack quartzBackward()               { return QUARTZ_BACKWARD.clone();                 }
-    public static ItemStack quartzBackwardII()             { return QUARTZ_BACKWARD_II.clone();              }
+    public static ItemStack quartzBackwardDouble()         { return QUARTZ_BACKWARD_DOUBLE.clone();          }
     public static ItemStack quartzArrowUp()                { return QUARTZ_ARROW_UP.clone();                 }
     public static ItemStack quartzArrowRight()             { return QUARTZ_ARROW_RIGHT.clone();              }
     public static ItemStack quartzArrowLeft()              { return QUARTZ_ARROW_LEFT.clone();               }

@@ -1,0 +1,16 @@
+{
+    "model": {
+        "type": "minecraft:composite",
+        "models": [
+            {
+                "type": "minecraft:model",
+                "model": "vanillaenoughitems:item/gui/common/button_background_m2px"
+            },
+            {
+                "type": "minecraft:model",
+                "model": "vanillaenoughitems:item/gui/common/backward_double"
+            }
+        ]
+    },
+    "oversized_in_gui": true
+}
