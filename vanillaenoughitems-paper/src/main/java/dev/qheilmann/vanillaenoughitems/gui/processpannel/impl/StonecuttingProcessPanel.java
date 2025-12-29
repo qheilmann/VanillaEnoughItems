@@ -30,10 +30,12 @@ public class StonecuttingProcessPanel implements ProcessPanel {
 
     private final Recipe recipe;
     private final Style style;
+    private final int seed;
 
     public StonecuttingProcessPanel(Recipe recipe, Style style) {
         this.recipe = recipe;
         this.style = style;
+        this.seed = (int) (Math.random() * Integer.MAX_VALUE);
     }
 
     private StonecuttingRecipe getStonecuttingRecipe() {
@@ -60,7 +62,7 @@ public class StonecuttingProcessPanel implements ProcessPanel {
     @Override
     public Map<ProcessPannelSlot, CyclicIngredient> getTickedIngredient() {
         Map<ProcessPannelSlot, CyclicIngredient> ticked = new HashMap<>();
-        ticked.put(INPUT_SLOT, new CyclicIngredient(getStonecuttingRecipe().getInputChoice()));
+        ticked.put(INPUT_SLOT, new CyclicIngredient(seed, getStonecuttingRecipe().getInputChoice()));
         return Map.copyOf(ticked);
     }
 
@@ -70,7 +72,7 @@ public class StonecuttingProcessPanel implements ProcessPanel {
     @Override
     @SuppressWarnings("null")
     public Map<ProcessPannelSlot, CyclicIngredient> getTickedResults() {
-        return Map.of(OUTPUT_SLOT, new CyclicIngredient(getStonecuttingRecipe().getResult()));
+        return Map.of(OUTPUT_SLOT, new CyclicIngredient(seed, getStonecuttingRecipe().getResult()));
     }
 
     /**

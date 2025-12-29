@@ -1,5 +1,7 @@
 package dev.qheilmann.vanillaenoughitems.gui;
 
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -224,18 +226,21 @@ public class RecipeGui extends FastInv {
         renderSharedIfPresent(this::renderQuickCraftButton, sharedButtonSlots.get(RecipeGuiSharedButton.QUICK_CRAFT));
         
         // refact all of this, make sub methodes
-        startIngredientTicker(processPanel);
+        Map<ProcessPannelSlot, CyclicIngredient> tickedIngredient = processPanel.getTickedIngredient();
+        Map<ProcessPannelSlot, CyclicIngredient> tickedResults = processPanel.getTickedResults();
+        
+        Map<ProcessPannelSlot, CyclicIngredient> allTicked = new HashMap<>(tickedIngredient);
+        allTicked.putAll(tickedResults);
+        startIngredientTicker(allTicked);
 
         // Place ticked ingredient slots
-        Map<ProcessPannelSlot, CyclicIngredient> tickedSlots = processPanel.getTickedIngredient();
-        for (Map.Entry<ProcessPannelSlot, CyclicIngredient> entry : tickedSlots.entrySet()) {
+        for (Map.Entry<ProcessPannelSlot, CyclicIngredient> entry : tickedIngredient.entrySet()) {
             ProcessPannelSlot panelSlot = entry.getKey();
             CyclicIngredient view = entry.getValue();
             setItem(panelSlot.toSlotIndex(), view.getCurrentItem(), event -> changeRecipeAction(event));
         }
 
         // Place ticked result slots
-        Map<ProcessPannelSlot, CyclicIngredient> tickedResults = processPanel.getTickedResults();
         for (Map.Entry<ProcessPannelSlot, CyclicIngredient> entry : tickedResults.entrySet()) {
             ProcessPannelSlot panelSlot = entry.getKey();
             CyclicIngredient view = entry.getValue();
@@ -269,22 +274,20 @@ public class RecipeGui extends FastInv {
         return newPanel;
     }
 
-    private void startIngredientTicker(ProcessPanel processPanel) {
+    private void startIngredientTicker(Map<ProcessPannelSlot, CyclicIngredient> tickedSlots) {
         if (tickTask != null) {
             tickTask.cancel();
         }
         tickTask = Bukkit.getScheduler().runTaskTimer(
-            VanillaEnoughItems.getPlugin(VanillaEnoughItems.class),
-            () -> tickIngredients(processPanel),
+            VanillaEnoughItems.getPlugin(),
+            () -> tickIngredients(tickedSlots),
             INGREDIENT_TICK_INTERVAL,
             INGREDIENT_TICK_INTERVAL
         );
     }
 
-    private void tickIngredients(ProcessPanel currentPanel) {
-        VanillaEnoughItems.LOGGER.info("Ticking ingredients in RecipeGui time since last tick" + System.currentTimeMillis()); // TEMP
-
-        for (Map.Entry<ProcessPannelSlot, CyclicIngredient> entry : currentPanel.getTickedIngredient().entrySet()) {
+    private void tickIngredients(Map<ProcessPannelSlot, CyclicIngredient> tickedSlots) {
+        for (Map.Entry<ProcessPannelSlot, CyclicIngredient> entry : tickedSlots.entrySet()) {
             CyclicIngredient cyclic = entry.getValue();
             if (!cyclic.hasMultipleOptions()) {
                 continue;

@@ -33,10 +33,12 @@ public class SmokingProcessPanel implements ProcessPanel {
 
     private final Recipe recipe;
     private final Style style;
+    private final int seed;
 
     public SmokingProcessPanel(Recipe recipe, Style style) {
         this.recipe = recipe;
         this.style = style;
+        this.seed = (int) (Math.random() * Integer.MAX_VALUE);
     }
 
     private SmokingRecipe getSmokingRecipe() {
@@ -57,18 +59,18 @@ public class SmokingProcessPanel implements ProcessPanel {
     @Override
     public Map<ProcessPannelSlot, CyclicIngredient> getTickedIngredient() {
         Map<ProcessPannelSlot, CyclicIngredient> ticked = new HashMap<>();
-        ticked.put(INPUT_SLOT, new CyclicIngredient(getSmokingRecipe().getInputChoice()));
-        ticked.put(FUEL_SLOT, new CyclicIngredient(Fuels.FUELS.toArray(new ItemStack[0])));
+        ticked.put(INPUT_SLOT, new CyclicIngredient(seed, getSmokingRecipe().getInputChoice()));
+        ticked.put(FUEL_SLOT, new CyclicIngredient(seed, Fuels.FUELS.toArray(new ItemStack[0])));
         return Map.copyOf(ticked);
     }
-    
+
     /**
      * {@inheritDoc}
      */
     @Override
     @SuppressWarnings("null")
     public Map<ProcessPannelSlot, CyclicIngredient> getTickedResults() {
-        return Map.of(OUTPUT_SLOT, new CyclicIngredient(getSmokingRecipe().getResult()));
+        return Map.of(OUTPUT_SLOT, new CyclicIngredient(seed, getSmokingRecipe().getResult()));
     }
 
     /**

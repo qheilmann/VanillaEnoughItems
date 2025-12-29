@@ -35,10 +35,12 @@ public class SmithingProcessPanel implements ProcessPanel {
 
     private final Recipe recipe;
     private final Style style;
+    private final int seed;
 
     public SmithingProcessPanel(Recipe recipe, Style style) {
         this.recipe = recipe;
         this.style = style;
+        this.seed = (int) (Math.random() * Integer.MAX_VALUE);
     }
 
     private SmithingRecipe getSmithingRecipe() {
@@ -53,16 +55,16 @@ public class SmithingProcessPanel implements ProcessPanel {
     @Override
     public Map<ProcessPannelSlot, CyclicIngredient> getTickedIngredient() {
         Map<ProcessPannelSlot, CyclicIngredient> ticked = new HashMap<>();
-        ticked.put(TEMPLATE_SLOT, new CyclicIngredient(getTemplateChoice(getSmithingRecipe())));
-        ticked.put(BASE_SLOT, new CyclicIngredient(getSmithingRecipe().getBase()));
-        ticked.put(ADDITION_SLOT, new CyclicIngredient(getSmithingRecipe().getAddition()));
+        ticked.put(TEMPLATE_SLOT, new CyclicIngredient(seed, getTemplateChoice(getSmithingRecipe())));
+        ticked.put(BASE_SLOT, new CyclicIngredient(seed, getSmithingRecipe().getBase()));
+        ticked.put(ADDITION_SLOT, new CyclicIngredient(seed, getSmithingRecipe().getAddition()));
         return Map.copyOf(ticked);
     }
 
     @Override
     @SuppressWarnings("null")
     public Map<ProcessPannelSlot, CyclicIngredient> getTickedResults() {
-        return Map.of(OUTPUT_SLOT, new CyclicIngredient(getSmithingRecipe().getResult()));
+        return Map.of(OUTPUT_SLOT, new CyclicIngredient(seed, getSmithingRecipe().getResult()));
     }
 
     @Override

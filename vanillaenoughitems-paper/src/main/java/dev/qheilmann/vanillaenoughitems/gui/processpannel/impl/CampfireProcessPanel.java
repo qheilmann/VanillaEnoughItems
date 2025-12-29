@@ -31,10 +31,12 @@ public class CampfireProcessPanel implements ProcessPanel {
 
     private final Recipe recipe;
     private final Style style;
+    private final int seed;
 
     public CampfireProcessPanel(Recipe recipe, Style style) {
         this.recipe = recipe;
         this.style = style;
+        this.seed = (int) (Math.random() * Integer.MAX_VALUE);
     }
 
     private CampfireRecipe getCampfireRecipe() {
@@ -55,7 +57,7 @@ public class CampfireProcessPanel implements ProcessPanel {
     @Override
     public Map<ProcessPannelSlot, CyclicIngredient> getTickedIngredient() {
         Map<ProcessPannelSlot, CyclicIngredient> ticked = new HashMap<>();
-        ticked.put(INPUT_SLOT, new CyclicIngredient(getCampfireRecipe().getInputChoice()));
+        ticked.put(INPUT_SLOT, new CyclicIngredient(seed, getCampfireRecipe().getInputChoice()));
         return Map.copyOf(ticked);
     }
 
@@ -65,7 +67,7 @@ public class CampfireProcessPanel implements ProcessPanel {
     @Override
     @SuppressWarnings("null")
     public Map<ProcessPannelSlot, CyclicIngredient> getTickedResults() {
-        return Map.of(OUTPUT_SLOT, new CyclicIngredient(getCampfireRecipe().getResult()));
+        return Map.of(OUTPUT_SLOT, new CyclicIngredient(seed, getCampfireRecipe().getResult()));
     }
     
     /**

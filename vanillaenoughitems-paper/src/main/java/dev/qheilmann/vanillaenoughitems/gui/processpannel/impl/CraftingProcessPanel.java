@@ -41,10 +41,12 @@ public class CraftingProcessPanel implements ProcessPanel {
 
     private final Recipe recipe;
     private final Style style;
+    private final int seed;
 
     public CraftingProcessPanel(Recipe recipe, Style style) {
         this.recipe = recipe;
         this.style = VanillaEnoughItems.config().style();
+        this.seed = (int) (Math.random() * Integer.MAX_VALUE);
     }
 
     public CraftingRecipe getCraftingRecipe() {
@@ -59,14 +61,14 @@ public class CraftingProcessPanel implements ProcessPanel {
     @Override
     public Map<ProcessPannelSlot, CyclicIngredient> getTickedIngredient() {
         Map<ProcessPannelSlot, CyclicIngredient> ticked = new HashMap<>();
-        ticked.putAll(mapRecipeMatrixToSlots(getRecipeMatrix(getCraftingRecipe())));
+        ticked.putAll(mapRecipeMatrixToSlots(getRecipeMatrix(getCraftingRecipe()), seed));
         return Map.copyOf(ticked);
     }
 
     @Override
     @SuppressWarnings("null")
     public Map<ProcessPannelSlot, CyclicIngredient> getTickedResults() {
-        return Map.of(OUTPUT_SLOT, new CyclicIngredient(getCraftingRecipe().getResult()));
+        return Map.of(OUTPUT_SLOT, new CyclicIngredient(seed, getCraftingRecipe().getResult()));
     }
 
     @Override
@@ -92,14 +94,14 @@ public class CraftingProcessPanel implements ProcessPanel {
 
     // Helpers
 
-    private static Map<ProcessPannelSlot, CyclicIngredient> mapRecipeMatrixToSlots(RecipeChoice[][] recipeMatrix) {
+    private static Map<ProcessPannelSlot, CyclicIngredient> mapRecipeMatrixToSlots(RecipeChoice[][] recipeMatrix, int seed) {
         Map<ProcessPannelSlot, CyclicIngredient> mapped = new HashMap<>();
 
         for (int y = 0; y < recipeMatrix.length; y++) {
             for (int x = 0; x < recipeMatrix[y].length; x++) {
                 RecipeChoice choice = recipeMatrix[y][x];
                 if (choice != null) {
-                    mapped.put(CRAFTING_GRID_SLOTS[y][x], new CyclicIngredient(choice));
+                    mapped.put(CRAFTING_GRID_SLOTS[y][x], new CyclicIngredient(seed, choice));
                 }
             }
         }

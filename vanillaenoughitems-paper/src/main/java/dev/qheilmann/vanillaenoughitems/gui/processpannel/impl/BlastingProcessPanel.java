@@ -33,10 +33,12 @@ public class BlastingProcessPanel implements ProcessPanel {
 
     private final Recipe recipe;
     private final Style style;
+    private final int seed;
 
     public BlastingProcessPanel(Recipe recipe, Style style) {
         this.recipe = recipe;
         this.style = style;
+        this.seed = (int) (Math.random() * Integer.MAX_VALUE);
     }
 
     private BlastingRecipe getBlastingRecipe() {
@@ -57,8 +59,8 @@ public class BlastingProcessPanel implements ProcessPanel {
     @Override
     public Map<ProcessPannelSlot, CyclicIngredient> getTickedIngredient() {
         Map<ProcessPannelSlot, CyclicIngredient> ticked = new HashMap<>();
-        ticked.put(INPUT_SLOT, new CyclicIngredient(getBlastingRecipe().getInputChoice()));
-        ticked.put(FUEL_SLOT, new CyclicIngredient(Fuels.FUELS.toArray(new ItemStack[0])));
+        ticked.put(INPUT_SLOT, new CyclicIngredient(seed, getBlastingRecipe().getInputChoice()));
+        ticked.put(FUEL_SLOT, new CyclicIngredient(seed, Fuels.FUELS.toArray(new ItemStack[0])));
         return Map.copyOf(ticked);
     }
 
@@ -68,7 +70,7 @@ public class BlastingProcessPanel implements ProcessPanel {
     @Override
     @SuppressWarnings("null")
     public Map<ProcessPannelSlot, CyclicIngredient> getTickedResults() {
-        return Map.of(OUTPUT_SLOT, new CyclicIngredient(getBlastingRecipe().getResult()));
+        return Map.of(OUTPUT_SLOT, new CyclicIngredient(seed, getBlastingRecipe().getResult()));
     }
     
     /**

@@ -18,30 +18,28 @@ public class CyclicIngredient {
     private int currentIndex;
 
     /**
-     * Create an IngredientView from a RecipeChoice
+     * Create an CyclicIngredient from a RecipeChoice.
      * @param choice the recipe choice to create from
+     * @param seed a seed value to randomize starting position (same seed = same offset for all items)
      */
-    public CyclicIngredient(RecipeChoice choice) {
+    public CyclicIngredient(int seed, RecipeChoice choice) {
         List<ItemStack> items = RecipeChoiceHelper.getItemsFromChoice(choice).stream().toList();
         this.options = items.toArray(new ItemStack[0]);
-        setRandomIndex();
+        this.currentIndex = Math.abs(seed) % options.length;
     }
 
     /**
-     * Create an IngredientView from a single ItemStack
-     * @param item the single item to display
+     * Create an CyclicIngredient from ItemStacks.
+     * Automatically synchronizes with other instances using the same item types and seed.
+     * @param seed a seed value to randomize starting position (same seed = same offset for all items)
+     * @param item the items to display
      */
-    public CyclicIngredient(ItemStack... item) {
+    public CyclicIngredient(int seed, ItemStack... item) {
         if (item.length == 0) {
-            throw new IllegalArgumentException("IngredientView must have at least one item");
+            throw new IllegalArgumentException("CyclicIngredient must have at least one item");
         }
-        
         this.options = item.clone();
-        setRandomIndex();
-    }
-
-    public void setRandomIndex() {
-        this.currentIndex = (int) (Math.random() * options.length);
+        this.currentIndex = Math.abs(seed) % options.length;
     }
 
     /**

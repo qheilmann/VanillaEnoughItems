@@ -144,6 +144,10 @@ public class VanillaEnoughItems extends JavaPlugin {
         LOGGER.info(PLUGIN_NAME + " disabled.");
     }
 
+    public static VanillaEnoughItems getPlugin() {
+        return getPlugin(VanillaEnoughItems.class);
+    }
+
     /**
      * Gets the current VanillaEnoughItems configuration
      * @return the VanillaEnoughItems configuration
