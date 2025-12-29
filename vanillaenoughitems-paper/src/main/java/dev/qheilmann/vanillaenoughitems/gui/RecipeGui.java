@@ -1,9 +1,11 @@
 package dev.qheilmann.vanillaenoughitems.gui;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.NavigableSet;
 import java.util.Set;
@@ -16,6 +18,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitTask;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -49,7 +52,7 @@ public class RecipeGui extends FastInv {
 
     // GUI size
     private static final int SIZE = FastInv.GENERIC_9X6_SIZE;
-    private static final int INGREDIENT_TICK_INTERVAL = 20; // ticks (1 second)
+    private static final int TICK_INTERVAL = 20; // ticks (1 second)
     
     // Slots
     private static final LinkedHashSet<Integer> PROCESSES_SCROLL_RANGE  = Slots.Generic9x6.gridRange(1, 0, 7, 0);
@@ -72,6 +75,7 @@ public class RecipeGui extends FastInv {
     // Sounds
     private static final Sound UI_CLICK_SOUND = Sound.sound(org.bukkit.Sound.UI_BUTTON_CLICK, Sound.Source.UI, 0.25f, 1.0f);
 
+    // Instance
     @SuppressWarnings("unused")
     private final Player player;
     private final RecipeContext context;
@@ -79,10 +83,9 @@ public class RecipeGui extends FastInv {
     private final Style style;
     private final RecipeGuiComponent guiComponent;
     private final ItemStack fillerItem;
+    // Mutable state
     private MultiProcessRecipeReader reader;
     private @Nullable BukkitTask tickTask;
-
-    // Mutable state
     private int processScrollOffset = 0;
     private int workbenchScrollOffset = 0;
 
@@ -139,23 +142,17 @@ public class RecipeGui extends FastInv {
      * @param event The inventory click event.
      * @param resultItem The item that was clicked.
      */
-    public void changeRecipeAction(InventoryClickEvent event) {
+    public void changeRecipeAction(InventoryClickEvent event, ItemStack recipeItem) {
         
         boolean isLeftClick = event.getClick().isLeftClick();
         boolean isRightClick = event.getClick().isRightClick();
-        ItemStack clickedItemStack = event.getCurrentItem();
-
-        // Ignore if no item clicked
-        if (clickedItemStack == null) {
-            return;
-        }
 
         MultiProcessRecipeReader newMultiRecipeReader = null;
 
         if (isLeftClick) {
-            newMultiRecipeReader = context.getRecipeIndex().readerByResult(clickedItemStack);
+            newMultiRecipeReader = context.getRecipeIndex().readerByResult(recipeItem);
         } else if (isRightClick) {
-            newMultiRecipeReader = context.getRecipeIndex().readerByUsage(clickedItemStack);
+            newMultiRecipeReader = context.getRecipeIndex().readerByUsage(recipeItem);
         } 
         // Ignore other click types
 
@@ -168,20 +165,14 @@ public class RecipeGui extends FastInv {
         }
     }
 
-    public void resultItemAction(InventoryClickEvent event) {
+    public void resultItemAction(InventoryClickEvent event, ItemStack recipeItem) {
 
         boolean isLeftClick = event.getClick().isLeftClick();
         boolean isRightClick = event.getClick().isRightClick();
-        ItemStack clickedItemStack = event.getCurrentItem();
-        
-        // Ignore if no item clicked
-        if (clickedItemStack == null) {
-            return;
-        }
         
         // Show usage on right click
         if (isRightClick) {
-            MultiProcessRecipeReader newMultiRecipeReader = context.getRecipeIndex().readerByUsage(clickedItemStack);
+            MultiProcessRecipeReader newMultiRecipeReader = context.getRecipeIndex().readerByUsage(recipeItem);
             if (newMultiRecipeReader != null) {
                 // Only push to history if we're actually navigating to a different recipe view
                 playerData.navigationHistory().pushForNavigation(reader, newMultiRecipeReader);
@@ -231,20 +222,28 @@ public class RecipeGui extends FastInv {
         
         Map<ProcessPannelSlot, CyclicIngredient> allTicked = new HashMap<>(tickedIngredient);
         allTicked.putAll(tickedResults);
-        startIngredientTicker(allTicked);
+
+        Runnable ingredientTicker = () -> tickIngredients(tickedIngredient);
+        Runnable resultTicker = () -> tickResults(tickedResults);
+        Runnable allTicker = () -> {
+            ingredientTicker.run();
+            resultTicker.run();
+        };
+
+        startTicker(allTicker);
 
         // Place ticked ingredient slots
         for (Map.Entry<ProcessPannelSlot, CyclicIngredient> entry : tickedIngredient.entrySet()) {
             ProcessPannelSlot panelSlot = entry.getKey();
             CyclicIngredient view = entry.getValue();
-            setItem(panelSlot.toSlotIndex(), view.getCurrentItem(), event -> changeRecipeAction(event));
+            placeIngredient(panelSlot, view);
         }
 
         // Place ticked result slots
         for (Map.Entry<ProcessPannelSlot, CyclicIngredient> entry : tickedResults.entrySet()) {
             ProcessPannelSlot panelSlot = entry.getKey();
             CyclicIngredient view = entry.getValue();
-            setItem(panelSlot.toSlotIndex(), view.getCurrentItem(), event -> resultItemAction(event));
+            placeResult(panelSlot, view);
         }
         
         // Place static decorative items
@@ -274,16 +273,27 @@ public class RecipeGui extends FastInv {
         return newPanel;
     }
 
-    private void startIngredientTicker(Map<ProcessPannelSlot, CyclicIngredient> tickedSlots) {
+    //#region Ingredient / Result Ticker
+
+    private void startTicker(Runnable ticker) {
         if (tickTask != null) {
             tickTask.cancel();
         }
+
         tickTask = Bukkit.getScheduler().runTaskTimer(
             VanillaEnoughItems.getPlugin(),
-            () -> tickIngredients(tickedSlots),
-            INGREDIENT_TICK_INTERVAL,
-            INGREDIENT_TICK_INTERVAL
+            ticker,
+            TICK_INTERVAL,
+            TICK_INTERVAL
         );
+    }
+
+    @Override
+    protected void onClose(InventoryCloseEvent event) {
+        if (tickTask != null) {
+            tickTask.cancel();
+            tickTask = null;
+        }
     }
 
     private void tickIngredients(Map<ProcessPannelSlot, CyclicIngredient> tickedSlots) {
@@ -295,18 +305,82 @@ public class RecipeGui extends FastInv {
 
             ProcessPannelSlot panelSlot = entry.getKey();
             cyclic.tickForward();
-            ItemStack currentItem = cyclic.getCurrentItem();
-            setItem(panelSlot.toSlotIndex(), new FastInvItem(currentItem, event -> changeRecipeAction(event)));
+            placeIngredient(panelSlot, cyclic);
         }
     }
 
-    @Override
-    protected void onClose(InventoryCloseEvent event) {
-        if (tickTask != null) {
-            tickTask.cancel();
-            tickTask = null;
+    private void tickResults(Map<ProcessPannelSlot, CyclicIngredient> tickedSlots) {
+        for (Map.Entry<ProcessPannelSlot, CyclicIngredient> entry : tickedSlots.entrySet()) {
+            CyclicIngredient cyclic = entry.getValue();
+            if (!cyclic.hasMultipleOptions()) {
+                continue;
+            }
+
+            ProcessPannelSlot panelSlot = entry.getKey();
+            cyclic.tickForward();
+            placeResult(panelSlot, cyclic);
         }
     }
+
+    private void placeIngredient(ProcessPannelSlot panelSlot, CyclicIngredient ingredient) {
+        ItemStack item = ingredient.getCurrentItem();
+        ItemStack showItem = item.clone();
+
+        List<Component> lore = getLore(showItem);
+        lore.add(Component.text("INGREDIENT"));
+        showItem.lore(lore);
+        // TODO add tag for common recipeChoices?
+
+        setItem(panelSlot.toSlotIndex(), showItem, event -> changeRecipeAction(event, item));
+    }
+
+    private void placeResult(ProcessPannelSlot panelSlot, CyclicIngredient ingredient) {
+        ItemStack item = ingredient.getCurrentItem();
+        ItemStack showItem = item.clone();
+        
+        Key recipeKey = getCurrentRecipeKey();
+        if (recipeKey != null) {
+            List<Component> lore = getLore(showItem);
+            // Recipe by (if custom)
+            if (!recipeKey.namespace().equals(Key.MINECRAFT_NAMESPACE)) {
+                
+                // TODO make a registry for custom namespace -> plugin name mapping
+                String namespace = recipeKey.namespace();
+                namespace = namespace.replaceAll("_", " "); // replace underscores with spaces
+                namespace = namespace.substring(0, 1).toUpperCase() + namespace.substring(1); // capitalize first letter
+
+                Component customRecipeComp = Component.text().color(style.colorPrimaryVariant()).decoration(TextDecoration.ITALIC, false)
+                    .append(Component.text("Recipe by: "))
+                    .append(Component.text(namespace, style.colorSecondary()))
+                    .build();
+                lore.add(customRecipeComp);
+            }
+
+            // Recipe ID
+            Component recipeKeyComp = Component.text().color(NamedTextColor.DARK_GRAY).decoration(TextDecoration.ITALIC, false)
+                .append(Component.text("Recipe ID: "))
+                .append(Component.text(recipeKey.asString()))
+                .build();
+            lore.add(recipeKeyComp);
+
+            showItem.lore(lore);
+        }
+
+        setItem(panelSlot.toSlotIndex(), showItem, event -> resultItemAction(event, item));
+    }
+
+    private List<Component> getLore(ItemStack item) {
+        List<Component> lore = new ArrayList<>();
+        if (item.hasItemMeta()) {
+            ItemMeta meta = item.getItemMeta();
+            if (meta.hasLore()) {
+                lore = meta.lore();
+            }
+        }
+        return lore;
+    }
+
+    //#endregion Ingredient / Result Ticker
 
     //#endregion Process Panel
 
@@ -555,7 +629,7 @@ public class RecipeGui extends FastInv {
                 }
                 Workbench workbench = workbenchIterator.next();
                 ItemStack symbolItem = workbench.symbol();
-                setItem(slot, symbolItem, event -> changeRecipeAction(event));
+                setItem(slot, symbolItem, event -> changeRecipeAction(event, symbolItem));
             });
         } 
 
@@ -582,7 +656,7 @@ public class RecipeGui extends FastInv {
                 Workbench workbench = workbenchIterator.next();
                 int slot = slotIterator.next();
                 ItemStack symbolItem = workbench.symbol();
-                setItem(slot, symbolItem, event -> changeRecipeAction(event));
+                setItem(slot, symbolItem, event -> changeRecipeAction(event, symbolItem));
             }
         }
     }
@@ -705,15 +779,13 @@ public class RecipeGui extends FastInv {
     } 
 
     private String getQuickLinkCmd() {
-        Recipe currentRecipe = getCurrentRecipe();
-        RecipeExtractor extractor = context.getRecipeIndex().getAssociatedRecipeExtractor();
 
-        if (!extractor.canHandle(currentRecipe)) {
+        Key recipeKey = getCurrentRecipeKey();
+        if (recipeKey == null) {
             return "No quick link available for this recipe";
         }
 
-        Key key = extractor.extractKey(currentRecipe);
-        return "/vei --id " + key.asMinimalString();
+        return "/vei --id " + recipeKey.asMinimalString();
     }
     //#endregion QuickLink
 
@@ -737,6 +809,24 @@ public class RecipeGui extends FastInv {
         for (int slot : slots) {
             setItem(slot, item);
         }
+    }
+
+    /**
+     * Extracts the unique key of the given recipe using the associated recipe extractor.
+     *
+     * @param recipe The recipe to extract the key from.
+     * @return The unique key of the recipe, or null if the extractor cannot handle the recipe.
+     */
+    @Nullable
+    private Key getCurrentRecipeKey() {
+        Recipe recipe = getCurrentRecipe();
+        RecipeExtractor extractor = context.getRecipeIndex().getAssociatedRecipeExtractor();
+
+        if (!extractor.canHandle(recipe)) {
+            return null;
+        }
+
+        return extractor.extractKey(recipe);
     }
 
     //#endregion Helpers
