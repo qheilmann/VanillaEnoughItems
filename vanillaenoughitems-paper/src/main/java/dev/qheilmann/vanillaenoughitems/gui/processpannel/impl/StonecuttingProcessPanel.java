@@ -3,8 +3,8 @@ package dev.qheilmann.vanillaenoughitems.gui.processpannel.impl;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.StonecuttingRecipe;
 import org.jspecify.annotations.NullMarked;
@@ -81,14 +81,14 @@ public class StonecuttingProcessPanel implements ProcessPanel {
         Map<ProcessPannelSlot, FastInvItem> statics = new HashMap<>();
 
         ItemStack backgroundItem = RecipeGuiComponent.createFillerItem(false);
-        ItemStack stonecutterItem = new ItemStack(Material.STONECUTTER);
+        ItemStack stonecutterItem = ItemType.STONECUTTER.createItemStack();
 
         if (style.hasResourcePack()) {
             backgroundItem.editMeta(meta -> {
-                meta.setItemModel(VeiPack.ItemModel.Gui.Panel.StoneCutting.BACKGROUND);
+                meta.setItemModel(VeiPack.ItemModel.Gui.Background.STONECUTTING);
             });
             stonecutterItem.editMeta(meta -> {
-                meta.setItemModel(VeiPack.ItemModel.Gui.Panel.RECIPE_ARROW);
+                meta.setItemModel(VeiPack.ItemModel.Gui.Decoration.RECIPE_ARROW);
             });
         }
         

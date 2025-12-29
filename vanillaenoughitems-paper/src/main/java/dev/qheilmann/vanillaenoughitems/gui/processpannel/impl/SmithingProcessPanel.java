@@ -12,10 +12,13 @@ import org.bukkit.inventory.SmithingTransformRecipe;
 import org.bukkit.inventory.SmithingTrimRecipe;
 import org.jspecify.annotations.NullMarked;
 
+import dev.qheilmann.vanillaenoughitems.config.style.Style;
 import dev.qheilmann.vanillaenoughitems.gui.CyclicIngredient;
+import dev.qheilmann.vanillaenoughitems.gui.RecipeGuiComponent;
 import dev.qheilmann.vanillaenoughitems.gui.RecipeGuiSharedButton;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPanel;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPannelSlot;
+import dev.qheilmann.vanillaenoughitems.pack.VeiPack;
 import dev.qheilmann.vanillaenoughitems.utils.fastinv.FastInvItem;
 
 /**
@@ -26,13 +29,16 @@ public class SmithingProcessPanel implements ProcessPanel {
     private static final ProcessPannelSlot TEMPLATE_SLOT = new ProcessPannelSlot(1, 2);
     private static final ProcessPannelSlot BASE_SLOT = new ProcessPannelSlot(2, 2);
     private static final ProcessPannelSlot ADDITION_SLOT = new ProcessPannelSlot(3, 2);
-    private static final ProcessPannelSlot DECORATION_FIRE_SLOT = new ProcessPannelSlot(4, 2);
     private static final ProcessPannelSlot OUTPUT_SLOT = new ProcessPannelSlot(5, 2);
+    private static final ProcessPannelSlot DECORATION_SMITHING_SLOT = new ProcessPannelSlot(4, 2);
+    private static final ProcessPannelSlot BACKGROUND_SLOT = new ProcessPannelSlot(0, 0);
 
     private final Recipe recipe;
+    private final Style style;
 
-    public SmithingProcessPanel(Recipe recipe) {
+    public SmithingProcessPanel(Recipe recipe, Style style) {
         this.recipe = recipe;
+        this.style = style;
     }
 
     private SmithingRecipe getSmithingRecipe() {
@@ -62,7 +68,22 @@ public class SmithingProcessPanel implements ProcessPanel {
     @Override
     public Map<ProcessPannelSlot, FastInvItem> getStaticItems() {
         Map<ProcessPannelSlot, FastInvItem> statics = new HashMap<>();
-        statics.put(DECORATION_FIRE_SLOT, new FastInvItem(new ItemStack(Material.STONECUTTER), null));
+        
+        ItemStack backgroundItem = RecipeGuiComponent.createFillerItem(false);
+        ItemStack smithingItem = new ItemStack(Material.SMITHING_TABLE);
+
+        if (style.hasResourcePack()) {
+            backgroundItem.editMeta(meta -> {
+                meta.setItemModel(VeiPack.ItemModel.Gui.Background.SMITHING);
+            });
+            smithingItem.editMeta(meta -> {
+                meta.setItemModel(VeiPack.ItemModel.Gui.Decoration.RECIPE_ARROW_SMALL);
+            });
+        }
+
+        statics.put(BACKGROUND_SLOT, new FastInvItem(backgroundItem, null));
+        statics.put(DECORATION_SMITHING_SLOT, new FastInvItem(smithingItem, null));
+        
         return Map.copyOf(statics);
     }
 

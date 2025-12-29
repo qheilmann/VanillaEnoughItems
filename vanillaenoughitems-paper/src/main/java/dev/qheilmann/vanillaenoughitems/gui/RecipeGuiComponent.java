@@ -40,7 +40,7 @@ public class RecipeGuiComponent {
 
         if (hasResourcePack) {
             item.editMeta(meta -> {
-                meta.setItemModel(VeiPack.ItemModel.Gui.Common.FORWARD);
+                meta.setItemModel(VeiPack.ItemModel.Gui.Button.FORWARD);
             });
         }
 
@@ -55,7 +55,7 @@ public class RecipeGuiComponent {
 
         if (hasResourcePack) {
             item.editMeta(meta -> {
-                meta.setItemModel(VeiPack.ItemModel.Gui.Common.BACKWARD);
+                meta.setItemModel(VeiPack.ItemModel.Gui.Button.BACKWARD);
             });
         }
 
@@ -70,7 +70,7 @@ public class RecipeGuiComponent {
 
         if (hasResourcePack) {
             item.editMeta(meta -> {
-                meta.setItemModel(VeiPack.ItemModel.Gui.Common.FORWARD_DOUBLE);
+                meta.setItemModel(VeiPack.ItemModel.Gui.Button.FORWARD_DOUBLE);
             });
         }
 
@@ -85,7 +85,7 @@ public class RecipeGuiComponent {
 
         if (hasResourcePack) {
             item.editMeta(meta -> {
-                meta.setItemModel(VeiPack.ItemModel.Gui.Common.BACKWARD_DOUBLE);
+                meta.setItemModel(VeiPack.ItemModel.Gui.Button.BACKWARD_DOUBLE);
             });
         }
 
@@ -105,9 +105,9 @@ public class RecipeGuiComponent {
         if (hasResourcePack) {
             item.editMeta(meta -> {
                 if (isBookmarked) {
-                    meta.setItemModel(VeiPack.ItemModel.Gui.Common.BOOKMARK_UNBOOKMARK);
+                    meta.setItemModel(VeiPack.ItemModel.Gui.Button.BOOKMARK_UNBOOKMARK);
                 } else {
-                    meta.setItemModel(VeiPack.ItemModel.Gui.Common.BOOKMARK_BOOKMARK);
+                    meta.setItemModel(VeiPack.ItemModel.Gui.Button.BOOKMARK_BOOKMARK);
                 }
             });
         }
@@ -126,7 +126,7 @@ public class RecipeGuiComponent {
 
         if (hasResourcePack) {
             item.editMeta(meta -> {
-                meta.setItemModel(VeiPack.ItemModel.Gui.Common.BOOKMARK_LIST);
+                meta.setItemModel(VeiPack.ItemModel.Gui.Button.BOOKMARK_LIST);
             });
         }
 
@@ -144,7 +144,7 @@ public class RecipeGuiComponent {
 
         if (hasResourcePack) {
             item.editMeta(meta -> {
-                meta.setItemModel(VeiPack.ItemModel.Gui.Common.BOOKMARK_SERVER);
+                meta.setItemModel(VeiPack.ItemModel.Gui.Button.BOOKMARK_SERVER);
             });
         }
 
@@ -166,7 +166,7 @@ public class RecipeGuiComponent {
 
         if (hasResourcePack) {
             item.editMeta(meta -> {
-                meta.setItemModel(VeiPack.ItemModel.Gui.Common.ARROW_LEFT);
+                meta.setItemModel(VeiPack.ItemModel.Gui.Button.ARROW_LEFT);
             });
         }
 
@@ -184,7 +184,7 @@ public class RecipeGuiComponent {
 
         if (hasResourcePack) {
             item.editMeta(meta -> {
-                meta.setItemModel(VeiPack.ItemModel.Gui.Common.ARROW_RIGHT);
+                meta.setItemModel(VeiPack.ItemModel.Gui.Button.ARROW_RIGHT);
             });
         }
 
@@ -202,7 +202,7 @@ public class RecipeGuiComponent {
 
         if (hasResourcePack) {
             item.editMeta(meta -> {
-                meta.setItemModel(VeiPack.ItemModel.Gui.Common.ARROW_UP);
+                meta.setItemModel(VeiPack.ItemModel.Gui.Button.ARROW_UP);
             });
         }
 
@@ -220,7 +220,7 @@ public class RecipeGuiComponent {
 
         if (hasResourcePack) {
             item.editMeta(meta -> {
-                meta.setItemModel(VeiPack.ItemModel.Gui.Common.ARROW_DOWN);
+                meta.setItemModel(VeiPack.ItemModel.Gui.Button.ARROW_DOWN);
             });
         }
 
@@ -242,7 +242,7 @@ public class RecipeGuiComponent {
 
         if (hasResourcePack) {
             item.editMeta(meta -> {
-                meta.setItemModel(VeiPack.ItemModel.Gui.Common.INFO);
+                meta.setItemModel(VeiPack.ItemModel.Gui.Button.INFO);
             });
         }
 
@@ -261,7 +261,7 @@ public class RecipeGuiComponent {
 
         if (hasResourcePack) {
             item.editMeta(meta -> {
-                meta.setItemModel(VeiPack.ItemModel.Gui.Common.QUICKLINK);
+                meta.setItemModel(VeiPack.ItemModel.Gui.Button.QUICKLINK);
             });
         }
 
@@ -276,7 +276,7 @@ public class RecipeGuiComponent {
 
         if (hasResourcePack) {
             item.editMeta(meta -> {
-                meta.setItemModel(VeiPack.ItemModel.Gui.Common.PLUS);
+                meta.setItemModel(VeiPack.ItemModel.Gui.Button.PLUS);
             });
         }
 

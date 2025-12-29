@@ -1,0 +1,7 @@
+{
+    "model": {
+        "type": "minecraft:model",
+        "model": "vanillaenoughitems:item/gui/background/crafting"
+    },
+    "oversized_in_gui": true
+}

@@ -3,16 +3,19 @@ package dev.qheilmann.vanillaenoughitems.gui.processpannel.impl;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.SmokingRecipe;
 import org.jspecify.annotations.NullMarked;
 
+import dev.qheilmann.vanillaenoughitems.config.style.Style;
 import dev.qheilmann.vanillaenoughitems.gui.CyclicIngredient;
+import dev.qheilmann.vanillaenoughitems.gui.RecipeGuiComponent;
 import dev.qheilmann.vanillaenoughitems.gui.RecipeGuiSharedButton;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPanel;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPannelSlot;
+import dev.qheilmann.vanillaenoughitems.pack.VeiPack;
 import dev.qheilmann.vanillaenoughitems.recipe.extraction.impl.helper.Fuels;
 import dev.qheilmann.vanillaenoughitems.utils.fastinv.FastInvItem;
 
@@ -21,15 +24,19 @@ import dev.qheilmann.vanillaenoughitems.utils.fastinv.FastInvItem;
  */
 @NullMarked
 public class SmokingProcessPanel implements ProcessPanel {
-    private static final ProcessPannelSlot INPUT_SLOT = new ProcessPannelSlot(2, 1);
+    private static final ProcessPannelSlot INPUT_SLOT = new ProcessPannelSlot(1, 1);
     private static final ProcessPannelSlot OUTPUT_SLOT = new ProcessPannelSlot(5, 2);
-    private static final ProcessPannelSlot FUEL_SLOT = new ProcessPannelSlot(2, 3);
-    private static final ProcessPannelSlot DECORATION_FIRE_SLOT = new ProcessPannelSlot(2, 2);
+    private static final ProcessPannelSlot FUEL_SLOT = new ProcessPannelSlot(1, 3);
+    private static final ProcessPannelSlot DECORATION_FIRE_SLOT = new ProcessPannelSlot(1, 2);
+    private static final ProcessPannelSlot DECORATION_PROGRESS_SLOT = new ProcessPannelSlot(3, 2);
+    private static final ProcessPannelSlot BACKGROUND_SLOT = new ProcessPannelSlot(0, 0);
 
     private final Recipe recipe;
+    private final Style style;
 
-    public SmokingProcessPanel(Recipe recipe) {
+    public SmokingProcessPanel(Recipe recipe, Style style) {
         this.recipe = recipe;
+        this.style = style;
     }
 
     private SmokingRecipe getSmokingRecipe() {
@@ -70,7 +77,27 @@ public class SmokingProcessPanel implements ProcessPanel {
     @Override
     public Map<ProcessPannelSlot, FastInvItem> getStaticItems() {
         Map<ProcessPannelSlot, FastInvItem> statics = new HashMap<>();
-        statics.put(DECORATION_FIRE_SLOT, new FastInvItem(new ItemStack(Material.SMOKER), null));
+
+        ItemStack backgroundItem = RecipeGuiComponent.createFillerItem(false);
+        ItemStack progressItem = RecipeGuiComponent.createFillerItem(true);
+        ItemStack smokerItem = ItemType.SMOKER.createItemStack();
+
+        if (style.hasResourcePack()) {
+            backgroundItem.editMeta(meta -> {
+                meta.setItemModel(VeiPack.ItemModel.Gui.Background.SMOKING);
+            });
+            progressItem.editMeta(meta -> {
+                meta.setItemModel(VeiPack.ItemModel.Gui.Decoration.RECIPE_PROGRESS);
+            });
+            smokerItem.editMeta(meta -> {
+                meta.setItemModel(VeiPack.ItemModel.Gui.Decoration.COOKING_FLAME);
+            });
+        }
+
+        statics.put(BACKGROUND_SLOT, new FastInvItem(backgroundItem, null));
+        statics.put(DECORATION_PROGRESS_SLOT, new FastInvItem(progressItem, null));
+        statics.put(DECORATION_FIRE_SLOT, new FastInvItem(smokerItem, null));
+        
         return Map.copyOf(statics);
     }
 }

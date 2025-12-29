@@ -36,55 +36,43 @@ public class VeiPack {
 
         public static class Gui {
 
-            public static class Common {
-                public static final NamespacedKey ARROW_DOWN = path(Common.class, "arrow_down");
-                public static final NamespacedKey ARROW_LEFT = path(Common.class, "arrow_left");
-                public static final NamespacedKey ARROW_RIGHT = path(Common.class, "arrow_right");
-                public static final NamespacedKey ARROW_UP = path(Common.class, "arrow_up");
+            public static class Background {
+                public static final NamespacedKey BLASTING = path(Background.class, "blasting");
+                public static final NamespacedKey CAMPFIRE = path(Background.class, "campfire");
+                public static final NamespacedKey CRAFTING = path(Background.class, "crafting");
+                public static final NamespacedKey SMELTING = path(Background.class, "smelting");
+                public static final NamespacedKey SMOKING = path(Background.class, "smoking");
+                public static final NamespacedKey STONECUTTING = path(Background.class, "stonecutting");
+                public static final NamespacedKey SMITHING = path(Background.class, "smithing");
+            }
 
-                public static final NamespacedKey BACKWARD_DOUBLE = path(Common.class, "backward_double");
-                public static final NamespacedKey BACKWARD = path(Common.class, "backward");
+            public static class Button {
+                public static final NamespacedKey ARROW_DOWN = path(Button.class, "arrow_down");
+                public static final NamespacedKey ARROW_LEFT = path(Button.class, "arrow_left");
+                public static final NamespacedKey ARROW_RIGHT = path(Button.class, "arrow_right");
+                public static final NamespacedKey ARROW_UP = path(Button.class, "arrow_up");
 
-                public static final NamespacedKey BOOKMARK_LIST = path(Common.class, "bookmark_list");
-                public static final NamespacedKey BOOKMARK_SERVER = path(Common.class, "bookmark_server");
-                public static final NamespacedKey BOOKMARK_BOOKMARK = path(Common.class, "bookmark_bookmark");
-                public static final NamespacedKey BOOKMARK_UNBOOKMARK = path(Common.class, "bookmark_unbookmark");
+                public static final NamespacedKey BACKWARD_DOUBLE = path(Button.class, "backward_double");
+                public static final NamespacedKey BACKWARD = path(Button.class, "backward");
 
-                public static final NamespacedKey FORWARD = path(Common.class, "forward");
-                public static final NamespacedKey FORWARD_DOUBLE = path(Common.class, "forward_double");
+                public static final NamespacedKey BOOKMARK_LIST = path(Button.class, "bookmark_list");
+                public static final NamespacedKey BOOKMARK_SERVER = path(Button.class, "bookmark_server");
+                public static final NamespacedKey BOOKMARK_BOOKMARK = path(Button.class, "bookmark_bookmark");
+                public static final NamespacedKey BOOKMARK_UNBOOKMARK = path(Button.class, "bookmark_unbookmark");
 
-                public static final NamespacedKey INFO = path(Common.class, "info");
-                public static final NamespacedKey PLUS = path(Common.class, "plus");
-                public static final NamespacedKey QUICKLINK = path(Common.class, "quicklink");
+                public static final NamespacedKey FORWARD = path(Button.class, "forward");
+                public static final NamespacedKey FORWARD_DOUBLE = path(Button.class, "forward_double");
+
+                public static final NamespacedKey INFO = path(Button.class, "info");
+                public static final NamespacedKey PLUS = path(Button.class, "plus");
+                public static final NamespacedKey QUICKLINK = path(Button.class, "quicklink");
             }
             
-            public static class Panel {
-                public static final NamespacedKey RECIPE_ARROW_SMALL = path(Panel.class, "recipe_arrow_small");
-                public static final NamespacedKey RECIPE_ARROW = path(Panel.class, "recipe_arrow");
-
-                public static class Blasting {
-                    public static final NamespacedKey BACKGROUND = path(Blasting.class, "background");
-                }
-
-                public static class Campfire {
-                    public static final NamespacedKey BACKGROUND = path(Campfire.class, "background");
-                }
-
-                public static class Crafting {
-                    public static final NamespacedKey BACKGROUND = path(Crafting.class, "background");
-                }
-
-                public static class Smelting {
-                    public static final NamespacedKey BACKGROUND = path(Smelting.class, "background");
-                }
-
-                public static class Smoking {
-                    public static final NamespacedKey BACKGROUND = path(Smoking.class, "background");
-                }
-
-                public static class StoneCutting {
-                    public static final NamespacedKey BACKGROUND = path(StoneCutting.class, "background");
-                }
+            public static class Decoration {
+                public static final NamespacedKey COOKING_FLAME = path(Decoration.class, "cooking_flame");
+                public static final NamespacedKey RECIPE_PROGRESS = path(Decoration.class, "recipe_progress");
+                public static final NamespacedKey RECIPE_ARROW_SMALL = path(Decoration.class, "recipe_arrow_small");
+                public static final NamespacedKey RECIPE_ARROW = path(Decoration.class, "recipe_arrow");
             }
         }
 
