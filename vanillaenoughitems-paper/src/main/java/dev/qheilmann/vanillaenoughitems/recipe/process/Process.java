@@ -69,13 +69,13 @@ public interface Process extends Keyed{
 
     private static Comparator<Process> comparator() {
 
-        Predicate<Process> isCraftingProcess = (Process p) -> p.key().equals(CraftingProcess.KEY);
-        Predicate<Process> isUndefinedProcess = (Process p) -> p.key().equals(UndefinedProcess.KEY);
-        Predicate<Process> isVanillaProcess = (Process p) -> p.key().namespace().equals(Key.MINECRAFT_NAMESPACE);
+        Predicate<Process> isCraftingProcess = p -> p.key().equals(CraftingProcess.KEY);
+        Predicate<Process> isUndefinedProcess = p -> p.key().equals(UndefinedProcess.KEY);
+        Predicate<Process> isVanillaProcess = p -> p.key().namespace().equals(Key.MINECRAFT_NAMESPACE);
 
         return Comparator.comparing((Process p) -> !isCraftingProcess.test(p))
                     .thenComparing((Process p) -> !isVanillaProcess.test(p))
-                    .thenComparing(Comparator.comparing((Process p) -> !isUndefinedProcess.test(p)).reversed())
+                    .thenComparing(Comparator.comparing((Process p) -> !isUndefinedProcess.test(p)).reversed()) // place undefined last
                     .thenComparing((Process p) -> p.key());
 
         // Note: negate with '!', is because the boolean comparator place false first and true last, so here we place it first if the predicate is true.

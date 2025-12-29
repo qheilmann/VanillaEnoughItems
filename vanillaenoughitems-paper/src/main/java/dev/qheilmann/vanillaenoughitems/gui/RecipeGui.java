@@ -448,7 +448,7 @@ public class RecipeGui extends FastInv {
         // There are equal or less processes than visible slots
         if (numberOfProcesses <= MAX_VISIBLE_PROCESSES) {
             if (numberOfProcesses <= MAX_VISIBLE_PROCESSES-1) { // Start at the 2nd slot if there is space
-                slotIterator.next();
+                setItem(slotIterator.next(), fillerItem);
             }
 
             slotIterator.forEachRemaining(slot -> {
@@ -456,9 +456,7 @@ public class RecipeGui extends FastInv {
                     setItem(slot, fillerItem);
                     return;
                 }
-                Process process = processIterator.next();
-                ItemStack symbolItem = process.symbol();
-                setItem(slot, symbolItem, event -> changeProcessAction(event, process));
+                placeProcessTab(slot, processIterator.next());
             });
         } 
 
@@ -482,11 +480,19 @@ public class RecipeGui extends FastInv {
                 processIterator.next();
             }
             for (int i = 0; i < MAX_SCROLLABLE_PROCESSES; i++) {
-                Process process = processIterator.next();
-                int slot = slotIterator.next();
-                ItemStack symbolItem = process.symbol();
-                setItem(slot, symbolItem, event -> changeProcessAction(event, process));
+                placeProcessTab(slotIterator.next(), processIterator.next());
             }
+        }
+    }
+
+    private void placeProcessTab(int slot, Process process) {
+        ItemStack symbolItem = process.symbol();
+
+        Comparator<Process> comparator = Process.COMPARATOR;
+        if(comparator.compare(process, getCurrentProcess()) == 0) {
+            setItem(slot, symbolItem); // no action on clicking the current process
+        } else {
+            setItem(slot, symbolItem, event -> changeProcessAction(event, process));
         }
     }
 
@@ -539,7 +545,7 @@ public class RecipeGui extends FastInv {
         // There are equal or less workbenches than visible slots
         if (numberOfWorkbenches <= MAX_VISIBLE_WORKBENCHES) {
             if (numberOfWorkbenches <= MAX_VISIBLE_WORKBENCHES-1) { // Start at the 2nd slot if there is space
-                slotIterator.next();
+                setItem(slotIterator.next(), fillerItem);
             }
 
             slotIterator.forEachRemaining(slot -> {
