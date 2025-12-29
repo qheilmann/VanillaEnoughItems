@@ -11,7 +11,6 @@ import dev.qheilmann.vanillaenoughitems.config.style.Style;
 import dev.qheilmann.vanillaenoughitems.pack.VeiPack;
 import dev.qheilmann.vanillaenoughitems.utils.playerhead.PlayerHeadRegistry;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
@@ -24,10 +23,12 @@ public class RecipeGuiComponent {
 
     private final boolean hasResourcePack;
     private final TextColor colorPrimary;
+    private final TextColor colorPrimaryVariant;
 
     public RecipeGuiComponent(Style style) {
         this.hasResourcePack = style.hasResourcePack();
         this.colorPrimary = style.colorPrimary();
+        this.colorPrimaryVariant = style.colorPrimaryVariant();
     }
 
     //#region Navigation Buttons
@@ -99,7 +100,7 @@ public class RecipeGuiComponent {
     public ItemStack createBookmarkButton(boolean isBookmarked) {
         ItemStack item = isBookmarked ? ItemType.ORANGE_CANDLE.createItemStack() : ItemType.WHITE_CANDLE.createItemStack();
         item.editMeta(meta -> {
-            meta.displayName(Component.text("Bookmark this recipe", NamedTextColor.WHITE));
+            meta.displayName(Component.text("Bookmark this recipe", colorPrimary).decoration(TextDecoration.ITALIC, false));
         });
 
         if (hasResourcePack) {
@@ -118,9 +119,9 @@ public class RecipeGuiComponent {
     public ItemStack createBookmarkListButton() {
         ItemStack item = new ItemStack(Material.BOOKSHELF);
         item.editMeta(meta -> {
-            meta.displayName(Component.text("Your Bookmarks", NamedTextColor.WHITE));
+            meta.displayName(Component.text("Your Bookmarks", colorPrimary).decoration(TextDecoration.ITALIC, false));
             meta.lore(List.of(
-                Component.text("Click to open your bookmark list", NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)
+                Component.text("Click to open your bookmark list", colorPrimaryVariant).decoration(TextDecoration.ITALIC, false)
             ));
         });
 
@@ -136,9 +137,9 @@ public class RecipeGuiComponent {
     public ItemStack createBookmarkServerListButton() {
         ItemStack item = new ItemStack(Material.COMPASS);
         item.editMeta(meta -> {
-            meta.displayName(Component.text("Server Bookmarks", NamedTextColor.WHITE));
+            meta.displayName(Component.text("Server Bookmarks", colorPrimary).decoration(TextDecoration.ITALIC, false));
             meta.lore(List.of(
-                Component.text("Click to see server-wide bookmarks", NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)
+                Component.text("Click to see server-wide bookmarks", colorPrimaryVariant).decoration(TextDecoration.ITALIC, false)
             ));
         });
 
@@ -158,9 +159,9 @@ public class RecipeGuiComponent {
     public ItemStack createProcessScrollLeftButton(int moreCount) {
         ItemStack item = new ItemStack(Material.ARROW);
         item.editMeta(meta -> {
-            meta.displayName(Component.text("Scroll Left", NamedTextColor.WHITE));
+            meta.displayName(Component.text("Scroll Left", colorPrimary).decoration(TextDecoration.ITALIC, false));
             meta.lore(List.of(
-                Component.text("+ " + moreCount + " more to the left", NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)
+                Component.text("+ " + moreCount + " more to the left", colorPrimaryVariant).decoration(TextDecoration.ITALIC, false)
             ));
         });
 
@@ -176,9 +177,9 @@ public class RecipeGuiComponent {
     public ItemStack createProcessScrollRightButton(int moreCount) {
         ItemStack item = new ItemStack(Material.ARROW);
         item.editMeta(meta -> {
-            meta.displayName(Component.text("Scroll Right", NamedTextColor.WHITE));
+            meta.displayName(Component.text("Scroll Right", colorPrimary).decoration(TextDecoration.ITALIC, false));
             meta.lore(List.of(
-                Component.text("+ " + moreCount + " more to the right", NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)
+                Component.text("+ " + moreCount + " more to the right", colorPrimaryVariant).decoration(TextDecoration.ITALIC, false)
             ));
         });
 
@@ -194,9 +195,9 @@ public class RecipeGuiComponent {
     public ItemStack createWorkbenchScrollUpButton(int moreCount) {
         ItemStack item = new ItemStack(Material.ARROW);
         item.editMeta(meta -> {
-            meta.displayName(Component.text("Scroll Up", NamedTextColor.WHITE));
+            meta.displayName(Component.text("Scroll Up", colorPrimary).decoration(TextDecoration.ITALIC, false));
             meta.lore(List.of(
-                Component.text("+ " + moreCount + " more above", NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)
+                Component.text("+ " + moreCount + " more above", colorPrimaryVariant).decoration(TextDecoration.ITALIC, false)
             ));
         });
 
@@ -212,9 +213,9 @@ public class RecipeGuiComponent {
     public ItemStack createWorkbenchScrollDownButton(int moreCount) {
         ItemStack item = new ItemStack(Material.ARROW);
         item.editMeta(meta -> {
-            meta.displayName(Component.text("Scroll Down", NamedTextColor.WHITE));
+            meta.displayName(Component.text("Scroll Down", colorPrimary).decoration(TextDecoration.ITALIC, false));
             meta.lore(List.of(
-                Component.text("+ " + moreCount + " more below", NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)
+                Component.text("+ " + moreCount + " more below", colorPrimaryVariant).decoration(TextDecoration.ITALIC, false)
             ));
         });
 
@@ -234,9 +235,9 @@ public class RecipeGuiComponent {
     public ItemStack createInfoButton() {
         ItemStack item = new ItemStack(Material.OAK_SIGN);
         item.editMeta(meta -> {
-            meta.displayName(Component.text("Info", NamedTextColor.WHITE));
+            meta.displayName(Component.text("Info", colorPrimary).decoration(TextDecoration.ITALIC, false));
             meta.lore(List.of(
-                Component.text("Click for more information", NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)
+                Component.text("Click for more information", colorPrimaryVariant).decoration(TextDecoration.ITALIC, false)
             ));
         });
 
@@ -252,10 +253,10 @@ public class RecipeGuiComponent {
     public ItemStack createQuickLinkButton() {
         ItemStack item = new ItemStack(Material.PAPER);
         item.editMeta(meta -> {
-            meta.displayName(Component.text("Quick Link", NamedTextColor.WHITE));
+            meta.displayName(Component.text("Quick Link", colorPrimary).decoration(TextDecoration.ITALIC, false));
             meta.lore(List.of(
-                Component.text("Click to get a command link", NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false),
-                Component.text("that opens this recipe", NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)
+                Component.text("Click to get a command link", colorPrimaryVariant).decoration(TextDecoration.ITALIC, false),
+                Component.text("that opens this recipe", colorPrimaryVariant).decoration(TextDecoration.ITALIC, false)
             ));
         });
 
@@ -271,7 +272,7 @@ public class RecipeGuiComponent {
     public ItemStack createQuickCraftButton() {
         ItemStack item = new ItemStack(Material.WHITE_DYE);
         item.editMeta(meta -> {
-            meta.displayName(Component.text("Quick Craft", NamedTextColor.WHITE));
+            meta.displayName(Component.text("Quick Craft", colorPrimary).decoration(TextDecoration.ITALIC, false));
         });
 
         if (hasResourcePack) {
