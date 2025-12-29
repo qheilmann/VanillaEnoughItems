@@ -283,7 +283,7 @@ public class RecipeIndex implements RecipeIndexView {
         }
 
         // Get the result of the recipe
-        ItemStack recipeResult = recipe.getResult();
+        ItemStack recipeResult = recipe.getResult().asOne();
         if (recipeResult == null || recipeResult.isEmpty()) {
             return null;
         }
