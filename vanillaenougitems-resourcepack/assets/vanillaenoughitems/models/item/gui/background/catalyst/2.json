@@ -1,0 +1,29 @@
+{
+    "textures": {
+        "top": "vanillaenoughitems:item/gui/background/catalyst/top",
+        "bottom": "vanillaenoughitems:item/gui/background/catalyst/bottom"
+    },
+    "elements": [
+        {
+            "from": [5, 5, 0],
+            "to": [11, 11, 0],
+            "faces": {
+                "south": {"uv": [0, 0, 16, 16], "texture": "#top"}
+            }
+        },
+        {
+            "from": [5, -1, 0],
+            "to": [11, 5, 0],
+            "faces": {
+                "south": {"uv": [0, 0, 16, 16], "texture": "#bottom"}
+            }
+        }
+    ],
+    "gui_light": "front",
+    "display": {
+        "gui": {
+            "translation": [0, -18, 0],
+            "scale": [3, 3, 1]
+        }
+    }
+}

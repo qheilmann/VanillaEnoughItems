@@ -1,0 +1,7 @@
+{
+    "model": {
+        "type": "minecraft:model",
+        "model": "vanillaenoughitems:item/gui/background/catalyst/4"
+    },
+    "oversized_in_gui": true
+}

@@ -1,8 +1,10 @@
 package dev.qheilmann.vanillaenoughitems.gui;
 
 import java.util.List;
+import java.util.Map;
 
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ItemType;
 import org.jspecify.annotations.NullMarked;
@@ -20,6 +22,15 @@ import net.kyori.adventure.text.format.TextDecoration;
  */
 @NullMarked
 public class RecipeGuiComponent {
+
+    private static final Map<Integer, NamespacedKey> CATALYST_MODELS = Map.of(
+        1, VeiPack.ItemModel.Gui.Background.Catalyst._1,
+        2, VeiPack.ItemModel.Gui.Background.Catalyst._2,
+        3, VeiPack.ItemModel.Gui.Background.Catalyst._3,
+        4, VeiPack.ItemModel.Gui.Background.Catalyst._4
+    );
+    private static final NamespacedKey CATALYST_MAX_MODEL = VeiPack.ItemModel.Gui.Background.Catalyst._3;
+    private static final NamespacedKey CATALYST_MAX_WITH_UP_MODEL = VeiPack.ItemModel.Gui.Background.Catalyst._3_AND_UP;
 
     private final boolean hasResourcePack;
     private final TextColor colorPrimary;
@@ -157,7 +168,7 @@ public class RecipeGuiComponent {
     //#region Scroll Buttons
 
     public ItemStack createProcessScrollLeftButton(int moreCount) {
-        ItemStack item = new ItemStack(Material.ARROW);
+        ItemStack item = PlayerHeadRegistry.quartzArrowLeft();
         item.editMeta(meta -> {
             meta.displayName(Component.text("Scroll Left", colorPrimary).decoration(TextDecoration.ITALIC, false));
             meta.lore(List.of(
@@ -175,7 +186,7 @@ public class RecipeGuiComponent {
     }
 
     public ItemStack createProcessScrollRightButton(int moreCount) {
-        ItemStack item = new ItemStack(Material.ARROW);
+        ItemStack item = PlayerHeadRegistry.quartzArrowRight();
         item.editMeta(meta -> {
             meta.displayName(Component.text("Scroll Right", colorPrimary).decoration(TextDecoration.ITALIC, false));
             meta.lore(List.of(
@@ -193,7 +204,7 @@ public class RecipeGuiComponent {
     }
 
     public ItemStack createWorkbenchScrollUpButton(int moreCount) {
-        ItemStack item = new ItemStack(Material.ARROW);
+        ItemStack item = PlayerHeadRegistry.quartzArrowUp();
         item.editMeta(meta -> {
             meta.displayName(Component.text("Scroll Up", colorPrimary).decoration(TextDecoration.ITALIC, false));
             meta.lore(List.of(
@@ -203,7 +214,7 @@ public class RecipeGuiComponent {
 
         if (hasResourcePack) {
             item.editMeta(meta -> {
-                meta.setItemModel(VeiPack.ItemModel.Gui.Button.ARROW_UP);
+                meta.setItemModel(getCatalystModel(-1, true));
             });
         }
 
@@ -211,7 +222,11 @@ public class RecipeGuiComponent {
     }
 
     public ItemStack createWorkbenchScrollDownButton(int moreCount) {
-        ItemStack item = new ItemStack(Material.ARROW);
+        if (moreCount <= 0) {
+            return  createFillerItem();
+        }
+
+        ItemStack item = PlayerHeadRegistry.quartzArrowDown();
         item.editMeta(meta -> {
             meta.displayName(Component.text("Scroll Down", colorPrimary).decoration(TextDecoration.ITALIC, false));
             meta.lore(List.of(
@@ -226,6 +241,35 @@ public class RecipeGuiComponent {
         }
 
         return item;
+    }
+
+    /**
+     * Creates an invisible item with under a background model behind the catalysts.
+     * This should not be used when there is an "up" button shown.
+     */
+    public ItemStack createWorkbenchNonScrollButton(int nbOfCatalyst) {
+        ItemStack item = createFillerItem(false);
+
+        if (hasResourcePack) {
+            item.editMeta(meta -> {
+                meta.setItemModel(getCatalystModel(nbOfCatalyst, false));
+            });
+        }
+
+        return item;
+    }
+
+    /**
+     * Selects the catalyst model. 
+     * If showUpButton is true, nbOfCatalyst ignored and the max is returned.
+     * Otherwise returns model for nbOfCatalyst or fallback to the max.
+     */
+    private NamespacedKey getCatalystModel(int nbOfCatalyst, boolean showUpButton) {
+        if (showUpButton) {
+            return CATALYST_MAX_WITH_UP_MODEL;
+        }
+
+        return CATALYST_MODELS.getOrDefault(nbOfCatalyst, CATALYST_MAX_MODEL);            
     }
 
     //#endregion Scroll Buttons

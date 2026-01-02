@@ -44,6 +44,14 @@ public class VeiPack {
                 public static final NamespacedKey SMOKING = path(Background.class, "smoking");
                 public static final NamespacedKey STONECUTTING = path(Background.class, "stonecutting");
                 public static final NamespacedKey SMITHING = path(Background.class, "smithing");
+
+                public static class Catalyst {
+                    public static final NamespacedKey _1 = path(Catalyst.class, "1");
+                    public static final NamespacedKey _2 = path(Catalyst.class, "2");
+                    public static final NamespacedKey _3 = path(Catalyst.class, "3");
+                    public static final NamespacedKey _4 = path(Catalyst.class, "4");
+                    public static final NamespacedKey _3_AND_UP = path(Catalyst.class, "3_and_up");
+                }
             }
 
             public static class Button {
