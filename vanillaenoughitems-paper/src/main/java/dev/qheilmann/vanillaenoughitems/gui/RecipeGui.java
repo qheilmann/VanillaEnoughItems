@@ -328,7 +328,11 @@ public class RecipeGui extends FastInv {
 
         List<Component> lore = getLore(showItem);
         lore.add(Component.text("INGREDIENT"));
-        showItem.lore(lore);
+
+        if (!showItem.isEmpty()) {
+            showItem.lore(lore);
+        }
+        
         // TODO add tag for common recipeChoices?
 
         setItem(panelSlot.toSlotIndex(), showItem, event -> changeRecipeAction(event, item));
@@ -363,7 +367,9 @@ public class RecipeGui extends FastInv {
                 .build();
             lore.add(recipeKeyComp);
 
-            showItem.lore(lore);
+            if (!showItem.isEmpty()) {
+                showItem.lore(lore);
+            }
         }
 
         setItem(panelSlot.toSlotIndex(), showItem, event -> resultItemAction(event, item));
