@@ -67,10 +67,10 @@ public class RecipeGui extends FastInv {
     private static final int BOOKMARK_LIST_SLOT         = Slots.Generic9x6.slot(8, 3);
     private static final int BOOKMARK_SERVER_LIST_SLOT  = Slots.Generic9x6.slot(8, 4);
     
-    private static final int MAX_VISIBLE_PROCESSES = PROCESSES_SCROLL_RANGE.size();
-    private static final int MAX_SCROLLABLE_PROCESSES = MAX_VISIBLE_PROCESSES - 2; // Account for scroll buttons
+    private static final int MAX_VISIBLE_PROCESSES = PROCESSES_SCROLL_RANGE.size() - 1; // Never fill the first slot
+    private static final int MAX_SCROLLABLE_PROCESSES = PROCESSES_SCROLL_RANGE.size() - 2; // Account for scroll buttons
     private static final int MAX_VISIBLE_WORKBENCHES = WORKBENCHS_SCROLL_RANGE.size() - 1; // Never fill the first slot
-    private static final int MAX_SCROLLABLE_WORKBENCHES = MAX_VISIBLE_WORKBENCHES - 2; // Account for scroll buttons
+    private static final int MAX_SCROLLABLE_WORKBENCHES = WORKBENCHS_SCROLL_RANGE.size() - 2; // Account for scroll buttons
 
     // Sounds
     private static final Sound UI_CLICK_SOUND = Sound.sound(org.bukkit.Sound.UI_BUTTON_CLICK, Sound.Source.UI, 0.25f, 1.0f);
@@ -86,6 +86,7 @@ public class RecipeGui extends FastInv {
     // Mutable state
     private MultiProcessRecipeReader reader;
     private @Nullable BukkitTask tickTask;
+    /** Scroll offset for process tabs (in case of more than one page) */
     private int processScrollOffset = 0;
     /** Scroll offset for workbench tabs (in case of more than one page) */
     private int workbenchScrollOffset = 0;
@@ -525,12 +526,12 @@ public class RecipeGui extends FastInv {
         int numberOfProcesses = processes.size();
         Iterator<Integer> slotIterator = PROCESSES_SCROLL_RANGE.iterator();
         Iterator<Process> processIterator = processes.iterator();
+        int currentProcessIndex = getCurrentProcessIndex();
 
         // There are equal or less processes than visible slots
         if (numberOfProcesses <= MAX_VISIBLE_PROCESSES) {
-            if (numberOfProcesses <= MAX_VISIBLE_PROCESSES-1) { // Start at the 2nd slot if there is space
-                setItem(slotIterator.next(), fillerItem);
-            }
+            // Never fill the first slot with process
+            setItem(slotIterator.next(), guiComponent.createProcessNonScrollButton(numberOfProcesses, currentProcessIndex, true));
 
             slotIterator.forEachRemaining(slot -> {
                 if (!processIterator.hasNext()) {
@@ -539,19 +540,19 @@ public class RecipeGui extends FastInv {
                 }
                 placeProcessTab(slot, processIterator.next());
             });
-        } 
+        }
 
         // There are more processes than visible slots
         else {
             // Scroll Left button
             if (this.processScrollOffset > 0) {
-                setItem(PROCESS_SCROLL_LEFT_SLOT, processScrollLeftItem(), event -> processScrollLeftAction(event));
+                setItem(PROCESS_SCROLL_LEFT_SLOT, processScrollLeftItem(this.processScrollOffset, currentProcessIndex), event -> processScrollLeftAction(event));
             } else {
-                setItem(PROCESS_SCROLL_LEFT_SLOT, fillerItem);
+                setItem(PROCESS_SCROLL_LEFT_SLOT, guiComponent.createProcessNonScrollButton(numberOfProcesses, currentProcessIndex, false));
             }
             // Scroll Right button
             if (this.processScrollOffset < numberOfProcesses - MAX_SCROLLABLE_PROCESSES) {
-                setItem(PROCESS_SCROLL_RIGHT_SLOT, processScrollRightItem(), event -> processScrollRightAction(event));
+                setItem(PROCESS_SCROLL_RIGHT_SLOT, processScrollRightItem(this.processScrollOffset), event -> processScrollRightAction(event));
             } else {
                 setItem(PROCESS_SCROLL_RIGHT_SLOT, fillerItem);
             }
@@ -564,6 +565,25 @@ public class RecipeGui extends FastInv {
                 placeProcessTab(slotIterator.next(), processIterator.next());
             }
         }
+    }
+
+    /**
+     * Gets the index of the current process relative to the visible process tabs.
+     * 
+     * @return The relative index of the current process.
+     */
+    private int getCurrentProcessIndex() {
+        NavigableSet<Process> processes = reader.getAllProcesses();
+        int absoluteIndex = 0;
+        for (Process process : processes) {
+            if (Process.COMPARATOR.compare(process, getCurrentProcess()) == 0) {
+                break;
+            }
+            absoluteIndex++;
+        }
+
+        int relativeIndex = absoluteIndex - this.processScrollOffset;
+        return relativeIndex;
     }
 
     private void placeProcessTab(int slot, Process process) {
@@ -583,17 +603,18 @@ public class RecipeGui extends FastInv {
     }
 
     private void changeProcess(Process process) {
+        workbenchScrollOffset = 0; // Reset scroll offset when changing process (to show from the beginning on the new process)
         reader.setCurrentProcess(process);
         render();
     }
 
-    private ItemStack processScrollLeftItem() {
-        return guiComponent.createProcessScrollLeftButton(this.processScrollOffset);
+    private ItemStack processScrollLeftItem(int processScrollOffset, int currentProcessIndex) {
+        return guiComponent.createProcessScrollLeftButton(processScrollOffset, currentProcessIndex);
     }
 
-    private ItemStack processScrollRightItem() {
+    private ItemStack processScrollRightItem(int processScrollOffset) {
         int numberOfProcesses = reader.getAllProcesses().size();
-        int moreNumber = numberOfProcesses - MAX_SCROLLABLE_PROCESSES - this.processScrollOffset;
+        int moreNumber = numberOfProcesses - MAX_SCROLLABLE_PROCESSES - processScrollOffset;
         return guiComponent.createProcessScrollRightButton(moreNumber);
     }
 
@@ -626,7 +647,7 @@ public class RecipeGui extends FastInv {
         // There are equal or less workbenches than visible slots
         if (numberOfWorkbenches <= MAX_VISIBLE_WORKBENCHES) {
             // Never fill the first slot with catalyst
-            setItem(slotIterator.next(),  guiComponent.createWorkbenchNonScrollButton(numberOfWorkbenches));
+            setItem(slotIterator.next(),  guiComponent.createWorkbenchNonScrollButton(numberOfWorkbenches, true));
 
             // Fill all workbenches
             slotIterator.forEachRemaining(slot -> {
@@ -646,7 +667,7 @@ public class RecipeGui extends FastInv {
             if (workbenchScrollOffset > 0) {
                 setItem(WORKBENCH_SCROLL_UP_SLOT, workbenchScrollUpItem(workbenchScrollOffset), event -> workbenchScrollUpAction(event));
             } else {
-                setItem(WORKBENCH_SCROLL_UP_SLOT, guiComponent.createWorkbenchNonScrollButton(Integer.MAX_VALUE)); // filler item with catalyst background
+                setItem(WORKBENCH_SCROLL_UP_SLOT, guiComponent.createWorkbenchNonScrollButton(numberOfWorkbenches, false)); // filler item with catalyst background
             }
             // Scroll Down button
             if (workbenchScrollOffset < numberOfWorkbenches - MAX_SCROLLABLE_WORKBENCHES) {

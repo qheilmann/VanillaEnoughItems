@@ -1,0 +1,36 @@
+{
+    "model": {
+        "type": "minecraft:composite",
+        "models": [
+            {
+                "type": "minecraft:model",
+                "model": "vanillaenoughitems:item/gui/background/process/1_off"
+            },
+            {
+                "type": "minecraft:model",
+                "model": "vanillaenoughitems:item/gui/background/process/2_off"
+            },
+            {
+                "type": "minecraft:model",
+                "model": "vanillaenoughitems:item/gui/background/process/3_off"
+            },
+            {
+                "type": "minecraft:model",
+                "model": "vanillaenoughitems:item/gui/background/process/4_off"
+            },
+            {
+                "type": "minecraft:model",
+                "model": "vanillaenoughitems:item/gui/background/process/5_off"
+            },
+            {
+                "type": "minecraft:model",
+                "model": "vanillaenoughitems:item/gui/button/button_background"
+            },
+            {
+                "type": "minecraft:model",
+                "model": "vanillaenoughitems:item/gui/button/arrow_left"
+            }
+        ]
+    },
+    "oversized_in_gui": true
+}

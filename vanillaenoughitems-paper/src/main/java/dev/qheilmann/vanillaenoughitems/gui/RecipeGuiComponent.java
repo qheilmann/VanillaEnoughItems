@@ -1,10 +1,8 @@
 package dev.qheilmann.vanillaenoughitems.gui;
 
 import java.util.List;
-import java.util.Map;
 
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ItemType;
 import org.jspecify.annotations.NullMarked;
@@ -22,15 +20,6 @@ import net.kyori.adventure.text.format.TextDecoration;
  */
 @NullMarked
 public class RecipeGuiComponent {
-
-    private static final Map<Integer, NamespacedKey> CATALYST_MODELS = Map.of(
-        1, VeiPack.ItemModel.Gui.Background.Catalyst._1,
-        2, VeiPack.ItemModel.Gui.Background.Catalyst._2,
-        3, VeiPack.ItemModel.Gui.Background.Catalyst._3,
-        4, VeiPack.ItemModel.Gui.Background.Catalyst._4
-    );
-    private static final NamespacedKey CATALYST_MAX_MODEL = VeiPack.ItemModel.Gui.Background.Catalyst._3;
-    private static final NamespacedKey CATALYST_MAX_WITH_UP_MODEL = VeiPack.ItemModel.Gui.Background.Catalyst._3_AND_UP;
 
     private final boolean hasResourcePack;
     private final TextColor colorPrimary;
@@ -165,9 +154,9 @@ public class RecipeGuiComponent {
 
     //#endregion Bookmark Buttons
 
-    //#region Scroll Buttons
+    //#region Process
 
-    public ItemStack createProcessScrollLeftButton(int moreCount) {
+    public ItemStack createProcessScrollLeftButton(int moreCount, int currentProcessIndex) {
         ItemStack item = PlayerHeadRegistry.quartzArrowLeft();
         item.editMeta(meta -> {
             meta.displayName(Component.text("Scroll Left", colorPrimary).decoration(TextDecoration.ITALIC, false));
@@ -178,7 +167,7 @@ public class RecipeGuiComponent {
 
         if (hasResourcePack) {
             item.editMeta(meta -> {
-                meta.setItemModel(VeiPack.ItemModel.Gui.Button.ARROW_LEFT);
+                meta.setItemModel(VeiPack.ItemModel.Gui.Background.Process.getProcessModel(-1, currentProcessIndex, true, false));
             });
         }
 
@@ -203,6 +192,26 @@ public class RecipeGuiComponent {
         return item;
     }
 
+    /**
+     * Creates an invisible item with under a background model behind the processes.
+     * This should not be used when there is an "left" button shown, see {@link #createProcessScrollLeftButton(int, int)}.
+     */
+    public ItemStack createProcessNonScrollButton(int nbOfProcesses, int currentProcessIndex, boolean isAllProcessVisible) {
+        ItemStack item = createFillerItem(false);
+
+        if (hasResourcePack) {
+            item.editMeta(meta -> {
+                meta.setItemModel(VeiPack.ItemModel.Gui.Background.Process.getProcessModel(nbOfProcesses, currentProcessIndex, false, isAllProcessVisible));
+            });
+        }
+
+        return item;
+    }
+
+    //#endregion Process
+
+    //#region Workbench
+
     public ItemStack createWorkbenchScrollUpButton(int moreCount) {
         ItemStack item = PlayerHeadRegistry.quartzArrowUp();
         item.editMeta(meta -> {
@@ -214,7 +223,7 @@ public class RecipeGuiComponent {
 
         if (hasResourcePack) {
             item.editMeta(meta -> {
-                meta.setItemModel(getCatalystModel(-1, true));
+                meta.setItemModel(VeiPack.ItemModel.Gui.Background.Catalyst.getCatalystModel(-1, true, false));
             });
         }
 
@@ -245,34 +254,21 @@ public class RecipeGuiComponent {
 
     /**
      * Creates an invisible item with under a background model behind the catalysts.
-     * This should not be used when there is an "up" button shown.
+     * This should not be used when there is an "up" button shown, see {@link #createWorkbenchScrollUpButton(int, boolean)}.
      */
-    public ItemStack createWorkbenchNonScrollButton(int nbOfCatalyst) {
+    public ItemStack createWorkbenchNonScrollButton(int nbOfCatalyst, boolean isAllCatalystVisible) {
         ItemStack item = createFillerItem(false);
 
         if (hasResourcePack) {
             item.editMeta(meta -> {
-                meta.setItemModel(getCatalystModel(nbOfCatalyst, false));
+                meta.setItemModel(VeiPack.ItemModel.Gui.Background.Catalyst.getCatalystModel(nbOfCatalyst, false, isAllCatalystVisible));
             });
         }
 
         return item;
     }
 
-    /**
-     * Selects the catalyst model. 
-     * If showUpButton is true, nbOfCatalyst ignored and the max is returned.
-     * Otherwise returns model for nbOfCatalyst or fallback to the max.
-     */
-    private NamespacedKey getCatalystModel(int nbOfCatalyst, boolean showUpButton) {
-        if (showUpButton) {
-            return CATALYST_MAX_WITH_UP_MODEL;
-        }
-
-        return CATALYST_MODELS.getOrDefault(nbOfCatalyst, CATALYST_MAX_MODEL);            
-    }
-
-    //#endregion Scroll Buttons
+    //#endregion Workbench
 
     //#region Utility Buttons
 

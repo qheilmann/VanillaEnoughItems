@@ -1,0 +1,16 @@
+{
+    "model": {
+        "type": "minecraft:composite",
+        "models": [
+            {
+                "type": "minecraft:model",
+                "model": "vanillaenoughitems:item/gui/background/process/1_off"
+            },
+            {
+                "type": "minecraft:model",
+                "model": "vanillaenoughitems:item/gui/background/process/2_on"
+            }
+        ]
+    },
+    "oversized_in_gui": true
+}

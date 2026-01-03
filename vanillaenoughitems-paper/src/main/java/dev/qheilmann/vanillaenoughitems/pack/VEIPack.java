@@ -46,11 +46,70 @@ public class VeiPack {
                 public static final NamespacedKey SMITHING = path(Background.class, "smithing");
 
                 public static class Catalyst {
+                    // Don't forget to constants and method in ModelSelector when modifying these
                     public static final NamespacedKey _1 = path(Catalyst.class, "1");
                     public static final NamespacedKey _2 = path(Catalyst.class, "2");
                     public static final NamespacedKey _3 = path(Catalyst.class, "3");
                     public static final NamespacedKey _4 = path(Catalyst.class, "4");
                     public static final NamespacedKey _3_AND_UP = path(Catalyst.class, "3_and_up");
+                    
+                    public static final int MAX_SCROLLABLE_CATALYST = 3;
+                    public static final int MAX_NON_SCROLLABLE_CATALYSTS = MAX_SCROLLABLE_CATALYST + 1;
+                    
+                    /**
+                     * Gets the catalyst model key for the given parameters.
+                     * @param nbOfCatalyst Number of catalysts
+                     * @param showUpButton Whether an up button is shown, nbOfCatalyst is ignored if true
+                     * @return The NamespacedKey for the catalyst model
+                     */
+                    public static NamespacedKey getCatalystModel(int nbOfCatalyst, boolean showUpButton, boolean isAllCatalystVisible) {
+                        return ModelSelector.getCatalystModel(nbOfCatalyst, showUpButton, isAllCatalystVisible);
+                    }
+                }
+
+                public static class Process {
+                    // Don't forget to constants and method in ModelSelector when modifying these
+                    public static final NamespacedKey _1_0 = path(Process.class, "1_0");
+                    public static final NamespacedKey _2_0 = path(Process.class, "2_0");
+                    public static final NamespacedKey _2_1 = path(Process.class, "2_1");
+                    public static final NamespacedKey _3_0 = path(Process.class, "3_0");
+                    public static final NamespacedKey _3_1 = path(Process.class, "3_1");
+                    public static final NamespacedKey _3_2 = path(Process.class, "3_2");
+                    public static final NamespacedKey _4_0 = path(Process.class, "4_0");
+                    public static final NamespacedKey _4_1 = path(Process.class, "4_1");
+                    public static final NamespacedKey _4_2 = path(Process.class, "4_2");
+                    public static final NamespacedKey _4_3 = path(Process.class, "4_3");
+                    public static final NamespacedKey _5_0 = path(Process.class, "5_0");
+                    public static final NamespacedKey _5_1 = path(Process.class, "5_1");
+                    public static final NamespacedKey _5_2 = path(Process.class, "5_2");
+                    public static final NamespacedKey _5_3 = path(Process.class, "5_3");
+                    public static final NamespacedKey _5_4 = path(Process.class, "5_4");
+                    public static final NamespacedKey _6_0 = path(Process.class, "6_0");
+                    public static final NamespacedKey _6_1 = path(Process.class, "6_1");
+                    public static final NamespacedKey _6_2 = path(Process.class, "6_2");
+                    public static final NamespacedKey _6_3 = path(Process.class, "6_3");
+                    public static final NamespacedKey _6_4 = path(Process.class, "6_4");
+                    public static final NamespacedKey _6_5 = path(Process.class, "6_5");
+                    public static final NamespacedKey _5_0_AND_LEFT = path(Process.class, "5_0_and_left");
+                    public static final NamespacedKey _5_1_AND_LEFT = path(Process.class, "5_1_and_left");
+                    public static final NamespacedKey _5_2_AND_LEFT = path(Process.class, "5_2_and_left");
+                    public static final NamespacedKey _5_3_AND_LEFT = path(Process.class, "5_3_and_left");
+                    public static final NamespacedKey _5_4_AND_LEFT = path(Process.class, "5_4_and_left");
+                    public static final NamespacedKey _5_NON_VISIBLE_AND_LEFT = path(Process.class, "5_non_visible_and_left");
+
+                    public static final int MAX_SCROLLABLE_PROCESSES = 5;
+                    public static final int MAX_NON_SCROLLABLE_PROCESSES = MAX_SCROLLABLE_PROCESSES + 1;
+
+                    /**
+                     * Gets the process model key for the given parameters.
+                     * @param nbOfProcesses Number of processes
+                     * @param processIndex Zero-based index of the current showed process (0 to nbOfProcesses-1)
+                     * @param showLeftButton Whether a left button is shown, only relevant for 5+ processes
+                     * @return The NamespacedKey for the process model
+                     */
+                    public static final NamespacedKey getProcessModel(int nbOfProcesses, int processIndex, boolean showLeftButton, boolean isAllProcessVisible) {
+                        return ModelSelector.getProcessModel(nbOfProcesses, processIndex, showLeftButton, isAllProcessVisible);
+                    }
                 }
             }
 
@@ -106,10 +165,10 @@ public class VeiPack {
             String lowerName = canonicalName.toLowerCase();
             String marker = "." + ItemModel.class.getSimpleName().toLowerCase() + ".";
             
+            // Find the marker position
             int markerIndex = lowerName.indexOf(marker);
             if (markerIndex == -1) {
                 String underName = ItemModel.class.getCanonicalName();
-
                 throw new IllegalArgumentException(
                     "Class must be nested under" + underName + ": " + canonicalName
                 );
@@ -129,4 +188,88 @@ public class VeiPack {
     }
 
     //#endregion Item Models
+
+    //#region Model Selection
+
+    /**
+     * Provides utility methods to select appropriate models based on dynamic parameters.
+     */
+    private static class ModelSelector {
+
+        /**
+         * Selects the appropriate catalyst model based on the number of catalysts
+         * and whether an up scroll button is shown.
+         * 
+         * @param totalNbOfCatalyst Number of catalysts, ignored if showUpButton is true
+         * @param showUpButton Whether an up scroll button is shown
+         * @return The NamespacedKey for the appropriate catalyst model
+         */
+        public static NamespacedKey getCatalystModel(int totalNbOfCatalyst, boolean showUpButton, boolean isAllCatalystVisible) {
+            // Special case: show up button uses the specific "3_and_up" model
+            if (showUpButton) {
+                return ItemModel.path(ItemModel.Gui.Background.Catalyst.class, "3_and_up");
+            }
+
+            // Clamp nbOfCatalyst to valid range
+            int nbOfVisibleCatalyst = totalNbOfCatalyst;
+            if (isAllCatalystVisible) {
+                if (totalNbOfCatalyst < 0 || totalNbOfCatalyst > ItemModel.Gui.Background.Catalyst.MAX_NON_SCROLLABLE_CATALYSTS) {
+                    nbOfVisibleCatalyst = ItemModel.Gui.Background.Catalyst.MAX_NON_SCROLLABLE_CATALYSTS;
+                }
+            } else {
+                if (totalNbOfCatalyst < 0 || totalNbOfCatalyst > ItemModel.Gui.Background.Catalyst.MAX_SCROLLABLE_CATALYST) {
+                    nbOfVisibleCatalyst = ItemModel.Gui.Background.Catalyst.MAX_SCROLLABLE_CATALYST;
+                }
+            }
+            
+            // Build file name and return model key
+            return ItemModel.path(ItemModel.Gui.Background.Catalyst.class, String.valueOf(nbOfVisibleCatalyst));
+        }
+
+        /**
+         * Selects the appropriate process model based on the number of processes, 
+         * the process index, and whether a left scroll button is shown.
+         * 
+         * @param totalNbOfProcess Number of processes
+         * @param processIndex Zero-based index of the current showed process
+         * @param showLeftButton Whether a left scroll button is shown (only relevant for 5+ processes)
+         * @return The NamespacedKey for the appropriate process model
+         * @throws IllegalArgumentException if parameters are invalid
+         */
+        public static NamespacedKey getProcessModel(int totalNbOfProcess, int processIndex, boolean showLeftButton, boolean isAllProcessVisible) {
+            // Validation
+            if (!showLeftButton && processIndex < 0 || processIndex > ItemModel.Gui.Background.Process.MAX_NON_SCROLLABLE_PROCESSES) {
+                throw new IllegalArgumentException(
+                    "Process index must be between 0 and " + (totalNbOfProcess - 1) + ", got: " + processIndex
+                );
+            }
+
+            // Clamp nbOfVisibleProcesses to valid range
+            int nbOfVisibleProcesses = totalNbOfProcess;
+            if (isAllProcessVisible) {
+                if (totalNbOfProcess < 0 || totalNbOfProcess > ItemModel.Gui.Background.Process.MAX_NON_SCROLLABLE_PROCESSES) {
+                    nbOfVisibleProcesses = ItemModel.Gui.Background.Process.MAX_NON_SCROLLABLE_PROCESSES;
+                }
+            } else {
+                if (totalNbOfProcess < 0 || totalNbOfProcess > ItemModel.Gui.Background.Process.MAX_SCROLLABLE_PROCESSES) {
+                    nbOfVisibleProcesses = ItemModel.Gui.Background.Process.MAX_SCROLLABLE_PROCESSES;
+                }
+            }
+
+            // Non visible cases            
+            if (processIndex < 0 || processIndex > nbOfVisibleProcesses - 1) {
+                return ItemModel.Gui.Background.Process._5_NON_VISIBLE_AND_LEFT;
+            }
+            
+            // 5+ processes with left button
+            if (showLeftButton) {
+                return ItemModel.path(ItemModel.Gui.Background.Process.class, "5_" + processIndex + "_and_left");
+            }
+
+            String fileName = nbOfVisibleProcesses + "_" + processIndex;
+            return ItemModel.path(ItemModel.Gui.Background.Process.class, fileName);
+        }
+    }
+
+    //#endregion Model Selection Helpers
 }
