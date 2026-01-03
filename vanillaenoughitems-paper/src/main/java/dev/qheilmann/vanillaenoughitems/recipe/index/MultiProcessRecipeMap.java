@@ -21,19 +21,25 @@ import dev.qheilmann.vanillaenoughitems.recipe.process.Process;
  */
 @NullMarked
 public class MultiProcessRecipeMap {
+
     private final ConcurrentNavigableMap<Process, ProcessRecipeSet> processRecipeSets = new ConcurrentSkipListMap<>(Process.COMPARATOR);
+    private final Grouping grouping;
 
     /**
      * Create an empty MultiProcessRecipeMap
+     * @param grouping the grouping of all the recipes in this map
      */
-    public MultiProcessRecipeMap() {
+    public MultiProcessRecipeMap(Grouping grouping) {
+        this.grouping = grouping;
     }
 
     /**
      * Create a MultiProcessRecipeMap with initial ProcessRecipeSets
+     * @param grouping the grouping of all the recipes in this map
      * @param processRecipeSets the initial ProcessRecipeSets
      */
-    public MultiProcessRecipeMap(Iterable<ProcessRecipeSet> processRecipeSets) {
+    public MultiProcessRecipeMap(Grouping grouping, Iterable<ProcessRecipeSet> processRecipeSets) {
+        this(grouping);
         for (ProcessRecipeSet processRecipeSet : processRecipeSets) {
             putProcessRecipeSet(processRecipeSet);
         }
@@ -135,5 +141,13 @@ public class MultiProcessRecipeMap {
      */
     public void clear() {
         processRecipeSets.clear();
+    }
+
+    /**
+     * Get the grouping criteria for this map
+     * @return the grouping
+     */
+    public Grouping getGrouping() {
+        return grouping;
     }
 }

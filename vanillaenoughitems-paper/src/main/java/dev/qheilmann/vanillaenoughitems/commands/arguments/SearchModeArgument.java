@@ -102,7 +102,7 @@ public class SearchModeArgument extends CustomArgument<SearchModeArgument.Search
         }
 
         // Usage
-        reader = context.getRecipeIndex().readerByUsage(item);
+        reader = context.getRecipeIndex().readerByIngredient(item);
         if (reader != null) {
             availableModes.add(SearchMode.USAGE);
         }

@@ -115,7 +115,7 @@ public class ProcessArgument extends CustomArgument<Process, NamespacedKey> {
     
             reader = switch (searchMode) {
                 case RECIPE -> context.getRecipeIndex().readerByResult(item);
-                case USAGE -> context.getRecipeIndex().readerByUsage(item);
+                case USAGE -> context.getRecipeIndex().readerByIngredient(item);
                 default -> throw new UnsupportedOperationException("Search mode " + searchMode + " is not implemented");
             };
         }

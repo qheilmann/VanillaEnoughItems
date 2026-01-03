@@ -121,7 +121,8 @@ public class RecipeItemArgument extends CustomArgument<ItemStack, NamespacedKey>
         Set<ItemStack> allItems = new HashSet<>();
 
         allItems.addAll(recipeIndex.getAllResultItems());
-        allItems.addAll(recipeIndex.getAllUsedItems());
+        allItems.addAll(recipeIndex.getAllIngredientItems());
+        allItems.addAll(recipeIndex.getAllOtherItems());
 
         return allItems.stream()
             .map(itemStack -> convertItemToKey(itemStack))

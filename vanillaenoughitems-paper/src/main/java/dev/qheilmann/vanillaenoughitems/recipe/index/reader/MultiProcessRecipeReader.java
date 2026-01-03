@@ -4,6 +4,7 @@ import java.util.NavigableSet;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
+import dev.qheilmann.vanillaenoughitems.recipe.index.Grouping;
 import dev.qheilmann.vanillaenoughitems.recipe.index.MultiProcessRecipeMap;
 import dev.qheilmann.vanillaenoughitems.recipe.index.ProcessRecipeSet;
 import dev.qheilmann.vanillaenoughitems.recipe.process.Process;
@@ -76,7 +77,7 @@ public class MultiProcessRecipeReader {
      * @return the current process
      */
     public Process getCurrentProcess() {
-        return currentProcessRecipeReader.getAssociatedProcess();
+        return currentProcessRecipeReader.getProcess();
     }
 
     /**
@@ -142,5 +143,13 @@ public class MultiProcessRecipeReader {
      */
     public NavigableSet<Process> getAllProcesses() {
         return multiProcessRecipeMap.getAllProcesses();
+    }
+
+    /**
+     * Get the grouping criteria for recipes in this reader
+     * @return the grouping
+     */
+    public Grouping getGrouping() {
+        return multiProcessRecipeMap.getGrouping();
     }
 }

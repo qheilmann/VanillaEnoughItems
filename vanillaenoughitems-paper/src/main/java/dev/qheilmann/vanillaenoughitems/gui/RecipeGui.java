@@ -32,6 +32,7 @@ import dev.qheilmann.vanillaenoughitems.pack.VeiPack;
 import dev.qheilmann.vanillaenoughitems.pack.GuiIcon;
 import dev.qheilmann.vanillaenoughitems.recipe.RecipeContext;
 import dev.qheilmann.vanillaenoughitems.recipe.extraction.RecipeExtractor;
+import dev.qheilmann.vanillaenoughitems.recipe.index.Grouping;
 import dev.qheilmann.vanillaenoughitems.recipe.index.reader.MultiProcessRecipeReader;
 import dev.qheilmann.vanillaenoughitems.recipe.process.Process;
 import dev.qheilmann.vanillaenoughitems.recipe.process.Workbench;
@@ -154,7 +155,7 @@ public class RecipeGui extends FastInv {
         if (isLeftClick) {
             newMultiRecipeReader = context.getRecipeIndex().readerByResult(recipeItem);
         } else if (isRightClick) {
-            newMultiRecipeReader = context.getRecipeIndex().readerByUsage(recipeItem);
+            newMultiRecipeReader = context.getRecipeIndex().readerByIngredient(recipeItem);
         } 
         // Ignore other click types
 
@@ -172,9 +173,9 @@ public class RecipeGui extends FastInv {
         boolean isLeftClick = event.getClick().isLeftClick();
         boolean isRightClick = event.getClick().isRightClick();
         
-        // Show usage on right click
+        // Show ingredient on right click
         if (isRightClick) {
-            MultiProcessRecipeReader newMultiRecipeReader = context.getRecipeIndex().readerByUsage(recipeItem);
+            MultiProcessRecipeReader newMultiRecipeReader = context.getRecipeIndex().readerByIngredient(recipeItem);
             if (newMultiRecipeReader != null) {
                 // Only push to history if we're actually navigating to a different recipe view
                 playerData.navigationHistory().pushForNavigation(reader, newMultiRecipeReader);
@@ -218,35 +219,56 @@ public class RecipeGui extends FastInv {
         renderSharedIfPresent(this::renderBackwardNavigationButton, sharedButtonSlots.get(RecipeGuiSharedButton.HISTORY_BACKWARD));
         renderSharedIfPresent(this::renderQuickCraftButton, sharedButtonSlots.get(RecipeGuiSharedButton.QUICK_CRAFT));
         
-        // refact all of this, make sub methodes
+        // Separate ticked items from pinned items based on grouping
         Map<ProcessPannelSlot, CyclicIngredient> tickedIngredient = processPanel.getTickedIngredient();
         Map<ProcessPannelSlot, CyclicIngredient> tickedResults = processPanel.getTickedResults();
         
-        Map<ProcessPannelSlot, CyclicIngredient> allTicked = new HashMap<>(tickedIngredient);
-        allTicked.putAll(tickedResults);
-
-        Runnable ingredientTicker = () -> tickIngredients(tickedIngredient);
-        Runnable resultTicker = () -> tickResults(tickedResults);
-        Runnable allTicker = () -> {
-            ingredientTicker.run();
-            resultTicker.run();
-        };
-
-        startTicker(allTicker);
-
-        // Place ticked ingredient slots
+        // Filter out pinned items from ticker
+        Map<ProcessPannelSlot, CyclicIngredient> tickedIngredientFiltered = new HashMap<>();
+        Map<ProcessPannelSlot, CyclicIngredient> tickedResultsFiltered = new HashMap<>();
+        
+        // Place ingredient slots - filter out pinned items from ticker
         for (Map.Entry<ProcessPannelSlot, CyclicIngredient> entry : tickedIngredient.entrySet()) {
             ProcessPannelSlot panelSlot = entry.getKey();
-            CyclicIngredient view = entry.getValue();
-            placeIngredient(panelSlot, view);
+            CyclicIngredient cyclic = entry.getValue();
+            
+            ItemStack pinnedItem = getPinnedIngredient();
+            if (pinnedItem != null && cyclic.contains(pinnedItem)) {
+                // Pin this ingredient - set to pinned item and don't add to ticker
+                cyclic.pin(pinnedItem);
+                placeIngredient(panelSlot, cyclic);
+            } else {
+                // Normal cycling behavior
+                tickedIngredientFiltered.put(panelSlot, cyclic);
+                placeIngredient(panelSlot, cyclic);
+            }
         }
 
-        // Place ticked result slots
+        // Place result slots - filter out pinned items from ticker
         for (Map.Entry<ProcessPannelSlot, CyclicIngredient> entry : tickedResults.entrySet()) {
             ProcessPannelSlot panelSlot = entry.getKey();
-            CyclicIngredient view = entry.getValue();
-            placeResult(panelSlot, view);
+            CyclicIngredient cyclic = entry.getValue();
+            
+            ItemStack pinnedItem = getPinnedResult();
+            if (pinnedItem != null && cyclic.contains(pinnedItem)) {
+                // Pin this result - set to pinned item and don't add to ticker
+                cyclic.pin(pinnedItem);
+                placeResult(panelSlot, cyclic);
+            } else {
+                // Normal cycling behavior
+                tickedResultsFiltered.put(panelSlot, cyclic);
+                placeResult(panelSlot, cyclic);
+            }
         }
+        
+        // Start ticker
+        Runnable ingredientTicker = () -> tickIngredients(tickedIngredientFiltered);
+        Runnable resultTicker = () -> tickResults(tickedResultsFiltered);
+
+        startTicker(() -> {
+            ingredientTicker.run();
+            resultTicker.run();
+        });
         
         // Place static decorative items
         Map<ProcessPannelSlot, FastInvItem> staticItems = processPanel.getStaticItems();
@@ -855,6 +877,30 @@ public class RecipeGui extends FastInv {
         }
 
         return extractor.extractKey(recipe);
+    }
+
+    /**
+     * Gets the (asOne) ingredient that should be pinned based on grouping.
+     * @return the pinned ingredient, or null if no pinning
+     */
+    @Nullable
+    private ItemStack getPinnedIngredient() {
+        return switch (reader.getGrouping()) {
+            case Grouping.ByIngredient g -> g.ingredient();
+            default -> null;
+        };
+    }
+
+    /**
+     * Gets the (asOne) result that should be pinned based on grouping.
+     * @return the pinned result, or null if no pinning
+     */
+    @Nullable
+    private ItemStack getPinnedResult() {
+        return switch (reader.getGrouping()) {
+            case Grouping.ByResult g -> g.result();
+            default -> null;
+        };
     }
 
     //#endregion Helpers

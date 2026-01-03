@@ -18,8 +18,8 @@ import dev.qheilmann.vanillaenoughitems.recipe.process.Process;
 @NullMarked
 public class ProcessRecipeSet {
 
-    Process process;
-    ConcurrentSkipListSet<Recipe> recipes = new ConcurrentSkipListSet<>(RecipeHelper.RECIPE_COMPARATOR); // Concurrent Navigable set 
+    private final Process process;
+    private final ConcurrentSkipListSet<Recipe> recipes = new ConcurrentSkipListSet<>(RecipeHelper.RECIPE_COMPARATOR); // Concurrent Navigable set
 
     /**
      * Create a ProcessRecipeSet without initial recipes

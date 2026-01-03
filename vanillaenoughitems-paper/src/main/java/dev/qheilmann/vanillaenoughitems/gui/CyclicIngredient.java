@@ -20,7 +20,7 @@ public class CyclicIngredient {
     /**
      * Create an CyclicIngredient from a RecipeChoice.
      * @param choice the recipe choice to create from
-     * @param seed a seed value to randomize starting position (same seed = same offset for all items)
+     * @param seed a seed value to set starting position (same seed = same offset for all items)
      */
     public CyclicIngredient(int seed, RecipeChoice choice) {
         List<ItemStack> items = RecipeChoiceHelper.getItemsFromChoice(choice).stream().toList();
@@ -31,7 +31,7 @@ public class CyclicIngredient {
     /**
      * Create an CyclicIngredient from ItemStacks.
      * Automatically synchronizes with other instances using the same item types and seed.
-     * @param seed a seed value to randomize starting position (same seed = same offset for all items)
+     * @param seed a seed value to set starting position (same seed = same offset for all items)
      * @param item the items to display
      */
     public CyclicIngredient(int seed, ItemStack... item) {
@@ -82,6 +82,35 @@ public class CyclicIngredient {
      */
     public int getOptionCount() {
         return options.length;
+    }
+
+    /**
+     * Check if the CyclicIngredient contains a specific ItemStack
+     * @param item the item to check
+     * @return true if the item is in the options, false otherwise
+     */
+    public boolean contains(ItemStack item) {
+        for (ItemStack option : options) {
+            if (option.isSimilar(item)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Pin the current index to a specific item if it exists in the options
+     * @param item the item to pin to
+     */
+    public void pin(ItemStack item) {
+        for (int i = 0; i < options.length; i++) {
+            if (options[i].isSimilar(item)) {
+                currentIndex = i;
+                return;
+            }
+        }
+
+        throw new IllegalArgumentException("Item not found in CyclicIngredient options");
     }
 
     /**

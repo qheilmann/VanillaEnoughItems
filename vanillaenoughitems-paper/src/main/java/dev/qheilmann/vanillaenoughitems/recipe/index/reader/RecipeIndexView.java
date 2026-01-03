@@ -100,44 +100,44 @@ public interface RecipeIndexView {
 
     //#endregion By Result
 
-    //#region By Usage
+    //#region By Ingredient
 
     /**
-     * Return a MultiProcessRecipeReader for the specified usage.
+     * Return a MultiProcessRecipeReader for the specified ingredient.
      * All recipes are categorized by their process.
      *
-     * @param item the target usage
-     * @return a MultiProcessRecipeReader for the usage, or null if none exist
+     * @param item the target ingredient
+     * @return a MultiProcessRecipeReader for the ingredient, or null if none exist
      */
     @Nullable
-    public MultiProcessRecipeReader readerByUsage(ItemStack item);
+    public MultiProcessRecipeReader readerByIngredient(ItemStack item);
 
     /**
-     * Return a MultiProcessRecipeReader for the specified usage, starting at the specified process.
+     * Return a MultiProcessRecipeReader for the specified ingredient, starting at the specified process.
      * The reader will contain only recipes for that single process.
      *
-     * @param item the target usage
+     * @param item the target ingredient
      * @param startProcess the target process
-     * @return a MultiProcessRecipeReader for the usage and process, or null if none exist
+     * @return a MultiProcessRecipeReader for the ingredient and process, or null if none exist
      * @throws IllegalArgumentException if the process does not exist in the MultiProcessRecipeMap
      */
     @Nullable
-    public MultiProcessRecipeReader readerByUsage(ItemStack item, Process startProcess);
+    public MultiProcessRecipeReader readerByIngredient(ItemStack item, Process startProcess);
 
     /**
-     * Return a MultiProcessRecipeReader for the specified usage, starting at the specified process and recipe.
+     * Return a MultiProcessRecipeReader for the specified ingredient, starting at the specified process and recipe.
      * The reader will contain only recipes for that single process.
      *
-     * @param item the target usage
+     * @param item the target ingredient
      * @param startProcess the target process
      * @param startRecipe the recipe to start at
-     * @return a MultiProcessRecipeReader for the usage, process and recipe, or null if none exist
+     * @return a MultiProcessRecipeReader for the ingredient, process and recipe, or null if none exist
      * @throws IllegalArgumentException if the process or recipe does not exist in the MultiProcessRecipeMap
      */
     @Nullable
-    public MultiProcessRecipeReader readerByUsage(ItemStack item, Process startProcess, Recipe startRecipe);
+    public MultiProcessRecipeReader readerByIngredient(ItemStack item, Process startProcess, Recipe startRecipe);
 
-    //#endregion By Usage
+    //#endregion By Ingredient
 
     //#region All Recipes
 
@@ -182,8 +182,8 @@ public interface RecipeIndexView {
 
 
     /**
-     * Get all used items in the recipe index
-     * @return a set of all used items
+     * Get all ingredient items in the recipe index
+     * @return a set of all ingredient items
      */
-    public Set<ItemStack> getAllUsedItems();
+    public Set<ItemStack> getAllIngredientItems();
 }

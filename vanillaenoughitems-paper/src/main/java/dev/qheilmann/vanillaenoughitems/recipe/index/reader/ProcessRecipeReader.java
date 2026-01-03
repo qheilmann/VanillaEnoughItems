@@ -111,7 +111,7 @@ public class ProcessRecipeReader {
      * Get the process associated with the ProcessRecipeSet being read
      * @return the associated process
      */
-    public Process getAssociatedProcess() {
+    public Process getProcess() {
         return processRecipeSet.getProcess();
     }
 
