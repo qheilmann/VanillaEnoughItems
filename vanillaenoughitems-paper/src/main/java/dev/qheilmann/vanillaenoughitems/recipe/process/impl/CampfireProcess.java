@@ -42,6 +42,7 @@ public class CampfireProcess extends AbstractProcess {
     @Override
     public Set<Workbench> workbenches() {
         Workbench campfire = new Workbench(new ItemStack(Material.CAMPFIRE));
-        return Set.of(campfire);
+        Workbench soulCampfire = new Workbench(new ItemStack(Material.SOUL_CAMPFIRE));
+        return Set.of(campfire, soulCampfire);
     }
 }
