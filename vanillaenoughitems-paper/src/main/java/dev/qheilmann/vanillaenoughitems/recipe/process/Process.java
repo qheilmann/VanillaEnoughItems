@@ -49,12 +49,6 @@ public interface Process extends Keyed{
     boolean canHandleRecipe(Recipe recipe);
 
     /**
-     * Get the display name of the process
-     * @return the display name
-     */
-    Component displayName();
-
-    /**
      * Get the symbol item of the process
      * @return the symbol item
      */
@@ -96,11 +90,6 @@ public interface Process extends Keyed{
         @Override
         public boolean canHandleRecipe(Recipe recipe) {
             return true;
-        }
-
-        @Override
-        public Component displayName() {
-            return Component.text("Undefined Process");
         }
 
         @Override

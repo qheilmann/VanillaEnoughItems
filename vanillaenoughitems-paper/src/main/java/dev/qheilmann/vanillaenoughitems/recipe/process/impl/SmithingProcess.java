@@ -6,15 +6,18 @@ import java.util.Set;
 
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.SmithingTransformRecipe;
 import org.bukkit.inventory.SmithingTrimRecipe;
 import org.jspecify.annotations.NullMarked;
 
+import dev.qheilmann.vanillaenoughitems.VanillaEnoughItems;
 import dev.qheilmann.vanillaenoughitems.recipe.process.AbstractProcess;
 import dev.qheilmann.vanillaenoughitems.recipe.process.Workbench;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
 
 @NullMarked
 public class SmithingProcess extends AbstractProcess {
@@ -35,13 +38,12 @@ public class SmithingProcess extends AbstractProcess {
     }
 
     @Override
-    public Component displayName() {
-        return Component.text("Smithing");
-    }
-
-    @Override
     public ItemStack symbol() {
-        return new ItemStack(Material.SMITHING_TABLE);
+        ItemStack item = ItemType.SMITHING_TABLE.createItemStack(meta -> {
+            meta.displayName(Component.text("Smithing", VanillaEnoughItems.config().style().colorPrimary()).decoration(TextDecoration.ITALIC, false));
+        });
+
+        return item;
     }
 
     @Override
