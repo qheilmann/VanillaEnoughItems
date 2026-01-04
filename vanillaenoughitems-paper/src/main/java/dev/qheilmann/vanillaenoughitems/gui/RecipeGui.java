@@ -106,9 +106,9 @@ public class RecipeGui extends FastInv {
         fillRange(Slots.Generic9x6.all(), fillerItem);
 
         // Static buttons
-        renderBookmarkListButton();
-        renderBookmarkServerListButton();
-        renderInfoButton();
+        // renderBookmarkListButton(); // TODO bookmark list not implemented yet
+        // renderBookmarkServerListButton(); // TODO server bookmark list not implemented yet
+        // renderInfoButton(); // TODO info button not implemented yet
 
         // Dynamic render
         render();
@@ -217,7 +217,7 @@ public class RecipeGui extends FastInv {
         renderSharedIfPresent(this::renderPreviousRecipeButton, sharedButtonSlots.get(RecipeGuiSharedButton.PREVIOUS_RECIPE));
         renderSharedIfPresent(this::renderForwardNavigationButton, sharedButtonSlots.get(RecipeGuiSharedButton.HISTORY_FORWARD));
         renderSharedIfPresent(this::renderBackwardNavigationButton, sharedButtonSlots.get(RecipeGuiSharedButton.HISTORY_BACKWARD));
-        renderSharedIfPresent(this::renderQuickCraftButton, sharedButtonSlots.get(RecipeGuiSharedButton.QUICK_CRAFT));
+        // renderSharedIfPresent(this::renderQuickCraftButton, sharedButtonSlots.get(RecipeGuiSharedButton.QUICK_CRAFT)); // TODO quick craft not implemented yet
         
         // Separate ticked items from pinned items based on grouping
         Map<ProcessPannelSlot, CyclicIngredient> tickedIngredient = processPanel.getTickedIngredient();
