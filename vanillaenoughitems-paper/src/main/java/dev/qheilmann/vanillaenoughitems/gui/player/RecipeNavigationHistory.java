@@ -22,9 +22,35 @@ public class RecipeNavigationHistory {
     private final UUID playerUuid;
     private final Deque<MultiProcessRecipeReader> backwardStack = new ArrayDeque<>();
     private final Deque<MultiProcessRecipeReader> forwardStack = new ArrayDeque<>();
+    /** The last reader that was being viewed (saved when on closes) */
+    private @Nullable MultiProcessRecipeReader lastViewedReader = null;
 
     public RecipeNavigationHistory(UUID playerUuid) {
         this.playerUuid = playerUuid;
+    }
+
+    /**
+     * Called when starting to view a new reader.
+     * Pushes the last viewed reader (if any) to history.
+     * The new reader will be saved by stopViewing() when viewing ends.
+     * 
+     * @param newReader the reader now being viewed
+     */
+    public void startViewing(MultiProcessRecipeReader newReader) {
+        // If there was a previously viewed reader, push it to history
+        if (lastViewedReader != null) {
+            pushToHistory(lastViewedReader);
+        }
+    }
+    
+    /**
+     * Called when stopping viewing a reader.
+     * Updates the last viewed reader to the current one being viewed.
+     * 
+     * @param currentReader the reader that was being viewed
+     */
+    public void stopViewing(MultiProcessRecipeReader currentReader) {
+        lastViewedReader = currentReader;
     }
 
     /**
@@ -39,14 +65,24 @@ public class RecipeNavigationHistory {
         if (isSameReaderView(currentReader, targetReader)) {
             return;
         }
-        
-        // Don't push if this is the same as the top of the stack
-        if (isSameReaderView(backwardStack.peek(), currentReader)) {
-            // Prevents pushing the same view multiple times
+
+        pushToHistory(currentReader);
+    }
+
+    /**
+     * Internal method to push a reader to the backward stack and clear forward history.
+     * Prevents pushing duplicates - if the reader is already on top of the stack, does nothing.
+     * Ensures forward stack is cleared when starting a new navigation branch.
+     * 
+     * @param reader the reader to push to history
+     */
+    private void pushToHistory(MultiProcessRecipeReader reader) {
+        // Don't push if this is the same as the top of the stack (prevents duplicates)
+        if (isSameReaderView(backwardStack.peek(), reader)) {
             return;
         }
-
-        backwardStack.push(currentReader);
+        
+        backwardStack.push(reader);
         forwardStack.clear(); // New navigation clears forward history
         
         // Limit history size
@@ -107,6 +143,7 @@ public class RecipeNavigationHistory {
     public void clear() {
         backwardStack.clear();
         forwardStack.clear();
+        lastViewedReader = null;
     }
 
     /**

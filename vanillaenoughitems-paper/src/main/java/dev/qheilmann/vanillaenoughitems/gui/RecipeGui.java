@@ -102,6 +102,9 @@ public class RecipeGui extends FastInv {
         this.guiComponent = new RecipeGuiComponent(style);
         this.fillerItem = guiComponent.createFillerItem();
         
+        // Inform navigation history a new viewing session
+        playerData.navigationHistory().startViewing(initialReader);
+        
         // Initial filling
         fillRange(Slots.Generic9x6.all(), fillerItem);
 
@@ -322,6 +325,8 @@ public class RecipeGui extends FastInv {
             tickTask.cancel();
             tickTask = null;
         }
+        // Save current reader to navigation history
+        playerData.navigationHistory().stopViewing(reader);
     }
 
     private void tickIngredients(Map<ProcessPannelSlot, CyclicIngredient> tickedSlots) {
