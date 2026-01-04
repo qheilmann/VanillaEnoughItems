@@ -47,11 +47,17 @@ public class SmithingProcessPanel implements ProcessPanel {
         return (SmithingRecipe) recipe;
     }
 
+    /**
+     * {@inheritDoc}
+     */    
     @Override
     public Map<RecipeGuiSharedButton, ProcessPannelSlot> getRecipeGuiButtonMap() {
         return ProcessPannelSlot.defaultSharedButtonMap();
     }
 
+    /**
+     * {@inheritDoc}
+     */    
     @Override
     public Map<ProcessPannelSlot, CyclicIngredient> getTickedIngredient() {
         Map<ProcessPannelSlot, CyclicIngredient> ticked = new HashMap<>();
@@ -61,12 +67,26 @@ public class SmithingProcessPanel implements ProcessPanel {
         return Map.copyOf(ticked);
     }
 
+    /**
+     * {@inheritDoc}
+     */    
     @Override
     @SuppressWarnings("null")
     public Map<ProcessPannelSlot, CyclicIngredient> getTickedResults() {
         return Map.of(OUTPUT_SLOT, new CyclicIngredient(seed, getSmithingRecipe().getResult()));
     }
 
+    /**
+     * {@inheritDoc}
+     */    
+    @Override
+    public Map<ProcessPannelSlot, CyclicIngredient> getTickedOther() {
+        return Map.of();
+    }
+
+    /**
+     * {@inheritDoc}
+     */    
     @Override
     public Map<ProcessPannelSlot, FastInvItem> getStaticItems() {
         Map<ProcessPannelSlot, FastInvItem> statics = new HashMap<>();

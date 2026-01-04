@@ -55,6 +55,14 @@ public interface ProcessPanel {
     public Map<ProcessPannelSlot, CyclicIngredient> getTickedResults();
 
     /**
+     * Get "other" slots that should animate by cycling through multiple options (like fuel).
+     * These are consumables or auxiliary items that are NOT recipe ingredients.
+     * CyclicIngredient are built once per panel instantiation, and lived during the panel lifecycle. (regenerated on recipe change)
+     * @return map of panel-relative slots to other item views
+     */
+    public Map<ProcessPannelSlot, CyclicIngredient> getTickedOther();
+
+    /**
      * Get static decorative items that don't change during recipe lifecycle.
      * These can have custom click actions (e.g., show more info, send link to wiki).
      * 
@@ -101,6 +109,14 @@ public interface ProcessPanel {
          */
         @Override
         public Map<ProcessPannelSlot, CyclicIngredient> getTickedResults() {
+            return Collections.emptyMap();
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public Map<ProcessPannelSlot, CyclicIngredient> getTickedOther() {
             return Collections.emptyMap();
         }
 

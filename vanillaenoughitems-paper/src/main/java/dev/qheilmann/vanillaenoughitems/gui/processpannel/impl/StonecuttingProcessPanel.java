@@ -79,6 +79,14 @@ public class StonecuttingProcessPanel implements ProcessPanel {
      * {@inheritDoc}
      */
     @Override
+    public Map<ProcessPannelSlot, CyclicIngredient> getTickedOther() {
+        return Map.of();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Map<ProcessPannelSlot, FastInvItem> getStaticItems() {
         Map<ProcessPannelSlot, FastInvItem> statics = new HashMap<>();
 

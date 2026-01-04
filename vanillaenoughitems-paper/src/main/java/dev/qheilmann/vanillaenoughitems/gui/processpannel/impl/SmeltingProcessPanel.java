@@ -60,7 +60,6 @@ public class SmeltingProcessPanel implements ProcessPanel {
     public Map<ProcessPannelSlot, CyclicIngredient> getTickedIngredient() {
         Map<ProcessPannelSlot, CyclicIngredient> ticked = new HashMap<>();
         ticked.put(INPUT_SLOT, new CyclicIngredient(seed, getFurnaceRecipe().getInputChoice()));
-        ticked.put(FUEL_SLOT, new CyclicIngredient(seed, Fuels.FUELS.toArray(new ItemStack[0])));
         return Map.copyOf(ticked);
     }
 
@@ -71,6 +70,16 @@ public class SmeltingProcessPanel implements ProcessPanel {
     @SuppressWarnings("null")
     public Map<ProcessPannelSlot, CyclicIngredient> getTickedResults() {
         return Map.of(OUTPUT_SLOT, new CyclicIngredient(seed, getFurnaceRecipe().getResult()));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Map<ProcessPannelSlot, CyclicIngredient> getTickedOther() {
+        Map<ProcessPannelSlot, CyclicIngredient> ticked = new HashMap<>();
+        ticked.put(FUEL_SLOT, new CyclicIngredient(seed, Fuels.FUELS.toArray(new ItemStack[0])));
+        return Map.copyOf(ticked);
     }
 
     /**

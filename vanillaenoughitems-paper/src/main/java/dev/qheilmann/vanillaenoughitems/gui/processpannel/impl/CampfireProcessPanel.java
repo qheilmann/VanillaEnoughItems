@@ -17,7 +17,6 @@ import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPanel;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPannelSlot;
 import dev.qheilmann.vanillaenoughitems.pack.VeiPack;
 import dev.qheilmann.vanillaenoughitems.utils.fastinv.FastInvItem;
-import net.kyori.adventure.text.Component;
 
 /**
  * Panel for campfire recipes.
@@ -69,6 +68,14 @@ public class CampfireProcessPanel implements ProcessPanel {
     @SuppressWarnings("null")
     public Map<ProcessPannelSlot, CyclicIngredient> getTickedResults() {
         return Map.of(OUTPUT_SLOT, new CyclicIngredient(seed, getCampfireRecipe().getResult()));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Map<ProcessPannelSlot, CyclicIngredient> getTickedOther() {
+        return Map.of();
     }
     
     /**

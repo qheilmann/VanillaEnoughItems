@@ -229,6 +229,7 @@ public class RecipeGui extends FastInv {
         // Separate ticked items from pinned items based on grouping
         Map<ProcessPannelSlot, CyclicIngredient> tickedIngredient = processPanel.getTickedIngredient();
         Map<ProcessPannelSlot, CyclicIngredient> tickedResults = processPanel.getTickedResults();
+        Map<ProcessPannelSlot, CyclicIngredient> tickedOther = processPanel.getTickedOther();
         
         // Filter out pinned items from ticker
         Map<ProcessPannelSlot, CyclicIngredient> tickedIngredientFiltered = new HashMap<>();
@@ -249,6 +250,15 @@ public class RecipeGui extends FastInv {
                 tickedIngredientFiltered.put(panelSlot, cyclic);
                 placeIngredient(panelSlot, cyclic);
             }
+        }
+        
+        // Place "other" slots
+        for (Map.Entry<ProcessPannelSlot, CyclicIngredient> entry : tickedOther.entrySet()) {
+            ProcessPannelSlot panelSlot = entry.getKey();
+            CyclicIngredient cyclic = entry.getValue();
+            
+            // Always use normal cycling behavior (never pin)
+            placeIngredient(panelSlot, cyclic);
         }
 
         // Place result slots - filter out pinned items from ticker
@@ -271,10 +281,12 @@ public class RecipeGui extends FastInv {
         // Start ticker
         Runnable ingredientTicker = () -> tickIngredients(tickedIngredientFiltered);
         Runnable resultTicker = () -> tickResults(tickedResultsFiltered);
+        Runnable otherTicker = () -> tickIngredients(tickedOther);
 
         startTicker(() -> {
             ingredientTicker.run();
             resultTicker.run();
+            otherTicker.run();
         });
         
         // Place static decorative items
