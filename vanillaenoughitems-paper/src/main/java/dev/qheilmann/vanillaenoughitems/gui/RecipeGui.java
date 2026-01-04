@@ -164,6 +164,8 @@ public class RecipeGui extends FastInv {
             // Only push to history if we're actually navigating to a different recipe view
             playerData.navigationHistory().pushForNavigation(reader, newMultiRecipeReader);
             this.reader = newMultiRecipeReader;
+            processScrollOffset = 0; // Reset process scroll on recipe change
+            workbenchScrollOffset = 0; // Reset workbench scroll on recipe change
             render();
         }
     }
@@ -180,6 +182,8 @@ public class RecipeGui extends FastInv {
                 // Only push to history if we're actually navigating to a different recipe view
                 playerData.navigationHistory().pushForNavigation(reader, newMultiRecipeReader);
                 this.reader = newMultiRecipeReader;
+                processScrollOffset = 0; // Reset process scroll on recipe change
+                workbenchScrollOffset = 0; // Reset workbench scroll on recipe change
                 render();
             }
         }
@@ -504,6 +508,8 @@ public class RecipeGui extends FastInv {
         MultiProcessRecipeReader nextReader = playerData.navigationHistory().goForward(reader);
         if (nextReader != null) {
             this.reader = nextReader;
+            processScrollOffset = 0; // Reset process scroll on navigation
+            workbenchScrollOffset = 0; // Reset workbench scroll on navigation
             render();
         }
     }
@@ -512,6 +518,8 @@ public class RecipeGui extends FastInv {
         MultiProcessRecipeReader previousReader = playerData.navigationHistory().goBackward(reader);
         if (previousReader != null) {
             this.reader = previousReader;
+            processScrollOffset = 0; // Reset process scroll on navigation
+            workbenchScrollOffset = 0; // Reset workbench scroll on navigation
             render();
         }
     }
@@ -625,7 +633,7 @@ public class RecipeGui extends FastInv {
     }
 
     private void changeProcess(Process process) {
-        workbenchScrollOffset = 0; // Reset scroll offset when changing process (to show from the beginning on the new process)
+        workbenchScrollOffset = 0; // Reset workbench scroll offset on process change
         reader.setCurrentProcess(process);
         render();
     }
