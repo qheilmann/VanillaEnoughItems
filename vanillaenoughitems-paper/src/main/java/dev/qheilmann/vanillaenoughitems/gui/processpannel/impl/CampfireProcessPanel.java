@@ -83,7 +83,7 @@ public class CampfireProcessPanel implements ProcessPanel {
 
         if (style.hasResourcePack()) {
             backgroundItem.editMeta(meta -> {
-                meta.setItemModel(VeiPack.ItemModel.Gui.Background.CAMPFIRE);
+                meta.setItemModel(VeiPack.ItemModel.Gui.Background.Panel.CAMPFIRE);
             });
             progressItem.editMeta(meta -> {
                 meta.setItemModel(VeiPack.ItemModel.Gui.Decoration.RECIPE_PROGRESS);

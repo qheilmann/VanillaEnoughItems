@@ -86,7 +86,7 @@ public class SmokingProcessPanel implements ProcessPanel {
 
         if (style.hasResourcePack()) {
             backgroundItem.editMeta(meta -> {
-                meta.setItemModel(VeiPack.ItemModel.Gui.Background.SMOKING);
+                meta.setItemModel(VeiPack.ItemModel.Gui.Background.Panel.SMOKING);
             });
             progressItem.editMeta(meta -> {
                 meta.setItemModel(VeiPack.ItemModel.Gui.Decoration.RECIPE_PROGRESS);

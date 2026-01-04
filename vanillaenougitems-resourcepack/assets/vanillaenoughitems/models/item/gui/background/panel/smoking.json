@@ -1,6 +1,6 @@
 {
 	"textures": {
-		"0": "vanillaenoughitems:item/gui/background/campfire"
+		"0": "vanillaenoughitems:item/gui/background/panel/smoking"
 	},
 	"elements": [
 		{

@@ -37,13 +37,6 @@ public class VeiPack {
         public static class Gui {
 
             public static class Background {
-                public static final NamespacedKey BLASTING = path(Background.class, "blasting");
-                public static final NamespacedKey CAMPFIRE = path(Background.class, "campfire");
-                public static final NamespacedKey CRAFTING = path(Background.class, "crafting");
-                public static final NamespacedKey SMELTING = path(Background.class, "smelting");
-                public static final NamespacedKey SMOKING = path(Background.class, "smoking");
-                public static final NamespacedKey STONECUTTING = path(Background.class, "stonecutting");
-                public static final NamespacedKey SMITHING = path(Background.class, "smithing");
 
                 public static class Catalyst {
                     // Don't forget to constants and method in ModelSelector when modifying these
@@ -65,6 +58,16 @@ public class VeiPack {
                     public static NamespacedKey getCatalystModel(int nbOfCatalyst, boolean showUpButton, boolean isAllCatalystVisible) {
                         return ModelSelector.getCatalystModel(nbOfCatalyst, showUpButton, isAllCatalystVisible);
                     }
+                }
+
+                public static class Panel {
+                    public static final NamespacedKey BLASTING = path(Panel.class, "blasting");
+                    public static final NamespacedKey CAMPFIRE = path(Panel.class, "campfire");
+                    public static final NamespacedKey CRAFTING = path(Panel.class, "crafting");
+                    public static final NamespacedKey SMELTING = path(Panel.class, "smelting");
+                    public static final NamespacedKey SMOKING = path(Panel.class, "smoking");
+                    public static final NamespacedKey STONECUTTING = path(Panel.class, "stonecutting");
+                    public static final NamespacedKey SMITHING = path(Panel.class, "smithing");
                 }
 
                 public static class Process {

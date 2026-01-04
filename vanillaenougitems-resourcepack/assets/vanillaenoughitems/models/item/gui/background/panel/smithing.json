@@ -1,6 +1,6 @@
 {
 	"textures": {
-		"0": "vanillaenoughitems:item/gui/background/crafting"
+		"0": "vanillaenoughitems:item/gui/background/panel/smithing"
 	},
 	"elements": [
 		{

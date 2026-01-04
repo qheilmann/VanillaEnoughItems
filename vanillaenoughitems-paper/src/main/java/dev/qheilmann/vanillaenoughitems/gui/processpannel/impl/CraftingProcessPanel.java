@@ -80,7 +80,7 @@ public class CraftingProcessPanel implements ProcessPanel {
         
         if (style.hasResourcePack()) {
             backgroundItem.editMeta(meta -> {
-                meta.setItemModel(VeiPack.ItemModel.Gui.Background.CRAFTING);
+                meta.setItemModel(VeiPack.ItemModel.Gui.Background.Panel.CRAFTING);
             });
             craftingTableItem.editMeta(meta -> {
                 meta.setItemModel(VeiPack.ItemModel.Gui.Decoration.RECIPE_ARROW_SMALL);

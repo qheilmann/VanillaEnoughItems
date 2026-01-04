@@ -86,7 +86,7 @@ public class BlastingProcessPanel implements ProcessPanel {
 
         if (style.hasResourcePack()) {
             backgroundItem.editMeta(meta -> {
-                meta.setItemModel(VeiPack.ItemModel.Gui.Background.BLASTING);
+                meta.setItemModel(VeiPack.ItemModel.Gui.Background.Panel.BLASTING);
             });
             progressItem.editMeta(meta -> {
                 meta.setItemModel(VeiPack.ItemModel.Gui.Decoration.RECIPE_PROGRESS);

@@ -76,7 +76,7 @@ public class SmithingProcessPanel implements ProcessPanel {
 
         if (style.hasResourcePack()) {
             backgroundItem.editMeta(meta -> {
-                meta.setItemModel(VeiPack.ItemModel.Gui.Background.SMITHING);
+                meta.setItemModel(VeiPack.ItemModel.Gui.Background.Panel.SMITHING);
             });
             smithingItem.editMeta(meta -> {
                 meta.setItemModel(VeiPack.ItemModel.Gui.Decoration.RECIPE_ARROW_SMALL);

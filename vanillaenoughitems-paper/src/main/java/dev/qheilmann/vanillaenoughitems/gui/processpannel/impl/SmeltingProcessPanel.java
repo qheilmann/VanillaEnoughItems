@@ -86,7 +86,7 @@ public class SmeltingProcessPanel implements ProcessPanel {
 
         if (style.hasResourcePack()) {
             backgroundItem.editMeta(meta -> {
-                meta.setItemModel(VeiPack.ItemModel.Gui.Background.SMELTING);
+                meta.setItemModel(VeiPack.ItemModel.Gui.Background.Panel.SMELTING);
             });
             progressItem.editMeta(meta -> {
                 meta.setItemModel(VeiPack.ItemModel.Gui.Decoration.RECIPE_PROGRESS);

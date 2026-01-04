@@ -87,7 +87,7 @@ public class StonecuttingProcessPanel implements ProcessPanel {
 
         if (style.hasResourcePack()) {
             backgroundItem.editMeta(meta -> {
-                meta.setItemModel(VeiPack.ItemModel.Gui.Background.STONECUTTING);
+                meta.setItemModel(VeiPack.ItemModel.Gui.Background.Panel.STONECUTTING);
             });
             stonecutterItem.editMeta(meta -> {
                 meta.setItemModel(VeiPack.ItemModel.Gui.Decoration.RECIPE_ARROW);

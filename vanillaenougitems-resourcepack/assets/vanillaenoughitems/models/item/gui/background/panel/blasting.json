@@ -1,6 +1,6 @@
 {
 	"textures": {
-		"0": "vanillaenoughitems:item/gui/background/stonecutting"
+		"0": "vanillaenoughitems:item/gui/background/panel/blasting"
 	},
 	"elements": [
 		{
