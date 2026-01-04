@@ -83,7 +83,10 @@ public class StonecuttingProcessPanel implements ProcessPanel {
         Map<ProcessPannelSlot, FastInvItem> statics = new HashMap<>();
 
         ItemStack backgroundItem = RecipeGuiComponent.createFillerItem(false);
-        ItemStack stonecutterItem = ItemType.STONECUTTER.createItemStack();
+        ItemStack stonecutterItem = ItemType.STONECUTTER.createItemStack(meta -> {
+            meta.setMaxStackSize(1);
+            meta.setHideTooltip(true);
+        });
 
         if (style.hasResourcePack()) {
             backgroundItem.editMeta(meta -> {

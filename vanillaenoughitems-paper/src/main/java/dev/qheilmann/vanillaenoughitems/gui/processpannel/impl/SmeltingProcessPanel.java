@@ -82,7 +82,10 @@ public class SmeltingProcessPanel implements ProcessPanel {
 
         ItemStack backgroundItem = RecipeGuiComponent.createFillerItem(false);
         ItemStack progressItem = RecipeGuiComponent.createFillerItem(true);
-        ItemStack furnaceItem = ItemType.FURNACE.createItemStack();
+        ItemStack furnaceItem = ItemType.FURNACE.createItemStack(meta -> {
+            meta.setMaxStackSize(1);
+            meta.setHideTooltip(true);
+        });
 
         if (style.hasResourcePack()) {
             backgroundItem.editMeta(meta -> {

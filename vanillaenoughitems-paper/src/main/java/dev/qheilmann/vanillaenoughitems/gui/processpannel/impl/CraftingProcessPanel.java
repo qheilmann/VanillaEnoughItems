@@ -23,6 +23,8 @@ import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPanel;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPannelSlot;
 import dev.qheilmann.vanillaenoughitems.pack.VeiPack;
 import dev.qheilmann.vanillaenoughitems.utils.fastinv.FastInvItem;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
 
 /**
  * Panel for all crafting recipes.
@@ -33,6 +35,7 @@ public class CraftingProcessPanel implements ProcessPanel {
     private static final ProcessPannelSlot OUTPUT_SLOT = new ProcessPannelSlot(5, 2);
     public static final ProcessPannelSlot DECORATION_CRAFTING_TABLE_SLOT = new ProcessPannelSlot(4, 2);
     public static final ProcessPannelSlot BACKGROUND_SLOT = new ProcessPannelSlot(0, 0);
+    public static final ProcessPannelSlot SHAPELESS_INDICATOR_SLOT = new ProcessPannelSlot(5, 1);
     private static final ProcessPannelSlot[][] CRAFTING_GRID_SLOTS = {
         { new ProcessPannelSlot(1, 1), new ProcessPannelSlot(2, 1), new ProcessPannelSlot(3, 1) },
         { new ProcessPannelSlot(1, 2), new ProcessPannelSlot(2, 2), new ProcessPannelSlot(3, 2) },
@@ -75,8 +78,12 @@ public class CraftingProcessPanel implements ProcessPanel {
     public Map<ProcessPannelSlot, FastInvItem> getStaticItems() {
         Map<ProcessPannelSlot, FastInvItem> statics = new HashMap<>();
         
+        ItemStack isShapelessIndicatorItem = createIsShapelessIndicatorItem();
         ItemStack backgroundItem = RecipeGuiComponent.createFillerItem(false);
-        ItemStack craftingTableItem = ItemType.CRAFTING_TABLE.createItemStack();
+        ItemStack craftingTableItem = ItemType.CRAFTING_TABLE.createItemStack(meta -> {
+            meta.setMaxStackSize(1);
+            meta.setHideTooltip(true);
+        });
         
         if (style.hasResourcePack()) {
             backgroundItem.editMeta(meta -> {
@@ -89,6 +96,7 @@ public class CraftingProcessPanel implements ProcessPanel {
 
         statics.put(BACKGROUND_SLOT, new FastInvItem(backgroundItem, null));
         statics.put(DECORATION_CRAFTING_TABLE_SLOT, new FastInvItem(craftingTableItem, null));
+        statics.put(SHAPELESS_INDICATOR_SLOT, new FastInvItem(isShapelessIndicatorItem, null));
         return statics;
     }
 
@@ -242,5 +250,29 @@ public class CraftingProcessPanel implements ProcessPanel {
         }
 
         return recipeMatrix;
+    }
+
+    /**
+     * Create the shapeless indicator item stack, or a filler item if the recipe is not shapeless
+     * @return The shapeless indicator item stack
+     */
+    private ItemStack createIsShapelessIndicatorItem() {
+        ItemStack shapelessIndicatorItem = RecipeGuiComponent.createFillerItem(style.hasResourcePack());
+        if ((recipe instanceof ShapelessRecipe) ||
+            (recipe instanceof TransmuteRecipe)
+        ) {
+            shapelessIndicatorItem = ItemType.LIGHT_GRAY_DYE.createItemStack();
+            if (style.hasResourcePack()) {
+                shapelessIndicatorItem.editMeta(meta -> {
+                    meta.setItemModel(VeiPack.ItemModel.Gui.Decoration.SHAPELESS_INDICATOR);
+                });
+            }
+        }
+
+        shapelessIndicatorItem.editMeta(meta -> {
+            meta.displayName(Component.text("Shapeless Recipe", VanillaEnoughItems.config().style().colorPrimary()).decoration(TextDecoration.ITALIC, false));
+        });
+
+        return shapelessIndicatorItem;
     }
 }

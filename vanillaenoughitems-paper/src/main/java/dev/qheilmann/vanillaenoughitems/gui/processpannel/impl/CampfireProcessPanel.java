@@ -17,6 +17,7 @@ import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPanel;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPannelSlot;
 import dev.qheilmann.vanillaenoughitems.pack.VeiPack;
 import dev.qheilmann.vanillaenoughitems.utils.fastinv.FastInvItem;
+import net.kyori.adventure.text.Component;
 
 /**
  * Panel for campfire recipes.
@@ -79,7 +80,10 @@ public class CampfireProcessPanel implements ProcessPanel {
         
         ItemStack backgroundItem = RecipeGuiComponent.createFillerItem(false);
         ItemStack progressItem = RecipeGuiComponent.createFillerItem(true);
-        ItemStack campfireItem = ItemType.CAMPFIRE.createItemStack();
+        ItemStack campfireItem = ItemType.CAMPFIRE.createItemStack(meta -> {
+            meta.setMaxStackSize(1);
+            meta.setHideTooltip(true);
+        });
 
         if (style.hasResourcePack()) {
             backgroundItem.editMeta(meta -> {

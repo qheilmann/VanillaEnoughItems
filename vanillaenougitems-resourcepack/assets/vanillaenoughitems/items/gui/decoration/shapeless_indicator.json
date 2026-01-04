@@ -1,0 +1,7 @@
+{
+    "model": {
+        "type": "minecraft:model",
+        "model": "vanillaenoughitems:item/gui/decoration/shapeless_indicator"
+    },
+    "oversized_in_gui": true
+}

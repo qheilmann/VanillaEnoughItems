@@ -82,7 +82,10 @@ public class SmokingProcessPanel implements ProcessPanel {
 
         ItemStack backgroundItem = RecipeGuiComponent.createFillerItem(false);
         ItemStack progressItem = RecipeGuiComponent.createFillerItem(true);
-        ItemStack smokerItem = ItemType.SMOKER.createItemStack();
+        ItemStack smokerItem = ItemType.SMOKER.createItemStack(meta -> {
+            meta.setMaxStackSize(1);
+            meta.setHideTooltip(true);
+        });
 
         if (style.hasResourcePack()) {
             backgroundItem.editMeta(meta -> {

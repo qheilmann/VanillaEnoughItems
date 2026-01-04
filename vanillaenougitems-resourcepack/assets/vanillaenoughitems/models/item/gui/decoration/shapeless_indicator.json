@@ -1,0 +1,21 @@
+{
+    "textures": {
+        "0": "vanillaenoughitems:item/gui/decoration/shapeless_indicator"
+    },
+    "elements": [
+        {
+            "from": [-10, -10, 0],
+            "to": [26, 26, 0],
+            "faces": {
+                "south": {"uv": [0, 0, 16, 16], "texture": "#0"}
+            }
+        }
+    ],
+    "gui_light": "front",
+    "display": {
+        "gui": {
+            "translation": [0, 2, 0],
+            "scale": [0.25, 0.25, 1]
+        }
+    }
+}

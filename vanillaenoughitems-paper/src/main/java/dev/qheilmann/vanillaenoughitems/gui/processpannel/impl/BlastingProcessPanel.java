@@ -82,7 +82,10 @@ public class BlastingProcessPanel implements ProcessPanel {
 
         ItemStack backgroundItem = RecipeGuiComponent.createFillerItem(false);
         ItemStack progressItem = RecipeGuiComponent.createFillerItem(true);
-        ItemStack blastFurnaceItem = ItemType.BLAST_FURNACE.createItemStack();
+        ItemStack blastFurnaceItem = ItemType.BLAST_FURNACE.createItemStack(meta -> {
+            meta.setMaxStackSize(1);
+            meta.setHideTooltip(true);
+        });
 
         if (style.hasResourcePack()) {
             backgroundItem.editMeta(meta -> {

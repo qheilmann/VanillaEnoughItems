@@ -143,6 +143,7 @@ public class VeiPack {
                 public static final NamespacedKey RECIPE_PROGRESS = path(Decoration.class, "recipe_progress");
                 public static final NamespacedKey RECIPE_ARROW_SMALL = path(Decoration.class, "recipe_arrow_small");
                 public static final NamespacedKey RECIPE_ARROW = path(Decoration.class, "recipe_arrow");
+                public static final NamespacedKey SHAPELESS_INDICATOR = path(Decoration.class, "shapeless_indicator");
             }
         }
 

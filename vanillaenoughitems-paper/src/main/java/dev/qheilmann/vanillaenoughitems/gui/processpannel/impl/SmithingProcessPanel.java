@@ -3,8 +3,8 @@ package dev.qheilmann.vanillaenoughitems.gui.processpannel.impl;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.inventory.SmithingRecipe;
@@ -72,7 +72,10 @@ public class SmithingProcessPanel implements ProcessPanel {
         Map<ProcessPannelSlot, FastInvItem> statics = new HashMap<>();
         
         ItemStack backgroundItem = RecipeGuiComponent.createFillerItem(false);
-        ItemStack smithingItem = new ItemStack(Material.SMITHING_TABLE);
+        ItemStack smithingItem = ItemType.SMITHING_TABLE.createItemStack(meta -> {
+            meta.setMaxStackSize(1);
+            meta.setHideTooltip(true);
+        });
 
         if (style.hasResourcePack()) {
             backgroundItem.editMeta(meta -> {
