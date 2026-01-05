@@ -244,11 +244,11 @@ public class RecipeGui extends FastInv {
             if (pinnedItem != null && cyclic.contains(pinnedItem)) {
                 // Pin this ingredient - set to pinned item and don't add to ticker
                 cyclic.pin(pinnedItem);
-                placeIngredient(panelSlot, cyclic);
+                placeNonResult(panelSlot, cyclic);
             } else {
                 // Normal cycling behavior
                 tickedIngredientFiltered.put(panelSlot, cyclic);
-                placeIngredient(panelSlot, cyclic);
+                placeNonResult(panelSlot, cyclic);
             }
         }
         
@@ -258,7 +258,7 @@ public class RecipeGui extends FastInv {
             CyclicIngredient cyclic = entry.getValue();
             
             // Always use normal cycling behavior (never pin)
-            placeIngredient(panelSlot, cyclic);
+            placeNonResult(panelSlot, cyclic);
         }
 
         // Place result slots - filter out pinned items from ticker
@@ -279,14 +279,14 @@ public class RecipeGui extends FastInv {
         }
         
         // Start ticker
-        Runnable ingredientTicker = () -> tickIngredients(tickedIngredientFiltered);
+        Runnable ingredientTicker = () -> tickNonResult(tickedIngredientFiltered);
+        Runnable otherTicker = () -> tickNonResult(tickedOther);
         Runnable resultTicker = () -> tickResults(tickedResultsFiltered);
-        Runnable otherTicker = () -> tickIngredients(tickedOther);
 
         startTicker(() -> {
             ingredientTicker.run();
-            resultTicker.run();
             otherTicker.run();
+            resultTicker.run();
         });
         
         // Place static decorative items
@@ -341,7 +341,7 @@ public class RecipeGui extends FastInv {
         playerData.navigationHistory().stopViewing(reader);
     }
 
-    private void tickIngredients(Map<ProcessPannelSlot, CyclicIngredient> tickedSlots) {
+    private void tickNonResult(Map<ProcessPannelSlot, CyclicIngredient> tickedSlots) {
         for (Map.Entry<ProcessPannelSlot, CyclicIngredient> entry : tickedSlots.entrySet()) {
             CyclicIngredient cyclic = entry.getValue();
             if (!cyclic.hasMultipleOptions()) {
@@ -350,7 +350,7 @@ public class RecipeGui extends FastInv {
 
             ProcessPannelSlot panelSlot = entry.getKey();
             cyclic.tickForward();
-            placeIngredient(panelSlot, cyclic);
+            placeNonResult(panelSlot, cyclic);
         }
     }
 
@@ -367,12 +367,12 @@ public class RecipeGui extends FastInv {
         }
     }
 
-    private void placeIngredient(ProcessPannelSlot panelSlot, CyclicIngredient ingredient) {
+    private void placeNonResult(ProcessPannelSlot panelSlot, CyclicIngredient ingredient) {
         ItemStack item = ingredient.getCurrentItem();
         ItemStack showItem = item.clone();
 
         List<Component> lore = getLore(showItem);
-        lore.add(Component.text("INGREDIENT"));
+        lore.add(Component.empty()); // dummy modification to differentiate original item / show item
 
         if (!showItem.isEmpty()) {
             showItem.lore(lore);
@@ -553,6 +553,7 @@ public class RecipeGui extends FastInv {
 
     //#region Quick Craft
 
+    @SuppressWarnings("unused")
     private void renderQuickCraftButton(int slot) {
         setItem(slot, guiComponent.createQuickCraftButton(), event -> quickCraftAction(event));
     }
@@ -784,6 +785,7 @@ public class RecipeGui extends FastInv {
 
     //#region Bookmark List
 
+    @SuppressWarnings("unused")
     private void renderBookmarkListButton() {
         setItem(BOOKMARK_LIST_SLOT, guiComponent.createBookmarkListButton(), event -> bookmarkListAction(event));
     }
@@ -817,6 +819,7 @@ public class RecipeGui extends FastInv {
 
     //#region Bookmark Server List
 
+    @SuppressWarnings("unused")
     private void renderBookmarkServerListButton() {
         setItem(BOOKMARK_SERVER_LIST_SLOT, guiComponent.createBookmarkServerListButton(), event -> bookmarkServerListAction(event));
     }
@@ -866,6 +869,7 @@ public class RecipeGui extends FastInv {
 
     //#region Info
 
+    @SuppressWarnings("unused")
     private void renderInfoButton() {
         setItem(INFO_SLOT, guiComponent.createInfoButton(), event -> infoAction(event));
     }

@@ -10,6 +10,9 @@ import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.inventory.SmithingRecipe;
 import org.bukkit.inventory.SmithingTransformRecipe;
 import org.bukkit.inventory.SmithingTrimRecipe;
+import org.bukkit.inventory.meta.trim.ArmorTrim;
+import org.bukkit.inventory.meta.trim.TrimMaterial;
+import org.bukkit.inventory.meta.trim.TrimPattern;
 import org.jspecify.annotations.NullMarked;
 
 import dev.qheilmann.vanillaenoughitems.config.style.Style;
@@ -19,7 +22,10 @@ import dev.qheilmann.vanillaenoughitems.gui.RecipeGuiSharedButton;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPanel;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPannelSlot;
 import dev.qheilmann.vanillaenoughitems.pack.VeiPack;
+import dev.qheilmann.vanillaenoughitems.recipe.extraction.impl.helper.TrimMaterialHelper;
 import dev.qheilmann.vanillaenoughitems.utils.fastinv.FastInvItem;
+import io.papermc.paper.datacomponent.DataComponentTypes;
+import io.papermc.paper.datacomponent.item.ItemArmorTrim;
 
 /**
  * Panel for all smithing recipes.
@@ -37,10 +43,23 @@ public class SmithingProcessPanel implements ProcessPanel {
     private final Style style;
     private final int seed;
 
+    private final CyclicIngredient baseCyclic;
+    private final CyclicIngredient additionCyclic;
+
+     /**
+     * Create a new SmithingProcessPanel.
+     * @param recipe the smithing recipe
+     * @param style the style to use
+     */
+
     public SmithingProcessPanel(Recipe recipe, Style style) {
         this.recipe = recipe;
         this.style = style;
         this.seed = (int) (Math.random() * Integer.MAX_VALUE);
+
+        // Cyclic ingredients shared between the caller and the dynamic result
+        baseCyclic = new CyclicIngredient(seed, getSmithingRecipe().getBase());
+        additionCyclic = new CyclicIngredient(seed, getSmithingRecipe().getAddition());
     }
 
     private SmithingRecipe getSmithingRecipe() {
@@ -62,8 +81,8 @@ public class SmithingProcessPanel implements ProcessPanel {
     public Map<ProcessPannelSlot, CyclicIngredient> getTickedIngredient() {
         Map<ProcessPannelSlot, CyclicIngredient> ticked = new HashMap<>();
         ticked.put(TEMPLATE_SLOT, new CyclicIngredient(seed, getTemplateChoice(getSmithingRecipe())));
-        ticked.put(BASE_SLOT, new CyclicIngredient(seed, getSmithingRecipe().getBase()));
-        ticked.put(ADDITION_SLOT, new CyclicIngredient(seed, getSmithingRecipe().getAddition()));
+        ticked.put(BASE_SLOT, baseCyclic);
+        ticked.put(ADDITION_SLOT, additionCyclic);
         return Map.copyOf(ticked);
     }
 
@@ -73,7 +92,7 @@ public class SmithingProcessPanel implements ProcessPanel {
     @Override
     @SuppressWarnings("null")
     public Map<ProcessPannelSlot, CyclicIngredient> getTickedResults() {
-        return Map.of(OUTPUT_SLOT, new CyclicIngredient(seed, getSmithingRecipe().getResult()));
+        return Map.of(OUTPUT_SLOT, getResult(seed, getSmithingRecipe(), baseCyclic, additionCyclic));
     }
 
     /**
@@ -120,5 +139,44 @@ public class SmithingProcessPanel implements ProcessPanel {
         }
 
         throw new IllegalArgumentException("Unsupported SmithingRecipe subtype: " + recipe.getClass().getName());
+    }
+
+    private static CyclicIngredient getResult(int seed, SmithingRecipe recipe, CyclicIngredient baseCyclic, CyclicIngredient additionCyclic) {
+        
+        // SmithingTrimRecipe is a complex recipe and returns air by default
+        if (recipe instanceof SmithingTrimRecipe trimRecipe) {
+            return getTrimResult(trimRecipe, baseCyclic, additionCyclic);
+        }
+
+        return new CyclicIngredient(seed, recipe.getResult());
+    }
+
+    /**
+     * Get the result for a SmithingTrimRecipe.
+     * As SmithingTrimRecipe#getResult() returns air, we need to create do some calculation from base and addition ingredients.
+     * @param recipe the SmithingTrimRecipe (for TrimPattern)
+     * @param baseCyclic the base ingredient
+     * @param additionCyclic the addition ingredient
+     * @return a dynamic result CyclicIngredient
+     */
+    private static CyclicIngredient getTrimResult(SmithingTrimRecipe recipe, CyclicIngredient baseCyclic, CyclicIngredient additionCyclic) {
+        
+        TrimPattern trimPattern = recipe.getTrimPattern();
+        
+        // Create a dependent CyclicIngredient that computes the result from the inputs
+        return new CyclicIngredient((ItemStack... dependencyItems) -> {
+            // dependencyItems[0] = base
+            // dependencyItems[1] = addition
+            
+            ItemStack base = dependencyItems[0].clone();
+            ItemStack addition = dependencyItems[1];
+            
+            TrimMaterial trimMaterial = TrimMaterialHelper.byMaterialName(addition.getType());
+            ArmorTrim armorTrim = new ArmorTrim(trimMaterial, trimPattern);
+
+            base.setData(DataComponentTypes.TRIM, ItemArmorTrim.itemArmorTrim(armorTrim));
+
+            return base;
+        }, baseCyclic, additionCyclic);
     }
 }
