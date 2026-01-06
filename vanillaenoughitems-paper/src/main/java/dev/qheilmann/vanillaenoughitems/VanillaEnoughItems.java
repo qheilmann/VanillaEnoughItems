@@ -49,6 +49,7 @@ import dev.qheilmann.vanillaenoughitems.recipe.process.impl.SmeltingProcess;
 import dev.qheilmann.vanillaenoughitems.recipe.process.impl.SmithingProcess;
 import dev.qheilmann.vanillaenoughitems.recipe.process.impl.SmokingProcess;
 import dev.qheilmann.vanillaenoughitems.recipe.process.impl.StonecuttingProcess;
+import dev.qheilmann.vanillaenoughitems.metrics.BStatsMetrics;
 import dev.qheilmann.vanillaenoughitems.utils.fastinv.FastInvManager;
 import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.registry.RegistryKey;
@@ -143,6 +144,9 @@ public class VanillaEnoughItems extends JavaPlugin {
 
         CraftCommand.register(this, recipeGuiContext);
         DebugVei.register();
+
+        LOGGER.debug("Initialize bStats metrics...");
+        BStatsMetrics.initialize(this, recipeIndex);
         
         LOGGER.info(PLUGIN_NAME + " enabled.");
     }
