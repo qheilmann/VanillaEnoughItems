@@ -248,4 +248,20 @@ public class CyclicIngredient {
     public boolean isDependent() {
         return dependencies != null;
     }
+    
+    /**
+     * Get all ItemStack options for this CyclicIngredient.
+     * <p><b>Note:</b> This method only works for regular (non-dependent) ingredients.
+     * Dependent ingredients cannot enumerate all possibilities.</p>
+     * 
+     * @return array of all ItemStack options
+     * @throws UnsupportedOperationException if called on a dependent ingredient
+     */
+    public ItemStack[] getOptions() {
+        if (isDependent()) {
+            throw new UnsupportedOperationException("Cannot get options from a dependent CyclicIngredient");
+        }
+        
+        return options.clone();
+    }
 }

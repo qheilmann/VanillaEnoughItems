@@ -3,6 +3,7 @@ package dev.qheilmann.vanillaenoughitems.gui;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -17,6 +18,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitTask;
@@ -39,6 +41,7 @@ import dev.qheilmann.vanillaenoughitems.recipe.process.Workbench;
 import dev.qheilmann.vanillaenoughitems.utils.fastinv.FastInv;
 import dev.qheilmann.vanillaenoughitems.utils.fastinv.FastInvItem;
 import dev.qheilmann.vanillaenoughitems.utils.fastinv.Slots;
+import io.papermc.paper.registry.tag.TagKey;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
@@ -372,13 +375,14 @@ public class RecipeGui extends FastInv {
         ItemStack showItem = item.clone();
 
         List<Component> lore = getLore(showItem);
-        lore.add(Component.empty()); // dummy modification to differentiate original item / show item
+        lore.add(Component.empty()); // empty line
+        
+        // Add tag lore for items that exactly match tags
+        lore.addAll(formatTagLore(ingredient));
 
         if (!showItem.isEmpty()) {
             showItem.lore(lore);
         }
-        
-        // TODO add tag for common recipeChoices?
 
         setItem(panelSlot.toSlotIndex(), showItem, event -> changeRecipeAction(event, item));
     }
@@ -390,6 +394,11 @@ public class RecipeGui extends FastInv {
         Key recipeKey = getCurrentRecipeKey();
         if (recipeKey != null) {
             List<Component> lore = getLore(showItem);
+            lore.add(Component.empty()); // empty line
+            
+            // Add tag lore for items that exactly match tags
+            lore.addAll(formatTagLore(ingredient));
+            
             // Recipe by (if custom)
             if (!recipeKey.namespace().equals(Key.MINECRAFT_NAMESPACE)) {
                 
@@ -930,6 +939,53 @@ public class RecipeGui extends FastInv {
             case Grouping.ByResult g -> g.result();
             default -> null;
         };
+    }
+    
+    /**
+     * Format tag lore for a CyclicIngredient.
+     * Returns tags that exactly match the items in the cyclic.
+     * 
+     * @param cyclic the cyclic ingredient
+     * @return list of formatted tag components, or empty if no exact matches
+     */
+    private List<Component> formatTagLore(CyclicIngredient cyclic) {
+        // Dependent ingredients cannot enumerate their options
+        // Also ignore unique ingredients
+        if (cyclic.isDependent() || cyclic.hasMultipleOptions() == false) {
+            return List.of();
+        }
+        
+        // Get all item types from the cyclic's options
+        ItemStack[] options = cyclic.getOptions();
+        Set<ItemType> itemTypes = new HashSet<>();
+        for (ItemStack option : options) {
+            if (!option.isEmpty()) {
+                itemTypes.add(option.getType().asItemType());
+            }
+        }
+        
+        // Find tags that exactly match this set
+        Set<TagKey<ItemType>> matchingTags = context.getTagIndex().getTagsExactlyMatching(itemTypes);
+        
+        if (matchingTags.isEmpty()) {
+            return List.of();
+        }
+        
+        // Build lore components
+        List<Component> tagLore = new ArrayList<>();
+        String title;
+        if (matchingTags.size() >= 2) {
+            title = "Accepts Tags:";
+        } else {
+            title = "Accepts Tag:";
+        }
+        tagLore.add(Component.text(title, NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false));
+        for (TagKey<ItemType> tagKey : matchingTags) {
+            Component tagComponent = Component.text("#" + tagKey.key().asString(), NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false);
+            tagLore.add(tagComponent);
+        }
+        
+        return tagLore;
     }
 
     //#endregion Helpers

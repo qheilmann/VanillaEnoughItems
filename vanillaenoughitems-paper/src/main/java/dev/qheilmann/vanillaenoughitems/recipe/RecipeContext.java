@@ -13,6 +13,7 @@ import org.jspecify.annotations.NullMarked;
 import dev.qheilmann.vanillaenoughitems.gui.player.PlayerGuiData;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPanelRegistry;
 import dev.qheilmann.vanillaenoughitems.recipe.index.RecipeIndex;
+import dev.qheilmann.vanillaenoughitems.recipe.index.TagIndex;
 
 /**
  * Global context for the Recipe system.
@@ -23,11 +24,13 @@ import dev.qheilmann.vanillaenoughitems.recipe.index.RecipeIndex;
 public class RecipeContext implements Listener {
     private final RecipeIndex recipeIndex;
     private final ProcessPanelRegistry processPanelRegistry;
+    private final TagIndex tagIndex;
     private final Map<UUID, PlayerGuiData> playerDataMap = new ConcurrentHashMap<>();
 
-    public RecipeContext(JavaPlugin plugin, RecipeIndex recipeIndex, ProcessPanelRegistry processPanelRegistry) {
+    public RecipeContext(JavaPlugin plugin, RecipeIndex recipeIndex, ProcessPanelRegistry processPanelRegistry, TagIndex tagIndex) {
         this.recipeIndex = recipeIndex;
         this.processPanelRegistry = processPanelRegistry;
+        this.tagIndex = tagIndex;
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
@@ -45,6 +48,14 @@ public class RecipeContext implements Listener {
      */
     public ProcessPanelRegistry getProcessPanelRegistry() {
         return processPanelRegistry;
+    }
+    
+    /**
+     * Get the tag index
+     * @return the tag index
+     */
+    public TagIndex getTagIndex() {
+        return tagIndex;
     }
 
     /**

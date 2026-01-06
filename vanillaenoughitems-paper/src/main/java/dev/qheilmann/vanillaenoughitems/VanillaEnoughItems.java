@@ -1,5 +1,7 @@
 package dev.qheilmann.vanillaenoughitems;
 
+import org.bukkit.Registry;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jspecify.annotations.NullMarked;
@@ -38,6 +40,7 @@ import dev.qheilmann.vanillaenoughitems.recipe.extraction.impl.SmokingRecipeExtr
 import dev.qheilmann.vanillaenoughitems.recipe.extraction.impl.StonecuttingRecipeExtractor;
 import dev.qheilmann.vanillaenoughitems.recipe.extraction.impl.TransmuteRecipeExtractor;
 import dev.qheilmann.vanillaenoughitems.recipe.index.RecipeIndex;
+import dev.qheilmann.vanillaenoughitems.recipe.index.TagIndex;
 import dev.qheilmann.vanillaenoughitems.recipe.process.ProcessRegistry;
 import dev.qheilmann.vanillaenoughitems.recipe.process.impl.BlastingProcess;
 import dev.qheilmann.vanillaenoughitems.recipe.process.impl.CampfireProcess;
@@ -47,6 +50,8 @@ import dev.qheilmann.vanillaenoughitems.recipe.process.impl.SmithingProcess;
 import dev.qheilmann.vanillaenoughitems.recipe.process.impl.SmokingProcess;
 import dev.qheilmann.vanillaenoughitems.recipe.process.impl.StonecuttingProcess;
 import dev.qheilmann.vanillaenoughitems.utils.fastinv.FastInvManager;
+import io.papermc.paper.registry.RegistryAccess;
+import io.papermc.paper.registry.RegistryKey;
 
 @NullMarked
 public class VanillaEnoughItems extends JavaPlugin {
@@ -93,10 +98,10 @@ public class VanillaEnoughItems extends JavaPlugin {
             return;
         }
 
-        LOGGER.info("Enabling CommandAPI...");
+        LOGGER.debug("Enabling CommandAPI...");
         CommandAPI.onEnable();
 
-        LOGGER.info("Enabling FastInv...");
+        LOGGER.debug("Enabling FastInv...");
         FastInvManager.register(this);
 
         RecipeExtractorRegistry recipeExtractor = new RecipeExtractorRegistry();
@@ -122,7 +127,13 @@ public class VanillaEnoughItems extends JavaPlugin {
         addProcessesAndPanels(processRegistry, processPanelRegistry, new CampfireProcess(), CampfireProcessPanel::new);
 
         RecipeIndex recipeIndex = new RecipeIndex(processRegistry, recipeExtractor);
-        recipeGuiContext = new RecipeContext(this, recipeIndex, processPanelRegistry);
+        
+        // Build tag index
+        TagIndex tagIndex = new TagIndex();
+        Registry<ItemType> itemRegistry = RegistryAccess.registryAccess().getRegistry(RegistryKey.ITEM);
+        tagIndex.index(itemRegistry.getTags(), itemRegistry);
+        
+        recipeGuiContext = new RecipeContext(this, recipeIndex, processPanelRegistry, tagIndex);
 
         Iterator<Recipe> recipeIterator = getServer().recipeIterator();
         recipeIndex.indexRecipe(() -> recipeIterator);
@@ -152,7 +163,6 @@ public class VanillaEnoughItems extends JavaPlugin {
      * Gets the current VanillaEnoughItems configuration
      * @return the VanillaEnoughItems configuration
      */
-    @SuppressWarnings("null")
     public static VanillaEnoughItemsConfig config() {
         if (config == null) {
             throw new IllegalStateException("Tried to access VanillaEnoughItems config, but it was not initialized! Are you using VanillaEnoughItems features before calling VanillaEnoughItems#onLoad?");
