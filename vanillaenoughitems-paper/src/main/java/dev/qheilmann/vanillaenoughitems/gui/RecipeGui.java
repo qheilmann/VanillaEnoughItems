@@ -151,7 +151,7 @@ public class RecipeGui extends FastInv {
      * @param event The inventory click event.
      * @param resultItem The item that was clicked.
      */
-    public void changeRecipeAction(InventoryClickEvent event, ItemStack recipeItem) {
+    public void nonResultChangeRecipeAction(InventoryClickEvent event, ItemStack recipeItem) {
         
         boolean isLeftClick = event.getClick().isLeftClick();
         boolean isRightClick = event.getClick().isRightClick();
@@ -161,6 +161,9 @@ public class RecipeGui extends FastInv {
         if (isLeftClick) {
             newMultiRecipeReader = context.getRecipeIndex().readerByResult(recipeItem);
         } else if (isRightClick) {
+            if (reader.getGrouping().equals(new Grouping.ByIngredient(recipeItem))) {
+                return; // No action if usage clicking on the same usage reader
+            }
             newMultiRecipeReader = context.getRecipeIndex().readerByIngredient(recipeItem);
         } 
         // Ignore other click types
@@ -176,30 +179,32 @@ public class RecipeGui extends FastInv {
         }
     }
 
-    public void resultItemAction(InventoryClickEvent event, ItemStack recipeItem) {
-
+    public void resultChangeRecipeAction(InventoryClickEvent event, ItemStack recipeItem) {
+        
         boolean isLeftClick = event.getClick().isLeftClick();
         boolean isRightClick = event.getClick().isRightClick();
-        
-        // Show ingredient on right click
-        if (isRightClick) {
-            MultiProcessRecipeReader newMultiRecipeReader = context.getRecipeIndex().readerByIngredient(recipeItem);
-            if (newMultiRecipeReader != null) {
-                // Only push to history if we're actually navigating to a different recipe view
-                playerData.navigationHistory().pushForNavigation(reader, newMultiRecipeReader);
-                this.reader = newMultiRecipeReader;
-                processScrollOffset = 0; // Reset process scroll on recipe change
-                workbenchScrollOffset = 0; // Reset workbench scroll on recipe change
-                render();
-            }
-        }
 
-        // Quick link on left click
+        MultiProcessRecipeReader newMultiRecipeReader = null;
+
         if (isLeftClick) {
-            quickLinkAction(event);
+            if (reader.getGrouping().equals(new Grouping.ByResult(recipeItem))) {
+                return; // No action if recipe clicking on the same result reader
+            }
+            newMultiRecipeReader = context.getRecipeIndex().readerByResult(recipeItem);
+        } else if (isRightClick) {
+            newMultiRecipeReader = context.getRecipeIndex().readerByIngredient(recipeItem);
         }
-
         // Ignore other click types
+
+        // If valide new reader found
+        if (newMultiRecipeReader != null) {
+            // Only push to history if we're actually navigating to a different recipe view
+            playerData.navigationHistory().pushForNavigation(reader, newMultiRecipeReader);
+            this.reader = newMultiRecipeReader;
+            processScrollOffset = 0; // Reset process scroll on recipe change
+            workbenchScrollOffset = 0; // Reset workbench scroll on recipe change
+            render();
+        }
     }
 
     public Recipe getCurrentRecipe() {
@@ -384,7 +389,7 @@ public class RecipeGui extends FastInv {
             showItem.lore(lore);
         }
 
-        setItem(panelSlot.toSlotIndex(), showItem, event -> changeRecipeAction(event, item));
+        setItem(panelSlot.toSlotIndex(), showItem, event -> nonResultChangeRecipeAction(event, item));
     }
 
     private void placeResult(ProcessPannelSlot panelSlot, CyclicIngredient ingredient) {
@@ -426,7 +431,7 @@ public class RecipeGui extends FastInv {
             }
         }
 
-        setItem(panelSlot.toSlotIndex(), showItem, event -> resultItemAction(event, item));
+        setItem(panelSlot.toSlotIndex(), showItem, event -> resultChangeRecipeAction(event, item));
     }
 
     private List<Component> getLore(ItemStack item) {
@@ -714,7 +719,7 @@ public class RecipeGui extends FastInv {
                 }
                 Workbench workbench = workbenchIterator.next();
                 ItemStack symbolItem = workbench.symbol();
-                setItem(slot, symbolItem, event -> changeRecipeAction(event, symbolItem));
+                setItem(slot, symbolItem, event -> nonResultChangeRecipeAction(event, symbolItem));
             });
         }
 
@@ -741,7 +746,7 @@ public class RecipeGui extends FastInv {
                 Workbench workbench = workbenchIterator.next();
                 int slot = slotIterator.next();
                 ItemStack symbolItem = workbench.symbol();
-                setItem(slot, symbolItem, event -> changeRecipeAction(event, symbolItem));
+                setItem(slot, symbolItem, event -> nonResultChangeRecipeAction(event, symbolItem));
             }
         }
     }

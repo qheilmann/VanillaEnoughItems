@@ -59,5 +59,7 @@ public sealed interface Grouping permits
      * Represents viewing all recipes across all processes.
      */
     record AllRecipes() implements Grouping {
+        // This record has no fields, so a singleton instance can be used.
+        public static final AllRecipes INSTANCE = new AllRecipes();
     }
 }
