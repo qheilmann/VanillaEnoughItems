@@ -4,6 +4,7 @@ import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
 
 import dev.qheilmann.vanillaenoughitems.recipe.process.Process;
+import net.kyori.adventure.key.Key;
 
 /**
  * Represents how recipes are grouped in a collection.
@@ -14,6 +15,7 @@ public sealed interface Grouping permits
     Grouping.ByIngredient, 
     Grouping.ByOther,
     Grouping.ByProcess,
+    Grouping.ByKey,
     Grouping.AllRecipes {
     
     /**
@@ -44,6 +46,12 @@ public sealed interface Grouping permits
      * Recipes grouped by their process (single process only).
      */
     record ByProcess(Process process) implements Grouping {
+    }
+
+    /**
+     * Recipes grouped by their unique recipe ID.
+     */
+    record ByKey(Key key) implements Grouping {
     }
     
     /**

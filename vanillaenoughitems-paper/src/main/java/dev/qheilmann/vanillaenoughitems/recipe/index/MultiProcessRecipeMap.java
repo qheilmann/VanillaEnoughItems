@@ -136,6 +136,10 @@ public class MultiProcessRecipeMap {
         return allRecipes;
     }
 
+    public boolean isEmpty() {
+        return processRecipeSets.isEmpty();
+    }
+
     /**
      * Clear all ProcessRecipeSets from the map
      */

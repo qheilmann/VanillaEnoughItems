@@ -8,8 +8,6 @@ import org.bstats.charts.DrilldownPie;
 import org.bstats.charts.SimplePie;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
-
 import dev.qheilmann.vanillaenoughitems.recipe.index.RecipeIndex;
 
 /**
@@ -45,7 +43,7 @@ public final class BStatsMetrics {
         metrics.addCustomChart(new DrilldownPie("recipe_count", () -> {
             // Format: Map<Category, Map<Subcategory, Count>>
             Map<String, Map<String, Integer>> data = new HashMap<>();
-            int totalRecipes = recipeIndex.getAllRecipesById().size();
+            int totalRecipes = recipeIndex.getAllRecipesByKey().size();
             
             // Determine the range category
             String category;
