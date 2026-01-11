@@ -121,8 +121,7 @@ public class RecipeGui extends FastInv {
 
     private static Component title(Style style) {
         if (style.hasResourcePack()) {
-            GuiIcon guiIcon = VeiPack.Font.Gui.BLANK_54;
-            return guiIcon.iconComponent().append(Component.text(guiIcon.resetSpace() + "Recipe"));
+            return VeiPack.Font.Gui.BLANK_54.iconComponent().append(Component.text("Recipe"));
         } else {
             return Component.text("Recipe");
         }

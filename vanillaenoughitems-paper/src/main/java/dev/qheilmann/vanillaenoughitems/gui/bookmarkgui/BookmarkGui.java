@@ -55,7 +55,7 @@ public class BookmarkGui extends FastInv {
      * @param bookmarks the bookmarks to display
      */
     public BookmarkGui(Component titleComponent, RecipeServices services, PlayerGuiData playerData, Collection<Bookmark> bookmarks) {
-        super(SIZE, createTitle(titleComponent));
+        super(SIZE, title(titleComponent, VanillaEnoughItems.config().style()));
         this.services = services;
         this.playerData = playerData;
         this.style = VanillaEnoughItems.config().style();
@@ -129,15 +129,12 @@ public class BookmarkGui extends FastInv {
         });
     }
 
-    /**
-     * Create a title for bookmark GUI with resource pack icon.
-     * Always appends the BLANK_54 icon to the provided title component.
-     * @param titleText the title component to display after the icon
-     * @return the formatted title component with icon
-     */
-    private static Component createTitle(Component titleText) {
-        GuiIcon guiIcon = VeiPack.Font.Gui.BLANK_54;
-        return guiIcon.iconComponent().append(Component.text(guiIcon.resetSpace())).append(titleText);
+    private static Component title(Component titleComponent, Style style) {
+        if (style.hasResourcePack()) {
+            return VeiPack.Font.Gui.BLANK_54.iconComponent().append(titleComponent);
+        } else {
+            return titleComponent;
+        }
     }
 
     @Override
