@@ -121,6 +121,7 @@ public class VeiPack {
                 public static final NamespacedKey ARROW_LEFT = path(Button.class, "arrow_left");
                 public static final NamespacedKey ARROW_RIGHT = path(Button.class, "arrow_right");
                 public static final NamespacedKey ARROW_UP = path(Button.class, "arrow_up");
+                public static final NamespacedKey ARROW_RETURN = path(Button.class, "arrow_return");
 
                 public static final NamespacedKey BACKWARD_DOUBLE = path(Button.class, "backward_double");
                 public static final NamespacedKey BACKWARD = path(Button.class, "backward");

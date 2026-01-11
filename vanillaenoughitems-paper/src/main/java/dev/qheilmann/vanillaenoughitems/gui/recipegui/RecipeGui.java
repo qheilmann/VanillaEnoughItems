@@ -35,7 +35,6 @@ import dev.qheilmann.vanillaenoughitems.gui.player.PlayerGuiData;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPanel;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPannelSlot;
 import dev.qheilmann.vanillaenoughitems.pack.VeiPack;
-import dev.qheilmann.vanillaenoughitems.pack.GuiIcon;
 import dev.qheilmann.vanillaenoughitems.recipe.extraction.RecipeExtractor;
 import dev.qheilmann.vanillaenoughitems.recipe.index.Grouping;
 import dev.qheilmann.vanillaenoughitems.recipe.index.reader.MultiProcessRecipeReader;
@@ -832,7 +831,7 @@ public class RecipeGui extends FastInv {
         Player player = (Player) event.getWhoClicked();
         player.playSound(UI_CLICK_SOUND);
         
-        BookmarkGui bookmarkGui = new BookmarkGui(Component.text("Player Bookmarks"), services, playerData, playerData.getBookmarks());
+        BookmarkGui bookmarkGui = new BookmarkGui(Component.text("Player Bookmarks"), services, playerData, playerData.getBookmarks(), reader);
         bookmarkGui.open(player);
     }
 
@@ -848,7 +847,7 @@ public class RecipeGui extends FastInv {
         Player player = (Player) event.getWhoClicked();
         player.playSound(UI_CLICK_SOUND);
         
-        BookmarkGui bookmarkGui = new BookmarkGui(Component.text("Server Bookmarks"), services, playerData, services.serverBookmarkRegistry().getBookmarks());
+        BookmarkGui bookmarkGui = new BookmarkGui(Component.text("Server Bookmarks"), services, playerData, services.serverBookmarkRegistry().getBookmarks(), reader);
         bookmarkGui.open(player);
     }
 
