@@ -38,7 +38,7 @@ public class RecipeNavigationHistory {
     public void startViewing(MultiProcessRecipeReader newReader) {
         // If there was a previously viewed reader, push it to history
         if (lastViewedReader != null) {
-            pushToHistory(lastViewedReader);
+            pushForNavigation(lastViewedReader, newReader);
         }
     }
     
@@ -56,16 +56,16 @@ public class RecipeNavigationHistory {
      * Push the current reader to backward history when navigating to a new recipe.
      * Clears forward history since we're starting a new branch.
      * 
-     * @param currentReader the reader to save before navigating
+     * @param previousReader the reader to save before navigating
      * @param targetReader the reader we're navigating to
      */
-    public void pushForNavigation(MultiProcessRecipeReader currentReader, MultiProcessRecipeReader targetReader) {
+    public void pushForNavigation(MultiProcessRecipeReader previousReader, MultiProcessRecipeReader targetReader) {
         // Don't push if we're staying on the same recipe view
-        if (currentReader.equals(targetReader)) {
+        if (previousReader.equals(targetReader)) {
             return;
         }
 
-        pushToHistory(currentReader);
+        pushToHistory(previousReader);
     }
 
     /**
