@@ -7,7 +7,7 @@ import dev.qheilmann.vanillaenoughitems.pack.VeiPack;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
-public class GuiComponent {
+public class GuiComponentHelper {
 
     public static ItemStack createFillerItem(boolean hasResourcePack) {
         ItemStack item = ItemType.LIGHT_GRAY_STAINED_GLASS_PANE.createItemStack();

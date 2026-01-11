@@ -23,6 +23,7 @@ import dev.qheilmann.vanillaenoughitems.commands.DebugVei;
 import dev.qheilmann.vanillaenoughitems.config.VanillaEnoughItemsConfig;
 import dev.qheilmann.vanillaenoughitems.config.style.Style;
 import dev.qheilmann.vanillaenoughitems.gui.CyclicIngredient;
+import dev.qheilmann.vanillaenoughitems.gui.player.PlayerDataManager;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPanelFactory;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPanelRegistry;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.impl.BlastingProcessPanel;
@@ -35,7 +36,6 @@ import dev.qheilmann.vanillaenoughitems.gui.processpannel.impl.StonecuttingProce
 import dev.qheilmann.vanillaenoughitems.metrics.BStatsMetrics;
 import dev.qheilmann.vanillaenoughitems.recipe.process.Process;
 import dev.qheilmann.vanillaenoughitems.recipe.extraction.RecipeExtractorRegistry;
-import dev.qheilmann.vanillaenoughitems.gui.player.PlayerDataManager;
 import dev.qheilmann.vanillaenoughitems.recipe.extraction.impl.BlastingRecipeExtractor;
 import dev.qheilmann.vanillaenoughitems.recipe.extraction.impl.CampfireRecipeExtractor;
 import dev.qheilmann.vanillaenoughitems.recipe.extraction.impl.FurnaceRecipeExtractor;

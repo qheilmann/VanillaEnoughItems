@@ -1,4 +1,4 @@
-package dev.qheilmann.vanillaenoughitems.gui;
+package dev.qheilmann.vanillaenoughitems.gui.recipegui;
 
 import org.jspecify.annotations.NullMarked;
 

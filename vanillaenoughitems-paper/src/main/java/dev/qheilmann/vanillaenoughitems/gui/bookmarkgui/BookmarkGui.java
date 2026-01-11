@@ -1,4 +1,4 @@
-package dev.qheilmann.vanillaenoughitems.gui;
+package dev.qheilmann.vanillaenoughitems.gui.bookmarkgui;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -17,8 +17,10 @@ import dev.qheilmann.vanillaenoughitems.RecipeServices;
 import dev.qheilmann.vanillaenoughitems.VanillaEnoughItems;
 import dev.qheilmann.vanillaenoughitems.bookmark.Bookmark;
 import dev.qheilmann.vanillaenoughitems.config.style.Style;
-import dev.qheilmann.vanillaenoughitems.gui.helper.GuiComponent;
+import dev.qheilmann.vanillaenoughitems.gui.CyclicIngredient;
+import dev.qheilmann.vanillaenoughitems.gui.helper.GuiComponentHelper;
 import dev.qheilmann.vanillaenoughitems.gui.player.PlayerGuiData;
+import dev.qheilmann.vanillaenoughitems.gui.recipegui.RecipeGui;
 import dev.qheilmann.vanillaenoughitems.recipe.index.reader.MultiProcessRecipeReader;
 import dev.qheilmann.vanillaenoughitems.pack.VeiPack;
 import dev.qheilmann.vanillaenoughitems.pack.GuiIcon;
@@ -57,7 +59,7 @@ public class BookmarkGui extends FastInv {
         this.services = services;
         this.playerData = playerData;
         this.style = VanillaEnoughItems.config().style();
-        this.fillerItem = GuiComponent.createFillerItem(style.hasResourcePack());
+        this.fillerItem = GuiComponentHelper.createFillerItem(style.hasResourcePack());
         this.bookmarks = bookmarks;
 
         // Fill with filler items

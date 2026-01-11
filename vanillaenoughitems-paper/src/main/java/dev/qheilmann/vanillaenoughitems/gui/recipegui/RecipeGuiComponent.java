@@ -1,4 +1,4 @@
-package dev.qheilmann.vanillaenoughitems.gui;
+package dev.qheilmann.vanillaenoughitems.gui.recipegui;
 
 import java.util.List;
 
@@ -8,7 +8,7 @@ import org.bukkit.inventory.ItemType;
 import org.jspecify.annotations.NullMarked;
 
 import dev.qheilmann.vanillaenoughitems.config.style.Style;
-import dev.qheilmann.vanillaenoughitems.gui.helper.GuiComponent;
+import dev.qheilmann.vanillaenoughitems.gui.helper.GuiComponentHelper;
 import dev.qheilmann.vanillaenoughitems.pack.VeiPack;
 import dev.qheilmann.vanillaenoughitems.utils.playerhead.PlayerHeadRegistry;
 import net.kyori.adventure.text.Component;
@@ -334,7 +334,7 @@ public class RecipeGuiComponent {
     }
 
     public static ItemStack createFillerItem(boolean hasResourcePack) {
-        return GuiComponent.createFillerItem(hasResourcePack);
+        return GuiComponentHelper.createFillerItem(hasResourcePack);
     }
 
     //#endregion Others

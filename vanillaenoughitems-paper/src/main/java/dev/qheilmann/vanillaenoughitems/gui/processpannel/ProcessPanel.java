@@ -13,7 +13,7 @@ import org.jspecify.annotations.Nullable;
 
 import dev.qheilmann.vanillaenoughitems.config.style.Style;
 import dev.qheilmann.vanillaenoughitems.gui.CyclicIngredient;
-import dev.qheilmann.vanillaenoughitems.gui.RecipeGuiSharedButton;
+import dev.qheilmann.vanillaenoughitems.gui.recipegui.RecipeGuiSharedButton;
 import dev.qheilmann.vanillaenoughitems.utils.VeiKey;
 import dev.qheilmann.vanillaenoughitems.utils.fastinv.FastInvItem;
 import net.kyori.adventure.key.Key;

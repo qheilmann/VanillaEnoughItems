@@ -17,10 +17,10 @@ import org.jspecify.annotations.NullMarked;
 
 import dev.qheilmann.vanillaenoughitems.config.style.Style;
 import dev.qheilmann.vanillaenoughitems.gui.CyclicIngredient;
-import dev.qheilmann.vanillaenoughitems.gui.RecipeGuiComponent;
-import dev.qheilmann.vanillaenoughitems.gui.RecipeGuiSharedButton;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPanel;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPannelSlot;
+import dev.qheilmann.vanillaenoughitems.gui.recipegui.RecipeGuiComponent;
+import dev.qheilmann.vanillaenoughitems.gui.recipegui.RecipeGuiSharedButton;
 import dev.qheilmann.vanillaenoughitems.pack.VeiPack;
 import dev.qheilmann.vanillaenoughitems.recipe.extraction.impl.helper.TrimMaterialHelper;
 import dev.qheilmann.vanillaenoughitems.utils.fastinv.FastInvItem;

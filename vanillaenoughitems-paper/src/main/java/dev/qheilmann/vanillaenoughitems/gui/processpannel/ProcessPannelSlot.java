@@ -8,7 +8,7 @@ import java.util.Map;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
-import dev.qheilmann.vanillaenoughitems.gui.RecipeGuiSharedButton;
+import dev.qheilmann.vanillaenoughitems.gui.recipegui.RecipeGuiSharedButton;
 import dev.qheilmann.vanillaenoughitems.utils.fastinv.Slots;
 
 /**
