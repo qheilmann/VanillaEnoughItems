@@ -110,8 +110,6 @@ public class RecipeGui extends FastInv {
         setItems(Slots.Generic9x6.all(), fillerItem);
 
         // Static buttons
-        renderBookmarkListButton();
-        renderBookmarkServerListButton();
         // renderInfoButton(); // TODO info button not implemented yet
 
         // Dynamic render
@@ -133,8 +131,10 @@ public class RecipeGui extends FastInv {
      */
     public void render() {
         // Recipe dependent buttons
-        renderBookmarkButton();
         renderQuickLinkButton();
+        renderBookmarkButton();
+        renderBookmarkListButton();
+        renderBookmarkServerListButton();
         renderWorkbenchScrollButtons();
         renderProcessScrollButtons();
 
@@ -816,7 +816,9 @@ public class RecipeGui extends FastInv {
         playerData.toggleBookmark(bookmark);
         
         event.getWhoClicked().playSound(UI_CLICK_SOUND);
-        renderBookmarkButton(); // Re-render only the bookmark button to update icon
+        // Re-render only the bookmark buttons
+        renderBookmarkButton(); 
+        renderBookmarkListButton();
     }
 
     //#endregion Bookmark
@@ -824,6 +826,11 @@ public class RecipeGui extends FastInv {
     //#region Bookmark List
 
     private void renderBookmarkListButton() {
+        if (playerData.getBookmarks().isEmpty()) {
+            setItem(BOOKMARK_LIST_SLOT, fillerItem);
+            return;
+        }
+        
         setItem(BOOKMARK_LIST_SLOT, guiComponent.createBookmarkListButton(), event -> bookmarkListAction(event));
     }
 
@@ -840,6 +847,11 @@ public class RecipeGui extends FastInv {
     //#region Bookmark Server List
 
     private void renderBookmarkServerListButton() {
+        if (services.serverBookmarkRegistry().getBookmarks().isEmpty()) {
+            setItem(BOOKMARK_SERVER_LIST_SLOT, fillerItem);
+            return;
+        }
+        
         setItem(BOOKMARK_SERVER_LIST_SLOT, guiComponent.createBookmarkServerListButton(), event -> bookmarkServerListAction(event));
     }
 
