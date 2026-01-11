@@ -1,8 +1,11 @@
 package dev.qheilmann.vanillaenoughitems;
 
 import org.bukkit.Registry;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.Recipe;
+import org.bukkit.inventory.ShapedRecipe;
+import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -12,6 +15,7 @@ import java.util.Iterator;
 
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger;
 import dev.jorel.commandapi.CommandAPI;
@@ -57,7 +61,10 @@ import dev.qheilmann.vanillaenoughitems.recipe.process.impl.SmeltingProcess;
 import dev.qheilmann.vanillaenoughitems.recipe.process.impl.SmithingProcess;
 import dev.qheilmann.vanillaenoughitems.recipe.process.impl.SmokingProcess;
 import dev.qheilmann.vanillaenoughitems.recipe.process.impl.StonecuttingProcess;
+import dev.qheilmann.vanillaenoughitems.utils.VeiKey;
 import dev.qheilmann.vanillaenoughitems.utils.fastinv.FastInvManager;
+import io.papermc.paper.datacomponent.DataComponentTypes;
+import io.papermc.paper.datacomponent.item.UseRemainder;
 import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.registry.RegistryKey;
 
@@ -113,6 +120,8 @@ public class VanillaEnoughItems extends JavaPlugin {
 
         LOGGER.debug("Enabling FastInv...");
         FastInvManager.register(this);
+
+        registerCustomRecipe();
 
         RecipeExtractorRegistry recipeExtractor = new RecipeExtractorRegistry();
         recipeExtractor.registerExtractor(new BlastingRecipeExtractor());
@@ -205,6 +214,50 @@ public class VanillaEnoughItems extends JavaPlugin {
         commandApiConfig.dispatcherFile(new File(getDataFolder(), "command_registration.json"));
 
         CommandAPI.onLoad(commandApiConfig);
+    }
+
+    private void registerCustomRecipe() {
+        
+        // Normal shapeless
+        ShapelessRecipe syntheticDiamond = new ShapelessRecipe(VeiKey.namespacedKey("synthetic_diamond"), ItemType.DIAMOND.createItemStack())
+            .addIngredient(4, ItemType.COAL.createItemStack());
+        getServer().addRecipe(syntheticDiamond);
+
+        // Modified itemstack
+        ItemStack magicBall = ItemType.MAGENTA_DYE.createItemStack(meta -> {
+            meta.displayName(Component.text("Magic Ball", NamedTextColor.LIGHT_PURPLE).decoration(TextDecoration.ITALIC, false));
+        });
+        ShapelessRecipe magicBallRecipe = new ShapelessRecipe(VeiKey.namespacedKey("magic_ball"), magicBall)
+            .addIngredient(ItemType.DIAMOND.createItemStack())
+            .addIngredient(ItemType.BLAZE_POWDER.createItemStack())
+            .addIngredient(ItemType.GHAST_TEAR.createItemStack());
+        getServer().addRecipe(magicBallRecipe);
+
+        // Crafting Remaining
+        ItemStack exposedCopper = ItemType.EXPOSED_COPPER.createItemStack();
+        ShapedRecipe oxidizeCopperRecipe = new ShapedRecipe(VeiKey.namespacedKey("oxidize_copper"), exposedCopper)
+            .shape("CCC", "CWC", "CCC")
+            .setIngredient('C', ItemType.COPPER_BLOCK.createItemStack())
+            .setIngredient('W', ItemType.WATER_BUCKET.createItemStack());
+        getServer().addRecipe(oxidizeCopperRecipe);
+
+        // Craft remaining with custom item
+        ItemStack oxidizedCopper = ItemType.OXIDIZED_COPPER.createItemStack();
+        ItemStack superOxidizer = ItemType.WATER_BUCKET.createItemStack(meta -> {
+            meta.displayName(Component.text("Super Oxidizer", NamedTextColor.AQUA).decoration(TextDecoration.ITALIC, false));
+        });
+        superOxidizer.setData(DataComponentTypes.USE_REMAINDER, UseRemainder.useRemainder(ItemType.STICK.createItemStack())); // dummy for change the item component
+
+        ShapelessRecipe superOxidizerRecipe = new ShapelessRecipe(VeiKey.namespacedKey("super_oxidizer"), superOxidizer)
+            .addIngredient(ItemType.WATER_BUCKET.createItemStack())
+            .addIngredient(magicBall);
+        getServer().addRecipe(superOxidizerRecipe);
+
+        ShapedRecipe scrapeCopperRecipe = new ShapedRecipe(VeiKey.namespacedKey("super_oxidize_copper"), oxidizedCopper)
+            .shape("CCC", "CWC", "CCC")
+            .setIngredient('C', ItemType.COPPER_BLOCK.createItemStack())
+            .setIngredient('W', superOxidizer);
+        getServer().addRecipe(scrapeCopperRecipe);
     }
 
     /**

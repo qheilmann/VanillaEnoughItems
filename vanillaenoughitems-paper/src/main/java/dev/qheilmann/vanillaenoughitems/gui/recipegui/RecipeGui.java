@@ -370,7 +370,7 @@ public class RecipeGui extends FastInv {
         lore.addAll(formatTagLore(ingredient));
 
         // Use remainder
-        lore.addAll(formatUseReminderLore(item));
+        lore.addAll(formatRemainingItemLore(item));
 
         if (!showItem.isEmpty()) {
             showItem.lore(lore);
@@ -1017,17 +1017,18 @@ public class RecipeGui extends FastInv {
      * @param item the item stack to check for use reminder
      * @return list of formatted use reminder components, or empty if no reminder
      */
-    private List<Component> formatUseReminderLore(ItemStack item) {
-        if (!item.hasData(DataComponentTypes.USE_REMAINDER)) {
+    private List<Component> formatRemainingItemLore(ItemStack item) {
+
+        ItemType remainingType = item.getType().asItemType().getCraftingRemainingItem();
+        if (remainingType == null) {
             return List.of();
         }
 
-        UseRemainder useRemainder = item.getData(DataComponentTypes.USE_REMAINDER);
+        ItemStack remainingItem = remainingType.createItemStack();
 
         Component reminderComponent = Component.text().applicableApply(NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)
             .append(Component.text("Transforms into "))
-            .append(useRemainder.transformInto().displayName())
-            .append(Component.text(" after use."))
+            .append(remainingItem.displayName())
             .build();
         
         return List.of(reminderComponent);
