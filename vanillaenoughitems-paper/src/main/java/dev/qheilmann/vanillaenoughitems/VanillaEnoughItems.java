@@ -34,8 +34,8 @@ import dev.qheilmann.vanillaenoughitems.gui.processpannel.impl.SmokingProcessPan
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.impl.StonecuttingProcessPanel;
 import dev.qheilmann.vanillaenoughitems.metrics.BStatsMetrics;
 import dev.qheilmann.vanillaenoughitems.recipe.process.Process;
-import dev.qheilmann.vanillaenoughitems.recipe.RecipeContext;
 import dev.qheilmann.vanillaenoughitems.recipe.extraction.RecipeExtractorRegistry;
+import dev.qheilmann.vanillaenoughitems.gui.player.PlayerDataManager;
 import dev.qheilmann.vanillaenoughitems.recipe.extraction.impl.BlastingRecipeExtractor;
 import dev.qheilmann.vanillaenoughitems.recipe.extraction.impl.CampfireRecipeExtractor;
 import dev.qheilmann.vanillaenoughitems.recipe.extraction.impl.FurnaceRecipeExtractor;
@@ -75,7 +75,9 @@ public class VanillaEnoughItems extends JavaPlugin {
 
     private boolean failOnload = false;
     @SuppressWarnings("null")
-    private RecipeContext recipeGuiContext;
+    private RecipeServices recipeServices;
+    @SuppressWarnings("null")
+    private PlayerDataManager playerDataManager;
 
     @Override
     public void onLoad() {
@@ -144,7 +146,18 @@ public class VanillaEnoughItems extends JavaPlugin {
         // Initialize server bookmark registry
         ServerBookmarkRegistry serverBookmarkRegistry = new ServerBookmarkRegistry();
         
-        recipeGuiContext = new RecipeContext(this, recipeIndex, processPanelRegistry, tagIndex, serverBookmarkRegistry);
+        // Bundle services into immutable container
+        recipeServices = new RecipeServices(
+            recipeExtractor,
+            processRegistry,
+            processPanelRegistry,
+            recipeIndex,
+            tagIndex,
+            serverBookmarkRegistry
+        );
+        
+        // Create separate player data manager
+        playerDataManager = new PlayerDataManager(this, recipeIndex);
 
         Iterator<Recipe> recipeIterator = getServer().recipeIterator();
         recipeIndex.indexRecipe(() -> recipeIterator);
@@ -154,7 +167,7 @@ public class VanillaEnoughItems extends JavaPlugin {
         LOGGER.debug("Initializing server bookmarks...");
         initializeServerBookmarks(serverBookmarkRegistry);
 
-        CraftCommand.register(this, recipeGuiContext);
+        CraftCommand.register(this, recipeServices, playerDataManager);
         DebugVei.register();
 
         LOGGER.debug("Initialize bStats metrics...");
@@ -165,8 +178,8 @@ public class VanillaEnoughItems extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        if (recipeGuiContext != null) {
-            recipeGuiContext.clearAllPlayerData();
+        if (playerDataManager != null) {
+            playerDataManager.clearAllPlayerData();
         }
         LOGGER.info(PLUGIN_NAME + " disabled.");
     }
@@ -202,8 +215,8 @@ public class VanillaEnoughItems extends JavaPlugin {
      */
     private void initializeServerBookmarks(ServerBookmarkRegistry registry) {
 
-        RecipeIndex recipeIndex = recipeGuiContext.getRecipeIndex();
-        ProcessPanelRegistry panelRegistry = recipeGuiContext.getProcessPanelRegistry();
+        RecipeIndex recipeIndex = recipeServices.recipeIndex();
+        ProcessPanelRegistry panelRegistry = recipeServices.processPanelRegistry();
         
         // Example 1: All diamond recipes
         Bookmark diamondBookmark = Bookmark.fromKey(Key.key("minecraft:diamond"), recipeIndex, panelRegistry);

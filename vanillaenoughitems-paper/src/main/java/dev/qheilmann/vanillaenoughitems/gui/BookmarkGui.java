@@ -13,11 +13,12 @@ import org.bukkit.scheduler.BukkitTask;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
+import dev.qheilmann.vanillaenoughitems.RecipeServices;
 import dev.qheilmann.vanillaenoughitems.VanillaEnoughItems;
 import dev.qheilmann.vanillaenoughitems.bookmark.Bookmark;
 import dev.qheilmann.vanillaenoughitems.config.style.Style;
 import dev.qheilmann.vanillaenoughitems.gui.helper.GuiComponent;
-import dev.qheilmann.vanillaenoughitems.recipe.RecipeContext;
+import dev.qheilmann.vanillaenoughitems.gui.player.PlayerGuiData;
 import dev.qheilmann.vanillaenoughitems.recipe.index.reader.MultiProcessRecipeReader;
 import dev.qheilmann.vanillaenoughitems.pack.VeiPack;
 import dev.qheilmann.vanillaenoughitems.pack.GuiIcon;
@@ -36,7 +37,8 @@ public class BookmarkGui extends FastInv {
     private static final int TICK_INTERVAL = 20; // ticks (1 second)
     private static final int MAX_BOOKMARKS = 45; // 5 rows
 
-    private final RecipeContext context;
+    private final RecipeServices services;
+    private final PlayerGuiData playerData;
     private final Style style;
     private final ItemStack fillerItem;
     private final Collection<Bookmark> bookmarks;
@@ -46,12 +48,14 @@ public class BookmarkGui extends FastInv {
     /**
      * Create a bookmark GUI with title component (icon will be appended automatically)
      * @param titleComponent the title component (without icon)
-     * @param context the recipe context
+     * @param services the recipe services
+     * @param playerData the current player's GUI data
      * @param bookmarks the bookmarks to display
      */
-    public BookmarkGui(Component titleComponent, RecipeContext context, Collection<Bookmark> bookmarks) {
+    public BookmarkGui(Component titleComponent, RecipeServices services, PlayerGuiData playerData, Collection<Bookmark> bookmarks) {
         super(SIZE, createTitle(titleComponent));
-        this.context = context;
+        this.services = services;
+        this.playerData = playerData;
         this.style = VanillaEnoughItems.config().style();
         this.fillerItem = GuiComponent.createFillerItem(style.hasResourcePack());
         this.bookmarks = bookmarks;
@@ -89,7 +93,7 @@ public class BookmarkGui extends FastInv {
     private void clickAction(InventoryClickEvent event, Bookmark bookmark) {
         Player player = (Player) event.getWhoClicked();
         MultiProcessRecipeReader reader = bookmark.getReader();
-        new RecipeGui(player, context, reader).open(player);
+        new RecipeGui(services, playerData, reader).open(player);
     }
 
     private void startTicker() {

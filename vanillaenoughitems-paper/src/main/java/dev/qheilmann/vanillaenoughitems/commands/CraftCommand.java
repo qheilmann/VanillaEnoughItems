@@ -15,13 +15,14 @@ import dev.jorel.commandapi.CommandPermission;
 import dev.jorel.commandapi.arguments.ArgumentSuggestions;
 import dev.jorel.commandapi.arguments.MultiLiteralArgument;
 import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
+import dev.qheilmann.vanillaenoughitems.RecipeServices;
 import dev.qheilmann.vanillaenoughitems.VanillaEnoughItems;
 import dev.qheilmann.vanillaenoughitems.commands.arguments.ProcessArgument;
 import dev.qheilmann.vanillaenoughitems.commands.arguments.RecipeIdArgument;
 import dev.qheilmann.vanillaenoughitems.commands.arguments.RecipeItemArgument;
 import dev.qheilmann.vanillaenoughitems.commands.arguments.SearchModeArgument;
 import dev.qheilmann.vanillaenoughitems.commands.arguments.SearchModeArgument.SearchMode;
-import dev.qheilmann.vanillaenoughitems.recipe.RecipeContext;
+import dev.qheilmann.vanillaenoughitems.gui.player.PlayerDataManager;
 import dev.qheilmann.vanillaenoughitems.recipe.index.RecipeIndex;
 import dev.qheilmann.vanillaenoughitems.recipe.index.reader.MultiProcessRecipeReader;
 import dev.qheilmann.vanillaenoughitems.recipe.process.Process;
@@ -52,11 +53,17 @@ public class CraftCommand {
 
     @SuppressWarnings("null")
     private static JavaPlugin plugin;
+    @SuppressWarnings("null")
+    private static RecipeServices recipeServices;
+    @SuppressWarnings("null")
+    private static PlayerDataManager playerDataManager;
 
     private CraftCommand() {}; // Prevent instantiation
 
-    public static void init(JavaPlugin plugin, RecipeContext context) {
+    public static void init(JavaPlugin plugin, RecipeServices services, PlayerDataManager playerDataMgr) {
         CraftCommand.plugin = plugin;
+        CraftCommand.recipeServices = services;
+        CraftCommand.playerDataManager = playerDataMgr;
     }
 
     public static CommandAPICommand createBaseCraftCommand() {
@@ -67,33 +74,33 @@ public class CraftCommand {
             .withUsage(USAGE);
     }
 
-    public static void register(JavaPlugin plugin, RecipeContext context) {
-        init(plugin, context);
+    public static void register(JavaPlugin plugin, RecipeServices services, PlayerDataManager playerDataMgr) {
+        init(plugin, services, playerDataMgr);
 
         // craft <item> [recipe|usage] [<process>] [<recipeId>]
         createBaseCraftCommand()
-            .withArguments(new RecipeItemArgument("resultItem", context)
-                .replaceSuggestions(RecipeItemArgument.argumentSuggestions(context))
+            .withArguments(new RecipeItemArgument("resultItem", services.recipeIndex())
+                .replaceSuggestions(RecipeItemArgument.argumentSuggestions(services.recipeIndex()))
             )
-            .withOptionalArguments(new SearchModeArgument("searchMode", context)
+            .withOptionalArguments(new SearchModeArgument("searchMode", services.recipeIndex())
                 .replaceSuggestions(ArgumentSuggestions.stringCollection(info -> {
                     ItemStack item = info.previousArgs().getUnchecked("resultItem");
-                    return SearchModeArgument.suggestions(context, item);
+                    return SearchModeArgument.suggestions(services.recipeIndex(), item);
                 }))
             )
-            .withOptionalArguments(new ProcessArgument("process", context)
+            .withOptionalArguments(new ProcessArgument("process", services.recipeIndex())
                 .replaceSuggestions(ArgumentSuggestions.stringCollection(info -> {
                     ItemStack item = info.previousArgs().getUnchecked("resultItem");
                     SearchMode searchMode = info.previousArgs().getUnchecked("searchMode");
-                    return ProcessArgument.suggestions(context, item, searchMode);
+                    return ProcessArgument.suggestions(services.recipeIndex(), item, searchMode);
                 }))
             )
-            .withOptionalArguments(new RecipeIdArgument("recipeId", context)
+            .withOptionalArguments(new RecipeIdArgument("recipeId", services.recipeIndex())
                 .replaceSuggestions(ArgumentSuggestions.stringCollection(info -> {
                     ItemStack item = info.previousArgs().getUnchecked("resultItem");
                     SearchMode searchMode = info.previousArgs().getUnchecked("searchMode");
                     Process process = info.previousArgs().getUnchecked("process");
-                    return RecipeIdArgument.suggestions(context, item, searchMode, process);
+                    return RecipeIdArgument.suggestions(services.recipeIndex(), item, searchMode, process);
                 }))
             )
             .executesPlayer((player, args) -> {
@@ -101,7 +108,7 @@ public class CraftCommand {
                 SearchModeArgument.SearchMode searchMode = args.getUnchecked("searchMode");
                 Process process = args.getUnchecked("process");
                 NamespacedKey recipeId = args.getUnchecked("recipeId");
-                byItemAction(player, itemStack, searchMode, process, recipeId, context);
+                byItemAction(player, itemStack, searchMode, process, recipeId);
             })
             .register();
         
@@ -109,19 +116,19 @@ public class CraftCommand {
         // craft --all [<process>] [<recipeId>]
         createBaseCraftCommand()
             .withArguments(new MultiLiteralArgument("all", "--all"))
-            .withOptionalArguments(new ProcessArgument("process", context)
-                .replaceSuggestions(ProcessArgument.argumentSuggestions(context, null, null))
+            .withOptionalArguments(new ProcessArgument("process", services.recipeIndex())
+                .replaceSuggestions(ProcessArgument.argumentSuggestions(services.recipeIndex(), null, null))
             )
-            .withOptionalArguments(new RecipeIdArgument("recipeId", context)
+            .withOptionalArguments(new RecipeIdArgument("recipeId", services.recipeIndex())
                 .replaceSuggestions(ArgumentSuggestions.stringCollection(info -> {
                     Process process = info.previousArgs().getUnchecked("process");
-                    return RecipeIdArgument.suggestions(context, null, null, process);
+                    return RecipeIdArgument.suggestions(services.recipeIndex(), null, null, process);
                 }))
             )
             .executesPlayer((player, args) -> {
                 Process process = args.getUnchecked("process");
                 NamespacedKey recipeId = args.getUnchecked("recipeId");
-                allItemAction(player, process, recipeId, context);
+                allItemAction(player, process, recipeId);
             })
             .register();
 
@@ -129,12 +136,12 @@ public class CraftCommand {
         // craft --id <recipeId>
         createBaseCraftCommand()
             .withArguments(new MultiLiteralArgument("id", "--id"))
-            .withArguments(new RecipeIdArgument("recipeId", context)
-                .replaceSuggestions(RecipeIdArgument.argumentSuggestions(context, null, null, null))
+            .withArguments(new RecipeIdArgument("recipeId", services.recipeIndex())
+                .replaceSuggestions(RecipeIdArgument.argumentSuggestions(services.recipeIndex(), null, null, null))
             )
             .executesPlayer((player, args) -> {
                 NamespacedKey recipeId = args.getUnchecked("recipeId");
-                byIdAction(player, recipeId, context);
+                byIdAction(player, recipeId);
             })
             .register();
 
@@ -166,7 +173,7 @@ public class CraftCommand {
             .executes((sender, args) -> {
                 sender.sendMessage(Component.text("Note: Recipe index reload, will only re-index all the recipe registered in the server.", NamedTextColor.GOLD));
                 sender.sendMessage(Component.text("Reloading recipe index...", NamedTextColor.YELLOW));
-                RecipeIndex recipeIndex = context.getRecipeIndex();
+                RecipeIndex recipeIndex = recipeServices.recipeIndex();
                 recipeIndex.clearIndex();
                 recipeIndex.indexRecipe(() -> (plugin.getServer().recipeIterator()));
                 sender.sendMessage(Component.text("Recipe index reload initiated...", NamedTextColor.YELLOW));
@@ -179,8 +186,8 @@ public class CraftCommand {
 
     //#region Actions
 
-    private static void byIdAction(Player player, NamespacedKey recipeId, RecipeContext context) throws WrapperCommandSyntaxException {
-        MultiProcessRecipeReader reader = context.getRecipeIndex().readerByKey(recipeId);
+    private static void byIdAction(Player player, NamespacedKey recipeId) throws WrapperCommandSyntaxException {
+        MultiProcessRecipeReader reader = recipeServices.recipeIndex().readerByKey(recipeId);
 
         if (reader == null) {
             Component noRecipeFoundMessage = Component.text().applicableApply(NamedTextColor.RED)
@@ -192,18 +199,18 @@ public class CraftCommand {
             throw CommandAPIPaper.failWithAdventureComponent(noRecipeFoundMessage);
         }
 
-        createAndOpenGui(player, reader, context);
+        createAndOpenGui(player, reader);
     }
 
-    private static void byItemAction(Player player, ItemStack item, SearchModeArgument.@Nullable SearchMode searchMode, @Nullable Process startProcess, @Nullable NamespacedKey startRecipeId, RecipeContext context) throws WrapperCommandSyntaxException {
+    private static void byItemAction(Player player, ItemStack item, SearchModeArgument.@Nullable SearchMode searchMode, @Nullable Process startProcess, @Nullable NamespacedKey startRecipeId) throws WrapperCommandSyntaxException {
         
         if (searchMode == null) {
             searchMode = SearchMode.DEFAULT;
         }
         
         MultiProcessRecipeReader reader = switch (searchMode) {
-            case RECIPE -> context.getRecipeIndex().readerByResult(item);
-            case USAGE -> context.getRecipeIndex().readerByIngredient(item);
+            case RECIPE -> recipeServices.recipeIndex().readerByResult(item);
+            case USAGE -> recipeServices.recipeIndex().readerByIngredient(item);
             default -> throw new UnsupportedOperationException("Search mode " + searchMode + " is not implemented");
         };
 
@@ -219,7 +226,7 @@ public class CraftCommand {
             throw CommandAPIPaper.failWithAdventureComponent(noRecipesFoundMessage);
         }
 
-        recipeAction(player, reader, startProcess, startRecipeId, context);
+        recipeAction(player, reader, startProcess, startRecipeId);
     }
 
     /**
@@ -228,11 +235,10 @@ public class CraftCommand {
      * @param player  the player to open the GUI for
      * @param startProcess the Process to use, or null for all processes
      * @param startRecipeId the NamespacedKey of the recipe to start with, or null for no specific recipe
-     * @param context the RecipeGuiContext for GUI configuration
      */
-    private static void allItemAction(Player player, @Nullable Process startProcess, @Nullable NamespacedKey startRecipeId, RecipeContext context) throws WrapperCommandSyntaxException {
-        MultiProcessRecipeReader reader = context.getRecipeIndex().readerWithAllRecipes();
-        recipeAction(player, reader, startProcess, startRecipeId, context);
+    private static void allItemAction(Player player, @Nullable Process startProcess, @Nullable NamespacedKey startRecipeId) throws WrapperCommandSyntaxException {
+        MultiProcessRecipeReader reader = recipeServices.recipeIndex().readerWithAllRecipes();
+        recipeAction(player, reader, startProcess, startRecipeId);
     }
 
     /**
@@ -242,10 +248,9 @@ public class CraftCommand {
      * @param reader   the MultiProcessRecipeReader containing the recipes to display
      * @param startProcess  the Process to use, or null for non starting process
      * @param startRecipeId the NamespacedKey of the recipe to start with, or null for no specific recipe
-     * @param context  the RecipeGuiContext for GUI configuration
      * @throws WrapperCommandSyntaxException if any errors occur during command execution
      */
-    private static void recipeAction(Player player, MultiProcessRecipeReader reader, @Nullable Process startProcess, @Nullable NamespacedKey startRecipeId, RecipeContext context) throws WrapperCommandSyntaxException {
+    private static void recipeAction(Player player, MultiProcessRecipeReader reader, @Nullable Process startProcess, @Nullable NamespacedKey startRecipeId) throws WrapperCommandSyntaxException {
         if(startProcess == null && startRecipeId != null) {
             throw new IllegalArgumentException("A recipe ID cannot be used without specifying a process.");
         }
@@ -266,7 +271,7 @@ public class CraftCommand {
 
             // Set start recipe if provided
             if (startRecipeId != null) {
-                Recipe recipe = context.getRecipeIndex().getSingleRecipeByKey(startRecipeId);
+                Recipe recipe = recipeServices.recipeIndex().getSingleRecipeByKey(startRecipeId);
                 if (recipe == null) {
                     Component recipeNotFoundMessage = Component.text().applicableApply(NamedTextColor.RED)
                         .append(Component.text("No recipe found with the ID '"))
@@ -293,7 +298,7 @@ public class CraftCommand {
             }
         }
 
-        createAndOpenGui(player, reader, context);
+        createAndOpenGui(player, reader);
     }
 
     private static void versionAction(CommandSender sender) {
@@ -314,10 +319,9 @@ public class CraftCommand {
      *
      * @param player  the player to open the GUI for
      * @param reader  the MultiProcessRecipeReader containing the recipes to display
-     * @param context the RecipeGuiContext for GUI configuration
      */
-    private static void createAndOpenGui(Player player, MultiProcessRecipeReader reader, RecipeContext context) {
-        RecipeGui gui = new RecipeGui(player, context, reader);
+    private static void createAndOpenGui(Player player, MultiProcessRecipeReader reader) {
+        RecipeGui gui = new RecipeGui(recipeServices, playerDataManager.getPlayerData(player.getUniqueId()), reader);
         gui.render();
         gui.open(player);
     }

@@ -20,7 +20,6 @@ import org.jspecify.annotations.NullMarked;
 import dev.jorel.commandapi.arguments.ArgumentSuggestions;
 import dev.jorel.commandapi.arguments.CustomArgument;
 import dev.jorel.commandapi.arguments.NamespacedKeyArgument;
-import dev.qheilmann.vanillaenoughitems.recipe.RecipeContext;
 import dev.qheilmann.vanillaenoughitems.recipe.index.RecipeIndex;
 import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.registry.RegistryKey;
@@ -39,14 +38,14 @@ import net.kyori.adventure.text.Component;
 @NullMarked
 public class RecipeItemArgument extends CustomArgument<ItemStack, NamespacedKey> {
 
-    // Cache for suggestions per context
-    // Uses reference equality (identity) since RecipeGuiContext instances are typically singletons
-    private static final Map<RecipeContext, Collection<String>> suggestionsCache = new ConcurrentHashMap<>();
+    // Cache for suggestions per recipe index
+    // Uses reference equality (identity) since RecipeIndex instances are typically singletons
+    private static final Map<RecipeIndex, Collection<String>> suggestionsCache = new ConcurrentHashMap<>();
 
     // Cache for unknown items, to allow the recipe item argument to parse the key to itemstack
     private static final Map<Key, ItemStack> unknownItemCache = new ConcurrentHashMap<>();
 
-    public RecipeItemArgument(String nodeName, RecipeContext context) {
+    public RecipeItemArgument(String nodeName, RecipeIndex recipeIndex) {
         super(new NamespacedKeyArgument(nodeName), info -> {
             NamespacedKey key = info.currentInput();
 
@@ -72,19 +71,19 @@ public class RecipeItemArgument extends CustomArgument<ItemStack, NamespacedKey>
         });
 
         // Default suggestions: all registered item keys
-        replaceSuggestions(argumentSuggestions(context));
+        replaceSuggestions(argumentSuggestions(recipeIndex));
     }
 
     /**
      * Create argument suggestions for item keys based on all indexed items.
      *
-     * @param context the recipe context containing the RecipeIndexReader
+     * @param recipeIndex the recipe index
      * @return ArgumentSuggestions providing available item key strings
      */
-    public static ArgumentSuggestions<CommandSender> argumentSuggestions(RecipeContext context) {
+    public static ArgumentSuggestions<CommandSender> argumentSuggestions(RecipeIndex recipeIndex) {
         return (info, builder) -> {
             // Get cached suggestions or compute them if not cached
-            Collection<String> suggestions = suggestionsCache.computeIfAbsent(context, ctx -> suggestions(ctx));
+            Collection<String> suggestions = suggestionsCache.computeIfAbsent(recipeIndex, ctx -> suggestions(ctx));
 
             String currentInputLowerCase = builder.getRemainingLowerCase();
             for (String suggestion : suggestions) {
@@ -99,25 +98,24 @@ public class RecipeItemArgument extends CustomArgument<ItemStack, NamespacedKey>
     /**
      * Generates a collection of suggestions for the item argument based on all indexed items.
      * 
-     * @param context The RecipeGuiContext containing the RecipeIndexReader
+     * @param recipeIndex The recipe index
      * @return A CompletableFuture containing the collection of suggestions.
      */
     @SuppressWarnings("null")
-    public static Collection<String> suggestions(RecipeContext context) {
-        return getAllItemKeys(context).stream()
+    public static Collection<String> suggestions(RecipeIndex recipeIndex) {
+        return getAllItemKeys(recipeIndex).stream()
             .map(Key::asString)
             .collect(Collectors.toSet());
     }
 
     /**
-     * Retrieves all item keys from the indexed recipes in the given context.
+     * Retrieves all item keys from the indexed recipes in the given recipe index.
      * 
-     * @param context The RecipeGuiContext containing the RecipeIndexReader
+     * @param recipeIndex The recipe index
      * @return A collection of all item keys.
      */
     @SuppressWarnings("null")
-    private static Collection<Key> getAllItemKeys(RecipeContext context) {
-        RecipeIndex recipeIndex = context.getRecipeIndex();
+    private static Collection<Key> getAllItemKeys(RecipeIndex recipeIndex) {
         Set<ItemStack> allItems = new HashSet<>();
 
         allItems.addAll(recipeIndex.getAllResultItems());

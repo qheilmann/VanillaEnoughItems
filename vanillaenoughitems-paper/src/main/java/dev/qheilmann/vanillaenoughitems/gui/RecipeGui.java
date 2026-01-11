@@ -25,6 +25,7 @@ import org.bukkit.scheduler.BukkitTask;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
+import dev.qheilmann.vanillaenoughitems.RecipeServices;
 import dev.qheilmann.vanillaenoughitems.VanillaEnoughItems;
 import dev.qheilmann.vanillaenoughitems.bookmark.Bookmark;
 import dev.qheilmann.vanillaenoughitems.config.style.Style;
@@ -33,7 +34,6 @@ import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPanel;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPannelSlot;
 import dev.qheilmann.vanillaenoughitems.pack.VeiPack;
 import dev.qheilmann.vanillaenoughitems.pack.GuiIcon;
-import dev.qheilmann.vanillaenoughitems.recipe.RecipeContext;
 import dev.qheilmann.vanillaenoughitems.recipe.extraction.RecipeExtractor;
 import dev.qheilmann.vanillaenoughitems.recipe.index.Grouping;
 import dev.qheilmann.vanillaenoughitems.recipe.index.reader.MultiProcessRecipeReader;
@@ -80,7 +80,7 @@ public class RecipeGui extends FastInv {
     private static final Sound UI_CLICK_SOUND = Sound.sound(org.bukkit.Sound.UI_BUTTON_CLICK, Sound.Source.UI, 0.25f, 1.0f);
 
     // Instance
-    private final RecipeContext context;
+    private final RecipeServices services;
     private final PlayerGuiData playerData;
     private final Style style;
     private final RecipeGuiComponent guiComponent;
@@ -93,17 +93,17 @@ public class RecipeGui extends FastInv {
     /** Scroll offset for workbench tabs (in case of more than one page) */
     private int workbenchScrollOffset = 0;
 
-    public RecipeGui(Player player, RecipeContext context, MultiProcessRecipeReader initialReader) {
+    public RecipeGui(RecipeServices services, PlayerGuiData playerData, MultiProcessRecipeReader reader) {
         super(SIZE, title(VanillaEnoughItems.config().style()));
-        this.context = context;
-        this.playerData = context.getPlayerData(player.getUniqueId());
+        this.services = services;
+        this.playerData = playerData;
         this.style = VanillaEnoughItems.config().style();
-        this.reader = initialReader;
+        this.reader = reader;
         this.guiComponent = new RecipeGuiComponent(style);
         this.fillerItem = guiComponent.createFillerItem();
         
         // Inform navigation history a new viewing session
-        playerData.navigationHistory().startViewing(initialReader);
+        playerData.navigationHistory().startViewing(reader);
         
         // Initial filling
         setItems(Slots.Generic9x6.all(), fillerItem);
@@ -156,12 +156,12 @@ public class RecipeGui extends FastInv {
         MultiProcessRecipeReader newMultiRecipeReader = null;
 
         if (isLeftClick) {
-            newMultiRecipeReader = context.getRecipeIndex().readerByResult(recipeItem);
+            newMultiRecipeReader = services.recipeIndex().readerByResult(recipeItem);
         } else if (isRightClick) {
             if (reader.getGrouping().equals(new Grouping.ByIngredient(recipeItem))) {
                 return; // No action if usage clicking on the same usage reader
             }
-            newMultiRecipeReader = context.getRecipeIndex().readerByIngredient(recipeItem);
+            newMultiRecipeReader = services.recipeIndex().readerByIngredient(recipeItem);
         } 
         // Ignore other click types
 
@@ -179,9 +179,9 @@ public class RecipeGui extends FastInv {
             if (reader.getGrouping().equals(new Grouping.ByResult(recipeItem))) {
                 return; // No action if recipe clicking on the same result reader
             }
-            newMultiRecipeReader = context.getRecipeIndex().readerByResult(recipeItem);
+            newMultiRecipeReader = services.recipeIndex().readerByResult(recipeItem);
         } else if (isRightClick) {
-            newMultiRecipeReader = context.getRecipeIndex().readerByIngredient(recipeItem);
+            newMultiRecipeReader = services.recipeIndex().readerByIngredient(recipeItem);
         }
         // Ignore other click types
 
@@ -297,7 +297,7 @@ public class RecipeGui extends FastInv {
     }
 
     private ProcessPanel generateCurrentPanel() {
-        ProcessPanel newPanel = context.getProcessPanelRegistry().createPanel(
+        ProcessPanel newPanel = services.processPanelRegistry().createPanel(
             getCurrentProcess(),
             getCurrentRecipe(),
             style
@@ -767,13 +767,13 @@ public class RecipeGui extends FastInv {
         MultiProcessRecipeReader newMultiRecipeReader = null;
 
         if (isLeftClick) {
-            newMultiRecipeReader = context.getRecipeIndex().readerByResult(catalyste);
+            newMultiRecipeReader = services.recipeIndex().readerByResult(catalyste);
         } else if (isRightClick) {
             if (reader.getGrouping().equals(new Grouping.ByProcess(process))) {
                 return; // No action if process clicking on the same process reader
             }
             // Actually this should more be process reader + all usage of catalyste like in other recipe + other case (like fuel for crafting table catalyste)
-            newMultiRecipeReader = context.getRecipeIndex().readerByProcess(process);
+            newMultiRecipeReader = services.recipeIndex().readerByProcess(process);
         }
         // Ignore other click types
 
@@ -795,7 +795,7 @@ public class RecipeGui extends FastInv {
             return false;
         }
 
-        Bookmark tempBookmark = Bookmark.fromKey(key, context.getRecipeIndex(), context.getProcessPanelRegistry());
+        Bookmark tempBookmark = Bookmark.fromKey(key, services.recipeIndex(), services.processPanelRegistry());
         if (tempBookmark == null) {
             return false;
         }
@@ -808,7 +808,7 @@ public class RecipeGui extends FastInv {
         if (key == null) {
             return;
         }
-        Bookmark bookmark = Bookmark.fromKey(key, context.getRecipeIndex(), context.getProcessPanelRegistry());
+        Bookmark bookmark = Bookmark.fromKey(key, services.recipeIndex(), services.processPanelRegistry());
         if (bookmark == null) {
             return;
         }
@@ -831,7 +831,7 @@ public class RecipeGui extends FastInv {
         Player player = (Player) event.getWhoClicked();
         player.playSound(UI_CLICK_SOUND);
         
-        BookmarkGui bookmarkGui = new BookmarkGui(Component.text("Player Bookmarks"), context, playerData.getBookmarks());
+        BookmarkGui bookmarkGui = new BookmarkGui(Component.text("Player Bookmarks"), services, playerData, playerData.getBookmarks());
         bookmarkGui.open(player);
     }
 
@@ -847,7 +847,7 @@ public class RecipeGui extends FastInv {
         Player player = (Player) event.getWhoClicked();
         player.playSound(UI_CLICK_SOUND);
         
-        BookmarkGui bookmarkGui = new BookmarkGui(Component.text("Server Bookmarks"), context, context.getServerBookmarkRegistry().getBookmarks());
+        BookmarkGui bookmarkGui = new BookmarkGui(Component.text("Server Bookmarks"), services, playerData, services.serverBookmarkRegistry().getBookmarks());
         bookmarkGui.open(player);
     }
 
@@ -914,7 +914,7 @@ public class RecipeGui extends FastInv {
     @Nullable
     private Key getCurrentRecipeKey() {
         Recipe recipe = getCurrentRecipe();
-        RecipeExtractor extractor = context.getRecipeIndex().getAssociatedRecipeExtractor();
+        RecipeExtractor extractor = services.recipeIndex().getAssociatedRecipeExtractor();
 
         if (!extractor.canHandle(recipe)) {
             return null;
@@ -971,7 +971,7 @@ public class RecipeGui extends FastInv {
         }
         
         // Find tags that exactly match this set
-        Set<TagKey<ItemType>> matchingTags = context.getTagIndex().getTagsExactlyMatching(itemTypes);
+        Set<TagKey<ItemType>> matchingTags = services.tagIndex().getTagsExactlyMatching(itemTypes);
         
         if (matchingTags.isEmpty()) {
             return List.of();

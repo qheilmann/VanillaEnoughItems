@@ -13,7 +13,7 @@ import org.jspecify.annotations.Nullable;
 import dev.jorel.commandapi.arguments.ArgumentSuggestions;
 import dev.jorel.commandapi.arguments.CustomArgument;
 import dev.jorel.commandapi.arguments.NamespacedKeyArgument;
-import dev.qheilmann.vanillaenoughitems.recipe.RecipeContext;
+import dev.qheilmann.vanillaenoughitems.recipe.index.RecipeIndex;
 import dev.qheilmann.vanillaenoughitems.recipe.index.reader.MultiProcessRecipeReader;
 import dev.qheilmann.vanillaenoughitems.recipe.process.Process;
 import dev.qheilmann.vanillaenoughitems.recipe.process.ProcessRegistry;
@@ -36,12 +36,12 @@ public class ProcessArgument extends CustomArgument<Process, NamespacedKey> {
      * and throws a Minecraft-like exception if the process is not found.
      * 
      * @param nodeName the name of the argument node
-     * @param context the recipe context containing the RecipeIndexReader
+     * @param recipeIndex the recipe index
      */
-    public ProcessArgument(String nodeName, RecipeContext context) {
+    public ProcessArgument(String nodeName, RecipeIndex recipeIndex) {
         super(new NamespacedKeyArgument(nodeName), (input) -> {
             NamespacedKey key = input.currentInput();
-            ProcessRegistry processRegistry = context.getRecipeIndex().getAssociatedProcessRegistry();
+            ProcessRegistry processRegistry = recipeIndex.getAssociatedProcessRegistry();
             Process process = processRegistry.getProcess(key);
 
             if (process == null) {
@@ -52,33 +52,33 @@ public class ProcessArgument extends CustomArgument<Process, NamespacedKey> {
         });
 
         // Default suggestions: all registered process keys
-        replaceSuggestions(argumentSuggestions(context, null, null));
+        replaceSuggestions(argumentSuggestions(recipeIndex, null, null));
     }
 
     /**
      * Create argument suggestions for process keys based on the provided item and search mode.
      *
-     * @param context the recipe context containing the RecipeIndexReader
-     * @param item the ItemStack to search for, or null for all indexed recipes in context 
+     * @param recipeIndex the recipe index
+     * @param item the ItemStack to search for, or null for all indexed recipes
      * @param searchMode the SearchMode to use with the item, or {@link SearchModeArgument.SearchMode#DEFAULT} if null
      * @return a NavigableSet of process key strings matching the criteria, the set can be empty if no processes match
      * @throws IllegalArgumentException if searchMode is provided without an item
      */
-    public static ArgumentSuggestions<CommandSender> argumentSuggestions(RecipeContext context, @Nullable ItemStack item, SearchModeArgument.@Nullable SearchMode searchMode) {
-        return ArgumentSuggestions.stringCollection((info) -> suggestions(context, item, searchMode));
+    public static ArgumentSuggestions<CommandSender> argumentSuggestions(RecipeIndex recipeIndex, @Nullable ItemStack item, SearchModeArgument.@Nullable SearchMode searchMode) {
+        return ArgumentSuggestions.stringCollection((info) -> suggestions(recipeIndex, item, searchMode));
     }
 
     /**
      * Provide suggestions for process keys based on the provided item and search mode.
      *
-     * @param context the recipe context containing the RecipeIndexReader
-     * @param item the ItemStack to search for, or null for all indexed recipes in context 
+     * @param recipeIndex the recipe index
+     * @param item the ItemStack to search for, or null for all indexed recipes
      * @param searchMode the SearchMode to use with the item, or {@link SearchModeArgument.SearchMode#DEFAULT} if null
      * @return a NavigableSet of process key strings matching the criteria, the set can be empty if no processes match
      * @throws IllegalArgumentException if searchMode is provided without an item
      */
-    public static NavigableSet<String> suggestions(RecipeContext context, @Nullable ItemStack item, SearchModeArgument.@Nullable SearchMode searchMode) {
-        NavigableSet<String> suggestions = getProcesses(context, item, searchMode).stream()
+    public static NavigableSet<String> suggestions(RecipeIndex recipeIndex, @Nullable ItemStack item, SearchModeArgument.@Nullable SearchMode searchMode) {
+        NavigableSet<String> suggestions = getProcesses(recipeIndex, item, searchMode).stream()
                 .map(process -> process.key().asString())
                 .collect(Collectors.toCollection(TreeSet::new));
         return suggestions; 
@@ -87,13 +87,13 @@ public class ProcessArgument extends CustomArgument<Process, NamespacedKey> {
     /**
      * Get processes from the RecipeIndexReader based on the provided item and search mode.
      *
-     * @param context the recipe context containing the RecipeIndexReader
-     * @param item the ItemStack to search for, or null for all indexed recipes in context 
+     * @param recipeIndex the recipe index
+     * @param item the ItemStack to search for, or null for all indexed recipes
      * @param searchMode the SearchMode to use with the item, or {@link SearchModeArgument.SearchMode#DEFAULT} if null
      * @return a NavigableSet of process key strings matching the criteria, the set can be empty if no processes match
      * @throws IllegalArgumentException if searchMode is provided without an item
      */
-    private static NavigableSet<Process> getProcesses(RecipeContext context, @Nullable ItemStack item, SearchModeArgument.@Nullable SearchMode searchMode) {
+    private static NavigableSet<Process> getProcesses(RecipeIndex recipeIndex, @Nullable ItemStack item, SearchModeArgument.@Nullable SearchMode searchMode) {
 
         if (item == null && searchMode != null) {
             throw new IllegalArgumentException("Search mode cannot be specified without an item");
@@ -103,7 +103,7 @@ public class ProcessArgument extends CustomArgument<Process, NamespacedKey> {
 
         // Global index
         if (item == null) {
-            reader = context.getRecipeIndex().readerWithAllRecipes();
+            reader = recipeIndex.readerWithAllRecipes();
         }
 
         // Item specific
@@ -114,8 +114,8 @@ public class ProcessArgument extends CustomArgument<Process, NamespacedKey> {
             }
     
             reader = switch (searchMode) {
-                case RECIPE -> context.getRecipeIndex().readerByResult(item);
-                case USAGE -> context.getRecipeIndex().readerByIngredient(item);
+                case RECIPE -> recipeIndex.readerByResult(item);
+                case USAGE -> recipeIndex.readerByIngredient(item);
                 default -> throw new UnsupportedOperationException("Search mode " + searchMode + " is not implemented");
             };
         }

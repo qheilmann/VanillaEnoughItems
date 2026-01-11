@@ -18,7 +18,6 @@ import dev.jorel.commandapi.arguments.ArgumentSuggestions;
 import dev.jorel.commandapi.arguments.CustomArgument;
 import dev.jorel.commandapi.arguments.NamespacedKeyArgument;
 import dev.qheilmann.vanillaenoughitems.commands.arguments.SearchModeArgument.SearchMode;
-import dev.qheilmann.vanillaenoughitems.recipe.RecipeContext;
 import dev.qheilmann.vanillaenoughitems.recipe.extraction.RecipeExtractor;
 import dev.qheilmann.vanillaenoughitems.recipe.index.RecipeIndex;
 import dev.qheilmann.vanillaenoughitems.recipe.index.reader.MultiProcessRecipeReader;
@@ -36,12 +35,12 @@ import net.kyori.adventure.text.Component;
  */
 @NullMarked
 public class RecipeIdArgument extends CustomArgument<NamespacedKey, NamespacedKey> {
-    public RecipeIdArgument(String nodeName, RecipeContext context) {
+    public RecipeIdArgument(String nodeName, RecipeIndex recipeIndex) {
         super(new NamespacedKeyArgument(nodeName), (input) -> {
             NamespacedKey key = input.currentInput();
 
             // Check if the key is a valid recipe ID
-            Recipe recipe = context.getRecipeIndex().getSingleRecipeByKey(key);
+            Recipe recipe = recipeIndex.getSingleRecipeByKey(key);
             if (recipe == null) {
                 throw CustomArgumentHelper.minecraftLikeException((arg) -> Component.text("No recipe found for ID: " + arg), input);
             }
@@ -50,34 +49,34 @@ public class RecipeIdArgument extends CustomArgument<NamespacedKey, NamespacedKe
         });
 
         // Default suggestions: all recipe IDs
-        replaceSuggestions(argumentSuggestions(context, null, null, null));
+        replaceSuggestions(argumentSuggestions(recipeIndex, null, null, null));
     }
 
     /**
      * Create argument suggestions for recipe IDs based on the provided item, search mode, and process.
      *
-     * @param context the recipe context containing the RecipeIndexReader
+     * @param recipeIndex the recipe index
      * @param item the ItemStack to search for, or null for global index
      * @param searchMode the SearchMode to use, or null for {@link SearchModeArgument.SearchMode#DEFAULT}. Ignored if item is null
      * @param process the Process to use, or null for all processes
      * @return ArgumentSuggestions providing available recipe IDs for the item, search mode, and process
      */
-    public static ArgumentSuggestions<CommandSender> argumentSuggestions(RecipeContext context, @Nullable ItemStack item, @Nullable SearchMode searchMode, @Nullable Process process) {
-        return ArgumentSuggestions.stringCollection((info) -> suggestions(context, item, searchMode, process));
+    public static ArgumentSuggestions<CommandSender> argumentSuggestions(RecipeIndex recipeIndex, @Nullable ItemStack item, @Nullable SearchMode searchMode, @Nullable Process process) {
+        return ArgumentSuggestions.stringCollection((info) -> suggestions(recipeIndex, item, searchMode, process));
     }
 
     /**
      * Get available recipe IDs based on the provided item, search mode, and process.
      *
-     * @param context the recipe context containing the RecipeIndexReader
+     * @param recipeIndex the recipe index
      * @param item the ItemStack to search for, or null for global index
      * @param searchMode the SearchMode to use, or null for {@link SearchModeArgument.SearchMode#DEFAULT}. Ignored if item is null
      * @param process the Process to use, or null for all processes
      * @return a collection of available recipe ID strings for the item, search mode, and process
      */
     @SuppressWarnings("null")
-    public static Collection<String> suggestions(RecipeContext context, @Nullable ItemStack item, @Nullable SearchMode searchMode, @Nullable Process process) {
-        Collection<Key> recipeKeys = getRecipeIds(context, item, searchMode, process);
+    public static Collection<String> suggestions(RecipeIndex recipeIndex, @Nullable ItemStack item, @Nullable SearchMode searchMode, @Nullable Process process) {
+        Collection<Key> recipeKeys = getRecipeIds(recipeIndex, item, searchMode, process);
 
         return recipeKeys.stream()
             .map(key -> key.asString())
@@ -87,14 +86,13 @@ public class RecipeIdArgument extends CustomArgument<NamespacedKey, NamespacedKe
     /**
      * Get recipe keys based on the provided item, search mode, and process.
      *
-     * @param context the recipe context containing the RecipeIndexReader
+     * @param recipeIndex the recipe index
      * @param item the ItemStack to search for, or null for global index
      * @param searchMode the SearchMode to use, or null for {@link SearchModeArgument.SearchMode#DEFAULT}. Ignored if item is null
      * @param process the Process to use, or null for all processes
      * @return a collection of recipe keys for the item, search mode, and process
      */
-    private static Collection<Key> getRecipeIds(RecipeContext context, @Nullable ItemStack item, @Nullable SearchMode searchMode, @Nullable Process process) {
-        RecipeIndex recipeIndex = context.getRecipeIndex();
+    private static Collection<Key> getRecipeIds(RecipeIndex recipeIndex, @Nullable ItemStack item, @Nullable SearchMode searchMode, @Nullable Process process) {
         MultiProcessRecipeReader reader;
         Collection<Key> recipeKeys;
 
