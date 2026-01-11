@@ -8,6 +8,7 @@ import org.bukkit.inventory.ItemType;
 import org.jspecify.annotations.NullMarked;
 
 import dev.qheilmann.vanillaenoughitems.config.style.Style;
+import dev.qheilmann.vanillaenoughitems.gui.helper.GuiComponent;
 import dev.qheilmann.vanillaenoughitems.pack.VeiPack;
 import dev.qheilmann.vanillaenoughitems.utils.playerhead.PlayerHeadRegistry;
 import net.kyori.adventure.text.Component;
@@ -333,19 +334,7 @@ public class RecipeGuiComponent {
     }
 
     public static ItemStack createFillerItem(boolean hasResourcePack) {
-        ItemStack item = ItemType.LIGHT_GRAY_STAINED_GLASS_PANE.createItemStack();
-        item.editMeta(meta -> {
-            meta.setMaxStackSize(1);
-            meta.setHideTooltip(true);
-        });
-
-        if (hasResourcePack) {
-            item.editMeta(meta -> {
-                meta.setItemModel(VeiPack.ItemModel.Common.EMPTY);
-            });
-        }
-
-        return item;
+        return GuiComponent.createFillerItem(hasResourcePack);
     }
 
     //#endregion Others

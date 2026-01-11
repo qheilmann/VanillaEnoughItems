@@ -7,7 +7,6 @@ import java.util.UUID;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
-import dev.qheilmann.vanillaenoughitems.recipe.helper.RecipeHelper;
 import dev.qheilmann.vanillaenoughitems.recipe.index.reader.MultiProcessRecipeReader;
 
 /**
@@ -62,7 +61,7 @@ public class RecipeNavigationHistory {
      */
     public void pushForNavigation(MultiProcessRecipeReader currentReader, MultiProcessRecipeReader targetReader) {
         // Don't push if we're staying on the same recipe view
-        if (isSameReaderView(currentReader, targetReader)) {
+        if (currentReader.equals(targetReader)) {
             return;
         }
 
@@ -78,7 +77,7 @@ public class RecipeNavigationHistory {
      */
     private void pushToHistory(MultiProcessRecipeReader reader) {
         // Don't push if this is the same as the top of the stack (prevents duplicates)
-        if (isSameReaderView(backwardStack.peek(), reader)) {
+        if (reader.equals(backwardStack.peek())) {
             return;
         }
         
@@ -160,30 +159,5 @@ public class RecipeNavigationHistory {
      */
     public int getForwardHistorySize() {
         return forwardStack.size();
-    }
-
-    private boolean isSameReaderView(@Nullable MultiProcessRecipeReader r1, @Nullable MultiProcessRecipeReader r2) {
-        if (r1 == r2) {
-            return true;
-        }
-
-        if (r1 == null || r2 == null) {
-            return false;
-        }
-
-        if(!r1.getCurrentProcess().equals(r2.getCurrentProcess())) {
-            return false;
-        }
-
-        if(RecipeHelper.RECIPE_COMPARATOR.compare(
-            r1.getCurrentProcessRecipeReader().getCurrent(),
-            r2.getCurrentProcessRecipeReader().getCurrent()) != 0) {
-            return false;
-        }
-
-        // Here we can have different readers showing the same recipe but with different recipe collection (like reader by ingredient/result showing same recipe)
-        // but we can't really detect that, so we consider them the same view
-
-        return true;
     }
 }

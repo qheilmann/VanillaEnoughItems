@@ -10,6 +10,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jspecify.annotations.NullMarked;
 
+import dev.qheilmann.vanillaenoughitems.bookmark.ServerBookmarkRegistry;
 import dev.qheilmann.vanillaenoughitems.gui.player.PlayerGuiData;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPanelRegistry;
 import dev.qheilmann.vanillaenoughitems.recipe.index.RecipeIndex;
@@ -17,7 +18,7 @@ import dev.qheilmann.vanillaenoughitems.recipe.index.TagIndex;
 
 /**
  * Global context for the Recipe system.
- * Holds shared services like RecipeIndex and ProcessPanelRegistry,
+ * Holds shared services like RecipeIndex, ProcessPanelRegistry, and ServerBookmarkRegistry,
  * and manages per-player data.
  */
 @NullMarked
@@ -25,12 +26,14 @@ public class RecipeContext implements Listener {
     private final RecipeIndex recipeIndex;
     private final ProcessPanelRegistry processPanelRegistry;
     private final TagIndex tagIndex;
+    private final ServerBookmarkRegistry serverBookmarkRegistry;
     private final Map<UUID, PlayerGuiData> playerDataMap = new ConcurrentHashMap<>();
 
-    public RecipeContext(JavaPlugin plugin, RecipeIndex recipeIndex, ProcessPanelRegistry processPanelRegistry, TagIndex tagIndex) {
+    public RecipeContext(JavaPlugin plugin, RecipeIndex recipeIndex, ProcessPanelRegistry processPanelRegistry, TagIndex tagIndex, ServerBookmarkRegistry serverBookmarkRegistry) {
         this.recipeIndex = recipeIndex;
         this.processPanelRegistry = processPanelRegistry;
         this.tagIndex = tagIndex;
+        this.serverBookmarkRegistry = serverBookmarkRegistry;
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
@@ -59,12 +62,20 @@ public class RecipeContext implements Listener {
     }
 
     /**
+     * Get the server bookmark registry
+     * @return the server bookmark registry
+     */
+    public ServerBookmarkRegistry getServerBookmarkRegistry() {
+        return serverBookmarkRegistry;
+    }
+
+    /**
      * Get or create player GUI data for the specified player
      * @param playerUuid the player's UUID
      * @return the player's GUI data
      */
     public PlayerGuiData getPlayerData(UUID playerUuid) {
-        return playerDataMap.computeIfAbsent(playerUuid, uuid -> new PlayerGuiData(uuid, recipeIndex.getAssociatedRecipeExtractor()));
+        return playerDataMap.computeIfAbsent(playerUuid, uuid -> new PlayerGuiData(uuid, recipeIndex));
     }
 
     /**

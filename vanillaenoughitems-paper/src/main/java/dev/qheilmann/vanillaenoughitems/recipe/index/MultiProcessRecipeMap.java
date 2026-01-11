@@ -46,6 +46,21 @@ public class MultiProcessRecipeMap {
     }
 
     /**
+     * Create a copy of an existing MultiProcessRecipeMap.
+     * The copy clone the grouping and all inner ProcessRecipeSets.
+     * @param other the MultiProcessRecipeMap to copy
+     */
+    @SuppressWarnings("null")
+    public MultiProcessRecipeMap(MultiProcessRecipeMap other) {
+        this(
+            other.grouping,
+            other.processRecipeSets.values().stream()
+                .map(prs -> new ProcessRecipeSet(prs))
+                .toList()
+        );
+    }
+
+    /**
      * Add a recipe to a ProcessRecipeSet. If the ProcessRecipeSet does not exist yet, it will be created
      * @param process the process associated to the ProcessRecipeSet
      * @param recipe the recipe to add to the inner ProcessRecipeSet
@@ -153,5 +168,19 @@ public class MultiProcessRecipeMap {
      */
     public Grouping getGrouping() {
         return grouping;
+    }
+
+    /**
+     * Check equality between this MultiProcessRecipeMap and another object
+     * Same grouping and same process recipe sets means equality
+     */
+    @SuppressWarnings("null")
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof MultiProcessRecipeMap other)) return false;
+        if (!grouping.equals(other.grouping)) return false;
+        if (!processRecipeSets.equals(other.processRecipeSets)) return false;
+        return true;
     }
 }

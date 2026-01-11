@@ -26,6 +26,7 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 import dev.qheilmann.vanillaenoughitems.VanillaEnoughItems;
+import dev.qheilmann.vanillaenoughitems.bookmark.Bookmark;
 import dev.qheilmann.vanillaenoughitems.config.style.Style;
 import dev.qheilmann.vanillaenoughitems.gui.player.PlayerGuiData;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPanel;
@@ -45,7 +46,6 @@ import io.papermc.paper.registry.tag.TagKey;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -80,8 +80,6 @@ public class RecipeGui extends FastInv {
     private static final Sound UI_CLICK_SOUND = Sound.sound(org.bukkit.Sound.UI_BUTTON_CLICK, Sound.Source.UI, 0.25f, 1.0f);
 
     // Instance
-    @SuppressWarnings("unused")
-    private final Player player;
     private final RecipeContext context;
     private final PlayerGuiData playerData;
     private final Style style;
@@ -97,7 +95,6 @@ public class RecipeGui extends FastInv {
 
     public RecipeGui(Player player, RecipeContext context, MultiProcessRecipeReader initialReader) {
         super(SIZE, title(VanillaEnoughItems.config().style()));
-        this.player = player;
         this.context = context;
         this.playerData = context.getPlayerData(player.getUniqueId());
         this.style = VanillaEnoughItems.config().style();
@@ -109,11 +106,11 @@ public class RecipeGui extends FastInv {
         playerData.navigationHistory().startViewing(initialReader);
         
         // Initial filling
-        fillRange(Slots.Generic9x6.all(), fillerItem);
+        setItems(Slots.Generic9x6.all(), fillerItem);
 
         // Static buttons
-        // renderBookmarkListButton(); // TODO bookmark list not implemented yet
-        // renderBookmarkServerListButton(); // TODO server bookmark list not implemented yet
+        renderBookmarkListButton();
+        renderBookmarkServerListButton();
         // renderInfoButton(); // TODO info button not implemented yet
 
         // Dynamic render
@@ -210,7 +207,7 @@ public class RecipeGui extends FastInv {
     private void renderProcessPanel(ProcessPanel processPanel) {
         Map<RecipeGuiSharedButton, ProcessPannelSlot> sharedButtonSlots = processPanel.getRecipeGuiButtonMap();
         
-        fillRange(ProcessPannelSlot.all(), fillerItem);
+        setItems(ProcessPannelSlot.all(), fillerItem);
 
         // Recipe reader dependent buttons
         renderSharedIfPresent(this::renderNextRecipeButton, sharedButtonSlots.get(RecipeGuiSharedButton.NEXT_RECIPE));
@@ -793,11 +790,31 @@ public class RecipeGui extends FastInv {
     }
 
     public boolean isCurrentRecipeBookmarked() {
-        return playerData.bookmarkCollection().isBookmarked(getCurrentRecipe());
+        Key key = getCurrentRecipeKey();
+        if (key == null) {
+            return false;
+        }
+
+        Bookmark tempBookmark = Bookmark.fromKey(key, context.getRecipeIndex(), context.getProcessPanelRegistry());
+        if (tempBookmark == null) {
+            return false;
+        }
+        
+        return playerData.containsBookmark(tempBookmark);
     }
 
     private void bookmarkAction(InventoryClickEvent event) {
-        playerData.bookmarkCollection().toggleBookmark(getCurrentRecipe());
+        Key key = getCurrentRecipeKey();
+        if (key == null) {
+            return;
+        }
+        Bookmark bookmark = Bookmark.fromKey(key, context.getRecipeIndex(), context.getProcessPanelRegistry());
+        if (bookmark == null) {
+            return;
+        }
+        
+        playerData.toggleBookmark(bookmark);
+        
         event.getWhoClicked().playSound(UI_CLICK_SOUND);
         renderBookmarkButton(); // Re-render only the bookmark button to update icon
     }
@@ -806,49 +823,32 @@ public class RecipeGui extends FastInv {
 
     //#region Bookmark List
 
-    @SuppressWarnings("unused")
     private void renderBookmarkListButton() {
         setItem(BOOKMARK_LIST_SLOT, guiComponent.createBookmarkListButton(), event -> bookmarkListAction(event));
     }
 
     private void bookmarkListAction(InventoryClickEvent event) {
-        // Open bookmark list GUI
-        RecipeContext context = this.context;
-        HumanEntity humanEntity = event.getWhoClicked();
-        PlayerGuiData playerData = context.getPlayerData(humanEntity.getUniqueId());
-        Set<Key> bookmarks = playerData.bookmarkCollection().getBookmarkedKeys();
-
-        humanEntity.playSound(UI_CLICK_SOUND);
-        humanEntity.closeInventory();
-
-        TextComponent.Builder text = Component.text();
-        text.append(Component.text("All your Bookmarked Recipes:", NamedTextColor.GOLD).decorate(TextDecoration.BOLD)).append(Component.newline());
-
-        for (Key key : bookmarks) {
-            text.append(Component.text("- ")).append(
-                Component.text(key.asMinimalString(), NamedTextColor.AQUA)
-                    .decorate(TextDecoration.UNDERLINED)
-                    .hoverEvent(HoverEvent.showText(Component.text("Click to view recipe")))
-                    .clickEvent(ClickEvent.runCommand(getQuickLinkCmd()))
-            ).append(Component.newline());
-        }
-
-        humanEntity.sendMessage(text.build());
+        Player player = (Player) event.getWhoClicked();
+        player.playSound(UI_CLICK_SOUND);
+        
+        BookmarkGui bookmarkGui = new BookmarkGui(Component.text("Player Bookmarks"), context, playerData.getBookmarks());
+        bookmarkGui.open(player);
     }
 
     //#endregion Bookmark List
 
     //#region Bookmark Server List
 
-    @SuppressWarnings("unused")
     private void renderBookmarkServerListButton() {
         setItem(BOOKMARK_SERVER_LIST_SLOT, guiComponent.createBookmarkServerListButton(), event -> bookmarkServerListAction(event));
     }
 
     private void bookmarkServerListAction(InventoryClickEvent event) {
-        HumanEntity humanEntity = event.getWhoClicked();
-        humanEntity.playSound(UI_CLICK_SOUND);
-        humanEntity.sendMessage(Component.text("Server bookmarked recipes feature is not implemented yet.", NamedTextColor.RED));
+        Player player = (Player) event.getWhoClicked();
+        player.playSound(UI_CLICK_SOUND);
+        
+        BookmarkGui bookmarkGui = new BookmarkGui(Component.text("Server Bookmarks"), context, context.getServerBookmarkRegistry().getBookmarks());
+        bookmarkGui.open(player);
     }
 
     //#endregion Bookmark Server List
@@ -904,12 +904,6 @@ public class RecipeGui extends FastInv {
     //#endregion Info
 
     //#region Helpers
-
-    private void fillRange(Set<Integer> slots, ItemStack item) {
-        for (int slot : slots) {
-            setItem(slot, item);
-        }
-    }
 
     /**
      * Extracts the unique key of the given recipe using the associated recipe extractor.

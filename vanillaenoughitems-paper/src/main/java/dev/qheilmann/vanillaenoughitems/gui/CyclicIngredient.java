@@ -8,6 +8,7 @@ import org.jspecify.annotations.Nullable;
 import dev.qheilmann.vanillaenoughitems.recipe.extraction.impl.helper.RecipeChoiceHelper;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Manages cycling through multiple ItemStack options for a RecipeChoice.
@@ -144,7 +145,7 @@ public class CyclicIngredient {
 
     /**
      * Advance to the next item in the cycle.
-        * <p><b>Note:</b> For pinned or dependent ingredients, this is a no-op</p>
+     * <p><b>Note:</b> For pinned or dependent ingredients, this is a no-op</p>
      * @return the new current item
      */
     public ItemStack tickForward() {
@@ -160,6 +161,27 @@ public class CyclicIngredient {
     public ItemStack tickBackward() {
         setIndex(currentIndex - 1 + count);
         return getCurrentItem();
+    }
+
+    /**
+     * Tick this ingredient and all its dependencies recursively.
+     * <p>For dependent ingredients: ticks all dependencies first, then returns computed result.</p>
+     * <p>For regular ingredients: same as {@link #tickForward()}.</p>
+     * <p><b>Use this in contexts where dependencies need to be ticked together.</b></p>
+     * <p><b>Do NOT use this in where ingredients are already ticked separately.</b></p>
+     * @return the new current item
+     */
+    public ItemStack tickWithDependencies() {
+        // For dependent ingredients, recursively tick all dependencies first
+        if (dependencies != null) {
+            for (CyclicIngredient dep : dependencies) {
+                dep.tickWithDependencies();
+            }
+            return getCurrentItem();
+        }
+        
+        // For regular ingredients, just tick forward
+        return tickForward();
     }
 
     /**
@@ -263,5 +285,50 @@ public class CyclicIngredient {
         }
         
         return options.clone();
+    }
+
+    @Override
+    public boolean equals(@SuppressWarnings("null") Object obj) {
+        return equals(obj, true);
+    }
+
+    /**
+     * Compare this CyclicIngredient to another for equality.
+     * @param obj the other object to compare
+     * @param exact if true, compares pinned state and current index; if false, ignores them
+     * @return true if equal based on the specified criteria
+     */
+    public boolean equals(Object obj, boolean exact) {
+        if (this == obj) return true;
+        if (!(obj instanceof CyclicIngredient other)) return false;
+
+        // Compare predefined options
+        if (this.count != other.count) return false;
+        for (int i = 0; i < this.count; i++) {
+            if (!this.options[i].equals(other.options[i])) {
+                return false;
+            }
+        }
+
+        // Compare pinned state and current index only if exact
+        if (exact) {
+            if (this.pinned != other.pinned) return false;
+            if (this.currentIndex != other.currentIndex) return false;
+        }
+
+        // Compare dependencies for dependent ingredients
+        if (this.isDependent() != other.isDependent()) return false;
+        if (this.isDependent()) {
+            CyclicIngredient[] deps = Objects.requireNonNull(this.dependencies);
+            CyclicIngredient[] otherDeps = Objects.requireNonNull(other.dependencies);
+            if (deps.length != otherDeps.length) return false;
+            for (int i = 0; i < deps.length; i++) {
+                if (!deps[i].equals(otherDeps[i], exact)) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 }

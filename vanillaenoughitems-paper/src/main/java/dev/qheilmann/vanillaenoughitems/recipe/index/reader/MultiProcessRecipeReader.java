@@ -37,6 +37,15 @@ public class MultiProcessRecipeReader {
     }
 
     /**
+     * Create a copy of an existing MultiProcessRecipeReader.
+     * The copy has a new instance of MultiProcessRecipeMap and has independent position tracking.
+     * @param other the reader to copy
+     */
+    public MultiProcessRecipeReader(MultiProcessRecipeReader other) {
+        this(new MultiProcessRecipeMap(other.multiProcessRecipeMap), other.currentProcessRecipeReader.getProcess());
+    }
+
+    /**
      * Initialize and validate a process, creating a new ProcessRecipeReader
      * @param process the process to initialize
      * @return a new ProcessRecipeReader for the process
@@ -151,5 +160,19 @@ public class MultiProcessRecipeReader {
      */
     public Grouping getGrouping() {
         return multiProcessRecipeMap.getGrouping();
+    }
+
+    /**
+     * Check equality between this MultiProcessRecipeReader and another object
+     * Equal MultiProcessRecipeMap and same current ProcessRecipeReader means equality
+     */
+    @SuppressWarnings("null")
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof MultiProcessRecipeReader reader)) return false;
+        if (!multiProcessRecipeMap.equals(reader.multiProcessRecipeMap)) return false;
+        if (!currentProcessRecipeReader.equals(reader.currentProcessRecipeReader)) return false;
+        return true;
     }
 }

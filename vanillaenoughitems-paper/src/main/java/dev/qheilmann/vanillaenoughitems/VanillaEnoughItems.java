@@ -10,13 +10,19 @@ import org.jspecify.annotations.Nullable;
 import java.io.File;
 import java.util.Iterator;
 
+import net.kyori.adventure.key.Key;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger;
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPIPaperConfig;
+import dev.qheilmann.vanillaenoughitems.bookmark.Bookmark;
+import dev.qheilmann.vanillaenoughitems.bookmark.ServerBookmarkRegistry;
 import dev.qheilmann.vanillaenoughitems.commands.CraftCommand;
 import dev.qheilmann.vanillaenoughitems.commands.DebugVei;
 import dev.qheilmann.vanillaenoughitems.config.VanillaEnoughItemsConfig;
 import dev.qheilmann.vanillaenoughitems.config.style.Style;
+import dev.qheilmann.vanillaenoughitems.gui.CyclicIngredient;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPanelFactory;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPanelRegistry;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.impl.BlastingProcessPanel;
@@ -26,6 +32,7 @@ import dev.qheilmann.vanillaenoughitems.gui.processpannel.impl.SmeltingProcessPa
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.impl.SmithingProcessPanel;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.impl.SmokingProcessPanel;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.impl.StonecuttingProcessPanel;
+import dev.qheilmann.vanillaenoughitems.metrics.BStatsMetrics;
 import dev.qheilmann.vanillaenoughitems.recipe.process.Process;
 import dev.qheilmann.vanillaenoughitems.recipe.RecipeContext;
 import dev.qheilmann.vanillaenoughitems.recipe.extraction.RecipeExtractorRegistry;
@@ -41,6 +48,7 @@ import dev.qheilmann.vanillaenoughitems.recipe.extraction.impl.StonecuttingRecip
 import dev.qheilmann.vanillaenoughitems.recipe.extraction.impl.TransmuteRecipeExtractor;
 import dev.qheilmann.vanillaenoughitems.recipe.index.RecipeIndex;
 import dev.qheilmann.vanillaenoughitems.recipe.index.TagIndex;
+import dev.qheilmann.vanillaenoughitems.recipe.index.reader.MultiProcessRecipeReader;
 import dev.qheilmann.vanillaenoughitems.recipe.process.ProcessRegistry;
 import dev.qheilmann.vanillaenoughitems.recipe.process.impl.BlastingProcess;
 import dev.qheilmann.vanillaenoughitems.recipe.process.impl.CampfireProcess;
@@ -49,7 +57,6 @@ import dev.qheilmann.vanillaenoughitems.recipe.process.impl.SmeltingProcess;
 import dev.qheilmann.vanillaenoughitems.recipe.process.impl.SmithingProcess;
 import dev.qheilmann.vanillaenoughitems.recipe.process.impl.SmokingProcess;
 import dev.qheilmann.vanillaenoughitems.recipe.process.impl.StonecuttingProcess;
-import dev.qheilmann.vanillaenoughitems.metrics.BStatsMetrics;
 import dev.qheilmann.vanillaenoughitems.utils.fastinv.FastInvManager;
 import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.registry.RegistryKey;
@@ -134,13 +141,18 @@ public class VanillaEnoughItems extends JavaPlugin {
         Registry<ItemType> itemRegistry = RegistryAccess.registryAccess().getRegistry(RegistryKey.ITEM);
         tagIndex.index(itemRegistry.getTags(), itemRegistry);
         
-        recipeGuiContext = new RecipeContext(this, recipeIndex, processPanelRegistry, tagIndex);
+        // Initialize server bookmark registry
+        ServerBookmarkRegistry serverBookmarkRegistry = new ServerBookmarkRegistry();
+        
+        recipeGuiContext = new RecipeContext(this, recipeIndex, processPanelRegistry, tagIndex, serverBookmarkRegistry);
 
         Iterator<Recipe> recipeIterator = getServer().recipeIterator();
         recipeIndex.indexRecipe(() -> recipeIterator);
         recipeIndex.logSummary();
         
-        // Initialize Recipe GUI Context
+        // Add example server bookmarks
+        LOGGER.debug("Initializing server bookmarks...");
+        initializeServerBookmarks(serverBookmarkRegistry);
 
         CraftCommand.register(this, recipeGuiContext);
         DebugVei.register();
@@ -180,6 +192,48 @@ public class VanillaEnoughItems extends JavaPlugin {
         commandApiConfig.dispatcherFile(new File(getDataFolder(), "command_registration.json"));
 
         CommandAPI.onLoad(commandApiConfig);
+    }
+
+    /**
+     * Initialize example server bookmarks.
+     * Server administrators can modify this method to add custom bookmarks.
+     * @param registry the server bookmark registry
+     * @param recipeIndex the recipe index for creating bookmarks
+     */
+    private void initializeServerBookmarks(ServerBookmarkRegistry registry) {
+
+        RecipeIndex recipeIndex = recipeGuiContext.getRecipeIndex();
+        ProcessPanelRegistry panelRegistry = recipeGuiContext.getProcessPanelRegistry();
+        
+        // Example 1: All diamond recipes
+        Bookmark diamondBookmark = Bookmark.fromKey(Key.key("minecraft:diamond"), recipeIndex, panelRegistry);
+        if (diamondBookmark != null) {
+            registry.addBookmark(diamondBookmark);
+        }
+        
+        // Example 2: All gold recipe
+        Bookmark gold = Bookmark.fromResult(recipeIndex, ItemType.GOLD_INGOT.createItemStack());
+        if (gold != null) {
+            registry.addBookmark(gold);
+        }
+        
+        // Example 3: All iron usage
+        MultiProcessRecipeReader reader = recipeIndex.readerByIngredient(ItemType.IRON_INGOT.createItemStack());
+        if (reader == null) {
+            return;
+        }
+        Bookmark iron_ingot = Bookmark.fromReader(reader, new CyclicIngredient(0, ItemType.IRON_INGOT.createItemStack(meta -> {
+            meta.displayName(Component.text().applicableApply(VanillaEnoughItems.config().style().colorPrimary()).decoration(TextDecoration.ITALIC, false)
+                .append(Component.text("How to use iron !"))
+                .build());
+        })));
+        registry.addBookmark(iron_ingot);
+
+        // Smithing
+        Bookmark ironSmithingBookmark = Bookmark.fromKey(Key.key("minecraft:bolt_armor_trim_smithing_template_smithing_trim"), recipeIndex, panelRegistry);
+        if (ironSmithingBookmark != null) {
+            registry.addBookmark(ironSmithingBookmark);
+        }
     }
 
     private void addProcessesAndPanels(ProcessRegistry processRegistry, ProcessPanelRegistry processPanelRegistry, Process process, ProcessPanelFactory panelFactory) {

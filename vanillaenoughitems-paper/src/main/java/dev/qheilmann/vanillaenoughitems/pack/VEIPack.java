@@ -12,7 +12,7 @@ public class VeiPack {
 
     public static class Font {
         public static class Gui {
-            public static final GuiIcon BLANK_54 = new GuiIcon("\uF100", -8, 176);
+            public static final GuiIcon BLANK_54 = new GuiIcon("\uE100", -8, 176);
         }
     }
 

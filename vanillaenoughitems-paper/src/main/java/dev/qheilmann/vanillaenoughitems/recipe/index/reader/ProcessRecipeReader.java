@@ -38,6 +38,16 @@ public class ProcessRecipeReader {
     }
 
     /**
+     * Create a copy of an existing ProcessRecipeReader.
+     * The copy a new instance of ProcessRecipeSet and has independent position tracking.
+     * @param other the reader to copy
+     */
+    public ProcessRecipeReader(ProcessRecipeReader other) {
+        this.processRecipeSet = new ProcessRecipeSet(other.processRecipeSet);
+        this.currentRecipe = other.currentRecipe;
+    }
+
+    /**
      * Set the current recipe
      * @param recipe the recipe to set as current.<br>
      * Use {@link #contains(Recipe)} to check if the recipe exists in the ProcessRecipeSet
@@ -121,5 +131,20 @@ public class ProcessRecipeReader {
      */
     public NavigableSet<Recipe> getAllRecipes() {
         return processRecipeSet.getRecipes();
+    }
+
+    /**
+     * Equals method to compare two ProcessRecipeReader objects
+     * Considers two readers equal if they read equal ProcessRecipeSets and are at the same current recipe
+     * @param obj the object to compare with
+     */
+    @SuppressWarnings("null")
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof ProcessRecipeReader reader)) return false;
+        if (!processRecipeSet.equals(reader.processRecipeSet)) return false;
+        if (!currentRecipe.equals(reader.currentRecipe)) return false;
+        return true;
     }
 }

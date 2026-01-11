@@ -60,6 +60,7 @@ public class Slots {
     public static class Generic9x1 {
         public static final int WIDTH = 9;
         public static final int HEIGHT = 1;
+        public static final int SIZE = WIDTH * HEIGHT;
         
         public static int slot(int column, int row) {
             checkColumnBounds(column, WIDTH);
@@ -86,6 +87,7 @@ public class Slots {
     public static class Generic9x2 {
         public static final int WIDTH = 9;
         public static final int HEIGHT = 2;
+        public static final int SIZE = WIDTH * HEIGHT;
         
         public static int slot(int column, int row) {
             checkColumnBounds(column, WIDTH);
@@ -112,6 +114,7 @@ public class Slots {
     public static class Generic9x3 {
         public static final int WIDTH = 9;
         public static final int HEIGHT = 3;
+        public static final int SIZE = WIDTH * HEIGHT;
         
         public static int slot(int column, int row) {
             checkColumnBounds(column, WIDTH);
@@ -138,6 +141,7 @@ public class Slots {
     public static class Generic9x4 {
         public static final int WIDTH = 9;
         public static final int HEIGHT = 4;
+        public static final int SIZE = WIDTH * HEIGHT;
         
         public static int slot(int column, int row) {
             checkColumnBounds(column, WIDTH);
@@ -164,6 +168,7 @@ public class Slots {
     public static class Generic9x5 {
         public static final int WIDTH = 9;
         public static final int HEIGHT = 5;
+        public static final int SIZE = WIDTH * HEIGHT;
         
         public static int slot(int column, int row) {
             checkColumnBounds(column, WIDTH);
@@ -190,6 +195,7 @@ public class Slots {
     public static class Generic9x6 {
         public static final int WIDTH = 9;
         public static final int HEIGHT = 6;
+        public static final int SIZE = WIDTH * HEIGHT;
         
         public static int slot(int column, int row) {
             checkColumnBounds(column, WIDTH);

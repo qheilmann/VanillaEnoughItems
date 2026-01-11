@@ -19,7 +19,7 @@ import dev.qheilmann.vanillaenoughitems.recipe.process.Process;
 public class ProcessRecipeSet {
 
     private final Process process;
-    private final ConcurrentSkipListSet<Recipe> recipes = new ConcurrentSkipListSet<>(RecipeHelper.RECIPE_COMPARATOR); // Concurrent Navigable set
+    private final ConcurrentSkipListSet<Recipe> recipes;
 
     /**
      * Create a ProcessRecipeSet without initial recipes
@@ -27,6 +27,7 @@ public class ProcessRecipeSet {
      */
     public ProcessRecipeSet(Process process) {
         this.process = process;
+        recipes = new ConcurrentSkipListSet<>(RecipeHelper.RECIPE_COMPARATOR); // Concurrent NavigableSet
     }
 
     /**
@@ -35,11 +36,20 @@ public class ProcessRecipeSet {
      * @param recipes the initial recipes
      */
     public ProcessRecipeSet(Process process, Set<Recipe> recipes) {
-        this.process = process;
+        this(process);
 
         for (Recipe recipe : recipes) {
             add(recipe);
         }
+    }
+
+    /**
+     * Create a copy of an existing ProcessRecipeSet.
+     * The copy clone the recipes and process.
+     * @param other the ProcessRecipeSet to copy
+     */
+    public ProcessRecipeSet(ProcessRecipeSet other) {
+        this(other.process, other.recipes);
     }
 
     /**
@@ -123,5 +133,21 @@ public class ProcessRecipeSet {
      */
     public void clear() {
         recipes.clear();
+    }
+
+    
+    /**
+     * Check equality between this ProcessRecipeSet and another object
+     * Considers two ProcessRecipeSets equal if they have the same process and identical sets of recipes
+     * @param obj the object to compare with
+     */
+    @SuppressWarnings("null")
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof ProcessRecipeSet other)) return false;
+        if (!process.equals(other.process)) return false;
+        if (!recipes.equals(other.recipes)) return false;
+        return true;
     }
 }

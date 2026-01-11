@@ -330,27 +330,6 @@ public class RecipeIndex implements RecipeIndexView {
             new ProcessRecipeSet(process, Set.of(recipe))
         ));
         return new MultiProcessRecipeReader(multiProcessRecipeMap);
-
-        // HERE clear TMP
-
-        // // Get the result of the recipe
-        // ItemStack recipeResult = recipe.getResult().asOne();
-        // if (recipeResult == null || recipeResult.isEmpty()) { // here bug, complex recipe will have nothing as result, so sort by result is impossible in that case
-        //     return null;
-        // }
-
-        // // Get the MultiProcessRecipeMap by the result
-        // MultiProcessRecipeMap multiProcessRecipeMap = recipesByResult.get(recipeResult);
-        // if (multiProcessRecipeMap == null) {
-        //     // No recipes found for this result
-        //     // Should not happen if the index is consistent
-        //     return null; 
-        // }
-
-        // // Preset the reader to the right process and recipe
-        // MultiProcessRecipeReader reader = new MultiProcessRecipeReader(multiProcessRecipeMap, processByRecipe.get(recipe));
-        // reader.getCurrentProcessRecipeReader().setCurrent(recipe);
-        // return reader;
     }
 
     /**
