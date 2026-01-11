@@ -43,6 +43,8 @@ import dev.qheilmann.vanillaenoughitems.recipe.process.Workbench;
 import dev.qheilmann.vanillaenoughitems.utils.fastinv.FastInv;
 import dev.qheilmann.vanillaenoughitems.utils.fastinv.FastInvItem;
 import dev.qheilmann.vanillaenoughitems.utils.fastinv.Slots;
+import io.papermc.paper.datacomponent.DataComponentTypes;
+import io.papermc.paper.datacomponent.item.UseRemainder;
 import io.papermc.paper.registry.tag.TagKey;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
@@ -366,6 +368,9 @@ public class RecipeGui extends FastInv {
         
         // Add tag lore for items that exactly match tags
         lore.addAll(formatTagLore(ingredient));
+
+        // Use remainder
+        lore.addAll(formatUseReminderLore(item));
 
         if (!showItem.isEmpty()) {
             showItem.lore(lore);
@@ -1004,6 +1009,28 @@ public class RecipeGui extends FastInv {
         }
         
         return tagLore;
+    }
+
+    /**
+     * Format use reminder lore for an item.
+     * 
+     * @param item the item stack to check for use reminder
+     * @return list of formatted use reminder components, or empty if no reminder
+     */
+    private List<Component> formatUseReminderLore(ItemStack item) {
+        if (!item.hasData(DataComponentTypes.USE_REMAINDER)) {
+            return List.of();
+        }
+
+        UseRemainder useRemainder = item.getData(DataComponentTypes.USE_REMAINDER);
+
+        Component reminderComponent = Component.text().applicableApply(NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)
+            .append(Component.text("Transforms into "))
+            .append(useRemainder.transformInto().displayName())
+            .append(Component.text(" after use."))
+            .build();
+        
+        return List.of(reminderComponent);
     }
 
     /**
