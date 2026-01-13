@@ -43,8 +43,6 @@ import dev.qheilmann.vanillaenoughitems.recipe.process.Workbench;
 import dev.qheilmann.vanillaenoughitems.utils.fastinv.FastInv;
 import dev.qheilmann.vanillaenoughitems.utils.fastinv.FastInvItem;
 import dev.qheilmann.vanillaenoughitems.utils.fastinv.Slots;
-import io.papermc.paper.datacomponent.DataComponentTypes;
-import io.papermc.paper.datacomponent.item.UseRemainder;
 import io.papermc.paper.registry.tag.TagKey;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;

@@ -38,6 +38,7 @@ import dev.qheilmann.vanillaenoughitems.gui.processpannel.impl.SmithingProcessPa
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.impl.SmokingProcessPanel;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.impl.StonecuttingProcessPanel;
 import dev.qheilmann.vanillaenoughitems.metrics.BStatsMetrics;
+import dev.qheilmann.vanillaenoughitems.quickaccess.QuickRecipeAccessListener;
 import dev.qheilmann.vanillaenoughitems.recipe.process.Process;
 import dev.qheilmann.vanillaenoughitems.recipe.extraction.RecipeExtractorRegistry;
 import dev.qheilmann.vanillaenoughitems.recipe.extraction.impl.BlastingRecipeExtractor;
@@ -121,6 +122,7 @@ public class VanillaEnoughItems extends JavaPlugin {
         LOGGER.debug("Enabling FastInv...");
         FastInvManager.register(this);
 
+        // Custom recipe
         registerCustomRecipe();
 
         RecipeExtractorRegistry recipeExtractor = new RecipeExtractorRegistry();
@@ -178,6 +180,11 @@ public class VanillaEnoughItems extends JavaPlugin {
 
         CraftCommand.register(this, recipeServices, playerDataManager);
         DebugVei.register();
+
+        // Quick recipe access
+        if (config().isQuickRecipeLookupEnabled()) {
+            getServer().getPluginManager().registerEvents(new QuickRecipeAccessListener(this, recipeServices, playerDataManager), this);
+        }
 
         LOGGER.debug("Initialize bStats metrics...");
         BStatsMetrics.initialize(this, recipeIndex);

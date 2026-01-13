@@ -60,10 +60,10 @@ public class CraftCommand {
 
     private CraftCommand() {}; // Prevent instantiation
 
-    public static void init(JavaPlugin plugin, RecipeServices services, PlayerDataManager playerDataMgr) {
+    public static void init(JavaPlugin plugin, RecipeServices services, PlayerDataManager playerDataManager) {
         CraftCommand.plugin = plugin;
         CraftCommand.recipeServices = services;
-        CraftCommand.playerDataManager = playerDataMgr;
+        CraftCommand.playerDataManager = playerDataManager;
     }
 
     public static CommandAPICommand createBaseCraftCommand() {
@@ -74,8 +74,8 @@ public class CraftCommand {
             .withUsage(USAGE);
     }
 
-    public static void register(JavaPlugin plugin, RecipeServices services, PlayerDataManager playerDataMgr) {
-        init(plugin, services, playerDataMgr);
+    public static void register(JavaPlugin plugin, RecipeServices services, PlayerDataManager playerDataManager) {
+        init(plugin, services, playerDataManager);
 
         // craft <item> [recipe|usage] [<process>] [<recipeId>]
         createBaseCraftCommand()

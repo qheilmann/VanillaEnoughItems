@@ -14,10 +14,7 @@ public class VanillaEnoughItemsConfig {
 
     private boolean missingImplementationWarnings = DEFAULT_MISSING_IMPLEMENTATION_WARNINGS;
     private boolean missingRecipeProcess = DEFAULT_MISSING_RECIPE_PROCESS;
-
-    /**
-     * Style configuration
-     */
+    private boolean isQuickRecipeLookupEnabled = true;
     private final Style style = new Style();
 
     /**
@@ -34,6 +31,10 @@ public class VanillaEnoughItemsConfig {
      */
     public boolean hasMissingRecipeProcess() {
         return missingRecipeProcess;
+    }
+
+    public boolean isQuickRecipeLookupEnabled() {
+        return isQuickRecipeLookupEnabled;
     }
 
     /**
@@ -103,6 +104,16 @@ public class VanillaEnoughItemsConfig {
      */
     public VanillaEnoughItemsConfig setMissingRecipeProcess(boolean missingRecipeProcess) {
         this.missingRecipeProcess = missingRecipeProcess;
+        return this;
+    }
+
+    /**
+     * Enables or disables the quick recipe lookup feature
+     * @param isQuickRecipeLookupEnabled whether the quick recipe lookup feature is enabled
+     * @return this config instance for method chaining
+     */    
+    public VanillaEnoughItemsConfig enableQuickRecipeLookup(boolean isQuickRecipeLookupEnabled) {
+        this.isQuickRecipeLookupEnabled = isQuickRecipeLookupEnabled;
         return this;
     }
 
