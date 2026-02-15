@@ -1,0 +1,7 @@
+name: VanillaEnoughItems
+description: A plugin that adds an in-game recipe GUI to help players discover and learn about craft in Vanilla Minecraft. It's like JEI, but for Vanilla and server-side!
+author: qheilmann
+website: https://github.com/qheilmann/VanillaEnoughItems
+main: dev.qheilmann.vanillaenoughitems.VanillaEnoughItems
+api-version: ${apiVersion}
+version: ${version}

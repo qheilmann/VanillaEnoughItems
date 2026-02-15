@@ -1,0 +1,8 @@
+{
+  "parent": "vanillaenoughitems:item/gui/button/button_background",
+  "display": {
+    "gui": {
+      "translation": [0, 2, 0]
+    }
+  }
+}

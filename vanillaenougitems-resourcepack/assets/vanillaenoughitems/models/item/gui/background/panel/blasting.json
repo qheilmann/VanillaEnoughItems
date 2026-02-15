@@ -1,0 +1,21 @@
+{
+	"textures": {
+		"0": "vanillaenoughitems:item/gui/background/panel/blasting"
+	},
+	"elements": [
+		{
+			"from": [-9, -9, 0],
+			"to": [27, 27, 0],
+			"faces": {
+				"south": {"uv": [0, 0, 16, 16], "texture": "#0"}
+			}
+		}
+	],
+	"gui_light": "front",
+	"display": {
+		"gui": {
+			"translation": [59, -67, 0],
+			"scale": [4, 4, 1]
+		}
+	}
+}

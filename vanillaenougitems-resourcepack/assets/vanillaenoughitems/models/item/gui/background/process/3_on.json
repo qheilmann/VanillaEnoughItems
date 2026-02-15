@@ -1,0 +1,6 @@
+{
+    "parent": "vanillaenoughitems:item/gui/background/process/3_off",
+    "textures": {
+        "0": "vanillaenoughitems:item/gui/background/process/on"
+    }
+}

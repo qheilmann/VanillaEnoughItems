@@ -1,0 +1,113 @@
+package dev.qheilmann.vanillaenoughitems.gui.processpannel.impl;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import org.bukkit.inventory.CampfireRecipe;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.ItemType;
+import org.bukkit.inventory.Recipe;
+import org.jspecify.annotations.NullMarked;
+
+import dev.qheilmann.vanillaenoughitems.config.style.Style;
+import dev.qheilmann.vanillaenoughitems.gui.CyclicIngredient;
+import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPanel;
+import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPannelSlot;
+import dev.qheilmann.vanillaenoughitems.gui.recipegui.RecipeGuiComponent;
+import dev.qheilmann.vanillaenoughitems.gui.recipegui.RecipeGuiSharedButton;
+import dev.qheilmann.vanillaenoughitems.pack.VeiPack;
+import dev.qheilmann.vanillaenoughitems.utils.fastinv.FastInvItem;
+
+/**
+ * Panel for campfire recipes.
+ */
+@NullMarked
+public class CampfireProcessPanel implements ProcessPanel {
+    private static final ProcessPannelSlot INPUT_SLOT = new ProcessPannelSlot(1, 1);
+    private static final ProcessPannelSlot OUTPUT_SLOT = new ProcessPannelSlot(5, 2);
+    private static final ProcessPannelSlot DECORATION_FIRE_SLOT = new ProcessPannelSlot(1, 2);
+    private static final ProcessPannelSlot DECORATION_PROGRESS_SLOT = new ProcessPannelSlot(3, 2);
+    private static final ProcessPannelSlot BACKGROUND_SLOT = new ProcessPannelSlot(0, 0);
+
+    private final Recipe recipe;
+    private final Style style;
+    private final int seed;
+
+    public CampfireProcessPanel(Recipe recipe, Style style) {
+        this.recipe = recipe;
+        this.style = style;
+        this.seed = (int) (Math.random() * Integer.MAX_VALUE);
+    }
+
+    private CampfireRecipe getCampfireRecipe() {
+        return (CampfireRecipe) recipe;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Map<RecipeGuiSharedButton, ProcessPannelSlot> getRecipeGuiButtonMap() {
+        return ProcessPannelSlot.defaultSharedButtonMap();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Map<ProcessPannelSlot, CyclicIngredient> getTickedIngredient() {
+        Map<ProcessPannelSlot, CyclicIngredient> ticked = new HashMap<>();
+        ticked.put(INPUT_SLOT, new CyclicIngredient(seed, getCampfireRecipe().getInputChoice()));
+        return Map.copyOf(ticked);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @SuppressWarnings("null")
+    public Map<ProcessPannelSlot, CyclicIngredient> getTickedResults() {
+        return Map.of(OUTPUT_SLOT, new CyclicIngredient(seed, getCampfireRecipe().getResult()));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Map<ProcessPannelSlot, CyclicIngredient> getTickedOther() {
+        return Map.of();
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Map<ProcessPannelSlot, FastInvItem> getStaticItems() {
+        Map<ProcessPannelSlot, FastInvItem> statics = new HashMap<>();
+        
+        ItemStack backgroundItem = RecipeGuiComponent.createFillerItem(false);
+        ItemStack progressItem = RecipeGuiComponent.createFillerItem(true);
+        ItemStack campfireItem = ItemType.CAMPFIRE.createItemStack(meta -> {
+            meta.setMaxStackSize(1);
+            meta.setHideTooltip(true);
+        });
+
+        if (style.hasResourcePack()) {
+            backgroundItem.editMeta(meta -> {
+                meta.setItemModel(VeiPack.ItemModel.Gui.Background.Panel.CAMPFIRE);
+            });
+            progressItem.editMeta(meta -> {
+                meta.setItemModel(VeiPack.ItemModel.Gui.Decoration.RECIPE_PROGRESS);
+            });
+            campfireItem.editMeta(meta -> {
+                meta.setItemModel(VeiPack.ItemModel.Gui.Decoration.COOKING_FLAME);
+            });
+        }
+
+        statics.put(BACKGROUND_SLOT, new FastInvItem(backgroundItem, null));
+        statics.put(DECORATION_PROGRESS_SLOT, new FastInvItem(progressItem, null));
+        statics.put(DECORATION_FIRE_SLOT, new FastInvItem(campfireItem, null));
+        
+        return Map.copyOf(statics);
+    }
+}

@@ -1,0 +1,44 @@
+{
+    "textures": {
+        "top": "vanillaenoughitems:item/gui/background/catalyst/top",
+        "middle": "vanillaenoughitems:item/gui/background/catalyst/middle",
+        "bottom": "vanillaenoughitems:item/gui/background/catalyst/bottom"
+    },
+    "elements": [
+        {
+            "from": [5, 5, 0],
+            "to": [11, 11, 0],
+            "faces": {
+                "south": {"uv": [0, 0, 16, 16], "texture": "#top"}
+            }
+        },
+        {
+            "from": [5, -1, 0],
+            "to": [11, 5, 0],
+            "faces": {
+                "south": {"uv": [0, 0, 16, 16], "texture": "#middle"}
+            }
+        },
+        {
+            "from": [5, -7, 0],
+            "to": [11, -1, 0],
+            "faces": {
+                "south": {"uv": [0, 0, 16, 16], "texture": "#middle"}
+            }
+        },
+        {
+            "from": [5, -13, 0],
+            "to": [11, -7, 0],
+            "faces": {
+                "south": {"uv": [0, 0, 16, 16], "texture": "#bottom"}
+            }
+        }
+    ],
+    "gui_light": "front",
+    "display": {
+        "gui": {
+            "translation": [0, -18, 0],
+            "scale": [3, 3, 1]
+        }
+    }
+}

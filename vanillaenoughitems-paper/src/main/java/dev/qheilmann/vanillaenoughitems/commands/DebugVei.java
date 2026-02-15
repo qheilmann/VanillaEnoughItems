@@ -1,0 +1,51 @@
+package dev.qheilmann.vanillaenoughitems.commands;
+
+import org.jspecify.annotations.NullMarked;
+
+import dev.jorel.commandapi.CommandAPICommand;
+import dev.jorel.commandapi.CommandPermission;
+import dev.qheilmann.vanillaenoughitems.VanillaEnoughItems;
+import dev.qheilmann.vanillaenoughitems.config.style.Style;
+
+@NullMarked
+public class DebugVei {
+    public static final String NAME = "debugvei";
+    public static final String[] ALIASES = {"dc"};
+    public static final CommandPermission PERMISSION = CommandPermission.OP;
+    public static final String SHORT_HELP = "Debug VEI";
+    public static final String LONG_HELP = SHORT_HELP;
+    public static final String USAGE = """
+
+                                    /debugvei
+                                    """;
+
+    private DebugVei() {}; // Prevent instantiation
+
+    public static void register() {
+
+        new CommandAPICommand(NAME)
+            .withAliases(ALIASES)
+            .withPermission(PERMISSION)
+            .withHelp(SHORT_HELP, LONG_HELP)
+            .withUsage(USAGE)
+            .executesPlayer((player, args) -> {
+                // TEST CODE BEGIN
+
+                Style style = VanillaEnoughItems.style;
+
+                if (style == null) {
+                    player.sendMessage("VEI Style is null!");
+                    return;
+                }
+
+                boolean hasRessourcePack = style.hasResourcePack();
+                style.setHasResourcePack(!hasRessourcePack);
+                VanillaEnoughItems.config().setStyle(style);
+                player.sendMessage("VEI Resource Pack enabled: " + !hasRessourcePack);
+
+                // TEST CODE END
+            })
+
+            .register();
+    }
+}

@@ -1,0 +1,25 @@
+package dev.qheilmann.vanillaenoughitems.gui.recipegui;
+
+import org.jspecify.annotations.NullMarked;
+
+/**
+ * Types of shared buttons that RecipeGui provides to ProcessPanel implementations.
+ * These buttons are built by RecipeGui
+ */
+@NullMarked
+public enum RecipeGuiSharedButton {
+    /** Navigate to the next recipe in the current process */
+    NEXT_RECIPE,
+    
+    /** Navigate to the previous recipe in the current process */
+    PREVIOUS_RECIPE,
+    
+    /** Navigate backward in recipe history */
+    HISTORY_BACKWARD,
+    
+    /** Navigate forward in recipe history */
+    HISTORY_FORWARD,
+
+    /** Quickly craft the current recipe */
+    QUICK_CRAFT,
+}

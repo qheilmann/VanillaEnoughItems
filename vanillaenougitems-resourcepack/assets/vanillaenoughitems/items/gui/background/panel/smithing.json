@@ -1,0 +1,7 @@
+{
+    "model": {
+        "type": "minecraft:model",
+        "model": "vanillaenoughitems:item/gui/background/panel/smithing"
+    },
+    "oversized_in_gui": true
+}
