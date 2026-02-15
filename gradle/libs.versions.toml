@@ -1,13 +1,13 @@
 [versions]
 bstats = "3.1.0" # https://mvnrepository.com/artifact/org.bstats/bstats-bukkit
-commandapi = "11.0.0" # https://central.sonatype.com/artifact/dev.jorel/commandapi-paper-shade
+commandapi = "11.1.0" # https://central.sonatype.com/artifact/dev.jorel/commandapi-paper-shade
 dotenv = "4.0.0" # https://plugins.gradle.org/plugin/co.uzzu.dotenv.gradle
 jpenilla-run-paper = "3.0.2" # https://plugins.gradle.org/plugin/xyz.jpenilla.run-paper
 jspecify = "1.0.0" # https://mvnrepository.com/artifact/org.jspecify/jspecify
-junit-bom = "6.0.1" # https://mvnrepository.com/artifact/org.junit/junit-bom
-paper-api = "1.21.10-R0.1-SNAPSHOT" # https://repo.papermc.io/ui/packages?name=io.papermc.paper%3Apaper-api&type=packages | Don't forget to update the api version paper-plugin.yml | You can see api-version pattern here https://docs.papermc.io/paper/dev/getting-started/paper-plugins/
-paper-run = "1.21.10" # Server version for jpenilla-run-paper plugin
-shadow = "9.3.0" # https://plugins.gradle.org/plugin/com.gradleup.shadow
+junit-bom = "6.0.2" # https://mvnrepository.com/artifact/org.junit/junit-bom
+paper-api = "1.21.11-R0.1-SNAPSHOT" # https://repo.papermc.io/ui/packages?name=io.papermc.paper%3Apaper-api&type=packages | Don't forget to update the api version paper-plugin.yml | You can see api-version pattern here https://docs.papermc.io/paper/dev/getting-started/paper-plugins/
+paper-run = "1.21.11" # Server version for jpenilla-run-paper plugin
+shadow = "9.3.1" # https://plugins.gradle.org/plugin/com.gradleup.shadow
 
 [libraries]
 # Core dependencies
