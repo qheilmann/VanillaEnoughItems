@@ -1,0 +1,12 @@
+name: VEI-Playground-API
+description: Demo plugin showing basic VanillaEnoughItems API usage (opening GUIs, browsing recipes, etc.)
+author: qheilmann
+main: dev.qheilmann.vanillaenoughitems.playground.api.PlaygroundApiPlugin
+api-version: ${apiVersion}
+version: ${version}
+
+dependencies:
+  server:
+    VanillaEnoughItems:
+      required: true
+      load: BEFORE

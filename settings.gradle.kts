@@ -9,3 +9,4 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 include("vanillaenoughitems-api")
 include("vanillaenoughitems-paper")
+include("vanillaenoughitems-playground-api")
