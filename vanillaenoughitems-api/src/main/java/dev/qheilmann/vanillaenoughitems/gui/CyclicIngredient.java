@@ -309,7 +309,7 @@ public class CyclicIngredient {
      * @param exact if true, compares pinned state and current index; if false, ignores them
      * @return true if equal based on the specified criteria
      */
-    @SuppressWarnings("java:S3776") // Allow this moderately complex method 
+    @SuppressWarnings({ "java:S3776", "null" }) // Allow this moderately complex method 
     public boolean equals(@Nullable Object obj, boolean exact) {
         if (this == obj) return true;
         if (!(obj instanceof CyclicIngredient other)) return false;
@@ -331,8 +331,8 @@ public class CyclicIngredient {
         // Compare dependencies for dependent ingredients
         if (this.isDependent() != other.isDependent()) return false;
         if (this.isDependent()) {
-            CyclicIngredient[] deps = Objects.requireNonNull(this.dependencies);
-            CyclicIngredient[] otherDeps = Objects.requireNonNull(other.dependencies);
+            CyclicIngredient[] deps = this.dependencies;
+            CyclicIngredient[] otherDeps = other.dependencies;
             if (deps.length != otherDeps.length) return false;
             for (int i = 0; i < deps.length; i++) {
                 if (!deps[i].equals(otherDeps[i], exact)) {

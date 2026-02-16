@@ -193,9 +193,11 @@ public class CraftingProcessPanel implements ProcessPanel {
         int recipeIndex = 0; 
         for(int gridY = minGridY; gridY <= maxGridY; gridY++) {
             for(int gridX = minGridX; gridX <= maxGridX; gridX++) {
-            RecipeChoice recipeChoice = recipeChoices.get(recipeIndex++);
-                if(recipeChoice == null) continue; // Just in case bad formatted input
-                recipeMatrix[gridY][gridX] = recipeChoice;
+                if(recipeIndex >= recipeChoices.size()) break; // When recipe have less items than the grid size (e.g. fire charge)
+                RecipeChoice recipeChoice = recipeChoices.get(recipeIndex++);
+                if(recipeChoice != null) {
+                    recipeMatrix[gridY][gridX] = recipeChoice;
+                }
             }
         }
 
