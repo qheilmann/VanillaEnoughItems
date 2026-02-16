@@ -33,7 +33,7 @@ public class SmokingProcess extends AbstractProcess {
     @Override
     public ItemStack symbol() {
         ItemStack item = ItemType.SMOKER.createItemStack(meta -> {
-            meta.displayName(Component.text("Smoking", VanillaEnoughItems.config().style().colorPrimary()).decoration(TextDecoration.ITALIC, false));
+            meta.displayName(Component.text("Smoking", VanillaEnoughItems.veiConfig().style().colorPrimary()).decoration(TextDecoration.ITALIC, false));
         });
 
         return item;

@@ -15,13 +15,12 @@ import dev.qheilmann.vanillaenoughitems.config.style.Style;
 import dev.qheilmann.vanillaenoughitems.gui.CyclicIngredient;
 import dev.qheilmann.vanillaenoughitems.gui.recipegui.RecipeGuiSharedButton;
 import dev.qheilmann.vanillaenoughitems.utils.VeiKey;
-import dev.qheilmann.vanillaenoughitems.utils.fastinv.FastInvItem;
+import dev.qheilmann.vanillaenoughitems.recipe.extraction.RecipeExtractor;
+import dev.qheilmann.vanillaenoughitems.recipe.process.Process;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.key.Keyed;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
-import dev.qheilmann.vanillaenoughitems.recipe.extraction.RecipeExtractor;
-import dev.qheilmann.vanillaenoughitems.recipe.process.Process;
 
 /**
  * Represents a process-specific recipe panel renderer.
@@ -68,7 +67,7 @@ public interface ProcessPanel {
      * 
      * @return map of panel-relative slots to static items with optional actions
      */
-    public Map<ProcessPannelSlot, FastInvItem> getStaticItems();
+    public Map<ProcessPannelSlot, PanelStaticItem> getStaticItems();
 
 
     // Implementation for Undefined Process Panel
@@ -124,8 +123,8 @@ public interface ProcessPanel {
          * {@inheritDoc}
          */
         @Override
-        public Map<ProcessPannelSlot, FastInvItem> getStaticItems() {
-            Map<ProcessPannelSlot, FastInvItem> statics = new HashMap<>();
+        public Map<ProcessPannelSlot, PanelStaticItem> getStaticItems() {
+            Map<ProcessPannelSlot, PanelStaticItem> statics = new HashMap<>();
 
             Key recipeId;
             if (extractor.canHandle(recipe)) {
@@ -149,7 +148,7 @@ public interface ProcessPanel {
                 ));
             });
 
-            statics.put(DESCRIPTION_SLOT, new FastInvItem(descriptionItem, null));
+            statics.put(DESCRIPTION_SLOT, new PanelStaticItem(descriptionItem, null));
 
             return statics;
         }

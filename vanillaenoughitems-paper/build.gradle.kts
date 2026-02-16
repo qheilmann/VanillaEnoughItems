@@ -9,6 +9,9 @@ repositories {
 }
 
 dependencies {
+    // API module
+    implementation(projects.vanillaenoughitemsApi)
+
     // Core
     compileOnly(libs.paper.api)
     compileOnly(libs.jspecify)

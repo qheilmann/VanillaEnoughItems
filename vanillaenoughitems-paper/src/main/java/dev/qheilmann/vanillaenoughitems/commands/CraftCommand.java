@@ -46,10 +46,10 @@ public class CraftCommand {
                                     Type /craft --help for detailled usage instructions and examples.
                                     """;
 
-    private static final TextColor COLOR_PRIMARY = VanillaEnoughItems.config().style().colorPrimary();
-    private static final TextColor COLOR_PRIMARY_VARIANT = VanillaEnoughItems.config().style().colorPrimaryVariant();
-    private static final TextColor COLOR_SECONDARY = VanillaEnoughItems.config().style().colorSecondary();
-    private static final TextColor COLOR_SECONDARY_VARIANT = VanillaEnoughItems.config().style().colorSecondaryVariant();
+    private static final TextColor COLOR_PRIMARY = VanillaEnoughItems.veiConfig().style().colorPrimary();
+    private static final TextColor COLOR_PRIMARY_VARIANT = VanillaEnoughItems.veiConfig().style().colorPrimaryVariant();
+    private static final TextColor COLOR_SECONDARY = VanillaEnoughItems.veiConfig().style().colorSecondary();
+    private static final TextColor COLOR_SECONDARY_VARIANT = VanillaEnoughItems.veiConfig().style().colorSecondaryVariant();
 
     @SuppressWarnings("null")
     private static JavaPlugin plugin;

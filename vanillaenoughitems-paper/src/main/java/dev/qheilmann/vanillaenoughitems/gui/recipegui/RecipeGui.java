@@ -28,6 +28,7 @@ import org.jspecify.annotations.Nullable;
 import dev.qheilmann.vanillaenoughitems.RecipeServices;
 import dev.qheilmann.vanillaenoughitems.VanillaEnoughItems;
 import dev.qheilmann.vanillaenoughitems.bookmark.Bookmark;
+import dev.qheilmann.vanillaenoughitems.bookmark.BookmarkImpl;
 import dev.qheilmann.vanillaenoughitems.config.style.Style;
 import dev.qheilmann.vanillaenoughitems.gui.CyclicIngredient;
 import dev.qheilmann.vanillaenoughitems.gui.bookmarkgui.BookmarkGui;
@@ -41,6 +42,7 @@ import dev.qheilmann.vanillaenoughitems.recipe.index.reader.MultiProcessRecipeRe
 import dev.qheilmann.vanillaenoughitems.recipe.process.Process;
 import dev.qheilmann.vanillaenoughitems.recipe.process.Workbench;
 import dev.qheilmann.vanillaenoughitems.utils.fastinv.FastInv;
+import dev.qheilmann.vanillaenoughitems.gui.processpannel.PanelStaticItem;
 import dev.qheilmann.vanillaenoughitems.utils.fastinv.FastInvItem;
 import dev.qheilmann.vanillaenoughitems.utils.fastinv.Slots;
 import io.papermc.paper.registry.tag.TagKey;
@@ -95,10 +97,10 @@ public class RecipeGui extends FastInv {
     private int workbenchScrollOffset = 0;
 
     public RecipeGui(RecipeServices services, PlayerGuiData playerData, MultiProcessRecipeReader reader) {
-        super(SIZE, title(VanillaEnoughItems.config().style()));
+        super(SIZE, title(VanillaEnoughItems.veiConfig().style()));
         this.services = services;
         this.playerData = playerData;
-        this.style = VanillaEnoughItems.config().style();
+        this.style = VanillaEnoughItems.veiConfig().style();
         this.reader = reader;
         this.guiComponent = new RecipeGuiComponent(style);
         this.fillerItem = guiComponent.createFillerItem();
@@ -280,11 +282,12 @@ public class RecipeGui extends FastInv {
         });
         
         // Place static decorative items
-        Map<ProcessPannelSlot, FastInvItem> staticItems = processPanel.getStaticItems();
-        for (Map.Entry<ProcessPannelSlot, FastInvItem> entry : staticItems.entrySet()) {
+        Map<ProcessPannelSlot, PanelStaticItem> staticItems = processPanel.getStaticItems();
+        for (Map.Entry<ProcessPannelSlot, PanelStaticItem> entry : staticItems.entrySet()) {
             ProcessPannelSlot panelSlot = entry.getKey();
-            FastInvItem item = entry.getValue();
-            setItem(panelSlot.toSlotIndex(), item);
+            PanelStaticItem item = entry.getValue();
+            // Convert API type to FastInv adapter type
+            setItem(panelSlot.toSlotIndex(), new FastInvItem(item.itemStack(), item.clickAction()));
         }
     }
 
@@ -798,7 +801,7 @@ public class RecipeGui extends FastInv {
             return false;
         }
 
-        Bookmark tempBookmark = Bookmark.fromKey(key, services.recipeIndex(), services.processPanelRegistry());
+        Bookmark tempBookmark = BookmarkImpl.fromKey(key, services.recipeIndex(), services.processPanelRegistry(), VanillaEnoughItems.veiConfig().style());
         if (tempBookmark == null) {
             return false;
         }
@@ -811,7 +814,7 @@ public class RecipeGui extends FastInv {
         if (key == null) {
             return;
         }
-        Bookmark bookmark = Bookmark.fromKey(key, services.recipeIndex(), services.processPanelRegistry());
+        Bookmark bookmark = BookmarkImpl.fromKey(key, services.recipeIndex(), services.processPanelRegistry(), VanillaEnoughItems.veiConfig().style());
         if (bookmark == null) {
             return;
         }

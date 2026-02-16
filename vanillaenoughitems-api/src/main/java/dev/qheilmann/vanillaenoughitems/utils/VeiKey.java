@@ -2,13 +2,15 @@ package dev.qheilmann.vanillaenoughitems.utils;
 
 import org.bukkit.NamespacedKey;
 
-import dev.qheilmann.vanillaenoughitems.VanillaEnoughItems;
 import net.kyori.adventure.key.Key;
 
 /**
  * Utility class for creating NamespacedKeys and Adventure Keys in the VEI namespace.
  */
 public class VeiKey {
+
+    /** The VanillaEnoughItems namespace */
+    public static final String NAMESPACE = "vanillaenoughitems";
 
     /**
      * Creates a Kyori Adventure Key in the VEI namespace.
@@ -17,7 +19,7 @@ public class VeiKey {
      * @return a Key with the VEI namespace
      */
     public static final Key key(String value) {
-        return Key.key(VanillaEnoughItems.NAMESPACE, value);
+        return Key.key(NAMESPACE, value);
     }
 
     /**
@@ -27,7 +29,7 @@ public class VeiKey {
      * @return a NamespacedKey with the VEI namespace
      */
     public static final NamespacedKey namespacedKey(String value) {
-        return new NamespacedKey(VanillaEnoughItems.NAMESPACE, value);
+        return new NamespacedKey(NAMESPACE, value);
     }
 
     /**

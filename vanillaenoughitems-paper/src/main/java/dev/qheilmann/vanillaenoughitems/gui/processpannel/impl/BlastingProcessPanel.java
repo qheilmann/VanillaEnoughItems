@@ -17,7 +17,7 @@ import dev.qheilmann.vanillaenoughitems.gui.recipegui.RecipeGuiComponent;
 import dev.qheilmann.vanillaenoughitems.gui.recipegui.RecipeGuiSharedButton;
 import dev.qheilmann.vanillaenoughitems.pack.VeiPack;
 import dev.qheilmann.vanillaenoughitems.recipe.extraction.impl.helper.Fuels;
-import dev.qheilmann.vanillaenoughitems.utils.fastinv.FastInvItem;
+import dev.qheilmann.vanillaenoughitems.gui.processpannel.PanelStaticItem;
 
 /**
  * Panel for blasting recipes.
@@ -86,8 +86,8 @@ public class BlastingProcessPanel implements ProcessPanel {
      * {@inheritDoc}
      */
     @Override
-    public Map<ProcessPannelSlot, FastInvItem> getStaticItems() {
-        Map<ProcessPannelSlot, FastInvItem> statics = new HashMap<>();
+    public Map<ProcessPannelSlot, PanelStaticItem> getStaticItems() {
+        Map<ProcessPannelSlot, PanelStaticItem> statics = new HashMap<>();
 
         ItemStack backgroundItem = RecipeGuiComponent.createFillerItem(false);
         ItemStack progressItem = RecipeGuiComponent.createFillerItem(true);
@@ -108,9 +108,9 @@ public class BlastingProcessPanel implements ProcessPanel {
             });
         }
 
-        statics.put(BACKGROUND_SLOT, new FastInvItem(backgroundItem, null));
-        statics.put(DECORATION_PROGRESS_SLOT, new FastInvItem(progressItem, null));
-        statics.put(DECORATION_FIRE_SLOT, new FastInvItem(blastFurnaceItem, null));
+        statics.put(BACKGROUND_SLOT, new PanelStaticItem(backgroundItem, null));
+        statics.put(DECORATION_PROGRESS_SLOT, new PanelStaticItem(progressItem, null));
+        statics.put(DECORATION_FIRE_SLOT, new PanelStaticItem(blastFurnaceItem, null));
 
         return Map.copyOf(statics);
     }

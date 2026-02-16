@@ -9,7 +9,6 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 import dev.qheilmann.vanillaenoughitems.gui.recipegui.RecipeGuiSharedButton;
-import dev.qheilmann.vanillaenoughitems.utils.fastinv.Slots;
 
 /**
  * Represents a slot position within a ProcessPanel's rendering area.
@@ -34,6 +33,9 @@ public class ProcessPannelSlot implements Comparable<ProcessPannelSlot> {
     private static final int PANEL_MAX_COLUMN = 6;
     private static final int PANEL_MIN_ROW = 0;
     private static final int PANEL_MAX_ROW = 4;
+
+    /** Number of columns in a 9x6 inventory */
+    private static final int INV_COLUMNS = 9;
     
     private final int column;
     private final int row;
@@ -73,7 +75,13 @@ public class ProcessPannelSlot implements Comparable<ProcessPannelSlot> {
         int invMinRow = PANEL_MIN_ROW + 1;       // Panel area starts at row 1
         int invMaxRow = PANEL_MAX_ROW + 1;
 
-        return Slots.gridRange(invMinColumn, invMinRow, invMaxColumn, invMaxRow, 9);
+        LinkedHashSet<Integer> slots = new LinkedHashSet<>();
+        for (int row = invMinRow; row <= invMaxRow; row++) {
+            for (int col = invMinColumn; col <= invMaxColumn; col++) {
+                slots.add(row * INV_COLUMNS + col);
+            }
+        }
+        return slots;
     }
 
     /**
@@ -107,7 +115,7 @@ public class ProcessPannelSlot implements Comparable<ProcessPannelSlot> {
      */
     public int toSlotIndex() {
         // Panel area starts at column 1, row 1 (offset by 1 in both directions)
-        return Slots.Generic9x6.slot(column + 1, row + 1);
+        return (row + 1) * INV_COLUMNS + (column + 1);
     }
     
     /**

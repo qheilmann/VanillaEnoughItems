@@ -5,7 +5,7 @@ import org.bukkit.inventory.RecipeChoice;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
-import dev.qheilmann.vanillaenoughitems.recipe.extraction.impl.helper.RecipeChoiceHelper;
+import dev.qheilmann.vanillaenoughitems.recipe.helper.RecipeChoiceHelper;
 
 import java.util.List;
 import java.util.Objects;
@@ -55,8 +55,8 @@ public class CyclicIngredient {
     
     /**
      * Create an CyclicIngredient from a RecipeChoice.
-     * @param choice the recipe choice to create from
      * @param seed a seed value to set starting position (same seed = same offset for all items)
+     * @param choice the recipe choice to create from
      */
     public CyclicIngredient(int seed, RecipeChoice choice) {
         List<ItemStack> items = RecipeChoiceHelper.getItemsFromChoice(choice).stream().toList();

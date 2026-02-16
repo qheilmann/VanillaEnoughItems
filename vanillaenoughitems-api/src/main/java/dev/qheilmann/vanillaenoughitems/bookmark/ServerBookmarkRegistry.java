@@ -7,12 +7,10 @@ import org.jspecify.annotations.NullMarked;
 /**
  * Registry for server-wide bookmarks.
  * These bookmarks are globally shared across all players and controlled by server administrators.
- * Duplicates are prevented via Bookmark.equals() comparison.
+ * Duplicates are prevented via {@link Bookmark} equality comparison.
  */
 @NullMarked
-public class ServerBookmarkRegistry {
-
-    private final BookmarkCollection bookmarks = new BookmarkCollection();
+public interface ServerBookmarkRegistry {
 
     /**
      * Add a bookmark to the registry.
@@ -20,39 +18,29 @@ public class ServerBookmarkRegistry {
      * @param bookmark the bookmark to add
      * @return true if the bookmark was added, false if it already existed
      */
-    public boolean addBookmark(Bookmark bookmark) {
-        return bookmarks.addBookmark(bookmark);
-    }
+    boolean addBookmark(Bookmark bookmark);
 
     /**
      * Remove a bookmark from the registry.
      * @param bookmark the bookmark to remove
      * @return true if the bookmark was removed, false if it didn't exist
      */
-    public boolean removeBookmark(Bookmark bookmark) {
-        return bookmarks.removeBookmark(bookmark);
-    }
+    boolean removeBookmark(Bookmark bookmark);
 
     /**
      * Clear all bookmarks from the registry.
      */
-    public void clear() {
-        bookmarks.clear();
-    }
+    void clear();
 
     /**
      * Get an unmodifiable view of all bookmarks.
      * @return unmodifiable set of all bookmarks
      */
-    public Set<Bookmark> getBookmarks() {
-        return bookmarks.getBookmarks();
-    }
+    Set<Bookmark> getBookmarks();
 
     /**
      * Check if the registry is empty.
      * @return true if no bookmarks exist
      */
-    public boolean isEmpty() {
-        return bookmarks.getBookmarkCount() == 0;
-    }
+    boolean isEmpty();
 }

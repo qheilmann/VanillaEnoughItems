@@ -10,8 +10,6 @@ import org.bukkit.inventory.Recipe;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
-import dev.qheilmann.vanillaenoughitems.recipe.process.Process;
-import dev.qheilmann.vanillaenoughitems.recipe.process.impl.CraftingProcess;
 import dev.qheilmann.vanillaenoughitems.utils.VeiKey;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.key.Keyed;
@@ -25,6 +23,11 @@ import net.kyori.adventure.text.Component;
 */
 @NullMarked
 public interface Process extends Keyed{
+
+    /**
+     * Key for the crafting process, used in comparator ordering.
+     */
+    Key CRAFTING_PROCESS_KEY = Key.key(Key.MINECRAFT_NAMESPACE, "crafting");
 
     /**
      * Comparator to order processes.
@@ -63,7 +66,7 @@ public interface Process extends Keyed{
 
     private static Comparator<Process> comparator() {
 
-        Predicate<Process> isCraftingProcess = p -> p.key().equals(CraftingProcess.KEY);
+        Predicate<Process> isCraftingProcess = p -> p.key().equals(CRAFTING_PROCESS_KEY);
         Predicate<Process> isUndefinedProcess = p -> p.key().equals(UndefinedProcess.KEY);
         Predicate<Process> isVanillaProcess = p -> p.key().namespace().equals(Key.MINECRAFT_NAMESPACE);
 

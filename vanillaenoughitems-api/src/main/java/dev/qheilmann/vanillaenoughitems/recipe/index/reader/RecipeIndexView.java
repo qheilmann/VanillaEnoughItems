@@ -1,5 +1,6 @@
 package dev.qheilmann.vanillaenoughitems.recipe.index.reader;
 
+import java.util.NavigableMap;
 import java.util.Set;
 
 import org.bukkit.inventory.ItemStack;
@@ -163,7 +164,7 @@ public interface RecipeIndexView {
      * Return a MultiProcessRecipeReader for all recipes in the index starting at the specified process and recipe.
      * All recipes are categorized by their process.
      *
-     * @param process the target process
+     * @param startProcess the target process
      * @param startRecipe the recipe to start at
      * @return a MultiProcessRecipeReader for all recipes starting at the specified process and recipe
      * @throws IllegalArgumentException if the process or recipe does not exist in the MultiProcessRecipeMap
@@ -178,12 +179,15 @@ public interface RecipeIndexView {
      */
     public Set<ItemStack> getAllResultItems();
 
-
-
-
     /**
      * Get all ingredient items in the recipe index
      * @return a set of all ingredient items
      */
     public Set<ItemStack> getAllIngredientItems();
+
+    /**
+     * Get all recipes indexed by their recipe key
+     * @return an unmodifiable navigable map of recipe keys to recipes
+     */
+    public NavigableMap<Key, Recipe> getAllRecipesByKey();
 }

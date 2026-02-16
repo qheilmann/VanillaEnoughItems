@@ -33,7 +33,7 @@ public class BlastingProcess extends AbstractProcess {
     @Override
     public ItemStack symbol() {
         ItemStack item = ItemType.BLAST_FURNACE.createItemStack(meta -> {
-            meta.displayName(Component.text("Blasting", VanillaEnoughItems.config().style().colorPrimary()).decoration(TextDecoration.ITALIC, false));
+            meta.displayName(Component.text("Blasting", VanillaEnoughItems.veiConfig().style().colorPrimary()).decoration(TextDecoration.ITALIC, false));
         });
 
         return item;

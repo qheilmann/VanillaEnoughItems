@@ -7,4 +7,5 @@ rootProject.name = "VanillaEnoughItems"
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
+include("vanillaenoughitems-api")
 include("vanillaenoughitems-paper")

@@ -13,7 +13,7 @@ import net.kyori.adventure.key.Key;
  * Extract any recipe with registered IRecipeExtractor
  */
 @NullMarked
-public class RecipeExtractorRegistry implements RecipeExtractor {
+public class RecipeExtractorRegistryImpl implements RecipeExtractorRegistry {
     
     // Map of registered extractors ordered by insertion order
     LinkedHashSet<RecipeExtractorStrategy<?>> extractors = new LinkedHashSet<>();
@@ -21,14 +21,14 @@ public class RecipeExtractorRegistry implements RecipeExtractor {
     boolean locked = false;
 
     /**
-     * Create a new RecipeExtractor
+     * Create a new RecipeExtractorRegistryImpl
      */
-    public RecipeExtractorRegistry() {}
+    public RecipeExtractorRegistryImpl() {}
 
     /**
-     * Register a recipe extractor
-     * @param extractor the extractor to register
+     * {@inheritDoc}
      */
+    @Override
     public void registerExtractor(RecipeExtractorStrategy<?> extractor) {
         if (locked) {
             throw new IllegalStateException("RecipeExtractor is locked, cannot register new extractors");

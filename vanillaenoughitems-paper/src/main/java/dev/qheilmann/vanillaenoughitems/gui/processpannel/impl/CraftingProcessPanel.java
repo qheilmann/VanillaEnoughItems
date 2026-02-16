@@ -22,7 +22,7 @@ import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPannelSlot;
 import dev.qheilmann.vanillaenoughitems.gui.recipegui.RecipeGuiComponent;
 import dev.qheilmann.vanillaenoughitems.gui.recipegui.RecipeGuiSharedButton;
 import dev.qheilmann.vanillaenoughitems.pack.VeiPack;
-import dev.qheilmann.vanillaenoughitems.utils.fastinv.FastInvItem;
+import dev.qheilmann.vanillaenoughitems.gui.processpannel.PanelStaticItem;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 
@@ -48,7 +48,7 @@ public class CraftingProcessPanel implements ProcessPanel {
 
     public CraftingProcessPanel(Recipe recipe, Style style) {
         this.recipe = recipe;
-        this.style = VanillaEnoughItems.config().style();
+        this.style = style;
         this.seed = (int) (Math.random() * Integer.MAX_VALUE);
     }
 
@@ -95,8 +95,8 @@ public class CraftingProcessPanel implements ProcessPanel {
      * {@inheritDoc}
      */    
     @Override
-    public Map<ProcessPannelSlot, FastInvItem> getStaticItems() {
-        Map<ProcessPannelSlot, FastInvItem> statics = new HashMap<>();
+    public Map<ProcessPannelSlot, PanelStaticItem> getStaticItems() {
+        Map<ProcessPannelSlot, PanelStaticItem> statics = new HashMap<>();
         
         ItemStack isShapelessIndicatorItem = createIsShapelessIndicatorItem();
         ItemStack backgroundItem = RecipeGuiComponent.createFillerItem(false);
@@ -114,9 +114,9 @@ public class CraftingProcessPanel implements ProcessPanel {
             });
         }
 
-        statics.put(BACKGROUND_SLOT, new FastInvItem(backgroundItem, null));
-        statics.put(DECORATION_CRAFTING_TABLE_SLOT, new FastInvItem(craftingTableItem, null));
-        statics.put(SHAPELESS_INDICATOR_SLOT, new FastInvItem(isShapelessIndicatorItem, null));
+        statics.put(BACKGROUND_SLOT, new PanelStaticItem(backgroundItem, null));
+        statics.put(DECORATION_CRAFTING_TABLE_SLOT, new PanelStaticItem(craftingTableItem, null));
+        statics.put(SHAPELESS_INDICATOR_SLOT, new PanelStaticItem(isShapelessIndicatorItem, null));
         return statics;
     }
 
@@ -290,7 +290,7 @@ public class CraftingProcessPanel implements ProcessPanel {
         }
 
         shapelessIndicatorItem.editMeta(meta -> {
-            meta.displayName(Component.text("Shapeless Recipe", VanillaEnoughItems.config().style().colorPrimary()).decoration(TextDecoration.ITALIC, false));
+            meta.displayName(Component.text("Shapeless Recipe", VanillaEnoughItems.veiConfig().style().colorPrimary()).decoration(TextDecoration.ITALIC, false));
         });
 
         return shapelessIndicatorItem;

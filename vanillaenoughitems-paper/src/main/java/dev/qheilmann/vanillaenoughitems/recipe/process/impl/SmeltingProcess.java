@@ -33,7 +33,7 @@ public class SmeltingProcess extends AbstractProcess {
     @Override
     public ItemStack symbol() {
         ItemStack item = ItemType.FURNACE.createItemStack(meta -> {
-            meta.displayName(Component.text("Smelting", VanillaEnoughItems.config().style().colorPrimary()).decoration(TextDecoration.ITALIC, false));
+            meta.displayName(Component.text("Smelting", VanillaEnoughItems.veiConfig().style().colorPrimary()).decoration(TextDecoration.ITALIC, false));
         });
 
         return item;

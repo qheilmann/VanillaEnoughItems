@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import dev.qheilmann.vanillaenoughitems.config.style.Style;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPanel;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPanelRegistry;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPannelSlot;
-import dev.qheilmann.vanillaenoughitems.VanillaEnoughItems;
 import dev.qheilmann.vanillaenoughitems.recipe.index.reader.MultiProcessRecipeReader;
 import dev.qheilmann.vanillaenoughitems.recipe.index.reader.ProcessRecipeReader;
-import dev.qheilmann.vanillaenoughitems.recipe.index.RecipeIndex;
+import dev.qheilmann.vanillaenoughitems.recipe.index.reader.RecipeIndexView;
 import dev.qheilmann.vanillaenoughitems.recipe.process.Process;
 import dev.qheilmann.vanillaenoughitems.gui.CyclicIngredient;
 import org.bukkit.inventory.Recipe;
@@ -25,14 +25,14 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
 /**
- * Represents a bookmark containing recipe data and visual symbol.
+ * Implementation of {@link Bookmark}.
  * Can be created from recipe keys or readers.
  * 
  * Equality is based on MultiProcessRecipeMap content - bookmarks with
  * the same recipes are considered duplicates regardless of defaults/symbols.
  */
 @NullMarked
-public class Bookmark {
+public class BookmarkImpl implements Bookmark {
     private final MultiProcessRecipeReader reader;
     private final CyclicIngredient symbol;
 
@@ -41,7 +41,7 @@ public class Bookmark {
      * @param reader the reader containing all recipe data
      * @param symbol the visual symbol for this bookmark
      */
-    private Bookmark(MultiProcessRecipeReader reader, CyclicIngredient symbol) {
+    private BookmarkImpl(MultiProcessRecipeReader reader, CyclicIngredient symbol) {
         this.reader = reader;
         this.symbol = symbol;
     }
@@ -53,20 +53,20 @@ public class Bookmark {
      * @return a new bookmark
      */
     public static Bookmark fromReader(MultiProcessRecipeReader reader, CyclicIngredient symbol) {
-        return new Bookmark(reader, symbol);
+        return new BookmarkImpl(reader, symbol);
     }
 
     /**
      * Create a bookmark from a recipe key.
      * Extracts the symbol from the ProcessPanel's ticked results for proper cycling support.
-     * @param recipeIndex the recipe index
      * @param key the recipe key
+     * @param recipeIndex the recipe index view
      * @param panelRegistry the process panel registry for symbol extraction
      * @param style the style configuration
      * @return a new bookmark, or null if the key doesn't exist in any recipes
      */
     @Nullable
-    public static Bookmark fromKey(Key key, RecipeIndex recipeIndex, ProcessPanelRegistry panelRegistry) {
+    public static Bookmark fromKey(Key key, RecipeIndexView recipeIndex, ProcessPanelRegistry panelRegistry, Style style) {
         MultiProcessRecipeReader reader = recipeIndex.readerByKey(key);
         if (reader == null) {
             return null;
@@ -77,7 +77,7 @@ public class Bookmark {
         Recipe recipe = processReader.getCurrent();
         
         // Extract symbol from ProcessPanel's ticked results
-        CyclicIngredient symbol = extractCyclicResultFromPanel(process, recipe, panelRegistry);
+        CyclicIngredient symbol = extractCyclicResultFromPanel(process, recipe, panelRegistry, style);
 
         // Add lore to indicate it's a bookmark by key
         CyclicIngredient symbolLored = new CyclicIngredient(
@@ -91,7 +91,7 @@ public class Bookmark {
                 if (meta.hasLore()) {
                     lore = meta.lore();
                 }
-                lore.add(Component.text().applicableApply(VanillaEnoughItems.config().style().colorPrimary()).decoration(TextDecoration.ITALIC, false)
+                lore.add(Component.text().applicableApply(style.colorPrimary()).decoration(TextDecoration.ITALIC, false)
                     .append(Component.text("Recipe with key: "))
                     .append(Component.text(key.asMinimalString(), NamedTextColor.WHITE).decorate(TextDecoration.UNDERLINED))
                     .build()
@@ -104,19 +104,19 @@ public class Bookmark {
             }, symbol
         );
         
-        return new Bookmark(reader, symbolLored);
+        return new BookmarkImpl(reader, symbolLored);
     }
 
     /**
      * Create a bookmark from a result ItemStack.
      * Uses a simple non-cycling symbol.
-     * @param recipeIndex the recipe index
-     * @param key the recipe key
+     * @param recipeIndex the recipe index view
      * @param result the result item to use as symbol
-     * @return a new bookmark, or null if the key doesn't exist in any recipes
+     * @param style the style configuration
+     * @return a new bookmark, or null if the result doesn't exist in any recipes
      */
     @Nullable
-    public static Bookmark fromResult(RecipeIndex recipeIndex, ItemStack result) {
+    public static Bookmark fromResult(RecipeIndexView recipeIndex, ItemStack result, Style style) {
         MultiProcessRecipeReader reader = recipeIndex.readerByResult(result);
         if (reader == null) {
             return null;
@@ -137,10 +137,10 @@ public class Bookmark {
                 if (meta.hasLore()) {
                     lore = meta.lore();
                 }
-                lore.add(Component.text().applicableApply(VanillaEnoughItems.config().style().colorPrimary()).decoration(TextDecoration.ITALIC, false)
+                lore.add(Component.text().applicableApply(style.colorPrimary()).decoration(TextDecoration.ITALIC, false)
                     .append(Component.text("Recipes with "))
                     .append(item.displayName())
-                    .append(Component.text(" as result", VanillaEnoughItems.config().style().colorPrimary()))
+                    .append(Component.text(" as result", style.colorPrimary()))
                     .build()
                 );
 
@@ -151,15 +151,15 @@ public class Bookmark {
             }, symbol
         );
 
-        return new Bookmark(reader, symbolLored);
+        return new BookmarkImpl(reader, symbolLored);
     }
 
     /**
      * Extract the symbol CyclicIngredient from the ProcessPanel's ticked results.
      * Falls back to recipe result if panel has no ticked results.
      */
-    private static CyclicIngredient extractCyclicResultFromPanel(Process process, Recipe recipe, ProcessPanelRegistry panelRegistry) {
-        ProcessPanel panel = panelRegistry.createPanel(process, recipe, VanillaEnoughItems.config().style());
+    private static CyclicIngredient extractCyclicResultFromPanel(Process process, Recipe recipe, ProcessPanelRegistry panelRegistry, Style style) {
+        ProcessPanel panel = panelRegistry.createPanel(process, recipe, style);
         Map<ProcessPannelSlot, CyclicIngredient> tickedResults = panel.getTickedResults();
 
         if (tickedResults.isEmpty()) {
@@ -170,14 +170,17 @@ public class Bookmark {
     }
 
     /**
-     * Get a copy of the reader for this bookmark.
-     * Returns a new independent reader so the GUI can modify it without affecting the bookmark.
-     * @return a copy of the reader
+     * {@inheritDoc}
      */
+    @Override
     public MultiProcessRecipeReader getReader() {
         return new MultiProcessRecipeReader(reader);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public CyclicIngredient getSymbol() {
         return symbol;
     }
@@ -190,7 +193,7 @@ public class Bookmark {
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
-        if (!(obj instanceof Bookmark bookmark)) return false;
+        if (!(obj instanceof BookmarkImpl bookmark)) return false;
         if (!reader.equals(bookmark.reader)) return false;
         if (!symbol.equals(bookmark.symbol, false)) return false;
         return true;

@@ -1,6 +1,7 @@
 package dev.qheilmann.vanillaenoughitems;
 
 import org.bukkit.Registry;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.Recipe;
@@ -12,6 +13,7 @@ import org.jspecify.annotations.Nullable;
 
 import java.io.File;
 import java.util.Iterator;
+import java.util.Set;
 
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
@@ -20,16 +22,26 @@ import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger;
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPIPaperConfig;
+import dev.qheilmann.vanillaenoughitems.api.VanillaEnoughItemsAPI;
+
+import dev.qheilmann.vanillaenoughitems.api.event.VeiReadyEvent;
+import dev.qheilmann.vanillaenoughitems.api.event.VeiRegistrationEvent;
 import dev.qheilmann.vanillaenoughitems.bookmark.Bookmark;
+import dev.qheilmann.vanillaenoughitems.bookmark.BookmarkImpl;
 import dev.qheilmann.vanillaenoughitems.bookmark.ServerBookmarkRegistry;
+import dev.qheilmann.vanillaenoughitems.bookmark.ServerBookmarkRegistryImpl;
 import dev.qheilmann.vanillaenoughitems.commands.CraftCommand;
 import dev.qheilmann.vanillaenoughitems.commands.DebugVei;
 import dev.qheilmann.vanillaenoughitems.config.VanillaEnoughItemsConfig;
 import dev.qheilmann.vanillaenoughitems.config.style.Style;
 import dev.qheilmann.vanillaenoughitems.gui.CyclicIngredient;
+import dev.qheilmann.vanillaenoughitems.gui.bookmarkgui.BookmarkGui;
 import dev.qheilmann.vanillaenoughitems.gui.player.PlayerDataManager;
+import dev.qheilmann.vanillaenoughitems.gui.player.PlayerGuiData;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPanelFactory;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPanelRegistry;
+import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPanelRegistryImpl;
+import dev.qheilmann.vanillaenoughitems.gui.recipegui.RecipeGui;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.impl.BlastingProcessPanel;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.impl.CampfireProcessPanel;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.impl.CraftingProcessPanel;
@@ -41,6 +53,7 @@ import dev.qheilmann.vanillaenoughitems.metrics.BStatsMetrics;
 import dev.qheilmann.vanillaenoughitems.quickaccess.QuickRecipeAccessListener;
 import dev.qheilmann.vanillaenoughitems.recipe.process.Process;
 import dev.qheilmann.vanillaenoughitems.recipe.extraction.RecipeExtractorRegistry;
+import dev.qheilmann.vanillaenoughitems.recipe.extraction.RecipeExtractorRegistryImpl;
 import dev.qheilmann.vanillaenoughitems.recipe.extraction.impl.BlastingRecipeExtractor;
 import dev.qheilmann.vanillaenoughitems.recipe.extraction.impl.CampfireRecipeExtractor;
 import dev.qheilmann.vanillaenoughitems.recipe.extraction.impl.FurnaceRecipeExtractor;
@@ -54,7 +67,9 @@ import dev.qheilmann.vanillaenoughitems.recipe.extraction.impl.TransmuteRecipeEx
 import dev.qheilmann.vanillaenoughitems.recipe.index.RecipeIndex;
 import dev.qheilmann.vanillaenoughitems.recipe.index.TagIndex;
 import dev.qheilmann.vanillaenoughitems.recipe.index.reader.MultiProcessRecipeReader;
+import dev.qheilmann.vanillaenoughitems.recipe.index.reader.RecipeIndexView;
 import dev.qheilmann.vanillaenoughitems.recipe.process.ProcessRegistry;
+import dev.qheilmann.vanillaenoughitems.recipe.process.ProcessRegistryImpl;
 import dev.qheilmann.vanillaenoughitems.recipe.process.impl.BlastingProcess;
 import dev.qheilmann.vanillaenoughitems.recipe.process.impl.CampfireProcess;
 import dev.qheilmann.vanillaenoughitems.recipe.process.impl.CraftingProcess;
@@ -70,8 +85,8 @@ import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.registry.RegistryKey;
 
 @NullMarked
-public class VanillaEnoughItems extends JavaPlugin {
-    
+public class VanillaEnoughItems extends JavaPlugin implements VanillaEnoughItemsAPI {
+
     public static final String PLUGIN_NAME = "VanillaEnoughItems";
     public static final String NAMESPACE = "vanillaenoughitems";
     public static final ComponentLogger LOGGER = ComponentLogger.logger(PLUGIN_NAME);
@@ -86,6 +101,20 @@ public class VanillaEnoughItems extends JavaPlugin {
     private RecipeServices recipeServices;
     @SuppressWarnings("null")
     private PlayerDataManager playerDataManager;
+
+    // API registry fields
+    @SuppressWarnings("null")
+    private ProcessRegistryImpl processRegistry;
+    @SuppressWarnings("null")
+    private RecipeExtractorRegistryImpl recipeExtractorRegistry;
+    @SuppressWarnings("null")
+    private ProcessPanelRegistryImpl processPanelRegistry;
+    @SuppressWarnings("null")
+    private ServerBookmarkRegistryImpl serverBookmarkRegistry;
+    @SuppressWarnings("null")
+    private RecipeIndex recipeIndex;
+
+    //#region Plugin Lifecycle
 
     @Override
     public void onLoad() {
@@ -125,20 +154,20 @@ public class VanillaEnoughItems extends JavaPlugin {
         // Custom recipe
         registerCustomRecipe();
 
-        RecipeExtractorRegistry recipeExtractor = new RecipeExtractorRegistry();
-        recipeExtractor.registerExtractor(new BlastingRecipeExtractor());
-        recipeExtractor.registerExtractor(new CampfireRecipeExtractor());
-        recipeExtractor.registerExtractor(new FurnaceRecipeExtractor());
-        recipeExtractor.registerExtractor(new ShapedRecipeExtractor());
-        recipeExtractor.registerExtractor(new ShapelessRecipeExtractor());
-        recipeExtractor.registerExtractor(new SmithingTransformRecipeExtractor());
-        recipeExtractor.registerExtractor(new SmithingTrimRecipeRecipeExtractor());
-        recipeExtractor.registerExtractor(new SmokingRecipeExtractor());
-        recipeExtractor.registerExtractor(new StonecuttingRecipeExtractor());
-        recipeExtractor.registerExtractor(new TransmuteRecipeExtractor());
+        this.recipeExtractorRegistry = new RecipeExtractorRegistryImpl();
+        recipeExtractorRegistry.registerExtractor(new BlastingRecipeExtractor());
+        recipeExtractorRegistry.registerExtractor(new CampfireRecipeExtractor());
+        recipeExtractorRegistry.registerExtractor(new FurnaceRecipeExtractor());
+        recipeExtractorRegistry.registerExtractor(new ShapedRecipeExtractor());
+        recipeExtractorRegistry.registerExtractor(new ShapelessRecipeExtractor());
+        recipeExtractorRegistry.registerExtractor(new SmithingTransformRecipeExtractor());
+        recipeExtractorRegistry.registerExtractor(new SmithingTrimRecipeRecipeExtractor());
+        recipeExtractorRegistry.registerExtractor(new SmokingRecipeExtractor());
+        recipeExtractorRegistry.registerExtractor(new StonecuttingRecipeExtractor());
+        recipeExtractorRegistry.registerExtractor(new TransmuteRecipeExtractor());
         
-        ProcessRegistry processRegistry = new ProcessRegistry();
-        ProcessPanelRegistry processPanelRegistry = new ProcessPanelRegistry(recipeExtractor);
+        this.processRegistry = new ProcessRegistryImpl();
+        this.processPanelRegistry = new ProcessPanelRegistryImpl(recipeExtractorRegistry);
         addProcessesAndPanels(processRegistry, processPanelRegistry, new CraftingProcess(), CraftingProcessPanel::new); // most common
         addProcessesAndPanels(processRegistry, processPanelRegistry, new StonecuttingProcess(), StonecuttingProcessPanel::new);
         addProcessesAndPanels(processRegistry, processPanelRegistry, new SmeltingProcess(), SmeltingProcessPanel::new);
@@ -147,19 +176,31 @@ public class VanillaEnoughItems extends JavaPlugin {
         addProcessesAndPanels(processRegistry, processPanelRegistry, new SmokingProcess(), SmokingProcessPanel::new);
         addProcessesAndPanels(processRegistry, processPanelRegistry, new CampfireProcess(), CampfireProcessPanel::new);
 
-        RecipeIndex recipeIndex = new RecipeIndex(processRegistry, recipeExtractor);
+        this.serverBookmarkRegistry = new ServerBookmarkRegistryImpl();
+        
+        // Register this plugin as the API implementation
+        VanillaEnoughItemsAPI.register(this);
+        
+        // Fire VeiRegistrationEvent — plugins register custom processes/extractors/panels here
+        getServer().getPluginManager().callEvent(new VeiRegistrationEvent(this));
+        
+        // Index recipes (after all registrations are done)
+        this.recipeIndex = new RecipeIndex(processRegistry, recipeExtractorRegistry);
+        Iterator<Recipe> recipeIterator = getServer().recipeIterator();
+        recipeIndex.indexRecipe(() -> recipeIterator);
+        recipeIndex.logSummary();
+        
+        // Fire VeiReadyEvent — indexation is complete, recipeIndex() is now safe to call
+        getServer().getPluginManager().callEvent(new VeiReadyEvent(this));
         
         // Build tag index
         TagIndex tagIndex = new TagIndex();
         Registry<ItemType> itemRegistry = RegistryAccess.registryAccess().getRegistry(RegistryKey.ITEM);
         tagIndex.index(itemRegistry.getTags(), itemRegistry);
         
-        // Initialize server bookmark registry
-        ServerBookmarkRegistry serverBookmarkRegistry = new ServerBookmarkRegistry();
-        
         // Bundle services into immutable container
         recipeServices = new RecipeServices(
-            recipeExtractor,
+            recipeExtractorRegistry,
             processRegistry,
             processPanelRegistry,
             recipeIndex,
@@ -169,10 +210,6 @@ public class VanillaEnoughItems extends JavaPlugin {
         
         // Create separate player data manager
         playerDataManager = new PlayerDataManager(this, recipeIndex);
-
-        Iterator<Recipe> recipeIterator = getServer().recipeIterator();
-        recipeIndex.indexRecipe(() -> recipeIterator);
-        recipeIndex.logSummary();
         
         // Add example server bookmarks
         LOGGER.debug("Initializing server bookmarks...");
@@ -194,21 +231,148 @@ public class VanillaEnoughItems extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        VanillaEnoughItemsAPI.unregister();
         if (playerDataManager != null) {
             playerDataManager.clearAllPlayerData();
         }
         LOGGER.info(PLUGIN_NAME + " disabled.");
     }
 
+    //#endregion Plugin Lifecycle
+
+    //#region API
+
+    // ---- Accessors ----
+
+    @Override
+    public VanillaEnoughItemsConfig config() {
+        return veiConfig();
+    }
+
+    @Override
+    public RecipeIndexView recipeIndex() {
+        return recipeIndex;
+    }
+
+    @Override
+    public ProcessRegistry processRegistry() {
+        return processRegistry;
+    }
+
+    @Override
+    public RecipeExtractorRegistry recipeExtractorRegistry() {
+        return recipeExtractorRegistry;
+    }
+
+    @Override
+    public ProcessPanelRegistry processPanelRegistry() {
+        return processPanelRegistry;
+    }
+
+    @Override
+    public ServerBookmarkRegistry serverBookmarkRegistry() {
+        return serverBookmarkRegistry;
+    }
+
+    // ---- GUI ----
+
+    @Override
+    public boolean openRecipeGui(Player player, ItemStack result) {
+        MultiProcessRecipeReader reader = recipeIndex.readerByResult(result);
+        if (reader == null) return false;
+        openReaderGui(player, reader);
+        return true;
+    }
+
+    @Override
+    public boolean openRecipeGui(Player player, Key recipeKey) {
+        MultiProcessRecipeReader reader = recipeIndex.readerByKey(recipeKey);
+        if (reader == null) return false;
+        openReaderGui(player, reader);
+        return true;
+    }
+
+    @Override
+    public boolean openUsageGui(Player player, ItemStack ingredient) {
+        MultiProcessRecipeReader reader = recipeIndex.readerByIngredient(ingredient);
+        if (reader == null) return false;
+        openReaderGui(player, reader);
+        return true;
+    }
+
+    @Override
+    public void openReaderGui(Player player, MultiProcessRecipeReader reader) {
+        RecipeGui gui = new RecipeGui(recipeServices, playerDataManager.getPlayerData(player.getUniqueId()), reader);
+        gui.open(player);
+    }
+
+    @Override
+    public void openPlayerBookmarkGui(Player player) {
+        PlayerGuiData playerData = playerDataManager.getPlayerData(player.getUniqueId());
+        Set<Bookmark> bookmarks = playerData.getBookmarks();
+
+        BookmarkGui gui = new BookmarkGui(
+            Component.text("Bookmarks"), recipeServices, playerData, bookmarks, null
+        );
+        gui.open(player);
+    }
+
+    @Override
+    public void openServerBookmarkGui(Player player) {
+        Set<Bookmark> bookmarks = serverBookmarkRegistry.getBookmarks();
+
+        BookmarkGui gui = new BookmarkGui(
+            Component.text("Server Bookmarks"), recipeServices, playerDataManager.getPlayerData(player.getUniqueId()), bookmarks, null
+        );
+        gui.open(player);
+    }
+
+    // ---- Operations ----
+
+    /**
+     * Reload the recipe indexation.
+     * Creates a new RecipeIndex and re-indexes all server recipes.
+     * This only index the recipe returned by the server's recipeIterator, so it may not include custom recipes added manually
+     */
+    @Override
+    public void reloadIndexation() {
+        LOGGER.info("Reloading recipe indexation...");
+        this.recipeIndex = new RecipeIndex(processRegistry, recipeExtractorRegistry);
+        Iterator<Recipe> recipeIterator = getServer().recipeIterator();
+        recipeIndex.indexRecipe(() -> recipeIterator);
+        recipeIndex.logSummary();
+
+        // Update services with new index
+        recipeServices = new RecipeServices(
+            recipeServices.recipeExtractor(),
+            recipeServices.processRegistry(),
+            recipeServices.processPanelRegistry(),
+            recipeIndex, // new index
+            recipeServices.tagIndex(),
+            recipeServices.serverBookmarkRegistry()
+        );
+
+        // Rebuild player data manager with new index
+        playerDataManager = new PlayerDataManager(this, recipeIndex);
+
+        LOGGER.info("Recipe indexation reloaded.");
+    }
+
+    //#endregion API
+
+    //#region Internal
+
     public static VanillaEnoughItems getPlugin() {
         return getPlugin(VanillaEnoughItems.class);
     }
 
     /**
-     * Gets the current VanillaEnoughItems configuration
+     * Gets the current VanillaEnoughItems configuration.
+     * Satisfies both the static access pattern ({@code VanillaEnoughItems.veiConfig()})
+     * and the API interface ({@code api.config()}).
      * @return the VanillaEnoughItems configuration
      */
-    public static VanillaEnoughItemsConfig config() {
+    public static VanillaEnoughItemsConfig veiConfig() {
         if (config == null) {
             throw new IllegalStateException("Tried to access VanillaEnoughItems config, but it was not initialized! Are you using VanillaEnoughItems features before calling VanillaEnoughItems#onLoad?");
         }
@@ -277,15 +441,16 @@ public class VanillaEnoughItems extends JavaPlugin {
 
         RecipeIndex recipeIndex = recipeServices.recipeIndex();
         ProcessPanelRegistry panelRegistry = recipeServices.processPanelRegistry();
+        Style style = VanillaEnoughItems.veiConfig().style();
         
         // Example 1: All diamond recipes
-        Bookmark diamondBookmark = Bookmark.fromKey(Key.key("minecraft:diamond"), recipeIndex, panelRegistry);
+        Bookmark diamondBookmark = BookmarkImpl.fromKey(Key.key("minecraft:diamond"), recipeIndex, panelRegistry, style);
         if (diamondBookmark != null) {
             registry.addBookmark(diamondBookmark);
         }
         
         // Example 2: All gold recipe
-        Bookmark gold = Bookmark.fromResult(recipeIndex, ItemType.GOLD_INGOT.createItemStack());
+        Bookmark gold = BookmarkImpl.fromResult(recipeIndex, ItemType.GOLD_INGOT.createItemStack(), style);
         if (gold != null) {
             registry.addBookmark(gold);
         }
@@ -295,15 +460,15 @@ public class VanillaEnoughItems extends JavaPlugin {
         if (reader == null) {
             return;
         }
-        Bookmark iron_ingot = Bookmark.fromReader(reader, new CyclicIngredient(0, ItemType.IRON_INGOT.createItemStack(meta -> {
-            meta.displayName(Component.text().applicableApply(VanillaEnoughItems.config().style().colorPrimary()).decoration(TextDecoration.ITALIC, false)
+        Bookmark iron_ingot = BookmarkImpl.fromReader(reader, new CyclicIngredient(0, ItemType.IRON_INGOT.createItemStack(meta -> {
+            meta.displayName(Component.text().applicableApply(style.colorPrimary()).decoration(TextDecoration.ITALIC, false)
                 .append(Component.text("How to use iron !"))
                 .build());
         })));
         registry.addBookmark(iron_ingot);
 
         // Smithing
-        Bookmark ironSmithingBookmark = Bookmark.fromKey(Key.key("minecraft:bolt_armor_trim_smithing_template_smithing_trim"), recipeIndex, panelRegistry);
+        Bookmark ironSmithingBookmark = BookmarkImpl.fromKey(Key.key("minecraft:bolt_armor_trim_smithing_template_smithing_trim"), recipeIndex, panelRegistry, style);
         if (ironSmithingBookmark != null) {
             registry.addBookmark(ironSmithingBookmark);
         }
@@ -313,4 +478,6 @@ public class VanillaEnoughItems extends JavaPlugin {
            processRegistry.registerProcess(process);
            processPanelRegistry.registerProvider(process, panelFactory);
     }
+
+    //#endregion Internal
 }

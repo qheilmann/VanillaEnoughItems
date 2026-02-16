@@ -40,7 +40,7 @@ public class SmithingProcess extends AbstractProcess {
     @Override
     public ItemStack symbol() {
         ItemStack item = ItemType.SMITHING_TABLE.createItemStack(meta -> {
-            meta.displayName(Component.text("Smithing", VanillaEnoughItems.config().style().colorPrimary()).decoration(TextDecoration.ITALIC, false));
+            meta.displayName(Component.text("Smithing", VanillaEnoughItems.veiConfig().style().colorPrimary()).decoration(TextDecoration.ITALIC, false));
         });
 
         return item;

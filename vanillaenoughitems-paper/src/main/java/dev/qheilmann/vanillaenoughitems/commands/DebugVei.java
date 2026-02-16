@@ -40,7 +40,7 @@ public class DebugVei {
 
                 boolean hasRessourcePack = style.hasResourcePack();
                 style.setHasResourcePack(!hasRessourcePack);
-                VanillaEnoughItems.config().setStyle(style);
+                VanillaEnoughItems.veiConfig().setStyle(style);
                 player.sendMessage("VEI Resource Pack enabled: " + !hasRessourcePack);
 
                 // TEST CODE END
