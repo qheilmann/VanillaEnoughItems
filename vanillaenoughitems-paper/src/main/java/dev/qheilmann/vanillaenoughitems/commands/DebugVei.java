@@ -9,17 +9,17 @@ import dev.qheilmann.vanillaenoughitems.config.style.Style;
 
 @NullMarked
 public class DebugVei {
-    public static final String NAME = "debugvei";
-    public static final String[] ALIASES = {"dc"};
-    public static final CommandPermission PERMISSION = CommandPermission.OP;
-    public static final String SHORT_HELP = "Debug VEI";
-    public static final String LONG_HELP = SHORT_HELP;
-    public static final String USAGE = """
+    private static final String NAME = "debugvei";
+    private static final String[] ALIASES = {"dc"};
+    private static final CommandPermission PERMISSION = CommandPermission.OP;
+    private static final String SHORT_HELP = "Debug VEI";
+    private static final String LONG_HELP = SHORT_HELP;
+    private static final String USAGE = """
 
                                     /debugvei
                                     """;
 
-    private DebugVei() {}; // Prevent instantiation
+    private DebugVei() {} // Prevent instantiation
 
     public static void register() {
 
@@ -31,7 +31,7 @@ public class DebugVei {
             .executesPlayer((player, args) -> {
                 // TEST CODE BEGIN
 
-                Style style = VanillaEnoughItems.style;
+                Style style = VanillaEnoughItems.veiConfig().style();
 
                 if (style == null) {
                     player.sendMessage("VEI Style is null!");

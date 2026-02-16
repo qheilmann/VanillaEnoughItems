@@ -75,8 +75,8 @@ public class RecipeIndex implements RecipeIndexView {
 
         if (!recipeExtractor.canHandle(recipe)) {
             if (VanillaEnoughItems.veiConfig().hasMissingRecipeProcess()) {
-                String key = (recipe instanceof Keyed) ? ((Keyed) recipe).key().asString() : "no key available";
-                VanillaEnoughItems.LOGGER.warn("No extractor found for recipe: " + recipe.getClass().getSimpleName() + " (" + key + ")");
+                String key = (recipe instanceof Keyed keyed) ? keyed.key().asString() : "no key available";
+                VanillaEnoughItems.LOGGER.warn("No extractor found for recipe: {} ({})", recipe.getClass().getSimpleName(), key);
             }
             return; // Skip index for non-extractable recipes
         }
@@ -500,6 +500,7 @@ public class RecipeIndex implements RecipeIndexView {
 
     //#region Summary Logging
 
+    @SuppressWarnings("java:S3776") // Temporarly complex method
     public void logSummary() {
         VanillaEnoughItems.LOGGER.info("==================== Recipe Index Summary ====================");
         
@@ -510,11 +511,11 @@ public class RecipeIndex implements RecipeIndexView {
         int totalIngredientTypes = recipesByIngredient.size();
         int totalOtherTypes = recipesByOther.size();
         
-        VanillaEnoughItems.LOGGER.info("Total Recipes Indexed: " + totalRecipes);
-        VanillaEnoughItems.LOGGER.info("Total Processes: " + totalProcesses);
-        VanillaEnoughItems.LOGGER.info("Total Unique Result Types: " + totalResultTypes);
-        VanillaEnoughItems.LOGGER.info("Total Unique Ingredient Types: " + totalIngredientTypes);
-        VanillaEnoughItems.LOGGER.info("Total Unique Other Item Types: " + totalOtherTypes);
+        VanillaEnoughItems.LOGGER.info("Total Recipes Indexed: {}", totalRecipes);
+        VanillaEnoughItems.LOGGER.info("Total Processes: {}", totalProcesses);
+        VanillaEnoughItems.LOGGER.info("Total Unique Result Types: {}", totalResultTypes);
+        VanillaEnoughItems.LOGGER.info("Total Unique Ingredient Types: {}", totalIngredientTypes);
+        VanillaEnoughItems.LOGGER.info("Total Unique Other Item Types: {}", totalOtherTypes);
         
         // Per-process breakdown
         VanillaEnoughItems.LOGGER.info("---------- Recipes by Process ----------");
@@ -526,23 +527,23 @@ public class RecipeIndex implements RecipeIndexView {
             
             String processKey = process.key().asString();
             
-            VanillaEnoughItems.LOGGER.info("  " + processKey + ": " + recipeCount + " recipes");
+            VanillaEnoughItems.LOGGER.info("  {}: {} recipes", processKey, recipeCount);
             
             // Show first 5 recipes for this process
             int count = 0;
             for (Recipe recipe : recipeSet.getRecipes()) {
                 if (count >= 5) break;
                 
-                Key recipeKey = recipeExtractor.extractKey(recipe);
+                String recipeKey = recipeExtractor.extractKey(recipe).asString();
                 ItemStack result = recipe.getResult();
                 String itemType = result.getType().name();
                 
-                VanillaEnoughItems.LOGGER.info("    - " + recipeKey.asString() + " -> " + itemType + " x" + result.getAmount());
+                VanillaEnoughItems.LOGGER.info("    - {} -> {} x{}", recipeKey, itemType, result.getAmount());
                 count++;
             }
             
             if (recipeCount > 5) {
-                VanillaEnoughItems.LOGGER.info("    ... and " + (recipeCount - 5) + " more");
+                VanillaEnoughItems.LOGGER.info("    ... and {} more", recipeCount - 5);
             }
         }
         
@@ -561,13 +562,13 @@ public class RecipeIndex implements RecipeIndexView {
                 int processCount = recipes.getAllProcesses().size();
                 
                 String resultName = result.getType().name();
-                VanillaEnoughItems.LOGGER.info("  " + resultName + ": " + recipeCount + " recipes across " + processCount + " processes");
+                VanillaEnoughItems.LOGGER.info("  {}: {} recipes across {} processes", resultName, recipeCount, processCount);
                 
                 // Show process breakdown for this result
                 for (Process process : recipes.getAllProcesses()) {
                     ProcessRecipeSet processRecipes = recipes.getProcessRecipeSet(process);
                     if (processRecipes != null) {
-                        VanillaEnoughItems.LOGGER.info("    - " + process.key() + " -> " + processRecipes.size() + " recipes");
+                        VanillaEnoughItems.LOGGER.info("    - {} -> {} recipes", process.key(), processRecipes.size());
                     }
                 }
             });
@@ -587,13 +588,13 @@ public class RecipeIndex implements RecipeIndexView {
                 int processCount = recipes.getAllProcesses().size();
                 
                 String ingredientType = ingredient.getType().name();
-                VanillaEnoughItems.LOGGER.info("  " + ingredientType + ": " + recipeCount + " recipes across " + processCount + " processes");
+                VanillaEnoughItems.LOGGER.info("  {}: {} recipes across {} processes", ingredientType, recipeCount, processCount);
                 
                 // Show process breakdown for this used item
                 for (Process process : recipes.getAllProcesses()) {
                     ProcessRecipeSet processRecipes = recipes.getProcessRecipeSet(process);
                     if (processRecipes != null) {
-                        VanillaEnoughItems.LOGGER.info("    - " + process.key() + " -> " + processRecipes.size() + " recipes");
+                        VanillaEnoughItems.LOGGER.info("    - {} -> {} recipes", process.key(), processRecipes.size());
                     }
                 }
             });

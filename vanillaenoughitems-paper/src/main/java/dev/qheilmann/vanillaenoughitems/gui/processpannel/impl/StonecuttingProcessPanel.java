@@ -1,7 +1,9 @@
 package dev.qheilmann.vanillaenoughitems.gui.processpannel.impl;
 
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ItemType;
@@ -35,7 +37,7 @@ public class StonecuttingProcessPanel implements ProcessPanel {
     public StonecuttingProcessPanel(Recipe recipe, Style style) {
         this.recipe = recipe;
         this.style = style;
-        this.seed = (int) (Math.random() * Integer.MAX_VALUE);
+        this.seed = new Random().nextInt();
     }
 
     private StonecuttingRecipe getStonecuttingRecipe() {
@@ -47,7 +49,8 @@ public class StonecuttingProcessPanel implements ProcessPanel {
      */
     @Override
     public Map<RecipeGuiSharedButton, ProcessPannelSlot> getRecipeGuiButtonMap() {
-        Map<RecipeGuiSharedButton, ProcessPannelSlot> shared = new HashMap<>();
+        @SuppressWarnings("null")
+        Map<RecipeGuiSharedButton, ProcessPannelSlot> shared = new EnumMap<>(RecipeGuiSharedButton.class);
         shared.put(RecipeGuiSharedButton.NEXT_RECIPE,      ProcessPannelSlot.DEFAULT_NEXT_RECIPE_SLOT);
         shared.put(RecipeGuiSharedButton.PREVIOUS_RECIPE,  ProcessPannelSlot.DEFAULT_PREVIOUS_RECIPE_SLOT);
         shared.put(RecipeGuiSharedButton.HISTORY_FORWARD,  ProcessPannelSlot.DEFAULT_HISTORY_FORWARD_SLOT);
@@ -97,12 +100,8 @@ public class StonecuttingProcessPanel implements ProcessPanel {
         });
 
         if (style.hasResourcePack()) {
-            backgroundItem.editMeta(meta -> {
-                meta.setItemModel(VeiPack.ItemModel.Gui.Background.Panel.STONECUTTING);
-            });
-            stonecutterItem.editMeta(meta -> {
-                meta.setItemModel(VeiPack.ItemModel.Gui.Decoration.RECIPE_ARROW);
-            });
+            backgroundItem.editMeta(meta -> meta.setItemModel(VeiPack.ItemModel.Gui.Background.Panel.STONECUTTING));
+            stonecutterItem.editMeta(meta -> meta.setItemModel(VeiPack.ItemModel.Gui.Decoration.RECIPE_ARROW));
         }
         
         statics.put(BACKGROUND_SLOT, new PanelStaticItem(backgroundItem, null));

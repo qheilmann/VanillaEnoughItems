@@ -12,6 +12,8 @@ public class VeiKey {
     /** The VanillaEnoughItems namespace */
     public static final String NAMESPACE = "vanillaenoughitems";
 
+    private VeiKey() {} // Static utility class
+
     /**
      * Creates a Kyori Adventure Key in the VEI namespace.
      *

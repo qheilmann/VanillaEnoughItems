@@ -85,6 +85,7 @@ import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.registry.RegistryKey;
 
 @NullMarked
+@SuppressWarnings("java:S6539") // Monster class allowed, it's the main plugin class
 public class VanillaEnoughItems extends JavaPlugin implements VanillaEnoughItemsAPI {
 
     public static final String PLUGIN_NAME = "VanillaEnoughItems";
@@ -94,11 +95,9 @@ public class VanillaEnoughItems extends JavaPlugin implements VanillaEnoughItems
     @Nullable
     private static VanillaEnoughItemsConfig config;
     @Nullable // debug toggle
-    public static Style style;
+    private static Style style;
 
     private boolean failOnload = false;
-    @SuppressWarnings("null")
-    private RecipeServices recipeServices;
     @SuppressWarnings("null")
     private PlayerDataManager playerDataManager;
 
@@ -113,10 +112,17 @@ public class VanillaEnoughItems extends JavaPlugin implements VanillaEnoughItems
     private ServerBookmarkRegistryImpl serverBookmarkRegistry;
     @SuppressWarnings("null")
     private RecipeIndex recipeIndex;
+    @SuppressWarnings("null")
+    private TagIndex tagIndex;
+    
+    // Convenience container
+    @SuppressWarnings("null")
+    private RecipeServices recipeServices;
 
     //#region Plugin Lifecycle
 
     @Override
+    @SuppressWarnings("java:S2696") // Static fields set in onLoad() is intentional - Bukkit lifecycle guarantees single initialization
     public void onLoad() {
         try {
             onLoadCommandAPI();
@@ -194,12 +200,11 @@ public class VanillaEnoughItems extends JavaPlugin implements VanillaEnoughItems
         getServer().getPluginManager().callEvent(new VeiReadyEvent(this));
         
         // Build tag index
-        TagIndex tagIndex = new TagIndex();
+        this.tagIndex = new TagIndex();
         Registry<ItemType> itemRegistry = RegistryAccess.registryAccess().getRegistry(RegistryKey.ITEM);
         tagIndex.index(itemRegistry.getTags(), itemRegistry);
         
-        // Bundle services into immutable container
-        recipeServices = new RecipeServices(
+        this.recipeServices = new RecipeServices(
             recipeExtractorRegistry,
             processRegistry,
             processPanelRegistry,
@@ -208,10 +213,11 @@ public class VanillaEnoughItems extends JavaPlugin implements VanillaEnoughItems
             serverBookmarkRegistry
         );
         
-        // Create separate player data manager
-        playerDataManager = new PlayerDataManager(this, recipeIndex);
+        // Create player data manager
+        playerDataManager = new PlayerDataManager(this);
         
         // Add example server bookmarks
+
         LOGGER.debug("Initializing server bookmarks...");
         initializeServerBookmarks(serverBookmarkRegistry);
 
@@ -331,31 +337,19 @@ public class VanillaEnoughItems extends JavaPlugin implements VanillaEnoughItems
 
     /**
      * Reload the recipe indexation.
-     * Creates a new RecipeIndex and re-indexes all server recipes.
-     * This only index the recipe returned by the server's recipeIterator, so it may not include custom recipes added manually
+     * Clears the existing RecipeIndex and re-indexes all server recipes.
+     * This only indexes recipes returned by the server's recipeIterator, so it may not include custom recipes added manually.
      */
     @Override
     public void reloadIndexation() {
         LOGGER.info("Reloading recipe indexation...");
-        this.recipeIndex = new RecipeIndex(processRegistry, recipeExtractorRegistry);
+        
+        recipeIndex.clearIndex();
         Iterator<Recipe> recipeIterator = getServer().recipeIterator();
         recipeIndex.indexRecipe(() -> recipeIterator);
         recipeIndex.logSummary();
 
-        // Update services with new index
-        recipeServices = new RecipeServices(
-            recipeServices.recipeExtractor(),
-            recipeServices.processRegistry(),
-            recipeServices.processPanelRegistry(),
-            recipeIndex, // new index
-            recipeServices.tagIndex(),
-            recipeServices.serverBookmarkRegistry()
-        );
-
-        // Rebuild player data manager with new index
-        playerDataManager = new PlayerDataManager(this, recipeIndex);
-
-        LOGGER.info("Recipe indexation reloaded.");
+        LOGGER.info("Recipe indexation reloaded. All references remain valid.");
     }
 
     //#endregion API
@@ -395,9 +389,9 @@ public class VanillaEnoughItems extends JavaPlugin implements VanillaEnoughItems
         getServer().addRecipe(syntheticDiamond);
 
         // Modified itemstack
-        ItemStack magicBall = ItemType.MAGENTA_DYE.createItemStack(meta -> {
-            meta.displayName(Component.text("Magic Ball", NamedTextColor.LIGHT_PURPLE).decoration(TextDecoration.ITALIC, false));
-        });
+        ItemStack magicBall = ItemType.MAGENTA_DYE.createItemStack(meta ->
+            meta.displayName(Component.text("Magic Ball", NamedTextColor.LIGHT_PURPLE).decoration(TextDecoration.ITALIC, false))
+        );
         ShapelessRecipe magicBallRecipe = new ShapelessRecipe(VeiKey.namespacedKey("magic_ball"), magicBall)
             .addIngredient(ItemType.DIAMOND.createItemStack())
             .addIngredient(ItemType.BLAZE_POWDER.createItemStack())
@@ -414,9 +408,9 @@ public class VanillaEnoughItems extends JavaPlugin implements VanillaEnoughItems
 
         // Craft remaining with custom item
         ItemStack oxidizedCopper = ItemType.OXIDIZED_COPPER.createItemStack();
-        ItemStack superOxidizer = ItemType.WATER_BUCKET.createItemStack(meta -> {
-            meta.displayName(Component.text("Super Oxidizer", NamedTextColor.AQUA).decoration(TextDecoration.ITALIC, false));
-        });
+        ItemStack superOxidizer = ItemType.WATER_BUCKET.createItemStack(meta ->
+            meta.displayName(Component.text("Super Oxidizer", NamedTextColor.AQUA).decoration(TextDecoration.ITALIC, false))
+        );
         superOxidizer.setData(DataComponentTypes.USE_REMAINDER, UseRemainder.useRemainder(ItemType.STICK.createItemStack())); // dummy for change the item component
 
         ShapelessRecipe superOxidizerRecipe = new ShapelessRecipe(VeiKey.namespacedKey("super_oxidizer"), superOxidizer)
@@ -435,22 +429,20 @@ public class VanillaEnoughItems extends JavaPlugin implements VanillaEnoughItems
      * Initialize example server bookmarks.
      * Server administrators can modify this method to add custom bookmarks.
      * @param registry the server bookmark registry
-     * @param recipeIndex the recipe index for creating bookmarks
      */
     private void initializeServerBookmarks(ServerBookmarkRegistry registry) {
 
-        RecipeIndex recipeIndex = recipeServices.recipeIndex();
-        ProcessPanelRegistry panelRegistry = recipeServices.processPanelRegistry();
-        Style style = VanillaEnoughItems.veiConfig().style();
+        ProcessPanelRegistry panelRegistry = processPanelRegistry;
+        Style bookmarkStyle = VanillaEnoughItems.veiConfig().style();
         
         // Example 1: All diamond recipes
-        Bookmark diamondBookmark = BookmarkImpl.fromKey(Key.key("minecraft:diamond"), recipeIndex, panelRegistry, style);
+        Bookmark diamondBookmark = BookmarkImpl.fromKey(Key.key("minecraft:diamond"), recipeIndex, panelRegistry, bookmarkStyle);
         if (diamondBookmark != null) {
             registry.addBookmark(diamondBookmark);
         }
         
         // Example 2: All gold recipe
-        Bookmark gold = BookmarkImpl.fromResult(recipeIndex, ItemType.GOLD_INGOT.createItemStack(), style);
+        Bookmark gold = BookmarkImpl.fromResult(recipeIndex, ItemType.GOLD_INGOT.createItemStack(), bookmarkStyle);
         if (gold != null) {
             registry.addBookmark(gold);
         }
@@ -460,15 +452,15 @@ public class VanillaEnoughItems extends JavaPlugin implements VanillaEnoughItems
         if (reader == null) {
             return;
         }
-        Bookmark iron_ingot = BookmarkImpl.fromReader(reader, new CyclicIngredient(0, ItemType.IRON_INGOT.createItemStack(meta -> {
-            meta.displayName(Component.text().applicableApply(style.colorPrimary()).decoration(TextDecoration.ITALIC, false)
+        Bookmark ironIngot = BookmarkImpl.fromReader(reader, new CyclicIngredient(0, ItemType.IRON_INGOT.createItemStack(meta ->
+            meta.displayName(Component.text().applicableApply(bookmarkStyle.colorPrimary()).decoration(TextDecoration.ITALIC, false)
                 .append(Component.text("How to use iron !"))
-                .build());
-        })));
-        registry.addBookmark(iron_ingot);
+                .build())
+        )));
+        registry.addBookmark(ironIngot);
 
         // Smithing
-        Bookmark ironSmithingBookmark = BookmarkImpl.fromKey(Key.key("minecraft:bolt_armor_trim_smithing_template_smithing_trim"), recipeIndex, panelRegistry, style);
+        Bookmark ironSmithingBookmark = BookmarkImpl.fromKey(Key.key("minecraft:bolt_armor_trim_smithing_template_smithing_trim"), recipeIndex, panelRegistry, bookmarkStyle);
         if (ironSmithingBookmark != null) {
             registry.addBookmark(ironSmithingBookmark);
         }

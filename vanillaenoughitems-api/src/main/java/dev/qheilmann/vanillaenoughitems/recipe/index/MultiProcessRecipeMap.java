@@ -3,6 +3,7 @@ package dev.qheilmann.vanillaenoughitems.recipe.index;
 import java.util.Collections;
 import java.util.NavigableMap;
 import java.util.NavigableSet;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -55,7 +56,7 @@ public class MultiProcessRecipeMap {
         this(
             other.grouping,
             other.processRecipeSets.values().stream()
-                .map(prs -> new ProcessRecipeSet(prs))
+                .map(ProcessRecipeSet::new)
                 .toList()
         );
     }
@@ -170,6 +171,11 @@ public class MultiProcessRecipeMap {
         return grouping;
     }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(grouping, processRecipeSets);
+    }
+
     /**
      * Check equality between this MultiProcessRecipeMap and another object
      * Same grouping and same process recipe sets means equality
@@ -180,7 +186,6 @@ public class MultiProcessRecipeMap {
         if (this == obj) return true;
         if (!(obj instanceof MultiProcessRecipeMap other)) return false;
         if (!grouping.equals(other.grouping)) return false;
-        if (!processRecipeSets.equals(other.processRecipeSets)) return false;
-        return true;
+        return processRecipeSets.equals(other.processRecipeSets);
     }
 }

@@ -2,6 +2,7 @@ package dev.qheilmann.vanillaenoughitems.gui.processpannel.impl;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ItemType;
@@ -55,7 +56,7 @@ public class SmithingProcessPanel implements ProcessPanel {
     public SmithingProcessPanel(Recipe recipe, Style style) {
         this.recipe = recipe;
         this.style = style;
-        this.seed = (int) (Math.random() * Integer.MAX_VALUE);
+        this.seed = new Random().nextInt();
 
         // Cyclic ingredients shared between the caller and the dynamic result
         baseCyclic = new CyclicIngredient(seed, getSmithingRecipe().getBase());
@@ -117,12 +118,8 @@ public class SmithingProcessPanel implements ProcessPanel {
         });
 
         if (style.hasResourcePack()) {
-            backgroundItem.editMeta(meta -> {
-                meta.setItemModel(VeiPack.ItemModel.Gui.Background.Panel.SMITHING);
-            });
-            smithingItem.editMeta(meta -> {
-                meta.setItemModel(VeiPack.ItemModel.Gui.Decoration.RECIPE_ARROW_SMALL);
-            });
+            backgroundItem.editMeta(meta -> meta.setItemModel(VeiPack.ItemModel.Gui.Background.Panel.SMITHING));
+            smithingItem.editMeta(meta -> meta.setItemModel(VeiPack.ItemModel.Gui.Decoration.RECIPE_ARROW_SMALL));
         }
 
         statics.put(BACKGROUND_SLOT, new PanelStaticItem(backgroundItem, null));

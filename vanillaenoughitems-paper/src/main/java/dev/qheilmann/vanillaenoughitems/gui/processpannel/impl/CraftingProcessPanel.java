@@ -3,6 +3,7 @@ package dev.qheilmann.vanillaenoughitems.gui.processpannel.impl;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import org.bukkit.inventory.CraftingRecipe;
 import org.bukkit.inventory.ItemStack;
@@ -49,7 +50,7 @@ public class CraftingProcessPanel implements ProcessPanel {
     public CraftingProcessPanel(Recipe recipe, Style style) {
         this.recipe = recipe;
         this.style = style;
-        this.seed = (int) (Math.random() * Integer.MAX_VALUE);
+        this.seed = new Random().nextInt();
     }
 
     public CraftingRecipe getCraftingRecipe() {
@@ -106,12 +107,8 @@ public class CraftingProcessPanel implements ProcessPanel {
         });
         
         if (style.hasResourcePack()) {
-            backgroundItem.editMeta(meta -> {
-                meta.setItemModel(VeiPack.ItemModel.Gui.Background.Panel.CRAFTING);
-            });
-            craftingTableItem.editMeta(meta -> {
-                meta.setItemModel(VeiPack.ItemModel.Gui.Decoration.RECIPE_ARROW_SMALL);
-            });
+            backgroundItem.editMeta(meta -> meta.setItemModel(VeiPack.ItemModel.Gui.Background.Panel.CRAFTING));
+            craftingTableItem.editMeta(meta -> meta.setItemModel(VeiPack.ItemModel.Gui.Decoration.RECIPE_ARROW_SMALL));
         }
 
         statics.put(BACKGROUND_SLOT, new PanelStaticItem(backgroundItem, null));
@@ -143,15 +140,12 @@ public class CraftingProcessPanel implements ProcessPanel {
      * @return A representation of the crafting grid (RecipeChoice[3][3])
      */
     private static RecipeChoice[][] getRecipeMatrix(CraftingRecipe craftingRecipe) {
-        if (craftingRecipe instanceof ShapedRecipe shapedRecipe) {
-            return getRecipe3by3MatrixShaped(shapedRecipe);
-        } else if (craftingRecipe instanceof ShapelessRecipe shapelessRecipe) {
-            return getRecipeMatrixShapeless(shapelessRecipe);
-        } else if (craftingRecipe instanceof TransmuteRecipe transmuteRecipe) {
-            return getRecipeMatrixTransmute(transmuteRecipe);
-        } else {
-            throw new IllegalArgumentException("Unsupported CraftingRecipe type: " + craftingRecipe.getClass().getName());
-        }
+        return switch (craftingRecipe) {
+          case ShapedRecipe shapedRecipe -> getRecipe3by3MatrixShaped(shapedRecipe);
+          case ShapelessRecipe shapelessRecipe -> getRecipeMatrixShapeless(shapelessRecipe);
+          case TransmuteRecipe transmuteRecipe -> getRecipeMatrixTransmute(transmuteRecipe);
+          default -> throw new IllegalArgumentException("Unsupported CraftingRecipe type: " + craftingRecipe.getClass().getName());
+        };
     }
 
     /**
@@ -199,8 +193,7 @@ public class CraftingProcessPanel implements ProcessPanel {
         int recipeIndex = 0; 
         for(int gridY = minGridY; gridY <= maxGridY; gridY++) {
             for(int gridX = minGridX; gridX <= maxGridX; gridX++) {
-                if(recipeIndex >= recipeChoices.size()) break;
-                RecipeChoice recipeChoice = recipeChoices.get(recipeIndex++);
+            RecipeChoice recipeChoice = recipeChoices.get(recipeIndex++);
                 if(recipeChoice == null) continue; // Just in case bad formatted input
                 recipeMatrix[gridY][gridX] = recipeChoice;
             }
@@ -283,15 +276,13 @@ public class CraftingProcessPanel implements ProcessPanel {
         ) {
             shapelessIndicatorItem = ItemType.LIGHT_GRAY_DYE.createItemStack();
             if (style.hasResourcePack()) {
-                shapelessIndicatorItem.editMeta(meta -> {
-                    meta.setItemModel(VeiPack.ItemModel.Gui.Decoration.SHAPELESS_INDICATOR);
-                });
+                shapelessIndicatorItem.editMeta(meta -> meta.setItemModel(VeiPack.ItemModel.Gui.Decoration.SHAPELESS_INDICATOR));
             }
         }
 
-        shapelessIndicatorItem.editMeta(meta -> {
-            meta.displayName(Component.text("Shapeless Recipe", VanillaEnoughItems.veiConfig().style().colorPrimary()).decoration(TextDecoration.ITALIC, false));
-        });
+        shapelessIndicatorItem.editMeta(meta ->
+            meta.displayName(Component.text("Shapeless Recipe", VanillaEnoughItems.veiConfig().style().colorPrimary()).decoration(TextDecoration.ITALIC, false))
+        );
 
         return shapelessIndicatorItem;
     }

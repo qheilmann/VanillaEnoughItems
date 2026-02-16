@@ -128,6 +128,7 @@ public class FastInv implements InventoryHolder {
      * @param event the InventoryOpenEvent that triggered this method
      */
     protected void onOpen(InventoryOpenEvent event) {
+        // Empty default implementation
     }
 
     /**
@@ -136,6 +137,7 @@ public class FastInv implements InventoryHolder {
      * @param event the InventoryClickEvent that triggered this method
      */
     protected void onClick(InventoryClickEvent event) {
+        // Empty default implementation
     }
 
     /**
@@ -144,6 +146,7 @@ public class FastInv implements InventoryHolder {
      * @param event the InventoryDragEvent that triggered this method
      */
     protected void onDrag(InventoryDragEvent event) {
+        // Empty default implementation
     }
 
     /**
@@ -152,6 +155,7 @@ public class FastInv implements InventoryHolder {
      * @param event the InventoryCloseEvent that triggered this method
      */
     protected void onClose(InventoryCloseEvent event) {
+        // Empty default implementation
     }
 
     /**
@@ -423,7 +427,7 @@ public class FastInv implements InventoryHolder {
      * @param player the player to open the inventory to
      */
     public void open(Player player) {
-        Objects.requireNonNull(player, "player").openInventory(this.inventory);
+        player.openInventory(this.inventory);
     }
 
     /**

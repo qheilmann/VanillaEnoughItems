@@ -2,6 +2,7 @@ package dev.qheilmann.vanillaenoughitems.gui.processpannel.impl;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 import org.bukkit.inventory.FurnaceRecipe;
 import org.bukkit.inventory.ItemStack;
@@ -38,7 +39,7 @@ public class SmeltingProcessPanel implements ProcessPanel {
     public SmeltingProcessPanel(Recipe recipe, Style style) {
         this.recipe = recipe;
         this.style = style;
-        this.seed = (int) (Math.random() * Integer.MAX_VALUE);
+        this.seed = new Random().nextInt();
     }
 
     private FurnaceRecipe getFurnaceRecipe() {
@@ -97,15 +98,9 @@ public class SmeltingProcessPanel implements ProcessPanel {
         });
 
         if (style.hasResourcePack()) {
-            backgroundItem.editMeta(meta -> {
-                meta.setItemModel(VeiPack.ItemModel.Gui.Background.Panel.SMELTING);
-            });
-            progressItem.editMeta(meta -> {
-                meta.setItemModel(VeiPack.ItemModel.Gui.Decoration.RECIPE_PROGRESS);
-            });
-            furnaceItem.editMeta(meta -> {
-                meta.setItemModel(VeiPack.ItemModel.Gui.Decoration.COOKING_FLAME);
-            });
+            backgroundItem.editMeta(meta -> meta.setItemModel(VeiPack.ItemModel.Gui.Background.Panel.SMELTING));
+            progressItem.editMeta(meta -> meta.setItemModel(VeiPack.ItemModel.Gui.Decoration.RECIPE_PROGRESS));
+            furnaceItem.editMeta(meta -> meta.setItemModel(VeiPack.ItemModel.Gui.Decoration.COOKING_FLAME));
         }
 
         statics.put(BACKGROUND_SLOT, new PanelStaticItem(backgroundItem, null));

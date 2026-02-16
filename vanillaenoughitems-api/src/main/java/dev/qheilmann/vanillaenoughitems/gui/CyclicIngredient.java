@@ -7,6 +7,7 @@ import org.jspecify.annotations.Nullable;
 
 import dev.qheilmann.vanillaenoughitems.recipe.helper.RecipeChoiceHelper;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -288,6 +289,16 @@ public class CyclicIngredient {
     }
 
     @Override
+    public int hashCode() {
+        int result = Objects.hash(count, pinned, currentIndex);
+        result = 31 * result + Arrays.hashCode(options);
+        if (dependencies != null) {
+            result = 31 * result + Arrays.hashCode(dependencies);
+        }
+        return result;
+    }
+
+    @Override
     public boolean equals(@SuppressWarnings("null") Object obj) {
         return equals(obj, true);
     }
@@ -298,7 +309,8 @@ public class CyclicIngredient {
      * @param exact if true, compares pinned state and current index; if false, ignores them
      * @return true if equal based on the specified criteria
      */
-    public boolean equals(Object obj, boolean exact) {
+    @SuppressWarnings("java:S3776") // Allow this moderately complex method 
+    public boolean equals(@Nullable Object obj, boolean exact) {
         if (this == obj) return true;
         if (!(obj instanceof CyclicIngredient other)) return false;
 

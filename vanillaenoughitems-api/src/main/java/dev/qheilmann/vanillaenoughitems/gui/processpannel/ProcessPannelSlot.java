@@ -1,9 +1,10 @@
 package dev.qheilmann.vanillaenoughitems.gui.processpannel;
 
 import java.util.Comparator;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.SequencedSet;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -29,10 +30,10 @@ public class ProcessPannelSlot implements Comparable<ProcessPannelSlot> {
     /** Default slot for the "Quick Craft" button */
     public static final ProcessPannelSlot DEFAULT_QUICK_CRAFT_SLOT = new ProcessPannelSlot(5, 3);
 
-    private static final int PANEL_MIN_COLUMN = 0;
-    private static final int PANEL_MAX_COLUMN = 6;
-    private static final int PANEL_MIN_ROW = 0;
-    private static final int PANEL_MAX_ROW = 4;
+    private static final int PANEL_COLUMN = 7;
+    private static final int PANEL_ROW = 5;
+    private static final int PANEL_COLUMNS_OFFSET = 1; // Panel starts at column 1 in the inventory
+    private static final int PANEL_ROWS_OFFSET = 1;    // Panel starts at row 1 in the inventory
 
     /** Number of columns in a 9x6 inventory */
     private static final int INV_COLUMNS = 9;
@@ -55,7 +56,8 @@ public class ProcessPannelSlot implements Comparable<ProcessPannelSlot> {
      * @return the default shared button map
      */
     public static Map<RecipeGuiSharedButton, ProcessPannelSlot> defaultSharedButtonMap() {
-        Map<RecipeGuiSharedButton, ProcessPannelSlot> shared = new HashMap<>();
+        @SuppressWarnings("null")
+        Map<RecipeGuiSharedButton, ProcessPannelSlot> shared = new EnumMap<>(RecipeGuiSharedButton.class);
         shared.put(RecipeGuiSharedButton.NEXT_RECIPE,      DEFAULT_NEXT_RECIPE_SLOT);
         shared.put(RecipeGuiSharedButton.PREVIOUS_RECIPE,  DEFAULT_PREVIOUS_RECIPE_SLOT);
         shared.put(RecipeGuiSharedButton.HISTORY_FORWARD,  DEFAULT_HISTORY_FORWARD_SLOT);
@@ -69,11 +71,11 @@ public class ProcessPannelSlot implements Comparable<ProcessPannelSlot> {
      * 
      * @return set of all absolute slot indices in the panel area
      */
-    public static LinkedHashSet<Integer> all() {
-        int invMinColumn = PANEL_MIN_COLUMN + 1; // Panel area starts at column 1
-        int invMaxColumn = PANEL_MAX_COLUMN + 1;
-        int invMinRow = PANEL_MIN_ROW + 1;       // Panel area starts at row 1
-        int invMaxRow = PANEL_MAX_ROW + 1;
+    public static SequencedSet<Integer> all() {
+        int invMinColumn = PANEL_COLUMNS_OFFSET;
+        int invMaxColumn = PANEL_COLUMNS_OFFSET + PANEL_COLUMN - 1;
+        int invMinRow = PANEL_ROWS_OFFSET;
+        int invMaxRow = PANEL_ROWS_OFFSET + PANEL_ROW - 1;
 
         LinkedHashSet<Integer> slots = new LinkedHashSet<>();
         for (int row = invMinRow; row <= invMaxRow; row++) {
@@ -86,21 +88,21 @@ public class ProcessPannelSlot implements Comparable<ProcessPannelSlot> {
 
     /**
      * Create a ProcessPannelSlot at the specified position
-     * @param column the column within the panel ({@link #PANEL_MIN_COLUMN}-{@link #PANEL_MAX_COLUMN})
-     * @param row the row within the panel ({@link #PANEL_MIN_ROW}-{@link #PANEL_MAX_ROW})
+     * @param column the column within the panel ({@link #PANEL_MIN_COLUMN}-{@link #PANEL_COLUMN})
+     * @param row the row within the panel ({@link #PANEL_MIN_ROW}-{@link #PANEL_ROW})
      * @throws IndexOutOfBoundsException if column or row is out of bounds
      */
     public ProcessPannelSlot(int column, int row) {
-        if (column < PANEL_MIN_COLUMN || column > PANEL_MAX_COLUMN) {
+        if (column < 0 || column >= PANEL_COLUMN) {
             throw new IndexOutOfBoundsException(
                 "Column " + column + " is out of bounds. Must be between " + 
-                PANEL_MIN_COLUMN + " and " + PANEL_MAX_COLUMN
+                0 + " and " + (PANEL_COLUMN-1)
             );
         }
-        if (row < PANEL_MIN_ROW || row > PANEL_MAX_ROW) {
+        if (row < 0 || row >= PANEL_ROW) {
             throw new IndexOutOfBoundsException(
                 "Row " + row + " is out of bounds. Must be between " + 
-                PANEL_MIN_ROW + " and " + PANEL_MAX_ROW
+                0 + " and " + (PANEL_ROW-1)
             );
         }
         this.column = column;

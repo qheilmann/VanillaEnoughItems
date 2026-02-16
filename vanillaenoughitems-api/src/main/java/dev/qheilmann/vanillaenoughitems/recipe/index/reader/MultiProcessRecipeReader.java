@@ -162,6 +162,13 @@ public class MultiProcessRecipeReader {
         return multiProcessRecipeMap.getGrouping();
     }
 
+    @Override
+    public int hashCode() {
+        int result = multiProcessRecipeMap.hashCode();
+        result = 31 * result + currentProcessRecipeReader.hashCode();
+        return result;
+    }
+
     /**
      * Check equality between this MultiProcessRecipeReader and another object
      * Equal MultiProcessRecipeMap and same current ProcessRecipeReader means equality
@@ -172,7 +179,6 @@ public class MultiProcessRecipeReader {
         if (this == obj) return true;
         if (!(obj instanceof MultiProcessRecipeReader reader)) return false;
         if (!multiProcessRecipeMap.equals(reader.multiProcessRecipeMap)) return false;
-        if (!currentProcessRecipeReader.equals(reader.currentProcessRecipeReader)) return false;
-        return true;
+        return currentProcessRecipeReader.equals(reader.currentProcessRecipeReader);
     }
 }

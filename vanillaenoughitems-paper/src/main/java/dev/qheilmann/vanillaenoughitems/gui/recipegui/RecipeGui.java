@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NavigableSet;
 import java.util.Set;
-import java.util.function.Consumer;
+import java.util.function.IntConsumer;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.HumanEntity;
@@ -291,22 +291,18 @@ public class RecipeGui extends FastInv {
         }
     }
 
-    private void renderSharedIfPresent(Consumer<Integer> runnable, ProcessPannelSlot processPannelSlot) {
+    private void renderSharedIfPresent(IntConsumer runnable, @Nullable ProcessPannelSlot processPannelSlot) {
         if (processPannelSlot != null) {
-            if (runnable != null) {
-                runnable.accept(processPannelSlot.toSlotIndex());
-            }
+        runnable.accept(processPannelSlot.toSlotIndex());
         }
     }
 
     private ProcessPanel generateCurrentPanel() {
-        ProcessPanel newPanel = services.processPanelRegistry().createPanel(
+        return services.processPanelRegistry().createPanel(
             getCurrentProcess(),
             getCurrentRecipe(),
             style
         );
-
-        return newPanel;
     }
 
     //#region Ingredient / Result Ticker
@@ -397,7 +393,7 @@ public class RecipeGui extends FastInv {
                 
                 // TODO make a registry for custom namespace -> plugin name mapping
                 String namespace = recipeKey.namespace();
-                namespace = namespace.replaceAll("_", " "); // replace underscores with spaces
+                namespace = namespace.replace("_", " "); // replace underscores with spaces
                 namespace = namespace.substring(0, 1).toUpperCase() + namespace.substring(1); // capitalize first letter
 
                 Component customRecipeComp = Component.text().color(style.colorPrimaryVariant()).decoration(TextDecoration.ITALIC, false)
@@ -445,7 +441,7 @@ public class RecipeGui extends FastInv {
             return;
         }
 
-        setItem(slot, guiComponent.createNextRecipeButton(), event -> nextRecipeAction(event));
+        setItem(slot, guiComponent.createNextRecipeButton(), this::nextRecipeAction);
     }
 
     private void renderPreviousRecipeButton(int slot) {
@@ -454,7 +450,7 @@ public class RecipeGui extends FastInv {
             return;
         }
 
-        setItem(slot, guiComponent.createPreviousRecipeButton(), event -> previousRecipeAction(event));
+        setItem(slot, guiComponent.createPreviousRecipeButton(), this::previousRecipeAction);
     }
 
     private void nextRecipeAction(InventoryClickEvent event) {
@@ -501,7 +497,7 @@ public class RecipeGui extends FastInv {
             return;
         }
 
-        setItem(slot, guiComponent.createForwardNavigationButton(), event -> historyForwardAction(event));
+        setItem(slot, guiComponent.createForwardNavigationButton(), this::historyForwardAction);
     }
 
     private void renderBackwardNavigationButton(int slot) {
@@ -510,7 +506,7 @@ public class RecipeGui extends FastInv {
             return;
         }
 
-        setItem(slot, guiComponent.createBackwardNavigationButton(), event -> historyBackwardAction(event));
+        setItem(slot, guiComponent.createBackwardNavigationButton(), this::historyBackwardAction);
     }
 
     private void historyForwardAction(InventoryClickEvent event) {
@@ -557,7 +553,7 @@ public class RecipeGui extends FastInv {
 
     @SuppressWarnings("unused")
     private void renderQuickCraftButton(int slot) {
-        setItem(slot, guiComponent.createQuickCraftButton(), event -> quickCraftAction(event));
+        setItem(slot, guiComponent.createQuickCraftButton(), this::quickCraftAction);
     }
 
     private void quickCraftAction(InventoryClickEvent event) {
@@ -596,13 +592,13 @@ public class RecipeGui extends FastInv {
         else {
             // Scroll Left button
             if (this.processScrollOffset > 0) {
-                setItem(PROCESS_SCROLL_LEFT_SLOT, processScrollLeftItem(this.processScrollOffset, currentProcessIndex), event -> processScrollLeftAction(event));
+                setItem(PROCESS_SCROLL_LEFT_SLOT, processScrollLeftItem(this.processScrollOffset, currentProcessIndex), this::processScrollLeftAction);
             } else {
                 setItem(PROCESS_SCROLL_LEFT_SLOT, guiComponent.createProcessNonScrollButton(numberOfProcesses, currentProcessIndex, false));
             }
             // Scroll Right button
             if (this.processScrollOffset < numberOfProcesses - MAX_SCROLLABLE_PROCESSES) {
-                setItem(PROCESS_SCROLL_RIGHT_SLOT, processScrollRightItem(this.processScrollOffset), event -> processScrollRightAction(event));
+                setItem(PROCESS_SCROLL_RIGHT_SLOT, processScrollRightItem(this.processScrollOffset), this::processScrollRightAction);
             } else {
                 setItem(PROCESS_SCROLL_RIGHT_SLOT, fillerItem);
             }
@@ -632,8 +628,7 @@ public class RecipeGui extends FastInv {
             absoluteIndex++;
         }
 
-        int relativeIndex = absoluteIndex - this.processScrollOffset;
-        return relativeIndex;
+        return absoluteIndex - this.processScrollOffset; // Relative index
     }
 
     private void placeProcessTab(int slot, Process process) {
@@ -716,13 +711,13 @@ public class RecipeGui extends FastInv {
         else {
             // Scroll Up button
             if (workbenchScrollOffset > 0) {
-                setItem(WORKBENCH_SCROLL_UP_SLOT, workbenchScrollUpItem(workbenchScrollOffset), event -> workbenchScrollUpAction(event));
+                setItem(WORKBENCH_SCROLL_UP_SLOT, workbenchScrollUpItem(workbenchScrollOffset), this::workbenchScrollUpAction);
             } else {
                 setItem(WORKBENCH_SCROLL_UP_SLOT, guiComponent.createWorkbenchNonScrollButton(numberOfWorkbenches, false), null); // filler item with catalyst background
             }
             // Scroll Down button
             if (workbenchScrollOffset < numberOfWorkbenches - MAX_SCROLLABLE_WORKBENCHES) {
-                setItem(WORKBENCH_SCROLL_DOWN_SLOT, workbenchScrollDownItem(workbenchScrollOffset), event -> workbenchScrollDownAction(event));
+                setItem(WORKBENCH_SCROLL_DOWN_SLOT, workbenchScrollDownItem(workbenchScrollOffset), this::workbenchScrollDownAction);
             } else {
                 setItem(WORKBENCH_SCROLL_DOWN_SLOT, fillerItem);
             }
@@ -792,7 +787,7 @@ public class RecipeGui extends FastInv {
 
     private void renderBookmarkButton() {
         boolean isBookmarked = isCurrentRecipeBookmarked();
-        setItem(BOOKMARK_THIS_RECIPE_SLOT, guiComponent.createBookmarkButton(isBookmarked), event -> bookmarkAction(event));
+        setItem(BOOKMARK_THIS_RECIPE_SLOT, guiComponent.createBookmarkButton(isBookmarked), this::bookmarkAction);
     }
 
     public boolean isCurrentRecipeBookmarked() {
@@ -837,7 +832,7 @@ public class RecipeGui extends FastInv {
             return;
         }
         
-        setItem(BOOKMARK_LIST_SLOT, guiComponent.createBookmarkListButton(), event -> bookmarkListAction(event));
+        setItem(BOOKMARK_LIST_SLOT, guiComponent.createBookmarkListButton(), this::bookmarkListAction);
     }
 
     private void bookmarkListAction(InventoryClickEvent event) {
@@ -858,7 +853,7 @@ public class RecipeGui extends FastInv {
             return;
         }
         
-        setItem(BOOKMARK_SERVER_LIST_SLOT, guiComponent.createBookmarkServerListButton(), event -> bookmarkServerListAction(event));
+        setItem(BOOKMARK_SERVER_LIST_SLOT, guiComponent.createBookmarkServerListButton(), this::bookmarkServerListAction);
     }
 
     private void bookmarkServerListAction(InventoryClickEvent event) {
@@ -874,7 +869,7 @@ public class RecipeGui extends FastInv {
     //#region QuickLink
 
     private void renderQuickLinkButton() {
-        setItem(QUICK_LINK_SLOT, guiComponent.createQuickLinkButton(), event -> quickLinkAction(event));
+        setItem(QUICK_LINK_SLOT, guiComponent.createQuickLinkButton(), this::quickLinkAction);
     }
 
     private void quickLinkAction(InventoryClickEvent event) {
@@ -910,7 +905,7 @@ public class RecipeGui extends FastInv {
 
     @SuppressWarnings("unused")
     private void renderInfoButton() {
-        setItem(INFO_SLOT, guiComponent.createInfoButton(), event -> infoAction(event));
+        setItem(INFO_SLOT, guiComponent.createInfoButton(), this::infoAction);
     }
 
     private void infoAction(InventoryClickEvent event) {
@@ -945,10 +940,11 @@ public class RecipeGui extends FastInv {
      * Gets the (asOne) ingredient that should be pinned based on grouping.
      * @return the pinned ingredient, or null if no pinning
      */
+    @SuppressWarnings("java:S6878") // Record pattern matching is more confusing in this case
     @Nullable
     private ItemStack getPinnedIngredient() {
         return switch (reader.getGrouping()) {
-            case Grouping.ByIngredient g -> g.ingredient();
+            case Grouping.ByIngredient g -> g.ingredient(); 
             default -> null;
         };
     }
@@ -957,6 +953,7 @@ public class RecipeGui extends FastInv {
      * Gets the (asOne) result that should be pinned based on grouping.
      * @return the pinned result, or null if no pinning
      */
+    @SuppressWarnings("java:S6878") // Record pattern matching is more confusing in this case
     @Nullable
     private ItemStack getPinnedResult() {
         return switch (reader.getGrouping()) {
@@ -975,7 +972,7 @@ public class RecipeGui extends FastInv {
     private List<Component> formatTagLore(CyclicIngredient cyclic) {
         // Dependent ingredients cannot enumerate their options
         // Also ignore unique ingredients
-        if (cyclic.isDependent() || cyclic.hasMultipleOptions() == false) {
+        if (cyclic.isDependent() || !cyclic.hasMultipleOptions()) {
             return List.of();
         }
         

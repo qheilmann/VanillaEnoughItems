@@ -73,14 +73,15 @@ public interface Process extends Keyed{
         return Comparator.comparing((Process p) -> !isCraftingProcess.test(p))
                     .thenComparing((Process p) -> !isVanillaProcess.test(p))
                     .thenComparing(Comparator.comparing((Process p) -> !isUndefinedProcess.test(p)).reversed()) // place undefined last
-                    .thenComparing((Process p) -> p.key());
+                    .thenComparing(Keyed::key);
 
         // Note: negate with '!', is because the boolean comparator place false first and true last, so here we place it first if the predicate is true.
     }
 
+    @SuppressWarnings("java:S6548") // Allow case of singleton
     public static class UndefinedProcess implements Process {
 
-        public static final Key KEY = VeiKey.key("undefined");
+        private static final Key KEY = VeiKey.key("undefined");
         public static final UndefinedProcess INSTANCE = new UndefinedProcess();
 
         private UndefinedProcess() {} // singleton
@@ -98,23 +99,28 @@ public interface Process extends Keyed{
         @Override
         public ItemStack symbol() {
             ItemStack undefinedSymbol = new ItemStack(Material.BARRIER);
-            undefinedSymbol.editMeta(meta -> {
-                meta.displayName(Component.text("Undefined Process")); // [Translation]
-            });
+            undefinedSymbol.editMeta(meta ->
+                meta.displayName(Component.text("Undefined Process")) // [Translation]
+            );
 
             return undefinedSymbol;
         }
 
         @Override
         public Set<Workbench> workbenches() {
-            ItemStack undefiedWorkbench = new ItemStack(Material.BARRIER);
-            undefiedWorkbench.editMeta(meta -> {
-                meta.displayName(Component.text("Undefiened Workbench")); // [Translation]
-            });
+            ItemStack undefinedWorkbench = new ItemStack(Material.BARRIER);
+            undefinedWorkbench.editMeta(meta ->
+                meta.displayName(Component.text("Undefined Workbench")) // [Translation]
+            );
             
-            Workbench undefined = new Workbench(undefiedWorkbench);
+            Workbench undefined = new Workbench(undefinedWorkbench);
 
             return Set.of(undefined);
+        }
+
+        @Override
+        public int hashCode() {
+            return key().hashCode();
         }
 
         @Override
@@ -122,11 +128,6 @@ public interface Process extends Keyed{
             if (this == obj) return true;
             if (!(obj instanceof Process other)) return false;
             return this.key().equals(other.key());
-        }
-
-        @Override
-        public int hashCode() {
-            return key().hashCode();
         }
     }
 }

@@ -21,11 +21,6 @@ public class RecipeExtractorRegistryImpl implements RecipeExtractorRegistry {
     boolean locked = false;
 
     /**
-     * Create a new RecipeExtractorRegistryImpl
-     */
-    public RecipeExtractorRegistryImpl() {}
-
-    /**
      * {@inheritDoc}
      */
     @Override

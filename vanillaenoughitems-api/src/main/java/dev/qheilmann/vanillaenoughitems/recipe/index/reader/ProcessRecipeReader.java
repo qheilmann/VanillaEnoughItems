@@ -1,6 +1,7 @@
 package dev.qheilmann.vanillaenoughitems.recipe.index.reader;
 
 import java.util.NavigableSet;
+import java.util.Objects;
 
 import org.bukkit.inventory.Recipe;
 import org.jspecify.annotations.NullMarked;
@@ -31,7 +32,7 @@ public class ProcessRecipeReader {
      * @param processRecipeSet the process recipe set
      * @param startRecipe the recipe to start at
      */
-    @SuppressWarnings("null")
+    @SuppressWarnings({"null", "java:S2637"})
     public ProcessRecipeReader(ProcessRecipeSet processRecipeSet, Recipe startRecipe) {
         this.processRecipeSet = processRecipeSet;
         setCurrent(startRecipe);
@@ -94,7 +95,8 @@ public class ProcessRecipeReader {
         if (previousRecipe == null) {
             return null;
         }
-        return currentRecipe = previousRecipe;
+        currentRecipe = previousRecipe;
+        return previousRecipe;
     }
 
     /**
@@ -114,7 +116,8 @@ public class ProcessRecipeReader {
         if (nextRecipe == null) {
             return null;
         }
-        return currentRecipe = nextRecipe;
+        currentRecipe = nextRecipe;
+        return nextRecipe;
     }
 
     /**
@@ -133,6 +136,11 @@ public class ProcessRecipeReader {
         return processRecipeSet.getRecipes();
     }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(processRecipeSet, currentRecipe);
+    }
+
     /**
      * Equals method to compare two ProcessRecipeReader objects
      * Considers two readers equal if they read equal ProcessRecipeSets and are at the same current recipe
@@ -144,7 +152,6 @@ public class ProcessRecipeReader {
         if (this == obj) return true;
         if (!(obj instanceof ProcessRecipeReader reader)) return false;
         if (!processRecipeSet.equals(reader.processRecipeSet)) return false;
-        if (!currentRecipe.equals(reader.currentRecipe)) return false;
-        return true;
+        return currentRecipe.equals(reader.currentRecipe);
     }
 }

@@ -195,8 +195,8 @@ public class BookmarkImpl implements Bookmark {
         if (this == obj) return true;
         if (!(obj instanceof BookmarkImpl bookmark)) return false;
         if (!reader.equals(bookmark.reader)) return false;
-        if (!symbol.equals(bookmark.symbol, false)) return false;
-        return true;
+
+        return symbol.equals(bookmark.symbol, false);
     }
 
     @Override

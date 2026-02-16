@@ -4,6 +4,7 @@ import org.bukkit.NamespacedKey;
 
 import dev.qheilmann.vanillaenoughitems.VanillaEnoughItems;
 
+@SuppressWarnings("java:S1118") // Disable "Missing private constructor in utility class" because instantiation risk for this nested class is minimal
 public class VeiPack {
 
     public static final String NAMESPACE = VanillaEnoughItems.NAMESPACE;
@@ -39,7 +40,7 @@ public class VeiPack {
             public static class Background {
 
                 public static class Catalyst {
-                    // Don't forget to constants and method in ModelSelector when modifying these
+                    // Don't forget to update constants and methods in ModelSelector when modifying these
                     public static final NamespacedKey _1 = path(Catalyst.class, "1");
                     public static final NamespacedKey _2 = path(Catalyst.class, "2");
                     public static final NamespacedKey _3 = path(Catalyst.class, "3");
@@ -71,7 +72,7 @@ public class VeiPack {
                 }
 
                 public static class Process {
-                    // Don't forget to constants and method in ModelSelector when modifying these
+                    // Don't forget to update constants and methods in ModelSelector when modifying these
                     public static final NamespacedKey _1_0 = path(Process.class, "1_0");
                     public static final NamespacedKey _2_0 = path(Process.class, "2_0");
                     public static final NamespacedKey _2_1 = path(Process.class, "2_1");
@@ -153,12 +154,12 @@ public class VeiPack {
         /**
          * Automatically generates a resource path from the class hierarchy under ItemModel.
          * <p>
-         * Example: {@code path(ItemModel.Gui.Panel.Smelting.class, "background")}
-         * produces {@code "namespace:gui/panel/smelting/background"}
+         * Example: {@code path(ItemModel.Gui.Background.Panel.class, "smelting")}
+         * produces {@code "namespace:gui/background/panel/smelting"}
          * 
          * @param clazz The nested class under ItemModel (defines the folder path)
          * @param fileName The file name (without extension)
-         * @return A Key with the auto-generated path
+         * @return A NamespacedKey with the auto-generated path
          * @throws IllegalArgumentException if clazz is not nested under ItemModel
          */
         private static NamespacedKey path(Class<?> clazz, String fileName) {
@@ -175,7 +176,7 @@ public class VeiPack {
             if (markerIndex == -1) {
                 String underName = ItemModel.class.getCanonicalName();
                 throw new IllegalArgumentException(
-                    "Class must be nested under" + underName + ": " + canonicalName
+                    "Class must be nested under " + underName + ": " + canonicalName
                 );
             }
             
@@ -207,6 +208,7 @@ public class VeiPack {
          * 
          * @param totalNbOfCatalyst Number of catalysts, ignored if showUpButton is true
          * @param showUpButton Whether an up scroll button is shown
+         * @param isAllCatalystVisible Whether all catalysts are visible
          * @return The NamespacedKey for the appropriate catalyst model
          */
         public static NamespacedKey getCatalystModel(int totalNbOfCatalyst, boolean showUpButton, boolean isAllCatalystVisible) {
@@ -238,6 +240,7 @@ public class VeiPack {
          * @param totalNbOfProcess Number of processes
          * @param processIndex Zero-based index of the current showed process
          * @param showLeftButton Whether a left scroll button is shown (only relevant for 5+ processes)
+         * @param isAllProcessVisible Whether all processes are visible
          * @return The NamespacedKey for the appropriate process model
          * @throws IllegalArgumentException if parameters are invalid
          */
@@ -261,7 +264,7 @@ public class VeiPack {
                 }
             }
 
-            // Non visible cases            
+            // Non-visible process case
             if (processIndex < 0 || processIndex > nbOfVisibleProcesses - 1) {
                 return ItemModel.Gui.Background.Process._5_NON_VISIBLE_AND_LEFT;
             }

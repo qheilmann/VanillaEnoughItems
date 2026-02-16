@@ -10,6 +10,8 @@ public class RecipeHelper {
 
     public static final Comparator<Recipe> RECIPE_COMPARATOR = recipeComparator();
 
+    private RecipeHelper() {} // Static helper
+
     private static Comparator<Recipe> recipeComparator() {
 
         return (Recipe r1, Recipe r2) -> {

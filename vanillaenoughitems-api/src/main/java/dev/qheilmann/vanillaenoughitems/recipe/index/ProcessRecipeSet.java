@@ -2,6 +2,7 @@ package dev.qheilmann.vanillaenoughitems.recipe.index;
 
 import java.util.Collections;
 import java.util.NavigableSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
 
@@ -135,6 +136,10 @@ public class ProcessRecipeSet {
         recipes.clear();
     }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(process, recipes);
+    }
     
     /**
      * Check equality between this ProcessRecipeSet and another object
@@ -147,7 +152,6 @@ public class ProcessRecipeSet {
         if (this == obj) return true;
         if (!(obj instanceof ProcessRecipeSet other)) return false;
         if (!process.equals(other.process)) return false;
-        if (!recipes.equals(other.recipes)) return false;
-        return true;
+        return recipes.equals(other.recipes);
     }
 }

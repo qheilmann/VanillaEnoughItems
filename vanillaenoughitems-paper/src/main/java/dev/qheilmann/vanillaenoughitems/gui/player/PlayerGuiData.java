@@ -7,7 +7,6 @@ import org.jspecify.annotations.NullMarked;
 
 import dev.qheilmann.vanillaenoughitems.bookmark.Bookmark;
 import dev.qheilmann.vanillaenoughitems.bookmark.BookmarkCollection;
-import dev.qheilmann.vanillaenoughitems.recipe.index.RecipeIndex;
 
 /**
  * Holds all GUI-related data for a single player.
@@ -19,7 +18,7 @@ public class PlayerGuiData {
     private final BookmarkCollection bookmarks;
     private final RecipeNavigationHistory navigationHistory;
 
-    public PlayerGuiData(UUID playerUuid, RecipeIndex recipeIndex) {
+    public PlayerGuiData(UUID playerUuid) {
         this.playerUuid = playerUuid;
         this.bookmarks = new BookmarkCollection();
         this.navigationHistory = new RecipeNavigationHistory(playerUuid);
