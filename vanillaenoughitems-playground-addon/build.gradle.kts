@@ -29,4 +29,33 @@ tasks {
             expand(props)
         }
     }
+
+    register<Copy>("deployJarToServer") {
+        group = "deployment"
+        description = "Deploy the current built jar to the development server"
+
+        from(jar.flatMap { it.archiveFile })
+        into("${env.fetch("SERVER_PATH")}/plugins")
+
+        val baseNameProvider = jar.flatMap { it.archiveBaseName }
+
+        doFirst {
+            val baseName = baseNameProvider.get()
+            destinationDir.listFiles()
+                ?.filter { it.name.matches(Regex("^${Regex.escape(baseName)}-[0-9][0-9.\\-]*\\.jar$")) }
+                ?.forEach { file ->
+                    logger.lifecycle("Cleaning old ${baseName} plugin files: ${file.name}")
+                    file.delete()
+                }
+            logger.lifecycle("Deploy ${baseName} to ${destinationDir.absolutePath} ...")
+        }
+    }
+
+    register("jarAndDeploy") {
+        group = "deployment"
+        description = "Build jar and deploy to the development server"
+
+        dependsOn(jar)
+        finalizedBy(named("deployJarToServer"))
+    }
 }
