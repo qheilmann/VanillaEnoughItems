@@ -6,15 +6,14 @@ import java.util.Set;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.SmithingTrimRecipe;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
 
-import dev.qheilmann.vanillaenoughitems.recipe.extraction.RecipeExtractorStrategy;
+import dev.qheilmann.vanillaenoughitems.recipe.extraction.RecipeExtractor;
 import dev.qheilmann.vanillaenoughitems.recipe.helper.RecipeChoiceHelper;
 import net.kyori.adventure.key.Key;
 
 @NullMarked
-public class SmithingTrimRecipeRecipeExtractor implements RecipeExtractorStrategy<@NonNull SmithingTrimRecipe> {
+public class SmithingTrimRecipeRecipeExtractor implements RecipeExtractor {
     
     public static final Key KEY = Key.key("smithing_trim");
 
@@ -29,16 +28,17 @@ public class SmithingTrimRecipeRecipeExtractor implements RecipeExtractorStrateg
     }
 
     @Override
-    public Set<ItemStack> extractIngredients(SmithingTrimRecipe recipe) {
+    public Set<ItemStack> extractIngredients(Recipe recipe) {
+        SmithingTrimRecipe smithing = (SmithingTrimRecipe) recipe;
         Set<ItemStack> ingredients = new HashSet<>();
-        ingredients.addAll(RecipeChoiceHelper.getItemsFromChoice(recipe.getTemplate()));
-        ingredients.addAll(RecipeChoiceHelper.getItemsFromChoice(recipe.getBase()));
-        ingredients.addAll(RecipeChoiceHelper.getItemsFromChoice(recipe.getAddition()));
+        ingredients.addAll(RecipeChoiceHelper.getItemsFromChoice(smithing.getTemplate()));
+        ingredients.addAll(RecipeChoiceHelper.getItemsFromChoice(smithing.getBase()));
+        ingredients.addAll(RecipeChoiceHelper.getItemsFromChoice(smithing.getAddition()));
         return ingredients;
     }
 
     @Override
-    public Set<ItemStack> extractOthers(SmithingTrimRecipe recipe) {
+    public Set<ItemStack> extractOthers(Recipe recipe) {
         return Set.of();
     }
 }

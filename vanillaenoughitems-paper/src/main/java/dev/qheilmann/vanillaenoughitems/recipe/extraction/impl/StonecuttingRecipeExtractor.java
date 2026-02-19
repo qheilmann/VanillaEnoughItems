@@ -5,15 +5,14 @@ import java.util.Set;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.StonecuttingRecipe;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
 
-import dev.qheilmann.vanillaenoughitems.recipe.extraction.RecipeExtractorStrategy;
+import dev.qheilmann.vanillaenoughitems.recipe.extraction.RecipeExtractor;
 import dev.qheilmann.vanillaenoughitems.recipe.helper.RecipeChoiceHelper;
 import net.kyori.adventure.key.Key;
 
 @NullMarked
-public class StonecuttingRecipeExtractor implements RecipeExtractorStrategy<@NonNull StonecuttingRecipe> {
+public class StonecuttingRecipeExtractor implements RecipeExtractor {
 
     public static final Key KEY = Key.key("stonecutting");
 
@@ -28,12 +27,13 @@ public class StonecuttingRecipeExtractor implements RecipeExtractorStrategy<@Non
     }
 
     @Override
-    public Set<ItemStack> extractIngredients(StonecuttingRecipe recipe) {
-        return RecipeChoiceHelper.getItemsFromChoice(recipe.getInputChoice());
+    public Set<ItemStack> extractIngredients(Recipe recipe) {
+        StonecuttingRecipe stonecutting = (StonecuttingRecipe) recipe;
+        return RecipeChoiceHelper.getItemsFromChoice(stonecutting.getInputChoice());
     }
 
     @Override
-    public Set<ItemStack> extractOthers(StonecuttingRecipe recipe) {
+    public Set<ItemStack> extractOthers(Recipe recipe) {
         return Set.of();
     }
 }

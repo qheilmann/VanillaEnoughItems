@@ -7,7 +7,7 @@ import org.bukkit.inventory.Recipe;
 import org.jspecify.annotations.NullMarked;
 
 import dev.qheilmann.vanillaenoughitems.config.style.Style;
-import dev.qheilmann.vanillaenoughitems.recipe.extraction.RecipeExtractor;
+import dev.qheilmann.vanillaenoughitems.recipe.extraction.RecipeExtractorRegistry;
 import dev.qheilmann.vanillaenoughitems.recipe.process.Process;
 
 /**
@@ -18,10 +18,10 @@ import dev.qheilmann.vanillaenoughitems.recipe.process.Process;
 public class ProcessPanelRegistryImpl implements ProcessPanelRegistry {
     
     private final Map<Process, ProcessPanelFactory> factories = new HashMap<>();
-    private final RecipeExtractor extractor;
+    private final RecipeExtractorRegistry extractorRegistry;
 
-    public ProcessPanelRegistryImpl(RecipeExtractor extractor) {
-        this.extractor = extractor;
+    public ProcessPanelRegistryImpl(RecipeExtractorRegistry extractorRegistry) {
+        this.extractorRegistry = extractorRegistry;
     }
 
     /**
@@ -39,7 +39,7 @@ public class ProcessPanelRegistryImpl implements ProcessPanelRegistry {
     public ProcessPanel createPanel(Process process, Recipe recipe, Style style) {       
         // Non registered factory
         if (!hasFactory(process)) {
-            return new ProcessPanel.UndefinedProcessPanel(recipe, style, extractor, process);
+            return new ProcessPanel.UndefinedProcessPanel(recipe, style, extractorRegistry, process);
         }
 
         ProcessPanelFactory factory = factories.get(process);

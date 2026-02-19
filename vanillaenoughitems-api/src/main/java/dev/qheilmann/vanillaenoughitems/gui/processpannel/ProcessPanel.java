@@ -15,7 +15,7 @@ import dev.qheilmann.vanillaenoughitems.config.style.Style;
 import dev.qheilmann.vanillaenoughitems.gui.CyclicIngredient;
 import dev.qheilmann.vanillaenoughitems.gui.recipegui.RecipeGuiSharedButton;
 import dev.qheilmann.vanillaenoughitems.utils.VeiKey;
-import dev.qheilmann.vanillaenoughitems.recipe.extraction.RecipeExtractor;
+import dev.qheilmann.vanillaenoughitems.recipe.extraction.RecipeExtractorRegistry;
 import dev.qheilmann.vanillaenoughitems.recipe.process.Process;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.key.Keyed;
@@ -77,13 +77,13 @@ public interface ProcessPanel {
 
         private final Recipe recipe;
         private final Style style;
-        private final RecipeExtractor extractor;
+        private final RecipeExtractorRegistry extractorRegistry;
         private final @Nullable Process unhandledProcess;
 
-        public UndefinedProcessPanel(Recipe recipe, Style style, RecipeExtractor extractor, @Nullable Process unhandledProcess) {
+        public UndefinedProcessPanel(Recipe recipe, Style style, RecipeExtractorRegistry extractorRegistry, @Nullable Process unhandledProcess) {
             this.recipe = recipe;
             this.style = style;
-            this.extractor = extractor;
+            this.extractorRegistry = extractorRegistry;
             this.unhandledProcess = unhandledProcess;
         }
 
@@ -127,8 +127,8 @@ public interface ProcessPanel {
             Map<ProcessPannelSlot, PanelStaticItem> statics = new HashMap<>();
 
             Key recipeId;
-            if (extractor.canHandle(recipe)) {
-                recipeId = extractor.extractKey(recipe);
+            if (extractorRegistry.canHandle(recipe)) {
+                recipeId = extractorRegistry.extractKey(recipe);
             } else if (recipe instanceof Keyed keyed) {
                 recipeId = keyed.key();
             } else {

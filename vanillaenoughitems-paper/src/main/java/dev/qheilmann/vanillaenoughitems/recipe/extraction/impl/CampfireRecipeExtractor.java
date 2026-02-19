@@ -5,15 +5,14 @@ import java.util.Set;
 import org.bukkit.inventory.CampfireRecipe;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
 
-import dev.qheilmann.vanillaenoughitems.recipe.extraction.RecipeExtractorStrategy;
+import dev.qheilmann.vanillaenoughitems.recipe.extraction.RecipeExtractor;
 import dev.qheilmann.vanillaenoughitems.recipe.helper.RecipeChoiceHelper;
 import net.kyori.adventure.key.Key;
 
 @NullMarked
-public class CampfireRecipeExtractor implements RecipeExtractorStrategy<@NonNull CampfireRecipe> {
+public class CampfireRecipeExtractor implements RecipeExtractor {
     
     public static final Key KEY = Key.key("campfire");
 
@@ -28,12 +27,13 @@ public class CampfireRecipeExtractor implements RecipeExtractorStrategy<@NonNull
     }
 
     @Override
-    public Set<ItemStack> extractIngredients(CampfireRecipe recipe) {
-        return RecipeChoiceHelper.getItemsFromChoice(recipe.getInputChoice());
+    public Set<ItemStack> extractIngredients(Recipe recipe) {
+        CampfireRecipe campfire = (CampfireRecipe) recipe;
+        return RecipeChoiceHelper.getItemsFromChoice(campfire.getInputChoice());
     }
 
     @Override
-    public Set<ItemStack> extractOthers(CampfireRecipe recipe) {
+    public Set<ItemStack> extractOthers(Recipe recipe) {
         return Set.of();
     }
 }

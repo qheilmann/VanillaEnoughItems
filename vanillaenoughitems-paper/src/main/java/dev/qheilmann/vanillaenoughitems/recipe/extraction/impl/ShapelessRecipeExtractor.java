@@ -7,15 +7,14 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.inventory.ShapelessRecipe;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
 
-import dev.qheilmann.vanillaenoughitems.recipe.extraction.RecipeExtractorStrategy;
+import dev.qheilmann.vanillaenoughitems.recipe.extraction.RecipeExtractor;
 import dev.qheilmann.vanillaenoughitems.recipe.helper.RecipeChoiceHelper;
 import net.kyori.adventure.key.Key;
 
 @NullMarked
-public class ShapelessRecipeExtractor implements RecipeExtractorStrategy<@NonNull ShapelessRecipe> {
+public class ShapelessRecipeExtractor implements RecipeExtractor {
 
     public static final Key KEY = Key.key("shapeless");
 
@@ -30,17 +29,18 @@ public class ShapelessRecipeExtractor implements RecipeExtractorStrategy<@NonNul
     }
 
     @Override
-    public Set<ItemStack> extractIngredients(ShapelessRecipe recipe) {
+    public Set<ItemStack> extractIngredients(Recipe recipe) {
+        ShapelessRecipe shapeless = (ShapelessRecipe) recipe;
         Set<ItemStack> ingredients = new HashSet<>();
         
-        for (RecipeChoice choice : recipe.getChoiceList()) {
+        for (RecipeChoice choice : shapeless.getChoiceList()) {
             ingredients.addAll(RecipeChoiceHelper.getItemsFromChoice(choice));
         }
         return ingredients;
     }
 
     @Override
-    public Set<ItemStack> extractOthers(ShapelessRecipe recipe) {
+    public Set<ItemStack> extractOthers(Recipe recipe) {
         return Set.of();
     }
 }

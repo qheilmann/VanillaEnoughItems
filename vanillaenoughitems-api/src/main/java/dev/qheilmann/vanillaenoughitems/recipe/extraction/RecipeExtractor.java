@@ -7,47 +7,62 @@ import org.bukkit.inventory.Recipe;
 import org.jspecify.annotations.NullMarked;
 
 import net.kyori.adventure.key.Key;
+import net.kyori.adventure.key.Keyed;
 
+/**
+ * Strategy for extracting ingredients, results, and other items from a recipe.
+ * <p>
+ * Implementations handle specific recipe types (e.g., ShapelessRecipe, FurnaceRecipe).
+ * The registry uses the composite pattern to delegate to registered extractors.
+ * </p>
+ * <p>
+ * Implementations should check the recipe type with {@link #canHandle(Recipe)} before extraction.
+ * Type casting is expected after the canHandle check ensures type safety.
+ * </p>
+ */
 @NullMarked
-public interface RecipeExtractor {
+public interface RecipeExtractor extends Keyed {
 
     /**
-     * Check if any registered extractor can handle the given recipe
+     * Check if this extractor can handle the given recipe
      * @param recipe the recipe to check
-     * @return true if any extractor can handle the recipe, false otherwise
+     * @return true if this extractor can handle the recipe, false otherwise
      */
-    public boolean canHandle(Recipe recipe);
-
+    boolean canHandle(Recipe recipe);
+    
     /**
-     * Get the key of this recipe with the first extractor (ordered by extractor key {@link Key#comparator()}
-     * <p> Note: not all recipes are Keyed, the extractor can still provide a custom implementation of key for those recipes </p>
+     * Get the key of this recipe
      * @param recipe the recipe to get the key from
      * @return the key of this recipe
-     * @throws IllegalArgumentException if no extractor could handle the recipe, first check with {@link #canHandle(Recipe)} if needed
+     * @throws IllegalArgumentException if the recipe is not Keyed
      */
-    public Key extractKey(Recipe recipe);
+    default Key extractKey(Recipe recipe){
+        if (recipe instanceof Keyed keyed) {
+            return keyed.key();
+        }
+        throw new UnsupportedOperationException("This extractor does not implement custom key extraction for non-Keyed recipes:" + recipe.getClass().getName());
+    }
 
     /**
-     * Extract the ingredients from the given recipe with the first extractor (ordered by extractor key {@link Key#comparator()}
+     * Extract the ingredients from the given recipe
      * @param recipe the recipe to extract from
-     * @return a set of ItemStacks representing the ingredients, or an empty set if no extractor could handle the recipe
-     * @throws IllegalArgumentException if no extractor could handle the recipe, first check with {@link #canHandle(Recipe)} if needed
+     * @return a set of ItemStacks representing the ingredients
      */
-    public Set<ItemStack> extractIngredients(Recipe recipe);
-
+    Set<ItemStack> extractIngredients(Recipe recipe);
+    
     /**
-     * Extract the results from the given recipe with the first extractor (ordered by extractor key {@link Key#comparator()}
+     * Extract the results from the given recipe
      * @param recipe the recipe to extract from
      * @return a set of ItemStacks representing the results
-     * @throws IllegalArgumentException if no extractor could handle the recipe, first check with {@link #canHandle(Recipe)} if needed
      */
-    public Set<ItemStack> extractResults(Recipe recipe); 
-
+    default Set<ItemStack> extractResults(Recipe recipe) {
+        return Set.of(recipe.getResult());
+    }
+    
     /**
-     * Extract other relevant items (e.g. combustion fuel in a furnace recipe) from the given recipe with the first extractor (ordered by extractor key {@link Key#comparator()}
+     * Extract other relevant items from the given recipe (e.g. combustion fuel in a furnace recipe)
      * @param recipe the recipe to extract from
      * @return a set of ItemStacks representing other relevant items
-     * @throws IllegalArgumentException if no extractor could handle the recipe, first check with {@link #canHandle(Recipe)} if needed
      */
-    public Set<ItemStack> extractOthers(Recipe recipe);
+    Set<ItemStack> extractOthers(Recipe recipe);
 }

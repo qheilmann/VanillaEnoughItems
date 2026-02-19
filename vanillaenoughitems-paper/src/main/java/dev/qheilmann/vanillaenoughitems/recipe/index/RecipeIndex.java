@@ -13,7 +13,7 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 import dev.qheilmann.vanillaenoughitems.VanillaEnoughItems;
-import dev.qheilmann.vanillaenoughitems.recipe.extraction.RecipeExtractor;
+import dev.qheilmann.vanillaenoughitems.recipe.extraction.RecipeExtractorRegistry;
 import dev.qheilmann.vanillaenoughitems.recipe.helper.RecipeHelper;
 import dev.qheilmann.vanillaenoughitems.recipe.index.reader.MultiProcessRecipeReader;
 import dev.qheilmann.vanillaenoughitems.recipe.index.reader.RecipeIndexView;
@@ -30,7 +30,7 @@ import net.kyori.adventure.key.Keyed;
 public class RecipeIndex implements RecipeIndexView {
     
     private final ProcessRegistry processRegistry;
-    private final RecipeExtractor recipeExtractor;
+    private final RecipeExtractorRegistry recipeExtractorRegistry;
     
     // Search indexes
     private final ConcurrentSkipListMap<Key, Recipe> recipeByKey = new ConcurrentSkipListMap<>(Key.comparator());
@@ -49,9 +49,9 @@ public class RecipeIndex implements RecipeIndexView {
     /**
      * Create an empty RecipeIndex
      */
-    public RecipeIndex(ProcessRegistry processRegistry, RecipeExtractor recipeExtractor) {
+    public RecipeIndex(ProcessRegistry processRegistry, RecipeExtractorRegistry recipeExtractorRegistry) {
         this.processRegistry = processRegistry;
-        this.recipeExtractor = recipeExtractor;
+        this.recipeExtractorRegistry = recipeExtractorRegistry;
     }
 
     //#region Indexing
@@ -73,7 +73,7 @@ public class RecipeIndex implements RecipeIndexView {
      */
     public void indexRecipe(Recipe recipe) {
 
-        if (!recipeExtractor.canHandle(recipe)) {
+        if (!recipeExtractorRegistry.canHandle(recipe)) {
             if (VanillaEnoughItems.veiConfig().hasMissingRecipeProcess()) {
                 String key = (recipe instanceof Keyed keyed) ? keyed.key().asString() : "no key available";
                 VanillaEnoughItems.LOGGER.warn("No extractor found for recipe: {} ({})", recipe.getClass().getSimpleName(), key);
@@ -82,7 +82,7 @@ public class RecipeIndex implements RecipeIndexView {
         }
 
         // Index by id
-        Key recipeKey = recipeExtractor.extractKey(recipe);
+        Key recipeKey = recipeExtractorRegistry.extractKey(recipe);
         recipeByKey.put(recipeKey, recipe);
 
         // Index by process
@@ -91,7 +91,7 @@ public class RecipeIndex implements RecipeIndexView {
         recipesByProcess.addRecipe(process, recipe);
 
         // Index by result
-        Set<ItemStack> results = recipeExtractor.extractResults(recipe);
+        Set<ItemStack> results = recipeExtractorRegistry.extractResults(recipe);
         for (ItemStack result : results) {
             result = result.asOne(); // Normalize to amount 1 for indexing
             MultiProcessRecipeMap multiProcessRecipeMap = recipesByResult.computeIfAbsent(result, r -> new MultiProcessRecipeMap(new Grouping.ByResult(r)));
@@ -99,7 +99,7 @@ public class RecipeIndex implements RecipeIndexView {
         }
 
         // Index by ingredient
-        Set<ItemStack> ingredients = recipeExtractor.extractIngredients(recipe);
+        Set<ItemStack> ingredients = recipeExtractorRegistry.extractIngredients(recipe);
         for (ItemStack ingredient : ingredients) {
             ingredient = ingredient.asOne(); // Normalize to amount 1 for indexing
             MultiProcessRecipeMap multiProcessRecipeMap = recipesByIngredient.computeIfAbsent(ingredient, i -> new MultiProcessRecipeMap(new Grouping.ByIngredient(i)));
@@ -107,7 +107,7 @@ public class RecipeIndex implements RecipeIndexView {
         }
         
         // Index by other
-        Set<ItemStack> others = recipeExtractor.extractOthers(recipe);
+        Set<ItemStack> others = recipeExtractorRegistry.extractOthers(recipe);
         for (ItemStack other : others) {
             other = other.asOne(); // Normalize to amount 1 for indexing
             MultiProcessRecipeMap multiProcessRecipeMap = recipesByOther.computeIfAbsent(other, o -> new MultiProcessRecipeMap(new Grouping.ByOther(o)));
@@ -139,28 +139,28 @@ public class RecipeIndex implements RecipeIndexView {
         }
 
         // Unindex by id
-        Key recipeKey = recipeExtractor.extractKey(recipe);
+        Key recipeKey = recipeExtractorRegistry.extractKey(recipe);
         recipeByKey.remove(recipeKey);
 
         // Unindex by process
         recipesByProcess.removeRecipe(process,  recipe);
 
         // Unindex by result
-        Set<ItemStack> results = recipeExtractor.extractResults(recipe);
+        Set<ItemStack> results = recipeExtractorRegistry.extractResults(recipe);
         for (ItemStack result : results) {
             result = result.asOne();
             removeRecipeFromMapWithCleanup(recipesByResult, result, process, recipe);
         }
 
         // Unindex by ingredient
-        Set<ItemStack> ingredients = recipeExtractor.extractIngredients(recipe);
+        Set<ItemStack> ingredients = recipeExtractorRegistry.extractIngredients(recipe);
         for (ItemStack ingredient : ingredients) {
             ingredient = ingredient.asOne();
             removeRecipeFromMapWithCleanup(recipesByIngredient, ingredient, process, recipe);
         }
         
         // Unindex by other
-        Set<ItemStack> others = recipeExtractor.extractOthers(recipe);
+        Set<ItemStack> others = recipeExtractorRegistry.extractOthers(recipe);
         for (ItemStack other : others) {
             other = other.asOne();
             removeRecipeFromMapWithCleanup(recipesByOther, other, process, recipe);
@@ -293,11 +293,11 @@ public class RecipeIndex implements RecipeIndexView {
     }
 
     /**
-     * Get the associated RecipeExtractor
-     * @return the recipe extractor
+     * Get the associated RecipeExtractorRegistry
+     * @return the recipe extractor registry
      */
-    public RecipeExtractor getAssociatedRecipeExtractor() {
-        return recipeExtractor;
+    public RecipeExtractorRegistry getAssociatedRecipeExtractor() {
+        return recipeExtractorRegistry;
     }
 
     /**
@@ -534,7 +534,7 @@ public class RecipeIndex implements RecipeIndexView {
             for (Recipe recipe : recipeSet.getRecipes()) {
                 if (count >= 5) break;
                 
-                String recipeKey = recipeExtractor.extractKey(recipe).asString();
+                String recipeKey = recipeExtractorRegistry.extractKey(recipe).asString();
                 ItemStack result = recipe.getResult();
                 String itemType = result.getType().name();
                 

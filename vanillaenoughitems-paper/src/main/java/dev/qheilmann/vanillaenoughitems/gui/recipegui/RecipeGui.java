@@ -36,7 +36,7 @@ import dev.qheilmann.vanillaenoughitems.gui.player.PlayerGuiData;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPanel;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPannelSlot;
 import dev.qheilmann.vanillaenoughitems.pack.VeiPack;
-import dev.qheilmann.vanillaenoughitems.recipe.extraction.RecipeExtractor;
+import dev.qheilmann.vanillaenoughitems.recipe.extraction.RecipeExtractorRegistry;
 import dev.qheilmann.vanillaenoughitems.recipe.index.Grouping;
 import dev.qheilmann.vanillaenoughitems.recipe.index.reader.MultiProcessRecipeReader;
 import dev.qheilmann.vanillaenoughitems.recipe.process.Process;
@@ -927,13 +927,13 @@ public class RecipeGui extends FastInv {
     @Nullable
     private Key getCurrentRecipeKey() {
         Recipe recipe = getCurrentRecipe();
-        RecipeExtractor extractor = services.recipeIndex().getAssociatedRecipeExtractor();
+        RecipeExtractorRegistry extractorRegistry = services.recipeIndex().getAssociatedRecipeExtractor();
 
-        if (!extractor.canHandle(recipe)) {
+        if (!extractorRegistry.canHandle(recipe)) {
             return null;
         }
 
-        return extractor.extractKey(recipe);
+        return extractorRegistry.extractKey(recipe);
     }
 
     /**
