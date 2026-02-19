@@ -1,4 +1,5 @@
 # IDE compiler preferences (based on Eclipse JDT), mainly used for null analysis and type checking
+# Reference https://help.eclipse.org/latest/index.jsp?topic=%2Forg.eclipse.jdt.doc.isv%2Freference%2Fapi%2Forg%2Feclipse%2Fjdt%2Fcore%2FJavaCore.html
 
 # Null analysis settings
 org.eclipse.jdt.core.compiler.annotation.nullanalysis=enabled
@@ -16,7 +17,7 @@ org.eclipse.jdt.core.compiler.problem.redundantNullAnnotation=warning
 
 # External library boundaries
 org.eclipse.jdt.core.compiler.problem.nonnullTypeVariableFromLegacyInvocation=warning
-org.eclipse.jdt.core.compiler.problem.annotatedTypeArgumentToUnannotated=warning
+org.eclipse.jdt.core.compiler.problem.annotatedTypeArgumentToUnannotated=ignore
 org.eclipse.jdt.core.compiler.problem.pessimisticNullAnalysisForFreeTypeVariables=warning
 
 # Suppress warnings when passing annotated types to unannotated APIs
