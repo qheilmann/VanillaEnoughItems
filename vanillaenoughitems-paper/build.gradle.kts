@@ -70,7 +70,7 @@ tasks {
             // Clean old plugin files with same base name
             val baseName = baseNameProvider.get()
             destinationDir.listFiles()
-            ?.filter { it.name.startsWith(baseName) && it.name.endsWith(".jar") }
+            ?.filter { it.name.matches(Regex("^${Regex.escape(baseName)}-[0-9][0-9.\\-]*\\.jar$")) }
             ?.forEach { file ->
                 logger.lifecycle("Cleaning old ${baseName} plugin files: ${file.name}")
                 file.delete()

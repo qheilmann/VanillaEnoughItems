@@ -1,0 +1,12 @@
+name: VEI-Playground-Addon
+description: Demo plugin showing advanced VanillaEnoughItems API usage (overriding process panels, registering via VeiRegistrationEvent).
+author: qheilmann
+main: dev.qheilmann.vanillaenoughitems.playground.addon.PlaygroundAddonPlugin
+api-version: ${apiVersion}
+version: ${version}
+
+dependencies:
+  server:
+    VanillaEnoughItems:
+      required: true
+      load: AFTER

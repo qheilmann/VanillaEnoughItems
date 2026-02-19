@@ -8,7 +8,6 @@ import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 import dev.qheilmann.vanillaenoughitems.utils.VeiKey;
 import net.kyori.adventure.key.Key;
@@ -78,17 +77,14 @@ public interface Process extends Keyed{
         // Note: negate with '!', is because the boolean comparator place false first and true last, so here we place it first if the predicate is true.
     }
 
-    @SuppressWarnings("java:S6548") // Allow case of singleton
-    public static class UndefinedProcess implements Process {
+    @SuppressWarnings("java:S6548") // Allowed case of singleton
+    public static class UndefinedProcess extends AbstractProcess {
 
         private static final Key KEY = VeiKey.key("undefined");
         public static final UndefinedProcess INSTANCE = new UndefinedProcess();
 
-        private UndefinedProcess() {} // singleton
-
-        @Override
-        public Key key() {
-            return KEY;
+        private UndefinedProcess() {
+            super(KEY);
         }
 
         @Override
@@ -116,18 +112,6 @@ public interface Process extends Keyed{
             Workbench undefined = new Workbench(undefinedWorkbench);
 
             return Set.of(undefined);
-        }
-
-        @Override
-        public int hashCode() {
-            return key().hashCode();
-        }
-
-        @Override
-        public boolean equals(@Nullable Object obj) {
-            if (this == obj) return true;
-            if (!(obj instanceof Process other)) return false;
-            return this.key().equals(other.key());
         }
     }
 }
