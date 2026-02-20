@@ -56,7 +56,6 @@ public class ProcessPannelSlot implements Comparable<ProcessPannelSlot> {
      * @return the default shared button map
      */
     public static Map<RecipeGuiSharedButton, ProcessPannelSlot> defaultSharedButtonMap() {
-        @SuppressWarnings("null")
         Map<RecipeGuiSharedButton, ProcessPannelSlot> shared = new EnumMap<>(RecipeGuiSharedButton.class);
         shared.put(RecipeGuiSharedButton.NEXT_RECIPE,      DEFAULT_NEXT_RECIPE_SLOT);
         shared.put(RecipeGuiSharedButton.PREVIOUS_RECIPE,  DEFAULT_PREVIOUS_RECIPE_SLOT);

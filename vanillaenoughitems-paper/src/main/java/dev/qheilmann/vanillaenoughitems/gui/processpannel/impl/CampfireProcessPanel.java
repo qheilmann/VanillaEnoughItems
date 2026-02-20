@@ -66,7 +66,6 @@ public class CampfireProcessPanel implements ProcessPanel {
      * {@inheritDoc}
      */
     @Override
-    @SuppressWarnings("null")
     public Map<ProcessPannelSlot, CyclicIngredient> getTickedResults() {
         return Map.of(OUTPUT_SLOT, new CyclicIngredient(seed, getCampfireRecipe().getResult()));
     }
@@ -87,7 +86,7 @@ public class CampfireProcessPanel implements ProcessPanel {
         Map<ProcessPannelSlot, PanelStaticItem> statics = new HashMap<>();
         
         ItemStack backgroundItem = RecipeGuiComponent.createFillerItem(false);
-        ItemStack progressItem = RecipeGuiComponent.createFillerItem(true);
+        ItemStack progressItem = RecipeGuiComponent.createFillerItem(false);
         ItemStack campfireItem = ItemType.CAMPFIRE.createItemStack(meta -> {
             meta.setMaxStackSize(1);
             meta.setHideTooltip(true);

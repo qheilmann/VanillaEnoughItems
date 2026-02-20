@@ -91,7 +91,7 @@ public class BlastingProcessPanel implements ProcessPanel {
         Map<ProcessPannelSlot, PanelStaticItem> statics = new HashMap<>();
 
         ItemStack backgroundItem = RecipeGuiComponent.createFillerItem(false);
-        ItemStack progressItem = RecipeGuiComponent.createFillerItem(true);
+        ItemStack progressItem = RecipeGuiComponent.createFillerItem(false);
         ItemStack blastFurnaceItem = ItemType.BLAST_FURNACE.createItemStack(meta -> {
             meta.setMaxStackSize(1);
             meta.setHideTooltip(true);

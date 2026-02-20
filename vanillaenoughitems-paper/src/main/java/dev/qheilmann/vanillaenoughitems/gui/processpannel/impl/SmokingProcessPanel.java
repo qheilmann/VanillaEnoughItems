@@ -91,7 +91,7 @@ public class SmokingProcessPanel implements ProcessPanel {
         Map<ProcessPannelSlot, PanelStaticItem> statics = new HashMap<>();
 
         ItemStack backgroundItem = RecipeGuiComponent.createFillerItem(false);
-        ItemStack progressItem = RecipeGuiComponent.createFillerItem(true);
+        ItemStack progressItem = RecipeGuiComponent.createFillerItem(false);
         ItemStack smokerItem = ItemType.SMOKER.createItemStack(meta -> {
             meta.setMaxStackSize(1);
             meta.setHideTooltip(true);
