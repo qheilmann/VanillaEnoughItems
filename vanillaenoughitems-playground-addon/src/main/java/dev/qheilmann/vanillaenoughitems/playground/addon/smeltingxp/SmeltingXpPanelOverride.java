@@ -1,4 +1,4 @@
-package dev.qheilmann.vanillaenoughitems.playground.addon;
+package dev.qheilmann.vanillaenoughitems.playground.addon.smeltingxp;
 
 import java.util.HashMap;
 import java.util.List;
@@ -14,10 +14,12 @@ import org.jspecify.annotations.NullMarked;
 
 import dev.qheilmann.vanillaenoughitems.config.style.Style;
 import dev.qheilmann.vanillaenoughitems.gui.CyclicIngredient;
+import dev.qheilmann.vanillaenoughitems.gui.helper.GuiComponentHelper;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.PanelStaticItem;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPanel;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPannelSlot;
 import dev.qheilmann.vanillaenoughitems.gui.recipegui.RecipeGuiSharedButton;
+import dev.qheilmann.vanillaenoughitems.utils.VeiKey;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 
@@ -33,26 +35,28 @@ import net.kyori.adventure.text.format.TextDecoration;
  * <pre>
  *   col: 0       1       2       3       4       5       6
  * row 0: ·     [prev]    ·     [next]    ·       ·       ·
- * row 1: ·       ·     [INPUT]   ·       ·     [XP]      ·
+ * row 1: ·       ·     [INPUT]   ·       ·      [XP]     ·
  * row 2: ·       ·     [FIRE]  [ARROW]   ·    [OUTPUT]   ·
- * row 3: ·       ·     [FUEL]    ·       ·    [TIME]     ·
- * row 4: ·     [h.bk]    ·     [h.fw]    ·    [craft]    ·
+ * row 3: ·       ·     [FUEL]    ·       ·     [TIME]    ·
+ * row 4: ·     [h.bk]    ·     [h.fw]    ·       .       ·
  * </pre>
  */
 @NullMarked
-public class SmeltingPanelOverride implements ProcessPanel {
+public class SmeltingXpPanelOverride implements ProcessPanel {
 
     // -- Slot positions (column, row) within the panel area --
     private static final ProcessPannelSlot INPUT_SLOT  = new ProcessPannelSlot(2, 1);
-    private static final ProcessPannelSlot FIRE_SLOT   = new ProcessPannelSlot(2, 2);
     private static final ProcessPannelSlot FUEL_SLOT   = new ProcessPannelSlot(2, 3);
-    private static final ProcessPannelSlot ARROW_SLOT  = new ProcessPannelSlot(3, 2);
     private static final ProcessPannelSlot OUTPUT_SLOT = new ProcessPannelSlot(5, 2);
     private static final ProcessPannelSlot XP_SLOT     = new ProcessPannelSlot(5, 1);  // Custom: XP info
-    private static final ProcessPannelSlot TIME_SLOT   = new ProcessPannelSlot(5, 3);  // Custom: Cook time
+    private static final ProcessPannelSlot COOK_TIME_SLOT = new ProcessPannelSlot(5, 3);  // Custom: Cook time info
+
+    private static final ProcessPannelSlot DECORATION_FIRE_SLOT = new ProcessPannelSlot(1, 2);
+    private static final ProcessPannelSlot DECORATION_PROGRESS_SLOT = new ProcessPannelSlot(3, 2);
+    private static final ProcessPannelSlot BACKGROUND_SLOT = new ProcessPannelSlot(0, 0);
 
     // Custom fuel items for this custom smelting panel
-    private static final ItemStack[] COMMON_FUELS = {
+    private static final ItemStack[] CUSTOM_FUELS = {
         new ItemStack(Material.LAVA_BUCKET),
         new ItemStack(Material.BLAZE_ROD),
     };
@@ -61,7 +65,7 @@ public class SmeltingPanelOverride implements ProcessPanel {
     private final Style style;
     private final int seed;
 
-    public SmeltingPanelOverride(Recipe recipe, Style style) {
+    public SmeltingXpPanelOverride(Recipe recipe, Style style) {
         this.recipe = (FurnaceRecipe) recipe;
         this.style = style;
         this.seed = new Random().nextInt();
@@ -84,30 +88,39 @@ public class SmeltingPanelOverride implements ProcessPanel {
 
     @Override
     public Map<ProcessPannelSlot, CyclicIngredient> getTickedOther() {
-        return Map.of(FUEL_SLOT, new CyclicIngredient(seed, COMMON_FUELS));
+        return Map.of(FUEL_SLOT, new CyclicIngredient(seed, CUSTOM_FUELS));
     }
 
     @Override
     public Map<ProcessPannelSlot, PanelStaticItem> getStaticItems() {
         Map<ProcessPannelSlot, PanelStaticItem> statics = new HashMap<>();
 
-        // Fire decoration (furnace icon between input and fuel)
-        ItemStack fireItem = ItemType.FURNACE.createItemStack();
-        fireItem.editMeta(meta -> meta.setHideTooltip(true));
-        statics.put(FIRE_SLOT, new PanelStaticItem(fireItem, null));
+        ItemStack backgroundItem = GuiComponentHelper.createFillerItem(false);
+        ItemStack progressItem = GuiComponentHelper.createFillerItem(false);
+        ItemStack furnaceItem = ItemType.FURNACE.createItemStack(meta -> {
+            meta.setMaxStackSize(1);
+            meta.setHideTooltip(true);
+        });
 
-        // Arrow decoration (progress indicator)
-        ItemStack arrowItem = ItemType.ARROW.createItemStack();
-        arrowItem.editMeta(meta -> meta.setHideTooltip(true));
-        statics.put(ARROW_SLOT, new PanelStaticItem(arrowItem, null));
+        if (style.hasResourcePack()) {
+            // Note: We use hardcoded VEI models for this demo.
+            // In production, addons should provide their own models via a resource pack.
+            backgroundItem.editMeta(meta -> meta.setItemModel(VeiKey.namespacedKey("gui/background/panel/smelting")));
+            progressItem.editMeta(meta -> meta.setItemModel(VeiKey.namespacedKey("gui/decoration/recipe_progress")));
+            furnaceItem.editMeta(meta -> meta.setItemModel(VeiKey.namespacedKey("gui/decoration/cooking_flame")));
+        }
+
+        statics.put(BACKGROUND_SLOT, new PanelStaticItem(backgroundItem, null));
+        statics.put(DECORATION_PROGRESS_SLOT, new PanelStaticItem(progressItem, null));
+        statics.put(DECORATION_FIRE_SLOT, new PanelStaticItem(furnaceItem, null));
 
         // XP info — shows experience gained from this recipe
         statics.put(XP_SLOT, new PanelStaticItem(createXpInfoItem(), null));
 
-        // Cook time info — shows cooking duration
-        statics.put(TIME_SLOT, new PanelStaticItem(createCookTimeItem(), null));
-
-        return statics;
+        // Cook time info — shows how long this recipe takes to cook
+        statics.put(COOK_TIME_SLOT, new PanelStaticItem(createCookTimeItem(), null));
+        
+        return Map.copyOf(statics);
     }
 
     // -- Helpers --

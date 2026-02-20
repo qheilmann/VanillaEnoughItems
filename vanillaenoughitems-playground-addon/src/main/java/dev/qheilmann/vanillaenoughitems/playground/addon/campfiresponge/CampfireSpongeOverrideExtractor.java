@@ -1,4 +1,4 @@
-package dev.qheilmann.vanillaenoughitems.playground.addon;
+package dev.qheilmann.vanillaenoughitems.playground.addon.campfiresponge;
 
 import java.util.Set;
 
@@ -13,8 +13,9 @@ import dev.qheilmann.vanillaenoughitems.recipe.extraction.RecipeExtractor;
 import net.kyori.adventure.key.Key;
 
 @NullMarked
-public class SmookingExtractorSpongeOverride implements RecipeExtractor {
+public class CampfireSpongeOverrideExtractor implements RecipeExtractor {
 
+    // We use the same key as the vanilla campfire extractor, so we override it
     private static final Key KEY = Key.key("campfire");
 
     @Override
@@ -27,13 +28,13 @@ public class SmookingExtractorSpongeOverride implements RecipeExtractor {
         return recipe instanceof CampfireRecipe;
     }
 
-    // For demonstration, we will index a hardcoded dummy ingredient instead of the actual recipe ingredients
+    // For this demo, we index a hardcoded dummy ingredient instead of actual recipe ingredients
     @Override
     public Set<ItemStack> extractIngredients(Recipe recipe) {
-        return Set.of(ItemStack.of(Material.SPONGE));
+        return Set.of(ItemStack.of(Material.WET_SPONGE));
     }
 
-    // For demonstration, we will index a hardcoded dummy result instead of the actual recipe result
+    // For this demo, we index a hardcoded dummy result instead of the actual recipe result
     @Override
     public Set<ItemStack> extractResults(Recipe recipe) {
         ItemStack result = ItemStack.of(Material.SPONGE);
