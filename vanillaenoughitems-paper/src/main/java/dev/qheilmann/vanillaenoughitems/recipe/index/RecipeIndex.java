@@ -74,11 +74,13 @@ public class RecipeIndex implements RecipeIndexView {
     public void indexRecipe(Recipe recipe) {
 
         if (!recipeExtractorRegistry.canHandle(recipe)) {
-            if (VanillaEnoughItems.veiConfig().hasMissingRecipeProcess()) {
+            // Recipes without extractors are skipped silently
+            // Enable debug logging in config to audit unhandled recipe types during development.
+            if (VanillaEnoughItems.veiConfig().debugUnhandledRecipesWarning()) {
                 String key = (recipe instanceof Keyed keyed) ? keyed.key().asString() : "no key available";
-                VanillaEnoughItems.LOGGER.warn("No extractor found for recipe: {} ({})", recipe.getClass().getSimpleName(), key);
+                VanillaEnoughItems.LOGGER.warn("No extractor registered for recipe type: {} ({})", recipe.getClass().getSimpleName(), key);
             }
-            return; // Skip index for non-extractable recipes
+            return; // Skip indexation for recipes without extractors
         }
 
         // Index by id

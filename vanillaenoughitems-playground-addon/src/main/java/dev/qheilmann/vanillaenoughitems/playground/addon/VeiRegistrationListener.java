@@ -7,6 +7,7 @@ import org.jspecify.annotations.NullMarked;
 
 import dev.qheilmann.vanillaenoughitems.api.VanillaEnoughItemsAPI;
 import dev.qheilmann.vanillaenoughitems.api.event.VeiRegistrationEvent;
+import dev.qheilmann.vanillaenoughitems.config.VanillaEnoughItemsConfig;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPanelRegistry;
 import dev.qheilmann.vanillaenoughitems.playground.addon.campfiresponge.CampfireSpongeOverrideExtractor;
 import dev.qheilmann.vanillaenoughitems.playground.addon.campfiresponge.CampfireSpongeOverridePanel;
@@ -49,11 +50,14 @@ public class VeiRegistrationListener implements Listener {
         // -------------------------------------------------------------------------------------------------- //
         // Unregister the built-in stonecutting extractor
         extractorRegistry.unregisterExtractor(Key.key("stonecutting"));
-        // Try: /craft --all
-        // Result: Stonecutting recipes will be missing from the recipe index
-        // WARNING: This will print many warnings because the stonecutting recipes still exist,
-        //          but VEI no longer knows how to index them
         
+        // Enable debug logging for unhandled recipes to verify that stonecutting recipes are skipped
+        // api.config().setDebugUnhandledRecipesWarning(true); // Enabling this will log a warning for every stonecutting recipe
+
+        // Try: /craft --all
+        // Result: Stonecutting recipes will be missing from the recipe index (silently skipped during indexation)
+        // Note: Recipes without extractors are skipped gracefully - no warnings will be logged
+
 
         // ----------------------------------------------------------------------------------------- //
         // DEMO 2: Modify the built-in smelting process panel to show XP and cook time in the GUI  //

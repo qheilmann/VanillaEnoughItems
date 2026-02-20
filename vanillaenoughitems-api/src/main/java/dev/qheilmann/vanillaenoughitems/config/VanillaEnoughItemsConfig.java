@@ -9,11 +9,11 @@ import net.kyori.adventure.text.format.TextColor;
  */
 public class VanillaEnoughItemsConfig {
    
-    private static final boolean DEFAULT_MISSING_IMPLEMENTATION_WARNINGS = false;
-    private static final boolean DEFAULT_MISSING_RECIPE_PROCESS = true;
+    private static final boolean DEFAULT_DEBUG_MISSING_IMPLEMENTATION_WARNINGS = false;
+    private static final boolean DEFAULT_DEBUG_UNHANDLED_RECIPES_WARNING = false;
 
-    private boolean missingImplementationWarnings = DEFAULT_MISSING_IMPLEMENTATION_WARNINGS;
-    private boolean missingRecipeProcess = DEFAULT_MISSING_RECIPE_PROCESS;
+    private boolean debugMissingImplementationWarnings = DEFAULT_DEBUG_MISSING_IMPLEMENTATION_WARNINGS;
+    private boolean debugUnhandledRecipesWarning = DEFAULT_DEBUG_UNHANDLED_RECIPES_WARNING;
     private boolean isQuickRecipeLookupEnabled = true;
     private final Style style = new Style();
 
@@ -21,16 +21,17 @@ public class VanillaEnoughItemsConfig {
      * Checks whether to show warnings for missing implementations (Like a NonImplementedException)
      * @return true if warnings for missing implementations are shown, false otherwise
      */
-    public boolean hasMissingImplementationWarnings() {
-        return missingImplementationWarnings;
+    public boolean debugMissingImplementationWarning() {
+        return debugMissingImplementationWarnings;
     }
 
     /**
-     * Checks whether any recipe extractor, process, process panel or similar is missing
-     * @return true if any recipe extractor, process, process panel or similar is missing, false otherwise
+     * Checks whether to log debug messages for recipes without registered extractors.
+     * Useful during development to identify new recipe types that need extractors.
+     * @return true to log unhandled recipes, false to skip silently (default)
      */
-    public boolean hasMissingRecipeProcess() {
-        return missingRecipeProcess;
+    public boolean debugUnhandledRecipesWarning() {
+        return debugUnhandledRecipesWarning;
     }
 
     public boolean isQuickRecipeLookupEnabled() {
@@ -89,21 +90,22 @@ public class VanillaEnoughItemsConfig {
 
     /**
      * Sets whether to show warnings for missing implementations (Like a NonImplementedException)
-     * @param missingImplementationWarnings whether to show warnings for missing implementations
+     * @param debugMissingImplementationWarnings whether to show warnings for missing implementations
      * @return this config instance for method chaining
      */
-    public VanillaEnoughItemsConfig setMissingImplementationWarnings(boolean missingImplementationWarnings) {
-        this.missingImplementationWarnings = missingImplementationWarnings;
+    public VanillaEnoughItemsConfig setDebugMissingImplementationWarnings(boolean debugMissingImplementationWarnings) {
+        this.debugMissingImplementationWarnings = debugMissingImplementationWarnings;
         return this;
     }
 
     /**
-     * Sets whether any recipe extractor, process, process panel or similar is missing
-     * @param missingRecipeProcess whether any recipe extractor, process, process panel or similar is missing
+     * Sets whether to log debug messages for recipes without registered extractors.
+     * Enable this during development to audit which recipe types are not being handled.
+     * @param debugUnhandledRecipesWarning true to log unhandled recipes, false to skip silently
      * @return this config instance for method chaining
      */
-    public VanillaEnoughItemsConfig setMissingRecipeProcess(boolean missingRecipeProcess) {
-        this.missingRecipeProcess = missingRecipeProcess;
+    public VanillaEnoughItemsConfig setDebugUnhandledRecipesWarning(boolean debugUnhandledRecipesWarning) {
+        this.debugUnhandledRecipesWarning = debugUnhandledRecipesWarning;
         return this;
     }
 

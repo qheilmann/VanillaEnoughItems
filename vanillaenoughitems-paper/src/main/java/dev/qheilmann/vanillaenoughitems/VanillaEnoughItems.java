@@ -134,8 +134,8 @@ public class VanillaEnoughItems extends JavaPlugin implements VanillaEnoughItems
             .setHasResourcePack(true);
 
         config = new VanillaEnoughItemsConfig()
-            .setMissingImplementationWarnings(true)
-            .setMissingRecipeProcess(true)
+            .setDebugMissingImplementationWarnings(true)
+            .setDebugUnhandledRecipesWarning(true)
             .setStyle(style);
 
         LOGGER.info(PLUGIN_NAME + " loaded.");
