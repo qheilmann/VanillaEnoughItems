@@ -51,7 +51,6 @@ public class MultiProcessRecipeMap {
      * The copy clone the grouping and all inner ProcessRecipeSets.
      * @param other the MultiProcessRecipeMap to copy
      */
-    @SuppressWarnings("null")
     public MultiProcessRecipeMap(MultiProcessRecipeMap other) {
         this(
             other.grouping,

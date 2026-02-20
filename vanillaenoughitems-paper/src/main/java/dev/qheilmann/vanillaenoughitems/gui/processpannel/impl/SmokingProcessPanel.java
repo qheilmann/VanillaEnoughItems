@@ -68,7 +68,6 @@ public class SmokingProcessPanel implements ProcessPanel {
      * {@inheritDoc}
      */
     @Override
-    @SuppressWarnings("null")
     public Map<ProcessPannelSlot, CyclicIngredient> getTickedResults() {
         return Map.of(OUTPUT_SLOT, new CyclicIngredient(seed, getSmokingRecipe().getResult()));
     }

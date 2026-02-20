@@ -325,7 +325,6 @@ public class RecipeIndex implements RecipeIndexView {
         }
 
         Process process = processByRecipe.get(recipe);
-        @SuppressWarnings("null")
         MultiProcessRecipeMap multiProcessRecipeMap = new MultiProcessRecipeMap(new Grouping.ByKey(key), Collections.singletonList(
             new ProcessRecipeSet(process, Set.of(recipe))
         ));

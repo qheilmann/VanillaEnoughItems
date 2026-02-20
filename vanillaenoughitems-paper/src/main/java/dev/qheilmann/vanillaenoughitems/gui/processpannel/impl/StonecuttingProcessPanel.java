@@ -49,7 +49,6 @@ public class StonecuttingProcessPanel implements ProcessPanel {
      */
     @Override
     public Map<RecipeGuiSharedButton, ProcessPannelSlot> getRecipeGuiButtonMap() {
-        @SuppressWarnings("null")
         Map<RecipeGuiSharedButton, ProcessPannelSlot> shared = new EnumMap<>(RecipeGuiSharedButton.class);
         shared.put(RecipeGuiSharedButton.NEXT_RECIPE,      ProcessPannelSlot.DEFAULT_NEXT_RECIPE_SLOT);
         shared.put(RecipeGuiSharedButton.PREVIOUS_RECIPE,  ProcessPannelSlot.DEFAULT_PREVIOUS_RECIPE_SLOT);
@@ -73,7 +72,6 @@ public class StonecuttingProcessPanel implements ProcessPanel {
      * {@inheritDoc}
      */
     @Override
-    @SuppressWarnings("null")
     public Map<ProcessPannelSlot, CyclicIngredient> getTickedResults() {
         return Map.of(OUTPUT_SLOT, new CyclicIngredient(seed, getStonecuttingRecipe().getResult()));
     }

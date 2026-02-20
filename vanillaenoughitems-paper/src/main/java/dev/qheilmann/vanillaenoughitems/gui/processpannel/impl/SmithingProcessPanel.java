@@ -91,7 +91,6 @@ public class SmithingProcessPanel implements ProcessPanel {
      * {@inheritDoc}
      */    
     @Override
-    @SuppressWarnings("null")
     public Map<ProcessPannelSlot, CyclicIngredient> getTickedResults() {
         return Map.of(OUTPUT_SLOT, getResult(seed, getSmithingRecipe(), baseCyclic, additionCyclic));
     }
