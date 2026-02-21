@@ -92,7 +92,7 @@ public interface VanillaEnoughItemsAPI {
 
     /**
      * Get the recipe index view (read-only access to indexed recipes).
-     * <p>Only available after {@link dev.qheilmann.vanillaenoughitems.api.event.VeiReadyEvent} has fired.</p>
+     * <p>Only available after {@link dev.qheilmann.vanillaenoughitems.api.event.VeiReadyEvent} when fire or after.</p>
      * @return the recipe index view
      * @throws IllegalStateException if indexation has not completed yet
      */

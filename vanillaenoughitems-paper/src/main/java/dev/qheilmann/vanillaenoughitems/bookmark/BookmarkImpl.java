@@ -13,6 +13,8 @@ import dev.qheilmann.vanillaenoughitems.recipe.index.reader.ProcessRecipeReader;
 import dev.qheilmann.vanillaenoughitems.recipe.index.reader.RecipeIndexView;
 import dev.qheilmann.vanillaenoughitems.recipe.process.Process;
 import dev.qheilmann.vanillaenoughitems.gui.CyclicIngredient;
+import dev.qheilmann.vanillaenoughitems.gui.helper.GuiComponentHelper;
+
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jspecify.annotations.NullMarked;
@@ -163,7 +165,7 @@ public class BookmarkImpl implements Bookmark {
         Map<ProcessPannelSlot, CyclicIngredient> tickedResults = panel.getTickedResults();
 
         if (tickedResults.isEmpty()) {
-            return new CyclicIngredient(0, ItemStack.empty());
+            return new CyclicIngredient(0, GuiComponentHelper.createFillerItem(style.hasResourcePack())); // Fallback to empty ingredient if no ticked results (shouldn't happen for valid recipes)
         }
 
         return tickedResults.values().iterator().next();
