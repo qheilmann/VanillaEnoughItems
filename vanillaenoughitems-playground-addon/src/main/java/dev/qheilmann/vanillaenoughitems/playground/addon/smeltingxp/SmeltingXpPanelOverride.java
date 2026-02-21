@@ -45,8 +45,8 @@ import net.kyori.adventure.text.format.TextDecoration;
 public class SmeltingXpPanelOverride implements ProcessPanel {
 
     // -- Slot positions (column, row) within the panel area --
-    private static final ProcessPannelSlot INPUT_SLOT  = new ProcessPannelSlot(2, 1);
-    private static final ProcessPannelSlot FUEL_SLOT   = new ProcessPannelSlot(2, 3);
+    private static final ProcessPannelSlot INPUT_SLOT  = new ProcessPannelSlot(1, 1);
+    private static final ProcessPannelSlot FUEL_SLOT   = new ProcessPannelSlot(1, 3);
     private static final ProcessPannelSlot OUTPUT_SLOT = new ProcessPannelSlot(5, 2);
     private static final ProcessPannelSlot XP_SLOT     = new ProcessPannelSlot(5, 1);  // Custom: XP info
     private static final ProcessPannelSlot COOK_TIME_SLOT = new ProcessPannelSlot(5, 3);  // Custom: Cook time info
