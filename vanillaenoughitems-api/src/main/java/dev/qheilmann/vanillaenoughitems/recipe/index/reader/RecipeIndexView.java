@@ -190,4 +190,21 @@ public interface RecipeIndexView {
      * @return an unmodifiable navigable map of recipe keys to recipes
      */
     public NavigableMap<Key, Recipe> getAllRecipesByKey();
+
+    //#region Indexation
+
+    /**
+     * Index multiple recipes with an iterable.
+     * You can use a lambda {@code () -> iterator} to consume an iterator instance
+     * @param recipes the recipes to index
+     */
+    public void indexRecipe(Iterable<Recipe> recipes);
+
+    /**
+     * Index a single recipe
+     * @param recipe the recipe to index
+     */
+    public void indexRecipe(Recipe recipe);
+
+    //#endregion Indexation
 }
