@@ -7,8 +7,10 @@ import org.jspecify.annotations.NullMarked;
 
 import dev.qheilmann.vanillaenoughitems.api.VanillaEnoughItemsAPI;
 import dev.qheilmann.vanillaenoughitems.api.event.VeiRegistrationEvent;
-import dev.qheilmann.vanillaenoughitems.config.VanillaEnoughItemsConfig;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPanelRegistry;
+import dev.qheilmann.vanillaenoughitems.playground.addon.beaconbeam.BeaconBeamExtractor;
+import dev.qheilmann.vanillaenoughitems.playground.addon.beaconbeam.BeaconBeamPanel;
+import dev.qheilmann.vanillaenoughitems.playground.addon.beaconbeam.BeaconBeamProcess;
 import dev.qheilmann.vanillaenoughitems.playground.addon.campfiresponge.CampfireSpongeOverrideExtractor;
 import dev.qheilmann.vanillaenoughitems.playground.addon.campfiresponge.CampfireSpongeOverridePanel;
 import dev.qheilmann.vanillaenoughitems.playground.addon.campfiresponge.CampfireSpongeOverrideProcess;
@@ -34,6 +36,8 @@ public class VeiRegistrationListener implements Listener {
     /**
      * Called by VEI before recipe indexation begins.
      * This is the place to register custom processes, extractors, and panel factories.
+     * Note: This event is fired AFTER VEI has finished its own registration process,
+     * so all built-in extractors, processes, and panels are available for modification.
      */
     @EventHandler
     public void onVeiRegistration(VeiRegistrationEvent event) {
@@ -103,5 +107,33 @@ public class VeiRegistrationListener implements Listener {
         // Try: /craft sponge
         // Result: All campfire recipes now show sponge as ingredient and result, and are indexed under sponge.
         // Note: The actual server recipes remain unchanged - we only modify how VEI sees and displays them.
+
+        
+        // ------------------------------------------------------------------------------ //
+        // DEMO 4 (Part 1): Add a completely new recipe type (beacon beam transformation) //
+        // ------------------------------------------------------------------------------ //
+        // This demo shows the complete workflow for adding a brand new recipe type to VEI.
+        // We're creating a "beacon beam" recipe system that transforms items dropped over active beacons.
+        //
+        // The complete workflow requires:
+        // 1. Create a custom Recipe implementation (BeaconBeamRecipe)
+        // 2. Create a RecipeExtractor to index the recipes (BeaconBeamExtractor)
+        // 3. Create a Process to categorize the recipes (BeaconBeamProcess)
+        // 4. Create a ProcessPanel to visualize the recipes (BeaconBeamPanel)
+        // 5. Register everything with VEI here in VeiRegistrationEvent
+        // 6. Create recipe instances and index them in VeiReadyEvent (see VeiReadyListener)
+        // 7. Implement the actual game mechanic (BeaconBeamTransform)
+        
+        // Register the RecipeExtractor, Process, and Panel for our new recipe type
+        BeaconBeamProcess beaconBeamProcess = new BeaconBeamProcess(api);
+        extractorRegistry.registerExtractor(new BeaconBeamExtractor());
+        processRegistry.registerProcess(beaconBeamProcess);
+        panelRegistry.registerProvider(beaconBeamProcess, BeaconBeamPanel::new);
+
+        // Try:
+        // 1. /craft gold_ingot        → Shows copper and iron can be transformed to gold
+        // 2. /craft copper_ingot uses → Shows copper can become gold via beacon beam
+        // 3. /craft --all             → Beacon beam appears as a new recipe category
+        // 4. Build a beacon, drop copper/iron/coal when standing over it → Item transforms!
     }
 }

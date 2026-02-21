@@ -21,6 +21,7 @@ public class PlaygroundAddonPlugin extends JavaPlugin {
         // Register listeners BEFORE VEI enables (load: AFTER = our plugin loads first)
         // so we can catch VeiRegistrationEvent when VEI fires it
         getServer().getPluginManager().registerEvents(new VeiRegistrationListener(this), this);
-        getLogger().info("Waiting for VEI registration event...");
+        getServer().getPluginManager().registerEvents(new VeiReadyListener(this), this); // Only needed for demo 4 (new recipe type)
+        getLogger().info("Waiting for VEI registration and ready events...");
     }
 }
