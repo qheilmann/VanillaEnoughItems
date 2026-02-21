@@ -35,9 +35,9 @@ import net.kyori.adventure.text.format.TextDecoration;
  * <pre>
  *   col: 0       1       2       3       4       5       6
  * row 0: ·     [prev]    ·     [next]    ·       ·       ·
- * row 1: ·       ·     [INPUT]   ·       ·      [XP]     ·
- * row 2: ·       ·     [FIRE]  [ARROW]   ·    [OUTPUT]   ·
- * row 3: ·       ·     [FUEL]    ·       ·     [TIME]    ·
+ * row 1: ·     [INPUT]   .       ·       ·      [XP]     ·
+ * row 2: ·     [FIRE]    .     [ARROW]   ·    [OUTPUT]   ·
+ * row 3: ·     [FUEL]    .       ·       ·     [TIME]    ·
  * row 4: ·     [h.bk]    ·     [h.fw]    ·       .       ·
  * </pre>
  */

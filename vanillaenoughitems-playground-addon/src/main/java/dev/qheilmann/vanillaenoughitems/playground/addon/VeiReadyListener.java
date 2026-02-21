@@ -38,7 +38,7 @@ public class VeiReadyListener implements Listener {
         RecipeIndexView recipeIndex = api.recipeIndex();
 
         // --------------- //
-        // DEMO 4 (suite)
+        // DEMO 4 (Part 2) //
         // --------------- //
 
         // Initialize the game mechanic that handles the actual item transformation

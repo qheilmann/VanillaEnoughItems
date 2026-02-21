@@ -32,8 +32,8 @@ import dev.qheilmann.vanillaenoughitems.utils.VeiKey;
  * <pre>
  *   col: 0       1       2       3       4       5       6
  * row 0: ·     [prev]    ·     [next]    ·       ·       ·
- * row 1: ·       ·     [INPUT]   ·       ·       .       ·
- * row 2: ·       ·     [FIRE]  [ARROW]   ·    [OUTPUT]   ·
+ * row 1: ·     [INPUT]   ·       ·       .       ·       .
+ * row 2: ·     [FIRE]    .     [ARROW]   ·    [OUTPUT]   ·
  * row 3: ·       ·       .       ·       ·       .       ·
  * row 4: ·     [h.bk]    ·     [h.fw]    ·       .       ·
  * </pre>
@@ -42,7 +42,7 @@ import dev.qheilmann.vanillaenoughitems.utils.VeiKey;
 public class CampfireSpongeOverridePanel implements ProcessPanel {
 
     // -- Slot positions (column, row) within the panel area --
-    private static final ProcessPannelSlot INPUT_SLOT  = new ProcessPannelSlot(2, 1);
+    private static final ProcessPannelSlot INPUT_SLOT  = new ProcessPannelSlot(1, 1);
     private static final ProcessPannelSlot OUTPUT_SLOT = new ProcessPannelSlot(5, 2);
     private static final ProcessPannelSlot DECORATION_FIRE_SLOT = new ProcessPannelSlot(1, 2);
     private static final ProcessPannelSlot DECORATION_PROGRESS_SLOT = new ProcessPannelSlot(3, 2);
