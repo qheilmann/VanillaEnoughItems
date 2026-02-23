@@ -19,6 +19,7 @@ dependencies {
     // API / Plugin libraries
     implementation(libs.commandapi.shade)
     implementation(libs.bstats)
+    implementation(libs.configurateYaml)
 
     // Testing
     testImplementation(platform(libs.junit.bom))
@@ -38,6 +39,9 @@ tasks {
         fun reloc(originPkg: String, targetPkg: String) = relocate(originPkg, "${project.group}.${project.name.lowercase().replace("-", "")}.libs.${targetPkg}")
         reloc("dev.jorel.commandapi", "commandapi")
         reloc("org.bstats", "bstats")
+        reloc("org.spongepowered.configurate", "configurate")
+        reloc("io.leangen.geantyref", "geantyref")
+        reloc("org.yaml.snakeyaml", "snakeyaml")
 
         mergeServiceFiles()
     }

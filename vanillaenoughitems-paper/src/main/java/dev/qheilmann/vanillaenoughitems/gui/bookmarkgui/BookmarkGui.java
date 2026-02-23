@@ -18,7 +18,7 @@ import org.jspecify.annotations.Nullable;
 import dev.qheilmann.vanillaenoughitems.RecipeServices;
 import dev.qheilmann.vanillaenoughitems.VanillaEnoughItems;
 import dev.qheilmann.vanillaenoughitems.bookmark.Bookmark;
-import dev.qheilmann.vanillaenoughitems.config.style.Style;
+import dev.qheilmann.vanillaenoughitems.config.Style;
 import dev.qheilmann.vanillaenoughitems.gui.CyclicIngredient;
 import dev.qheilmann.vanillaenoughitems.gui.helper.GuiComponentHelper;
 import dev.qheilmann.vanillaenoughitems.gui.player.PlayerGuiData;

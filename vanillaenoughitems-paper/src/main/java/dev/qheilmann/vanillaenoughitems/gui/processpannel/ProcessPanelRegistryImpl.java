@@ -6,7 +6,7 @@ import java.util.Map;
 import org.bukkit.inventory.Recipe;
 import org.jspecify.annotations.NullMarked;
 
-import dev.qheilmann.vanillaenoughitems.config.style.Style;
+import dev.qheilmann.vanillaenoughitems.config.Style;
 import dev.qheilmann.vanillaenoughitems.recipe.extraction.RecipeExtractorRegistry;
 import dev.qheilmann.vanillaenoughitems.recipe.process.Process;
 

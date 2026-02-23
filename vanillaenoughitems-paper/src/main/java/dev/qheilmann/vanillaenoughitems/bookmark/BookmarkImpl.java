@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import dev.qheilmann.vanillaenoughitems.config.style.Style;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPanel;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPanelRegistry;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPannelSlot;
@@ -12,6 +11,7 @@ import dev.qheilmann.vanillaenoughitems.recipe.index.reader.MultiProcessRecipeRe
 import dev.qheilmann.vanillaenoughitems.recipe.index.reader.ProcessRecipeReader;
 import dev.qheilmann.vanillaenoughitems.recipe.index.reader.RecipeIndexView;
 import dev.qheilmann.vanillaenoughitems.recipe.process.Process;
+import dev.qheilmann.vanillaenoughitems.config.Style;
 import dev.qheilmann.vanillaenoughitems.gui.CyclicIngredient;
 import dev.qheilmann.vanillaenoughitems.gui.helper.GuiComponentHelper;
 

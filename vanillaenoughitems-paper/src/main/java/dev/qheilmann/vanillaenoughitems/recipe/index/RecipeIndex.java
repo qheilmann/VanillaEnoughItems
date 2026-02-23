@@ -76,7 +76,7 @@ public class RecipeIndex implements RecipeIndexView {
         if (!recipeExtractorRegistry.canHandle(recipe)) {
             // Recipes without extractors are skipped silently
             // Enable debug logging in config to audit unhandled recipe types during development.
-            if (VanillaEnoughItems.veiConfig().debugUnhandledRecipesWarning()) {
+            if (VanillaEnoughItems.veiConfig().debug().unhandledRecipesWarning()) {
                 String key = (recipe instanceof Keyed keyed) ? keyed.key().asString() : "no key available";
                 VanillaEnoughItems.LOGGER.warn("No extractor registered for recipe type: {} ({})", recipe.getClass().getSimpleName(), key);
             }

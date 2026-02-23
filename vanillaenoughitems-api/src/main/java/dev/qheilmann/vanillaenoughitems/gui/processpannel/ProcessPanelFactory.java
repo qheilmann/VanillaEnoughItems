@@ -3,7 +3,7 @@ package dev.qheilmann.vanillaenoughitems.gui.processpannel;
 import org.bukkit.inventory.Recipe;
 import org.jspecify.annotations.NullMarked;
 
-import dev.qheilmann.vanillaenoughitems.config.style.Style;
+import dev.qheilmann.vanillaenoughitems.config.Style;
 import dev.qheilmann.vanillaenoughitems.recipe.process.Process;
 
 /**

@@ -12,7 +12,7 @@ import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.Recipe;
 import org.jspecify.annotations.NullMarked;
 
-import dev.qheilmann.vanillaenoughitems.config.style.Style;
+import dev.qheilmann.vanillaenoughitems.config.Style;
 import dev.qheilmann.vanillaenoughitems.gui.CyclicIngredient;
 import dev.qheilmann.vanillaenoughitems.gui.helper.GuiComponentHelper;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.PanelStaticItem;

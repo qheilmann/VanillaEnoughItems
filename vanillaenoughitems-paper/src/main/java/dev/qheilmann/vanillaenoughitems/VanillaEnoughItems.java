@@ -14,6 +14,9 @@ import org.jspecify.annotations.Nullable;
 import java.io.File;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.atomic.AtomicReference;
 
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
@@ -31,9 +34,12 @@ import dev.qheilmann.vanillaenoughitems.bookmark.BookmarkImpl;
 import dev.qheilmann.vanillaenoughitems.bookmark.ServerBookmarkRegistry;
 import dev.qheilmann.vanillaenoughitems.bookmark.ServerBookmarkRegistryImpl;
 import dev.qheilmann.vanillaenoughitems.commands.CraftCommand;
-import dev.qheilmann.vanillaenoughitems.commands.DebugVei;
+import dev.qheilmann.vanillaenoughitems.commands.ReloadCommand;
+import dev.qheilmann.vanillaenoughitems.config.Style;
 import dev.qheilmann.vanillaenoughitems.config.VanillaEnoughItemsConfig;
-import dev.qheilmann.vanillaenoughitems.config.style.Style;
+import dev.qheilmann.vanillaenoughitems.config.VeiConfigLoader;
+import org.spongepowered.configurate.ConfigurateException;
+
 import dev.qheilmann.vanillaenoughitems.gui.CyclicIngredient;
 import dev.qheilmann.vanillaenoughitems.gui.bookmarkgui.BookmarkGui;
 import dev.qheilmann.vanillaenoughitems.gui.player.PlayerDataManager;
@@ -92,8 +98,7 @@ public class VanillaEnoughItems extends JavaPlugin implements VanillaEnoughItems
     public static final String NAMESPACE = "vanillaenoughitems";
     public static final ComponentLogger LOGGER = ComponentLogger.logger(PLUGIN_NAME);
 
-    @Nullable
-    private static VanillaEnoughItemsConfig config;
+    private static final AtomicReference<@Nullable VanillaEnoughItemsConfig> config = new AtomicReference<>(null);
 
     private boolean failOnload = false;
     @SuppressWarnings("null")
@@ -124,19 +129,11 @@ public class VanillaEnoughItems extends JavaPlugin implements VanillaEnoughItems
     public void onLoad() {
         try {
             onLoadCommandAPI();
+            reloadVeiConfigAsync().join();
         } catch (Exception e) {
             LOGGER.error("Failed to load " + PLUGIN_NAME + ": " + e.getMessage());
             failOnload = true;
         }
-
-        // VanillaEnoughItems config
-        Style style = new Style()
-            .setHasResourcePack(true);
-
-        config = new VanillaEnoughItemsConfig()
-            .setDebugMissingImplementationWarnings(true)
-            .setDebugUnhandledRecipesWarning(true)
-            .setStyle(style);
 
         LOGGER.info(PLUGIN_NAME + " loaded.");
     }
@@ -192,7 +189,10 @@ public class VanillaEnoughItems extends JavaPlugin implements VanillaEnoughItems
         this.recipeIndex = new RecipeIndex(processRegistry, recipeExtractorRegistry);
         Iterator<Recipe> recipeIterator = getServer().recipeIterator();
         recipeIndex.indexRecipe(() -> recipeIterator);
-        recipeIndex.logSummary();
+        
+        if (veiConfig().debug().showStartupIndexSummary()) {
+            recipeIndex.logSummary();
+        }
         
         // Fire VeiReadyEvent — indexation is complete, recipeIndex() is now safe to call
         getServer().getPluginManager().callEvent(new VeiReadyEvent(this));
@@ -220,10 +220,10 @@ public class VanillaEnoughItems extends JavaPlugin implements VanillaEnoughItems
         initializeServerBookmarks(serverBookmarkRegistry);
 
         CraftCommand.register(this, recipeServices, playerDataManager);
-        DebugVei.register();
+        ReloadCommand.register();
 
         // Quick recipe access
-        if (config().isQuickRecipeLookupEnabled()) {
+        if (config().quickRecipeLookupEnabled()) {
             getServer().getPluginManager().registerEvents(new QuickRecipeAccessListener(this, recipeServices, playerDataManager), this);
         }
 
@@ -360,15 +360,31 @@ public class VanillaEnoughItems extends JavaPlugin implements VanillaEnoughItems
 
     /**
      * Gets the current VanillaEnoughItems configuration.
-     * Satisfies both the static access pattern ({@code VanillaEnoughItems.veiConfig()})
-     * and the API interface ({@code api.config()}).
      * @return the VanillaEnoughItems configuration
      */
     public static VanillaEnoughItemsConfig veiConfig() {
+        VanillaEnoughItemsConfig config = VanillaEnoughItems.config.get();
         if (config == null) {
             throw new IllegalStateException("Tried to access VanillaEnoughItems config, but it was not initialized! Are you using VanillaEnoughItems features before calling VanillaEnoughItems#onLoad?");
         }
         return config;
+    }
+
+    /**
+     * Reloads the configuration from disk asynchronously.
+     * <p>
+     * Note: {@code quick-recipe-lookup} changes only take effect after a server restart
+     * because the listener is registered once during {@code onEnable}.
+     */
+    public static CompletableFuture<Void> reloadVeiConfigAsync() {
+        return CompletableFuture.supplyAsync(() -> {
+                    try {
+                        return VeiConfigLoader.load();
+                    } catch (ConfigurateException e) {
+                        throw new CompletionException(e);
+                    }
+                })
+                .thenAccept(VanillaEnoughItems.config::set);
     }
 
     private void onLoadCommandAPI() {

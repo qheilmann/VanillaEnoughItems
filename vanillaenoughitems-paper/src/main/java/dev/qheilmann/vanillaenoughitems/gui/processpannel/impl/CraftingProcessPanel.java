@@ -16,7 +16,7 @@ import org.bukkit.inventory.TransmuteRecipe;
 import org.jspecify.annotations.NullMarked;
 
 import dev.qheilmann.vanillaenoughitems.VanillaEnoughItems;
-import dev.qheilmann.vanillaenoughitems.config.style.Style;
+import dev.qheilmann.vanillaenoughitems.config.Style;
 import dev.qheilmann.vanillaenoughitems.gui.CyclicIngredient;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPanel;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPannelSlot;

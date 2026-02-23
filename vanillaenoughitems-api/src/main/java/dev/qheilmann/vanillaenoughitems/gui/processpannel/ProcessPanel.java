@@ -11,7 +11,7 @@ import org.bukkit.inventory.Recipe;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
-import dev.qheilmann.vanillaenoughitems.config.style.Style;
+import dev.qheilmann.vanillaenoughitems.config.Style;
 import dev.qheilmann.vanillaenoughitems.gui.CyclicIngredient;
 import dev.qheilmann.vanillaenoughitems.gui.recipegui.RecipeGuiSharedButton;
 import dev.qheilmann.vanillaenoughitems.utils.VeiKey;
