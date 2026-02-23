@@ -78,8 +78,6 @@ public class BeaconBeamTransform implements Listener {
         World world = location.getWorld();
         Block highestBlock = world.getHighestBlockAt(location, HeightMap.OCEAN_FLOOR);
 
-        Bukkit.getServer().getLogger().info("Item spawned above block: " + highestBlock.getType());
-
         if (!highestBlock.getType().equals(Material.BEACON)) {
             return false;
         }
