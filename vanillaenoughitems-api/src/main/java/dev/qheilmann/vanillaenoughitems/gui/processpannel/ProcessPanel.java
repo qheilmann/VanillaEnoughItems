@@ -71,15 +71,27 @@ public interface ProcessPanel {
 
 
     // Implementation for Undefined Process Panel
-    
+
+    /**
+     * A default ProcessPanel implementation for recipes that cannot be displayed by any defined process.
+     * This panel will show a message indicating that the recipe cannot be displayed, along with the recipe ID and process ID if available.
+     */
     public class UndefinedProcessPanel implements ProcessPanel {
         private static final ProcessPannelSlot DESCRIPTION_SLOT = new ProcessPannelSlot(3, 2);
-
+        
         private final Recipe recipe;
         private final Style style;
         private final RecipeExtractorRegistry extractorRegistry;
         private final @Nullable Process unhandledProcess;
-
+        
+        /**
+         * Factory method to create a default panel for undefined processes.
+         * This panel will display a message indicating that the recipe cannot be displayed, along with the recipe ID and process ID if available.
+         * @param recipe the recipe that cannot be displayed
+         * @param style the style to use for rendering the panel
+         * @param extractorRegistry the registry to extract recipe keys if possible
+         * @param unhandledProcess the process that could not handle the recipe, or null if unknown
+         */
         public UndefinedProcessPanel(Recipe recipe, Style style, RecipeExtractorRegistry extractorRegistry, @Nullable Process unhandledProcess) {
             this.recipe = recipe;
             this.style = style;

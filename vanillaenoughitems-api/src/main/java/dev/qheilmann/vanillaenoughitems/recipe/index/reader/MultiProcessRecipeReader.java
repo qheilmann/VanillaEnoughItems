@@ -128,6 +128,10 @@ public class MultiProcessRecipeReader {
         return currentProcessRecipeReader;
     }
 
+    /**
+     * Check if the current process is the last process in the MultiProcessRecipeMap
+     * @return true if the current process is the last process, false otherwise
+     */
     public boolean isLast() {
         return getCurrentProcess().equals(multiProcessRecipeMap.getAllProcesses().last());
     }

@@ -17,7 +17,11 @@ public record VanillaEnoughItemsConfig(
 
     // Delegate for convenience
 
-    /** Whether the server enforces a resource pack that includes VEI custom models. */
+    /** 
+     * Whether the server enforces a resource pack that includes VEI custom models. 
+     * 
+     * @return true if the server enforces a VEI resource pack, false otherwise
+     */
     public boolean hasResourcePack() {
         return style.hasResourcePack();
     }

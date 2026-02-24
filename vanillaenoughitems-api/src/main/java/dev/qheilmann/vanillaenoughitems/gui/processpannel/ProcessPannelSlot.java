@@ -87,8 +87,8 @@ public class ProcessPannelSlot implements Comparable<ProcessPannelSlot> {
 
     /**
      * Create a ProcessPannelSlot at the specified position
-     * @param column the column within the panel ({@link #PANEL_MIN_COLUMN}-{@link #PANEL_COLUMN})
-     * @param row the row within the panel ({@link #PANEL_MIN_ROW}-{@link #PANEL_ROW})
+     * @param column the column within the panel (max {@link #PANEL_COLUMN}-1)
+     * @param row the row within the panel (max {@link #PANEL_ROW}-1)
      * @throws IndexOutOfBoundsException if column or row is out of bounds
      */
     public ProcessPannelSlot(int column, int row) {

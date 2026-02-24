@@ -5,9 +5,16 @@ import java.util.Comparator;
 import org.bukkit.inventory.Recipe;
 import org.jspecify.annotations.NullMarked;
 
+/**
+ * Helper class for recipe-related operations, such as {@link #RECIPE_COMPARATOR} for consistent recipe ordering.
+ */
 @NullMarked
 public class RecipeHelper {
 
+    /**
+     * A comparator for recipes that provides consistent ordering based on their keys (if available),
+     * hash codes, and class names. This ensures recipes are sorted in a predictable and stable manner.
+     */
     public static final Comparator<Recipe> RECIPE_COMPARATOR = recipeComparator();
 
     private RecipeHelper() {} // Static helper

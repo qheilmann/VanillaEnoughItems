@@ -12,10 +12,18 @@ public abstract class AbstractProcess implements Process {
 
     private final Key key;
 
+    /**
+     * Constructs a new AbstractProcess with the given key.
+     * @param key the unique key identifying this process
+     */
     protected AbstractProcess(Key key) {
         this.key = key;
     }
 
+    /**
+     * Returns the unique key identifying this process.
+     * @return the process key
+     */
     @Override
     public final Key key() {
         return key;

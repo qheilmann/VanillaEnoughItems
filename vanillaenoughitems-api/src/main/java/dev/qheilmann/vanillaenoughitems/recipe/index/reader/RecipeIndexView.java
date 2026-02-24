@@ -12,6 +12,10 @@ import dev.qheilmann.vanillaenoughitems.recipe.process.Process;
 
 import net.kyori.adventure.key.Key;
 
+/**
+ * A view of the recipe index that allows reading recipes based on different criteria.
+ * This is the main interface for accessing recipes in the index, providing various methods to retrieve recipes by key, process, result, ingredient, or all recipes.
+ */
 @NullMarked
 public interface RecipeIndexView {
 

@@ -151,6 +151,10 @@ public class MultiProcessRecipeMap {
         return allRecipes;
     }
 
+    /**
+     * Check if the map is empty (i.e. contains no ProcessRecipeSets)
+     * @return true if the map is empty, false otherwise
+     */
     public boolean isEmpty() {
         return processRecipeSets.isEmpty();
     }

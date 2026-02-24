@@ -17,8 +17,7 @@ import net.kyori.adventure.text.Component;
 /** 
  * A process is a transformation of items in a certaine way using a recipe, (e.g. Crafting, Smelting, Smithing, etc). 
  * Each process can be done using one or more workbenche (e.g., Crafting table / Crafter for Crafting).
- * Each process is immutable
- * @apiNote Each process implementation must be immutable
+ * Each process implementation must be immutable.
 */
 @NullMarked
 public interface Process extends Keyed{
@@ -33,8 +32,6 @@ public interface Process extends Keyed{
      * The CraftingProcess is prioritized first, followed by all other vanilla processes in lexicographical order,
      * then all other non vanilla processes in lexicographical order and finally the UndefinedProcess.<br>
      * Note: this is useful for ordered collections like NavigableSet.
-     * 
-     * @return a comparator for ordering processes
      */
     public static final Comparator<Process> COMPARATOR = comparator();
 
@@ -77,10 +74,18 @@ public interface Process extends Keyed{
         // Note: negate with '!', is because the boolean comparator place false first and true last, so here we place it first if the predicate is true.
     }
 
+    /**
+     * A default Process implementation for recipes that cannot be displayed by any defined process.
+     * This process will be used to categorize recipes that don't fit into any known process, allowing them to be displayed in a generic "undefined" category in the recipe viewer.
+     */
     @SuppressWarnings("java:S6548") // Allowed case of singleton
     public static class UndefinedProcess extends AbstractProcess {
 
         private static final Key KEY = VeiKey.key("undefined");
+
+        /**
+         * The singleton instance of the UndefinedProcess.
+         */
         public static final UndefinedProcess INSTANCE = new UndefinedProcess();
 
         private UndefinedProcess() {

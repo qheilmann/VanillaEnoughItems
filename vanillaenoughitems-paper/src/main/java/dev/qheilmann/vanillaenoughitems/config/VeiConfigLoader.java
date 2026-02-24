@@ -71,10 +71,10 @@ public final class VeiConfigLoader {
     private static VanillaEnoughItemsConfig toApiConfig(PluginConfigData data) {
         StyleData styleData = data.style;
 
-        TextColor primary          = parseColor(styleData.colorPrimary,          Style.DEFAULT_COLOR_PRIMARY);
-        TextColor primaryVariant   = parseColor(styleData.colorPrimaryVariant,   Style.DEFAULT_COLOR_PRIMARY_VARIANT);
-        TextColor secondary        = parseColor(styleData.colorSecondary,        Style.DEFAULT_COLOR_SECONDARY);
-        TextColor secondaryVariant = parseColor(styleData.colorSecondaryVariant, Style.DEFAULT_COLOR_SECONDARY_VARIANT);
+        TextColor primary          = parseColor(styleData.colorPrimary,          StyleData.DEFAULT_COLOR_PRIMARY);
+        TextColor primaryVariant   = parseColor(styleData.colorPrimaryVariant,   StyleData.DEFAULT_COLOR_PRIMARY_VARIANT);
+        TextColor secondary        = parseColor(styleData.colorSecondary,        StyleData.DEFAULT_COLOR_SECONDARY);
+        TextColor secondaryVariant = parseColor(styleData.colorSecondaryVariant, StyleData.DEFAULT_COLOR_SECONDARY_VARIANT);
 
         Style style = new Style(styleData.hasResourcePack, primary, primaryVariant, secondary, secondaryVariant);
 
@@ -133,6 +133,12 @@ public final class VeiConfigLoader {
 
     @ConfigSerializable
     static final class StyleData {
+
+        static final boolean DEFAULT_HAS_RESOURCE_PACK = false;
+        static final TextColor DEFAULT_COLOR_PRIMARY = TextColor.fromHexString("#AEA44d");
+        static final TextColor DEFAULT_COLOR_PRIMARY_VARIANT = TextColor.fromHexString("#959956");
+        static final TextColor DEFAULT_COLOR_SECONDARY = TextColor.fromHexString("#33658A");
+        static final TextColor DEFAULT_COLOR_SECONDARY_VARIANT = TextColor.fromHexString("#86BBD8");
 
         // Whether the server enforces a resource pack that includes VEI custom models.
         // When true, model-based GUI elements are used instead of text fallbacks.

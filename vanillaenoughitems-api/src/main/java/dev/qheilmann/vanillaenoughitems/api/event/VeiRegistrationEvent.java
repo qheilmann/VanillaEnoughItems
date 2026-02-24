@@ -30,6 +30,10 @@ public class VeiRegistrationEvent extends Event {
     private static final HandlerList HANDLERS = new HandlerList();
     private final VanillaEnoughItemsAPI api;
 
+    /**
+     * Construct the VEI registration event.
+     * @param api the VanillaEnoughItems API instance for registrations
+     */
     public VeiRegistrationEvent(VanillaEnoughItemsAPI api) {
         this.api = api;
     }
@@ -43,11 +47,19 @@ public class VeiRegistrationEvent extends Event {
         return api;
     }
 
+    /**
+     * Get the handler list for this event.
+     * @return the handler list for this event
+     */
     @Override
     public HandlerList getHandlers() {
         return getHandlerList();
     }
 
+    /**
+     * Get the handler list for this event type.
+     * @return the handler list for this event
+     */
     public static HandlerList getHandlerList() {
         return HANDLERS;
     }

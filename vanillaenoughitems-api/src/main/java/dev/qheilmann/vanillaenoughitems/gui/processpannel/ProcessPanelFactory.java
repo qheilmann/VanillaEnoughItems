@@ -18,6 +18,7 @@ public interface ProcessPanelFactory {
      * <b> IMPORTANT: The provided factory should handle any recipe supported by the associated process, {@link Process#canHandleRecipe(Recipe)}</b>
      * 
      * @param recipe the recipe to render
+     * @param style the style to use for rendering the panel
      * @return a new ProcessPanel
      */
     ProcessPanel create(Recipe recipe, Style style);
