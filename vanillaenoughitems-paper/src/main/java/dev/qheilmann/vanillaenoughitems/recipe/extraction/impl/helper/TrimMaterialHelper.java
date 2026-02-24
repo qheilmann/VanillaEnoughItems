@@ -33,7 +33,7 @@ public class TrimMaterialHelper {
             case RESIN_BRICK:
                 return TrimMaterial.RESIN;
             default:
-                if (VanillaEnoughItems.config().hasMissingImplementationWarnings()) {
+                if (VanillaEnoughItems.veiConfig().debug().missingImplementationWarnings()) {
                     VanillaEnoughItems.LOGGER.warn("No TrimMaterial found for material: " + material.name() + ", using default (AMETHYST)");
                 }
                 return TrimMaterial.AMETHYST;

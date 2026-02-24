@@ -5,16 +5,15 @@ import java.util.Set;
 import org.bukkit.inventory.BlastingRecipe;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
 
-import dev.qheilmann.vanillaenoughitems.recipe.extraction.RecipeExtractorStrategy;
+import dev.qheilmann.vanillaenoughitems.recipe.extraction.RecipeExtractor;
 import dev.qheilmann.vanillaenoughitems.recipe.extraction.impl.helper.Fuels;
-import dev.qheilmann.vanillaenoughitems.recipe.extraction.impl.helper.RecipeChoiceHelper;
+import dev.qheilmann.vanillaenoughitems.recipe.helper.RecipeChoiceHelper;
 import net.kyori.adventure.key.Key;
 
 @NullMarked
-public class BlastingRecipeExtractor implements RecipeExtractorStrategy<@NonNull BlastingRecipe> {
+public class BlastingRecipeExtractor implements RecipeExtractor {
 
     public static final Key KEY = Key.key("blasting");
 
@@ -29,12 +28,13 @@ public class BlastingRecipeExtractor implements RecipeExtractorStrategy<@NonNull
     }
 
     @Override
-    public Set<ItemStack> extractIngredients(BlastingRecipe recipe) {
-        return RecipeChoiceHelper.getItemsFromChoice(recipe.getInputChoice());
+    public Set<ItemStack> extractIngredients(Recipe recipe) {
+        BlastingRecipe blasting = (BlastingRecipe) recipe;
+        return RecipeChoiceHelper.getItemsFromChoice(blasting.getInputChoice());
     }
 
     @Override
-    public Set<ItemStack> extractOthers(BlastingRecipe recipe) {
+    public Set<ItemStack> extractOthers(Recipe recipe) {
         return Fuels.FUELS;
     }
 }

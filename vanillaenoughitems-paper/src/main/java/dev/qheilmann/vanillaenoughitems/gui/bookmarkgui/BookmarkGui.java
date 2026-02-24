@@ -18,7 +18,7 @@ import org.jspecify.annotations.Nullable;
 import dev.qheilmann.vanillaenoughitems.RecipeServices;
 import dev.qheilmann.vanillaenoughitems.VanillaEnoughItems;
 import dev.qheilmann.vanillaenoughitems.bookmark.Bookmark;
-import dev.qheilmann.vanillaenoughitems.config.style.Style;
+import dev.qheilmann.vanillaenoughitems.config.Style;
 import dev.qheilmann.vanillaenoughitems.gui.CyclicIngredient;
 import dev.qheilmann.vanillaenoughitems.gui.helper.GuiComponentHelper;
 import dev.qheilmann.vanillaenoughitems.gui.player.PlayerGuiData;
@@ -69,10 +69,10 @@ public class BookmarkGui extends FastInv {
      * @param returnToReader optional reader to return to when using the return button (can be null)
      */
     public BookmarkGui(Component titleComponent, RecipeServices services, PlayerGuiData playerData, Collection<Bookmark> bookmarks, @Nullable MultiProcessRecipeReader returnToReader) {
-        super(SIZE, title(titleComponent, VanillaEnoughItems.config().style()));
+        super(SIZE, title(titleComponent, VanillaEnoughItems.veiConfig().style()));
         this.services = services;
         this.playerData = playerData;
-        this.style = VanillaEnoughItems.config().style();
+        this.style = VanillaEnoughItems.veiConfig().style();
         this.guiComponent = new BookmarkGuiComponent(style);
         this.fillerItem = GuiComponentHelper.createFillerItem(style.hasResourcePack());
         this.bookmarks = new ArrayList<>(bookmarks);

@@ -7,15 +7,14 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.inventory.ShapedRecipe;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
 
-import dev.qheilmann.vanillaenoughitems.recipe.extraction.RecipeExtractorStrategy;
-import dev.qheilmann.vanillaenoughitems.recipe.extraction.impl.helper.RecipeChoiceHelper;
+import dev.qheilmann.vanillaenoughitems.recipe.extraction.RecipeExtractor;
+import dev.qheilmann.vanillaenoughitems.recipe.helper.RecipeChoiceHelper;
 import net.kyori.adventure.key.Key;
 
 @NullMarked
-public class ShapedRecipeExtractor implements RecipeExtractorStrategy<@NonNull ShapedRecipe> {
+public class ShapedRecipeExtractor implements RecipeExtractor {
 
     public static final Key KEY = Key.key("shaped");
 
@@ -30,17 +29,18 @@ public class ShapedRecipeExtractor implements RecipeExtractorStrategy<@NonNull S
     }
 
     @Override
-    public Set<ItemStack> extractIngredients(ShapedRecipe recipe) {
+    public Set<ItemStack> extractIngredients(Recipe recipe) {
+        ShapedRecipe shaped = (ShapedRecipe) recipe;
         Set<ItemStack> ingredients = new HashSet<>();
 
-        for (RecipeChoice choice : recipe.getChoiceMap().values()) {
+        for (RecipeChoice choice : shaped.getChoiceMap().values()) {
             ingredients.addAll(RecipeChoiceHelper.getItemsFromChoice(choice));
         }
         return ingredients;
     }
 
     @Override
-    public Set<ItemStack> extractOthers(ShapedRecipe recipe) {
+    public Set<ItemStack> extractOthers(Recipe recipe) {
         return Set.of();
     }
 }

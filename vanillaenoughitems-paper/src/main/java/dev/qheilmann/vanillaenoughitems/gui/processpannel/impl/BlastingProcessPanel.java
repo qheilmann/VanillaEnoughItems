@@ -2,6 +2,7 @@ package dev.qheilmann.vanillaenoughitems.gui.processpannel.impl;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 import org.bukkit.inventory.BlastingRecipe;
 import org.bukkit.inventory.ItemStack;
@@ -9,7 +10,7 @@ import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.Recipe;
 import org.jspecify.annotations.NullMarked;
 
-import dev.qheilmann.vanillaenoughitems.config.style.Style;
+import dev.qheilmann.vanillaenoughitems.config.Style;
 import dev.qheilmann.vanillaenoughitems.gui.CyclicIngredient;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPanel;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPannelSlot;
@@ -17,7 +18,7 @@ import dev.qheilmann.vanillaenoughitems.gui.recipegui.RecipeGuiComponent;
 import dev.qheilmann.vanillaenoughitems.gui.recipegui.RecipeGuiSharedButton;
 import dev.qheilmann.vanillaenoughitems.pack.VeiPack;
 import dev.qheilmann.vanillaenoughitems.recipe.extraction.impl.helper.Fuels;
-import dev.qheilmann.vanillaenoughitems.utils.fastinv.FastInvItem;
+import dev.qheilmann.vanillaenoughitems.gui.processpannel.PanelStaticItem;
 
 /**
  * Panel for blasting recipes.
@@ -38,7 +39,7 @@ public class BlastingProcessPanel implements ProcessPanel {
     public BlastingProcessPanel(Recipe recipe, Style style) {
         this.recipe = recipe;
         this.style = style;
-        this.seed = (int) (Math.random() * Integer.MAX_VALUE);
+        this.seed = new Random().nextInt();
     }
 
     private BlastingRecipe getBlastingRecipe() {
@@ -67,7 +68,6 @@ public class BlastingProcessPanel implements ProcessPanel {
      * {@inheritDoc}
      */
     @Override
-    @SuppressWarnings("null")
     public Map<ProcessPannelSlot, CyclicIngredient> getTickedResults() {
         return Map.of(OUTPUT_SLOT, new CyclicIngredient(seed, getBlastingRecipe().getResult()));
     }
@@ -86,31 +86,25 @@ public class BlastingProcessPanel implements ProcessPanel {
      * {@inheritDoc}
      */
     @Override
-    public Map<ProcessPannelSlot, FastInvItem> getStaticItems() {
-        Map<ProcessPannelSlot, FastInvItem> statics = new HashMap<>();
+    public Map<ProcessPannelSlot, PanelStaticItem> getStaticItems() {
+        Map<ProcessPannelSlot, PanelStaticItem> statics = new HashMap<>();
 
         ItemStack backgroundItem = RecipeGuiComponent.createFillerItem(false);
-        ItemStack progressItem = RecipeGuiComponent.createFillerItem(true);
+        ItemStack progressItem = RecipeGuiComponent.createFillerItem(false);
         ItemStack blastFurnaceItem = ItemType.BLAST_FURNACE.createItemStack(meta -> {
             meta.setMaxStackSize(1);
             meta.setHideTooltip(true);
         });
 
         if (style.hasResourcePack()) {
-            backgroundItem.editMeta(meta -> {
-                meta.setItemModel(VeiPack.ItemModel.Gui.Background.Panel.BLASTING);
-            });
-            progressItem.editMeta(meta -> {
-                meta.setItemModel(VeiPack.ItemModel.Gui.Decoration.RECIPE_PROGRESS);
-            });
-            blastFurnaceItem.editMeta(meta -> {
-                meta.setItemModel(VeiPack.ItemModel.Gui.Decoration.COOKING_FLAME);
-            });
+            backgroundItem.editMeta(meta -> meta.setItemModel(VeiPack.ItemModel.Gui.Background.Panel.BLASTING));
+            progressItem.editMeta(meta -> meta.setItemModel(VeiPack.ItemModel.Gui.Decoration.RECIPE_PROGRESS));
+            blastFurnaceItem.editMeta(meta -> meta.setItemModel(VeiPack.ItemModel.Gui.Decoration.COOKING_FLAME));
         }
 
-        statics.put(BACKGROUND_SLOT, new FastInvItem(backgroundItem, null));
-        statics.put(DECORATION_PROGRESS_SLOT, new FastInvItem(progressItem, null));
-        statics.put(DECORATION_FIRE_SLOT, new FastInvItem(blastFurnaceItem, null));
+        statics.put(BACKGROUND_SLOT, new PanelStaticItem(backgroundItem, null));
+        statics.put(DECORATION_PROGRESS_SLOT, new PanelStaticItem(progressItem, null));
+        statics.put(DECORATION_FIRE_SLOT, new PanelStaticItem(blastFurnaceItem, null));
 
         return Map.copyOf(statics);
     }

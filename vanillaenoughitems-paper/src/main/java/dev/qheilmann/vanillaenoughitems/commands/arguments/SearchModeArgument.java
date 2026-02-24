@@ -70,14 +70,12 @@ public class SearchModeArgument extends CustomArgument<SearchModeArgument.Search
      * @param item the ItemStack to search for, or null for {@link SearchModeArgument.SearchMode#ALL}
      * @return a collection of available search mode names for the item, or {@link SearchModeArgument.SearchMode#ALL} if item is null
      */
+    @SuppressWarnings("null")
     public static Collection<String> suggestions(RecipeIndex recipeIndex, @Nullable ItemStack item) {
-        EnumSet<SearchMode> availableModes = getSearchModes(recipeIndex, item);
-        @SuppressWarnings("null")
-        Set<String> availableModeNames = availableModes.stream()
+        Set<SearchMode> availableModes = getSearchModes(recipeIndex, item);
+        return availableModes.stream()
             .map(SearchMode::getName)
             .collect(Collectors.toSet());
-        
-        return availableModeNames;
     }
 
     /**
@@ -85,14 +83,13 @@ public class SearchModeArgument extends CustomArgument<SearchModeArgument.Search
      *
      * @param recipeIndex the recipe index
      * @param item the ItemStack to search for, or null for {@link SearchModeArgument.SearchMode#ALL}
-     * @return an EnumSet of available SearchModes for the item, or {@link SearchModeArgument.SearchMode#ALL} if item is null
+     * @return an Set of available SearchModes for the item, or {@link SearchModeArgument.SearchMode#ALL} if item is null
      */
-    private static EnumSet<SearchMode> getSearchModes(RecipeIndex recipeIndex, @Nullable ItemStack item) {
+    private static Set<SearchMode> getSearchModes(RecipeIndex recipeIndex, @Nullable ItemStack item) {
         if (item == null) {
             return SearchMode.ALL;
         }
 
-        @SuppressWarnings("null")
         EnumSet<SearchMode> availableModes = EnumSet.noneOf(SearchMode.class);
 
         // Recipe
@@ -121,8 +118,7 @@ public class SearchModeArgument extends CustomArgument<SearchModeArgument.Search
          * The default search mode
          */
         public static final SearchMode DEFAULT = RECIPE;
-        @SuppressWarnings("null")
-        public static final EnumSet<SearchMode> ALL = EnumSet.allOf(SearchMode.class);
+        public static final Set<SearchMode> ALL = Set.copyOf(EnumSet.allOf(SearchMode.class));
 
         private final String name;
 

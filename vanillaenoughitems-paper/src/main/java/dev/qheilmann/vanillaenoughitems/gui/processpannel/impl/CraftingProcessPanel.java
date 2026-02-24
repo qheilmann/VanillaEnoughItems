@@ -3,6 +3,7 @@ package dev.qheilmann.vanillaenoughitems.gui.processpannel.impl;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import org.bukkit.inventory.CraftingRecipe;
 import org.bukkit.inventory.ItemStack;
@@ -15,14 +16,14 @@ import org.bukkit.inventory.TransmuteRecipe;
 import org.jspecify.annotations.NullMarked;
 
 import dev.qheilmann.vanillaenoughitems.VanillaEnoughItems;
-import dev.qheilmann.vanillaenoughitems.config.style.Style;
+import dev.qheilmann.vanillaenoughitems.config.Style;
 import dev.qheilmann.vanillaenoughitems.gui.CyclicIngredient;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPanel;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPannelSlot;
 import dev.qheilmann.vanillaenoughitems.gui.recipegui.RecipeGuiComponent;
 import dev.qheilmann.vanillaenoughitems.gui.recipegui.RecipeGuiSharedButton;
 import dev.qheilmann.vanillaenoughitems.pack.VeiPack;
-import dev.qheilmann.vanillaenoughitems.utils.fastinv.FastInvItem;
+import dev.qheilmann.vanillaenoughitems.gui.processpannel.PanelStaticItem;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 
@@ -48,8 +49,8 @@ public class CraftingProcessPanel implements ProcessPanel {
 
     public CraftingProcessPanel(Recipe recipe, Style style) {
         this.recipe = recipe;
-        this.style = VanillaEnoughItems.config().style();
-        this.seed = (int) (Math.random() * Integer.MAX_VALUE);
+        this.style = style;
+        this.seed = new Random().nextInt();
     }
 
     public CraftingRecipe getCraftingRecipe() {
@@ -78,7 +79,6 @@ public class CraftingProcessPanel implements ProcessPanel {
      * {@inheritDoc}
      */
     @Override
-    @SuppressWarnings("null")
     public Map<ProcessPannelSlot, CyclicIngredient> getTickedResults() {
         return Map.of(OUTPUT_SLOT, new CyclicIngredient(seed, getCraftingRecipe().getResult()));
     }
@@ -95,8 +95,8 @@ public class CraftingProcessPanel implements ProcessPanel {
      * {@inheritDoc}
      */    
     @Override
-    public Map<ProcessPannelSlot, FastInvItem> getStaticItems() {
-        Map<ProcessPannelSlot, FastInvItem> statics = new HashMap<>();
+    public Map<ProcessPannelSlot, PanelStaticItem> getStaticItems() {
+        Map<ProcessPannelSlot, PanelStaticItem> statics = new HashMap<>();
         
         ItemStack isShapelessIndicatorItem = createIsShapelessIndicatorItem();
         ItemStack backgroundItem = RecipeGuiComponent.createFillerItem(false);
@@ -106,17 +106,13 @@ public class CraftingProcessPanel implements ProcessPanel {
         });
         
         if (style.hasResourcePack()) {
-            backgroundItem.editMeta(meta -> {
-                meta.setItemModel(VeiPack.ItemModel.Gui.Background.Panel.CRAFTING);
-            });
-            craftingTableItem.editMeta(meta -> {
-                meta.setItemModel(VeiPack.ItemModel.Gui.Decoration.RECIPE_ARROW_SMALL);
-            });
+            backgroundItem.editMeta(meta -> meta.setItemModel(VeiPack.ItemModel.Gui.Background.Panel.CRAFTING));
+            craftingTableItem.editMeta(meta -> meta.setItemModel(VeiPack.ItemModel.Gui.Decoration.RECIPE_ARROW_SMALL));
         }
 
-        statics.put(BACKGROUND_SLOT, new FastInvItem(backgroundItem, null));
-        statics.put(DECORATION_CRAFTING_TABLE_SLOT, new FastInvItem(craftingTableItem, null));
-        statics.put(SHAPELESS_INDICATOR_SLOT, new FastInvItem(isShapelessIndicatorItem, null));
+        statics.put(BACKGROUND_SLOT, new PanelStaticItem(backgroundItem, null));
+        statics.put(DECORATION_CRAFTING_TABLE_SLOT, new PanelStaticItem(craftingTableItem, null));
+        statics.put(SHAPELESS_INDICATOR_SLOT, new PanelStaticItem(isShapelessIndicatorItem, null));
         return statics;
     }
 
@@ -143,15 +139,12 @@ public class CraftingProcessPanel implements ProcessPanel {
      * @return A representation of the crafting grid (RecipeChoice[3][3])
      */
     private static RecipeChoice[][] getRecipeMatrix(CraftingRecipe craftingRecipe) {
-        if (craftingRecipe instanceof ShapedRecipe shapedRecipe) {
-            return getRecipe3by3MatrixShaped(shapedRecipe);
-        } else if (craftingRecipe instanceof ShapelessRecipe shapelessRecipe) {
-            return getRecipeMatrixShapeless(shapelessRecipe);
-        } else if (craftingRecipe instanceof TransmuteRecipe transmuteRecipe) {
-            return getRecipeMatrixTransmute(transmuteRecipe);
-        } else {
-            throw new IllegalArgumentException("Unsupported CraftingRecipe type: " + craftingRecipe.getClass().getName());
-        }
+        return switch (craftingRecipe) {
+          case ShapedRecipe shapedRecipe -> getRecipe3by3MatrixShaped(shapedRecipe);
+          case ShapelessRecipe shapelessRecipe -> getRecipeMatrixShapeless(shapelessRecipe);
+          case TransmuteRecipe transmuteRecipe -> getRecipeMatrixTransmute(transmuteRecipe);
+          default -> throw new IllegalArgumentException("Unsupported CraftingRecipe type: " + craftingRecipe.getClass().getName());
+        };
     }
 
     /**
@@ -199,10 +192,11 @@ public class CraftingProcessPanel implements ProcessPanel {
         int recipeIndex = 0; 
         for(int gridY = minGridY; gridY <= maxGridY; gridY++) {
             for(int gridX = minGridX; gridX <= maxGridX; gridX++) {
-                if(recipeIndex >= recipeChoices.size()) break;
+                if(recipeIndex >= recipeChoices.size()) break; // When recipe have less items than the grid size (e.g. fire charge)
                 RecipeChoice recipeChoice = recipeChoices.get(recipeIndex++);
-                if(recipeChoice == null) continue; // Just in case bad formatted input
-                recipeMatrix[gridY][gridX] = recipeChoice;
+                if(recipeChoice != null) {
+                    recipeMatrix[gridY][gridX] = recipeChoice;
+                }
             }
         }
 
@@ -283,15 +277,13 @@ public class CraftingProcessPanel implements ProcessPanel {
         ) {
             shapelessIndicatorItem = ItemType.LIGHT_GRAY_DYE.createItemStack();
             if (style.hasResourcePack()) {
-                shapelessIndicatorItem.editMeta(meta -> {
-                    meta.setItemModel(VeiPack.ItemModel.Gui.Decoration.SHAPELESS_INDICATOR);
-                });
+                shapelessIndicatorItem.editMeta(meta -> meta.setItemModel(VeiPack.ItemModel.Gui.Decoration.SHAPELESS_INDICATOR));
             }
         }
 
-        shapelessIndicatorItem.editMeta(meta -> {
-            meta.displayName(Component.text("Shapeless Recipe", VanillaEnoughItems.config().style().colorPrimary()).decoration(TextDecoration.ITALIC, false));
-        });
+        shapelessIndicatorItem.editMeta(meta ->
+            meta.displayName(Component.text("Shapeless Recipe", VanillaEnoughItems.veiConfig().style().colorPrimary()).decoration(TextDecoration.ITALIC, false))
+        );
 
         return shapelessIndicatorItem;
     }

@@ -1,7 +1,9 @@
 package dev.qheilmann.vanillaenoughitems.gui.processpannel.impl;
 
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ItemType;
@@ -9,14 +11,14 @@ import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.StonecuttingRecipe;
 import org.jspecify.annotations.NullMarked;
 
-import dev.qheilmann.vanillaenoughitems.config.style.Style;
+import dev.qheilmann.vanillaenoughitems.config.Style;
 import dev.qheilmann.vanillaenoughitems.gui.CyclicIngredient;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPanel;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPannelSlot;
 import dev.qheilmann.vanillaenoughitems.gui.recipegui.RecipeGuiComponent;
 import dev.qheilmann.vanillaenoughitems.gui.recipegui.RecipeGuiSharedButton;
 import dev.qheilmann.vanillaenoughitems.pack.VeiPack;
-import dev.qheilmann.vanillaenoughitems.utils.fastinv.FastInvItem;
+import dev.qheilmann.vanillaenoughitems.gui.processpannel.PanelStaticItem;
 
 /**
  * Panel for stonecutting recipes.
@@ -35,7 +37,7 @@ public class StonecuttingProcessPanel implements ProcessPanel {
     public StonecuttingProcessPanel(Recipe recipe, Style style) {
         this.recipe = recipe;
         this.style = style;
-        this.seed = (int) (Math.random() * Integer.MAX_VALUE);
+        this.seed = new Random().nextInt();
     }
 
     private StonecuttingRecipe getStonecuttingRecipe() {
@@ -47,7 +49,7 @@ public class StonecuttingProcessPanel implements ProcessPanel {
      */
     @Override
     public Map<RecipeGuiSharedButton, ProcessPannelSlot> getRecipeGuiButtonMap() {
-        Map<RecipeGuiSharedButton, ProcessPannelSlot> shared = new HashMap<>();
+        Map<RecipeGuiSharedButton, ProcessPannelSlot> shared = new EnumMap<>(RecipeGuiSharedButton.class);
         shared.put(RecipeGuiSharedButton.NEXT_RECIPE,      ProcessPannelSlot.DEFAULT_NEXT_RECIPE_SLOT);
         shared.put(RecipeGuiSharedButton.PREVIOUS_RECIPE,  ProcessPannelSlot.DEFAULT_PREVIOUS_RECIPE_SLOT);
         shared.put(RecipeGuiSharedButton.HISTORY_FORWARD,  ProcessPannelSlot.DEFAULT_HISTORY_FORWARD_SLOT);
@@ -70,7 +72,6 @@ public class StonecuttingProcessPanel implements ProcessPanel {
      * {@inheritDoc}
      */
     @Override
-    @SuppressWarnings("null")
     public Map<ProcessPannelSlot, CyclicIngredient> getTickedResults() {
         return Map.of(OUTPUT_SLOT, new CyclicIngredient(seed, getStonecuttingRecipe().getResult()));
     }
@@ -87,8 +88,8 @@ public class StonecuttingProcessPanel implements ProcessPanel {
      * {@inheritDoc}
      */
     @Override
-    public Map<ProcessPannelSlot, FastInvItem> getStaticItems() {
-        Map<ProcessPannelSlot, FastInvItem> statics = new HashMap<>();
+    public Map<ProcessPannelSlot, PanelStaticItem> getStaticItems() {
+        Map<ProcessPannelSlot, PanelStaticItem> statics = new HashMap<>();
 
         ItemStack backgroundItem = RecipeGuiComponent.createFillerItem(false);
         ItemStack stonecutterItem = ItemType.STONECUTTER.createItemStack(meta -> {
@@ -97,16 +98,12 @@ public class StonecuttingProcessPanel implements ProcessPanel {
         });
 
         if (style.hasResourcePack()) {
-            backgroundItem.editMeta(meta -> {
-                meta.setItemModel(VeiPack.ItemModel.Gui.Background.Panel.STONECUTTING);
-            });
-            stonecutterItem.editMeta(meta -> {
-                meta.setItemModel(VeiPack.ItemModel.Gui.Decoration.RECIPE_ARROW);
-            });
+            backgroundItem.editMeta(meta -> meta.setItemModel(VeiPack.ItemModel.Gui.Background.Panel.STONECUTTING));
+            stonecutterItem.editMeta(meta -> meta.setItemModel(VeiPack.ItemModel.Gui.Decoration.RECIPE_ARROW));
         }
         
-        statics.put(BACKGROUND_SLOT, new FastInvItem(backgroundItem, null));
-        statics.put(DECORATION_STONECUTTER_SLOT, new FastInvItem(stonecutterItem, null));
+        statics.put(BACKGROUND_SLOT, new PanelStaticItem(backgroundItem, null));
+        statics.put(DECORATION_STONECUTTER_SLOT, new PanelStaticItem(stonecutterItem, null));
 
         return statics;
     }

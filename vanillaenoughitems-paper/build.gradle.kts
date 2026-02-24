@@ -9,6 +9,9 @@ repositories {
 }
 
 dependencies {
+    // API module
+    implementation(projects.vanillaenoughitemsApi)
+
     // Core
     compileOnly(libs.paper.api)
     compileOnly(libs.jspecify)
@@ -16,6 +19,7 @@ dependencies {
     // API / Plugin libraries
     implementation(libs.commandapi.shade)
     implementation(libs.bstats)
+    implementation(libs.configurateYaml)
 
     // Testing
     testImplementation(platform(libs.junit.bom))
@@ -35,6 +39,9 @@ tasks {
         fun reloc(originPkg: String, targetPkg: String) = relocate(originPkg, "${project.group}.${project.name.lowercase().replace("-", "")}.libs.${targetPkg}")
         reloc("dev.jorel.commandapi", "commandapi")
         reloc("org.bstats", "bstats")
+        reloc("org.spongepowered.configurate", "configurate")
+        reloc("io.leangen.geantyref", "geantyref")
+        reloc("org.yaml.snakeyaml", "snakeyaml")
 
         mergeServiceFiles()
     }
@@ -67,7 +74,7 @@ tasks {
             // Clean old plugin files with same base name
             val baseName = baseNameProvider.get()
             destinationDir.listFiles()
-            ?.filter { it.name.startsWith(baseName) && it.name.endsWith(".jar") }
+            ?.filter { it.name.matches(Regex("^${Regex.escape(baseName)}-[0-9][0-9.\\-]*\\.jar$")) }
             ?.forEach { file ->
                 logger.lifecycle("Cleaning old ${baseName} plugin files: ${file.name}")
                 file.delete()

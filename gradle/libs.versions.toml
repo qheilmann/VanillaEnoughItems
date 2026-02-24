@@ -1,5 +1,6 @@
 [versions]
 bstats = "3.1.0" # https://mvnrepository.com/artifact/org.bstats/bstats-bukkit
+configurateYaml = "4.2.0" # https://github.com/SpongePowered/Configurate/releases
 commandapi = "11.1.0" # https://central.sonatype.com/artifact/dev.jorel/commandapi-paper-shade
 dotenv = "4.0.0" # https://plugins.gradle.org/plugin/co.uzzu.dotenv.gradle
 jpenilla-run-paper = "3.0.2" # https://plugins.gradle.org/plugin/xyz.jpenilla.run-paper
@@ -14,11 +15,10 @@ shadow = "9.3.1" # https://plugins.gradle.org/plugin/com.gradleup.shadow
 paper-api = { module = "io.papermc.paper:paper-api", version.ref = "paper-api" }
 jspecify = { module = "org.jspecify:jspecify", version.ref = "jspecify" }
 
-# API dependencies
+# API / Plugin dependencies
 commandapi-shade = { module = "dev.jorel:commandapi-paper-shade", version.ref = "commandapi" }
-
-# Plugin dependencies
 bstats = { module = "org.bstats:bstats-bukkit", version.ref = "bstats" }
+configurateYaml = { module = "org.spongepowered:configurate-yaml", version.ref = "configurateYaml" }
 
 # Testing
 junit-bom = { module = "org.junit:junit-bom", version.ref = "junit-bom"}

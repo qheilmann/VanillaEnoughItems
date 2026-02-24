@@ -2,6 +2,7 @@ package dev.qheilmann.vanillaenoughitems.gui.processpannel.impl;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ItemType;
@@ -15,7 +16,7 @@ import org.bukkit.inventory.meta.trim.TrimMaterial;
 import org.bukkit.inventory.meta.trim.TrimPattern;
 import org.jspecify.annotations.NullMarked;
 
-import dev.qheilmann.vanillaenoughitems.config.style.Style;
+import dev.qheilmann.vanillaenoughitems.config.Style;
 import dev.qheilmann.vanillaenoughitems.gui.CyclicIngredient;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPanel;
 import dev.qheilmann.vanillaenoughitems.gui.processpannel.ProcessPannelSlot;
@@ -23,7 +24,7 @@ import dev.qheilmann.vanillaenoughitems.gui.recipegui.RecipeGuiComponent;
 import dev.qheilmann.vanillaenoughitems.gui.recipegui.RecipeGuiSharedButton;
 import dev.qheilmann.vanillaenoughitems.pack.VeiPack;
 import dev.qheilmann.vanillaenoughitems.recipe.extraction.impl.helper.TrimMaterialHelper;
-import dev.qheilmann.vanillaenoughitems.utils.fastinv.FastInvItem;
+import dev.qheilmann.vanillaenoughitems.gui.processpannel.PanelStaticItem;
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.datacomponent.item.ItemArmorTrim;
 
@@ -55,7 +56,7 @@ public class SmithingProcessPanel implements ProcessPanel {
     public SmithingProcessPanel(Recipe recipe, Style style) {
         this.recipe = recipe;
         this.style = style;
-        this.seed = (int) (Math.random() * Integer.MAX_VALUE);
+        this.seed = new Random().nextInt();
 
         // Cyclic ingredients shared between the caller and the dynamic result
         baseCyclic = new CyclicIngredient(seed, getSmithingRecipe().getBase());
@@ -90,7 +91,6 @@ public class SmithingProcessPanel implements ProcessPanel {
      * {@inheritDoc}
      */    
     @Override
-    @SuppressWarnings("null")
     public Map<ProcessPannelSlot, CyclicIngredient> getTickedResults() {
         return Map.of(OUTPUT_SLOT, getResult(seed, getSmithingRecipe(), baseCyclic, additionCyclic));
     }
@@ -107,8 +107,8 @@ public class SmithingProcessPanel implements ProcessPanel {
      * {@inheritDoc}
      */    
     @Override
-    public Map<ProcessPannelSlot, FastInvItem> getStaticItems() {
-        Map<ProcessPannelSlot, FastInvItem> statics = new HashMap<>();
+    public Map<ProcessPannelSlot, PanelStaticItem> getStaticItems() {
+        Map<ProcessPannelSlot, PanelStaticItem> statics = new HashMap<>();
         
         ItemStack backgroundItem = RecipeGuiComponent.createFillerItem(false);
         ItemStack smithingItem = ItemType.SMITHING_TABLE.createItemStack(meta -> {
@@ -117,16 +117,12 @@ public class SmithingProcessPanel implements ProcessPanel {
         });
 
         if (style.hasResourcePack()) {
-            backgroundItem.editMeta(meta -> {
-                meta.setItemModel(VeiPack.ItemModel.Gui.Background.Panel.SMITHING);
-            });
-            smithingItem.editMeta(meta -> {
-                meta.setItemModel(VeiPack.ItemModel.Gui.Decoration.RECIPE_ARROW_SMALL);
-            });
+            backgroundItem.editMeta(meta -> meta.setItemModel(VeiPack.ItemModel.Gui.Background.Panel.SMITHING));
+            smithingItem.editMeta(meta -> meta.setItemModel(VeiPack.ItemModel.Gui.Decoration.RECIPE_ARROW_SMALL));
         }
 
-        statics.put(BACKGROUND_SLOT, new FastInvItem(backgroundItem, null));
-        statics.put(DECORATION_SMITHING_SLOT, new FastInvItem(smithingItem, null));
+        statics.put(BACKGROUND_SLOT, new PanelStaticItem(backgroundItem, null));
+        statics.put(DECORATION_SMITHING_SLOT, new PanelStaticItem(smithingItem, null));
         
         return Map.copyOf(statics);
     }

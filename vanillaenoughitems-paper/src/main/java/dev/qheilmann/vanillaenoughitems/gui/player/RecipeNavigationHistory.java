@@ -40,16 +40,24 @@ public class RecipeNavigationHistory {
         if (lastViewedReader != null) {
             pushForNavigation(lastViewedReader, newReader);
         }
+        // Update lastViewedReader to the new reader
+        lastViewedReader = newReader;
     }
     
     /**
      * Called when stopping viewing a reader.
      * Updates the last viewed reader to the current one being viewed.
+     * Only updates if this reader is still the current one (prevents stale updates
+     * when GUIs close after newer ones have opened).
      * 
      * @param currentReader the reader that was being viewed
      */
     public void stopViewing(MultiProcessRecipeReader currentReader) {
-        lastViewedReader = currentReader;
+        // Only update if no newer viewer has started
+        // This prevents old GUIs from overwriting when they close out of order
+        if (lastViewedReader == null || currentReader.equals(lastViewedReader)) {
+            lastViewedReader = currentReader;
+        }
     }
 
     /**
@@ -102,7 +110,9 @@ public class RecipeNavigationHistory {
         }
         
         forwardStack.push(currentReader);
-        return backwardStack.pop();
+        MultiProcessRecipeReader previousReader = backwardStack.pop();
+        lastViewedReader = previousReader; // Track the reader we're navigating to
+        return previousReader;
     }
 
     /**
@@ -117,7 +127,9 @@ public class RecipeNavigationHistory {
         }
         
         backwardStack.push(currentReader);
-        return forwardStack.pop();
+        MultiProcessRecipeReader nextReader = forwardStack.pop();
+        lastViewedReader = nextReader; // Track the reader we're navigating to
+        return nextReader;
     }
 
     /**

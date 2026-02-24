@@ -33,7 +33,7 @@ public class StonecuttingProcess extends AbstractProcess {
     @Override
     public ItemStack symbol() {
         ItemStack item = ItemType.STONECUTTER.createItemStack(meta -> {
-            meta.displayName(Component.text("Stonecutting", VanillaEnoughItems.config().style().colorPrimary()).decoration(TextDecoration.ITALIC, false));
+            meta.displayName(Component.text("Stonecutting", VanillaEnoughItems.veiConfig().style().colorPrimary()).decoration(TextDecoration.ITALIC, false));
         });
 
         return item;

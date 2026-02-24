@@ -18,7 +18,7 @@ import dev.jorel.commandapi.arguments.ArgumentSuggestions;
 import dev.jorel.commandapi.arguments.CustomArgument;
 import dev.jorel.commandapi.arguments.NamespacedKeyArgument;
 import dev.qheilmann.vanillaenoughitems.commands.arguments.SearchModeArgument.SearchMode;
-import dev.qheilmann.vanillaenoughitems.recipe.extraction.RecipeExtractor;
+import dev.qheilmann.vanillaenoughitems.recipe.extraction.RecipeExtractorRegistry;
 import dev.qheilmann.vanillaenoughitems.recipe.index.RecipeIndex;
 import dev.qheilmann.vanillaenoughitems.recipe.index.reader.MultiProcessRecipeReader;
 import dev.qheilmann.vanillaenoughitems.recipe.process.Process;
@@ -142,23 +142,23 @@ public class RecipeIdArgument extends CustomArgument<NamespacedKey, NamespacedKe
         return recipeKeys;
     }
 
-    private static Collection<Key> collectAllProcessRecipeKeys(MultiProcessRecipeReader reader, RecipeExtractor extractor) {
+    private static Collection<Key> collectAllProcessRecipeKeys(MultiProcessRecipeReader reader, RecipeExtractorRegistry extractorRegistry) {
         NavigableSet<Process> processes = reader.getAllProcesses();
         Set<Key> recipeKeys = new HashSet<>();
 
         for (Process process : processes) {
             reader.setCurrentProcess(process);
-            recipeKeys.addAll(collectSingleProcessRecipeKeys(reader, extractor));
+            recipeKeys.addAll(collectSingleProcessRecipeKeys(reader, extractorRegistry));
         }
 
         return recipeKeys;
     }
 
     @SuppressWarnings("null")
-    private static Collection<Key> collectSingleProcessRecipeKeys(MultiProcessRecipeReader reader, RecipeExtractor extractor) {
+    private static Collection<Key> collectSingleProcessRecipeKeys(MultiProcessRecipeReader reader, RecipeExtractorRegistry extractorRegistry) {
         return reader.getCurrentProcessRecipeReader().getAllRecipes().stream()
-            .filter(recipe -> extractor.canHandle(recipe))
-            .map(recipe -> extractor.extractKey(recipe))
+            .filter(recipe -> extractorRegistry.canHandle(recipe))
+            .map(recipe -> extractorRegistry.extractKey(recipe))
             .collect(Collectors.toSet());
     }
 }

@@ -47,7 +47,7 @@ public class CraftingProcess extends AbstractProcess {
     @Override
     public ItemStack symbol() {
         ItemStack item = ItemType.CRAFTING_TABLE.createItemStack(meta -> {
-            meta.displayName(Component.text("Crafting", VanillaEnoughItems.config().style().colorPrimary()).decoration(TextDecoration.ITALIC, false));
+            meta.displayName(Component.text("Crafting", VanillaEnoughItems.veiConfig().style().colorPrimary()).decoration(TextDecoration.ITALIC, false));
         });
         
         return item;

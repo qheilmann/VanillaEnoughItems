@@ -10,8 +10,6 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jspecify.annotations.NullMarked;
 
-import dev.qheilmann.vanillaenoughitems.recipe.index.RecipeIndex;
-
 /**
  * Manages per-player GUI data and handles player lifecycle events.
  * This class is responsible for:
@@ -28,15 +26,12 @@ import dev.qheilmann.vanillaenoughitems.recipe.index.RecipeIndex;
 public class PlayerDataManager implements Listener {
     
     private final Map<UUID, PlayerGuiData> playerDataMap = new ConcurrentHashMap<>();
-    private final RecipeIndex recipeIndex;
 
     /**
      * Create a new PlayerDataManager and register it as an event listener
      * @param plugin the plugin instance to register events with
-     * @param recipeIndex the recipe index needed to create PlayerGuiData
      */
-    public PlayerDataManager(JavaPlugin plugin, RecipeIndex recipeIndex) {
-        this.recipeIndex = recipeIndex;
+    public PlayerDataManager(JavaPlugin plugin) {
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
@@ -46,7 +41,7 @@ public class PlayerDataManager implements Listener {
      * @return the player's GUI data
      */
     public PlayerGuiData getPlayerData(UUID playerUuid) {
-        return playerDataMap.computeIfAbsent(playerUuid, uuid -> new PlayerGuiData(uuid, recipeIndex));
+        return playerDataMap.computeIfAbsent(playerUuid, PlayerGuiData::new);
     }
 
     /**

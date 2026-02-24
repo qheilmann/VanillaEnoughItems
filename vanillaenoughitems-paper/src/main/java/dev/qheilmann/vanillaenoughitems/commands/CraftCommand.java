@@ -15,6 +15,7 @@ import dev.jorel.commandapi.CommandPermission;
 import dev.jorel.commandapi.arguments.ArgumentSuggestions;
 import dev.jorel.commandapi.arguments.MultiLiteralArgument;
 import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
+import dev.jorel.commandapi.executors.CommandExecutor;
 import dev.qheilmann.vanillaenoughitems.RecipeServices;
 import dev.qheilmann.vanillaenoughitems.VanillaEnoughItems;
 import dev.qheilmann.vanillaenoughitems.commands.arguments.ProcessArgument;
@@ -35,21 +36,21 @@ import net.kyori.adventure.text.format.TextDecoration;
 
 @NullMarked
 public class CraftCommand {
-    public static final String NAME = "craft";
-    public static final String[] ALIASES = {"c", "vei"};
-    public static final CommandPermission PERMISSION = CommandPermission.NONE;
-    public static final String SHORT_HELP = "Show item recipe";
-    public static final String LONG_HELP = "Open a GUI showing recipes, usages, or other informations about bunch of item";
-    public static final String USAGE = """
+    private static final String NAME = "craft";
+    private static final String[] ALIASES = {"c", "vei"};
+    private static final CommandPermission PERMISSION = CommandPermission.NONE;
+    private static final String SHORT_HELP = "Show item recipe";
+    private static final String LONG_HELP = "Open a GUI showing recipes, usages, or other informations about bunch of item";
+    private static final String USAGE = """
 
                                     /craft <item>
                                     Type /craft --help for detailled usage instructions and examples.
                                     """;
 
-    private static final TextColor COLOR_PRIMARY = VanillaEnoughItems.config().style().colorPrimary();
-    private static final TextColor COLOR_PRIMARY_VARIANT = VanillaEnoughItems.config().style().colorPrimaryVariant();
-    private static final TextColor COLOR_SECONDARY = VanillaEnoughItems.config().style().colorSecondary();
-    private static final TextColor COLOR_SECONDARY_VARIANT = VanillaEnoughItems.config().style().colorSecondaryVariant();
+    private static final TextColor COLOR_PRIMARY = VanillaEnoughItems.veiConfig().style().colorPrimary();
+    private static final TextColor COLOR_PRIMARY_VARIANT = VanillaEnoughItems.veiConfig().style().colorPrimaryVariant();
+    private static final TextColor COLOR_SECONDARY = VanillaEnoughItems.veiConfig().style().colorSecondary();
+    private static final TextColor COLOR_SECONDARY_VARIANT = VanillaEnoughItems.veiConfig().style().colorSecondaryVariant();
 
     @SuppressWarnings("null")
     private static JavaPlugin plugin;
@@ -58,7 +59,7 @@ public class CraftCommand {
     @SuppressWarnings("null")
     private static PlayerDataManager playerDataManager;
 
-    private CraftCommand() {}; // Prevent instantiation
+    private CraftCommand() {} // Prevent instantiation
 
     public static void init(JavaPlugin plugin, RecipeServices services, PlayerDataManager playerDataManager) {
         CraftCommand.plugin = plugin;
@@ -74,6 +75,7 @@ public class CraftCommand {
             .withUsage(USAGE);
     }
 
+    @SuppressWarnings("java:S1192") // Allow string literals in command definitions
     public static void register(JavaPlugin plugin, RecipeServices services, PlayerDataManager playerDataManager) {
         init(plugin, services, playerDataManager);
 
@@ -149,9 +151,9 @@ public class CraftCommand {
         // craft --help
         createBaseCraftCommand()
             .withArguments(new MultiLiteralArgument("help", "--help"))
-            .executes((sender, args) -> {
-                helpAction(sender);
-            })
+            .executes((CommandExecutor) (sender, args) -> 
+                helpAction(sender)
+            )
             .register();
 
 
@@ -159,9 +161,9 @@ public class CraftCommand {
         createBaseCraftCommand()
             .withPermission(CommandPermission.OP)
             .withArguments(new MultiLiteralArgument("version", "--version"))
-            .executes((sender, args) -> {
-                versionAction(sender);
-            })
+            .executes((CommandExecutor) (sender, args) ->
+                versionAction(sender)
+            )
             .register();
 
         // craft --id <recipeId>

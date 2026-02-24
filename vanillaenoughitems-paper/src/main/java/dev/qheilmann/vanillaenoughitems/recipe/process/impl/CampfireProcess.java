@@ -33,7 +33,7 @@ public class CampfireProcess extends AbstractProcess {
     @Override
     public ItemStack symbol() {
         ItemStack item = ItemType.CAMPFIRE.createItemStack(meta -> {
-            meta.displayName(Component.text("Campfire Cooking", VanillaEnoughItems.config().style().colorPrimary()).decoration(TextDecoration.ITALIC, false));
+            meta.displayName(Component.text("Campfire Cooking", VanillaEnoughItems.veiConfig().style().colorPrimary()).decoration(TextDecoration.ITALIC, false));
         });
 
         return item;
