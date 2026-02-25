@@ -212,10 +212,18 @@ public class CraftingProcessPanel implements ProcessPanel {
      */
     private static RecipeChoice[][] getRecipe3by3MatrixShaped(ShapedRecipe shapedRecipe) {
         RecipeChoice[][] recipeMatrix = new RecipeChoice[3][3];
-        RecipeChoice[] itemArray = shapedRecipe.getChoiceMap().values().toArray(new RecipeChoice[0]);
+        Map<Character, RecipeChoice> choiceMap = shapedRecipe.getChoiceMap(); // e.g. #=planks, O=diamond
         
-        int recipeWidth = shapedRecipe.getShape()[0].length();
-        int recipeHeight = shapedRecipe.getShape().length;
+        String[] shape = shapedRecipe.getShape(); // e.g. "###" "#O#" "###"
+        int recipeWidth = shape[0].length();
+        int recipeHeight = shape.length;
+        
+        RecipeChoice[] itemArray = new RecipeChoice[9];
+        String linearShape = String.join("", shape); // "####O####"
+        for (int i = 0; i < linearShape.length(); i++) {
+            char symbol = linearShape.charAt(i);
+            itemArray[i] = choiceMap.get(symbol); // RecipeChoice or null if blank/non existe (e.g. planks, diamond)
+        }
 
         // max, min item position in the crafting grid (for alignment)
         int maxGridX = 2;
