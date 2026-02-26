@@ -122,17 +122,25 @@ public class RecipeIndex implements RecipeIndexView {
      * You can use a lambda {@code () -> iterator} to consume an iterator instance
      * @param recipes the recipes to deindex
      */
-    public void deindexRecipe(Iterable<Recipe> recipes) {
-        for (Recipe recipe : recipes) {
-            deindexRecipe(recipe);
+    public void deindexRecipe(Iterable<Key> recipes) {
+        for (Key recipeKey : recipes) {
+            deindexRecipe(recipeKey);
         }
     }
 
     /**
      * Deindex a single recipe
-     * @param recipe the recipe to deindex
+     * @param recipeKey the recipe key to deindex
      */
-    public void deindexRecipe(Recipe recipe) {
+    public void deindexRecipe(Key recipeKey) {
+
+        // Get the recipe by its key
+        Recipe recipe = recipeByKey.get(recipeKey);
+        if (recipe == null) {
+            // Not indexed
+            return;
+        }
+
         // Process lookup
         Process process = processByRecipe.remove(recipe);
         if (process == null) {
@@ -141,7 +149,6 @@ public class RecipeIndex implements RecipeIndexView {
         }
 
         // Deindex by id
-        Key recipeKey = recipeExtractorRegistry.extractKey(recipe);
         recipeByKey.remove(recipeKey);
 
         // Deindex by process

@@ -213,15 +213,15 @@ public interface RecipeIndexView {
     /**
      * Deindex multiple recipes with an iterable.
      * You can use a lambda {@code () -> iterator} to consume an iterator instance
-     * @param recipes the recipes to deindex
+     * @param recipeKeys the recipe keys to deindex
      */
-    public void deindexRecipe(Iterable<Recipe> recipes);
+    public void deindexRecipe(Iterable<Key> recipeKeys);
 
     /**
      * Deindex a single recipe
-     * @param recipe the recipe to deindex
+     * @param recipeKey the recipe key to deindex
      */
-    public void deindexRecipe(Recipe recipe);
+    public void deindexRecipe(Key recipeKey);
 
     //#endregion Indexation
 }
