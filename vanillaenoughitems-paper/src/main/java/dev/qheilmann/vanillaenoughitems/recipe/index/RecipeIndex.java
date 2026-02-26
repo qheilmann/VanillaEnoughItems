@@ -118,21 +118,21 @@ public class RecipeIndex implements RecipeIndexView {
     }
 
     /**
-     * Unindex multiple recipes with an iterable.
+     * Deindex multiple recipes with an iterable.
      * You can use a lambda {@code () -> iterator} to consume an iterator instance
-     * @param recipes the recipes to unindex
+     * @param recipes the recipes to deindex
      */
-    public void unindexRecipe(Iterable<Recipe> recipes) {
+    public void deindexRecipe(Iterable<Recipe> recipes) {
         for (Recipe recipe : recipes) {
-            unindexRecipe(recipe);
+            deindexRecipe(recipe);
         }
     }
 
     /**
-     * Unindex a single recipe
-     * @param recipe the recipe to unindex
+     * Deindex a single recipe
+     * @param recipe the recipe to deindex
      */
-    public void unindexRecipe(Recipe recipe) {
+    public void deindexRecipe(Recipe recipe) {
         // Process lookup
         Process process = processByRecipe.remove(recipe);
         if (process == null) {
@@ -140,28 +140,28 @@ public class RecipeIndex implements RecipeIndexView {
             return;
         }
 
-        // Unindex by id
+        // Deindex by id
         Key recipeKey = recipeExtractorRegistry.extractKey(recipe);
         recipeByKey.remove(recipeKey);
 
-        // Unindex by process
+        // Deindex by process
         recipesByProcess.removeRecipe(process,  recipe);
 
-        // Unindex by result
+        // Deindex by result
         Set<ItemStack> results = recipeExtractorRegistry.extractResults(recipe);
         for (ItemStack result : results) {
             result = result.asOne();
             removeRecipeFromMapWithCleanup(recipesByResult, result, process, recipe);
         }
 
-        // Unindex by ingredient
+        // Deindex by ingredient
         Set<ItemStack> ingredients = recipeExtractorRegistry.extractIngredients(recipe);
         for (ItemStack ingredient : ingredients) {
             ingredient = ingredient.asOne();
             removeRecipeFromMapWithCleanup(recipesByIngredient, ingredient, process, recipe);
         }
         
-        // Unindex by other
+        // Deindex by other
         Set<ItemStack> others = recipeExtractorRegistry.extractOthers(recipe);
         for (ItemStack other : others) {
             other = other.asOne();
