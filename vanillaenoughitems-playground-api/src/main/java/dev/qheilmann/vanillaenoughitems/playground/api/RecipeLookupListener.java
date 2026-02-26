@@ -5,6 +5,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 
 import dev.qheilmann.vanillaenoughitems.api.VanillaEnoughItemsAPI;
@@ -27,6 +28,7 @@ public class RecipeLookupListener implements Listener {
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
         if (!event.getPlayer().isSneaking()) return;
+        if (event.getHand() == EquipmentSlot.OFF_HAND) return;
         if (event.getClickedBlock() == null) return;
         if (event.getClickedBlock().getType() != Material.CRAFTING_TABLE) return;
 
