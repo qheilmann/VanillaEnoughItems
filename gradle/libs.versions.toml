@@ -3,6 +3,7 @@ bstats = "3.1.0" # https://mvnrepository.com/artifact/org.bstats/bstats-bukkit
 configurateYaml = "4.2.0" # https://github.com/SpongePowered/Configurate/releases
 commandapi = "11.1.0" # https://central.sonatype.com/artifact/dev.jorel/commandapi-paper-shade
 dotenv = "4.0.0" # https://plugins.gradle.org/plugin/co.uzzu.dotenv.gradle
+itemregistry = "main-SNAPSHOT" # https://jitpack.io/#qheilmann/itemregistry
 jpenilla-run-paper = "3.0.2" # https://plugins.gradle.org/plugin/xyz.jpenilla.run-paper
 jspecify = "1.0.0" # https://mvnrepository.com/artifact/org.jspecify/jspecify
 junit-bom = "6.0.2" # https://mvnrepository.com/artifact/org.junit/junit-bom
@@ -16,9 +17,10 @@ paper-api = { module = "io.papermc.paper:paper-api", version.ref = "paper-api" }
 jspecify = { module = "org.jspecify:jspecify", version.ref = "jspecify" }
 
 # API / Plugin dependencies
-commandapi-shade = { module = "dev.jorel:commandapi-paper-shade", version.ref = "commandapi" }
 bstats = { module = "org.bstats:bstats-bukkit", version.ref = "bstats" }
+commandapi-shade = { module = "dev.jorel:commandapi-paper-shade", version.ref = "commandapi" }
 configurateYaml = { module = "org.spongepowered:configurate-yaml", version.ref = "configurateYaml" }
+itemregistry = { module = "com.github.qheilmann:itemregistry", version.ref = "itemregistry" }
 
 # Testing
 junit-bom = { module = "org.junit:junit-bom", version.ref = "junit-bom"}
@@ -29,6 +31,6 @@ junit-platform = { module = "org.junit.platform:junit-platform-launcher" }
 junit = ["junit-jupiter", "junit-platform"]
 
 [plugins]
-shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
-jpenilla-run-paper = { id = "xyz.jpenilla.run-paper", version.ref = "jpenilla-run-paper" }
 dotenv = { id = "co.uzzu.dotenv.gradle", version.ref = "dotenv" }
+jpenilla-run-paper = { id = "xyz.jpenilla.run-paper", version.ref = "jpenilla-run-paper" }
+shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }

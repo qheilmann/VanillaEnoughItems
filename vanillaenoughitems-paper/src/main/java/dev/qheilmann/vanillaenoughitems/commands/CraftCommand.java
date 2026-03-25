@@ -16,6 +16,7 @@ import dev.jorel.commandapi.arguments.ArgumentSuggestions;
 import dev.jorel.commandapi.arguments.MultiLiteralArgument;
 import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
 import dev.jorel.commandapi.executors.CommandExecutor;
+import dev.qheilmann.itemregistry.ItemRegistry;
 import dev.qheilmann.vanillaenoughitems.RecipeServices;
 import dev.qheilmann.vanillaenoughitems.VanillaEnoughItems;
 import dev.qheilmann.vanillaenoughitems.commands.arguments.ProcessArgument;
@@ -76,13 +77,13 @@ public class CraftCommand {
     }
 
     @SuppressWarnings("java:S1192") // Allow string literals in command definitions
-    public static void register(JavaPlugin plugin, RecipeServices services, PlayerDataManager playerDataManager) {
+    public static void register(JavaPlugin plugin, RecipeServices services, PlayerDataManager playerDataManager, @Nullable ItemRegistry itemRegistry) {
         init(plugin, services, playerDataManager);
 
         // craft <item> [recipe|usage] [<process>] [<recipeId>]
         createBaseCraftCommand()
-            .withArguments(new RecipeItemArgument("resultItem", services.recipeIndex())
-                .replaceSuggestions(RecipeItemArgument.argumentSuggestions(services.recipeIndex()))
+            .withArguments(new RecipeItemArgument("resultItem", services.recipeIndex(), itemRegistry)
+                .replaceSuggestions(RecipeItemArgument.argumentSuggestions(services.recipeIndex(), itemRegistry))
             )
             .withOptionalArguments(new SearchModeArgument("searchMode", services.recipeIndex())
                 .replaceSuggestions(ArgumentSuggestions.stringCollection(info -> {

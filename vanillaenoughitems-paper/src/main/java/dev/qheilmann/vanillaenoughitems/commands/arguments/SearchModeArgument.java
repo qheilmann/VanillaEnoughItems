@@ -25,6 +25,7 @@ import net.kyori.adventure.text.Component;
  * @see SearchMode
  * @see CustomArgument
  */
+@SuppressWarnings("java:S110") // Inheritance depth from CommandAPI's CustomArgument
 @NullMarked
 public class SearchModeArgument extends CustomArgument<SearchModeArgument.SearchMode, String> {
 

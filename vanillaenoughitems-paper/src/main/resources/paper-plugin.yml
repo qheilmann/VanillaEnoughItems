@@ -5,3 +5,8 @@ website: https://github.com/qheilmann/VanillaEnoughItems
 main: dev.qheilmann.vanillaenoughitems.VanillaEnoughItems
 api-version: ${apiVersion}
 version: ${version}
+dependencies:
+	server:
+		ItemRegistry:
+			load: BEFORE
+			required: false

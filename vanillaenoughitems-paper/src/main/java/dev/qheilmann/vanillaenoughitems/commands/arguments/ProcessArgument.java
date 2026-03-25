@@ -27,6 +27,7 @@ import net.kyori.adventure.text.Component;
  * @see Process
  * @see CustomArgument
  */
+@SuppressWarnings("java:S110") // Inheritance depth from CommandAPI's CustomArgument
 @NullMarked
 public class ProcessArgument extends CustomArgument<Process, NamespacedKey> {
 

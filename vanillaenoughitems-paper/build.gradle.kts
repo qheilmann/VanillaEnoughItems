@@ -6,6 +6,7 @@ plugins {
 repositories {
     mavenCentral()
     maven("https://repo.papermc.io/repository/maven-public/")
+    maven("https://jitpack.io")
 }
 
 dependencies {
@@ -15,6 +16,7 @@ dependencies {
     // Core
     compileOnly(libs.paper.api)
     compileOnly(libs.jspecify)
+    compileOnly(libs.itemregistry)
 
     // API / Plugin libraries
     implementation(libs.commandapi.shade)

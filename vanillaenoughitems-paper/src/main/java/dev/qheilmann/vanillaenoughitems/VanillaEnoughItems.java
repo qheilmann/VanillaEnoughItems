@@ -25,6 +25,8 @@ import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger;
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPIPaperConfig;
+import dev.qheilmann.itemregistry.GlobalItemRegistry;
+import dev.qheilmann.itemregistry.ItemRegistry;
 import dev.qheilmann.vanillaenoughitems.api.VanillaEnoughItemsAPI;
 
 import dev.qheilmann.vanillaenoughitems.api.event.VeiReadyEvent;
@@ -35,6 +37,8 @@ import dev.qheilmann.vanillaenoughitems.bookmark.ServerBookmarkRegistry;
 import dev.qheilmann.vanillaenoughitems.bookmark.ServerBookmarkRegistryImpl;
 import dev.qheilmann.vanillaenoughitems.commands.CraftCommand;
 import dev.qheilmann.vanillaenoughitems.commands.ReloadCommand;
+import dev.qheilmann.vanillaenoughitems.commands.arguments.RecipeItemArgument;
+import dev.qheilmann.vanillaenoughitems.config.ItemRegistryMode;
 import dev.qheilmann.vanillaenoughitems.config.Style;
 import dev.qheilmann.vanillaenoughitems.config.VanillaEnoughItemsConfig;
 import dev.qheilmann.vanillaenoughitems.config.VeiConfigLoader;
@@ -152,6 +156,11 @@ public class VanillaEnoughItems extends JavaPlugin implements VanillaEnoughItems
         LOGGER.debug("Enabling FastInv...");
         FastInvManager.register(this);
 
+        // Item registry
+        ItemRegistryIntegration itemRegistryIntegration = evaluateItemRegistryIntegration(veiConfig().itemRegistryMode());
+        logItemRegistryIntegration(itemRegistryIntegration, "Item registry integration");
+        ItemRegistry optionalItemRegistry = itemRegistryIntegration.itemRegistry();
+
         // Custom recipe
         registerCustomRecipe();
 
@@ -199,8 +208,8 @@ public class VanillaEnoughItems extends JavaPlugin implements VanillaEnoughItems
         
         // Build tag index
         this.tagIndex = new TagIndex();
-        Registry<ItemType> itemRegistry = RegistryAccess.registryAccess().getRegistry(RegistryKey.ITEM);
-        tagIndex.index(itemRegistry.getTags(), itemRegistry);
+        Registry<ItemType> bukkitItemRegistry = RegistryAccess.registryAccess().getRegistry(RegistryKey.ITEM);
+        tagIndex.index(bukkitItemRegistry.getTags(), bukkitItemRegistry);
         
         this.recipeServices = new RecipeServices(
             recipeExtractorRegistry,
@@ -219,7 +228,7 @@ public class VanillaEnoughItems extends JavaPlugin implements VanillaEnoughItems
         LOGGER.debug("Initializing server bookmarks...");
         initializeServerBookmarks(serverBookmarkRegistry);
 
-        CraftCommand.register(this, recipeServices, playerDataManager);
+        CraftCommand.register(this, recipeServices, playerDataManager, optionalItemRegistry);
         ReloadCommand.register();
 
         // Quick recipe access
@@ -375,6 +384,8 @@ public class VanillaEnoughItems extends JavaPlugin implements VanillaEnoughItems
      * <p>
      * Note: {@code quick-recipe-lookup} changes only take effect after a server restart
      * because the listener is registered once during {@code onEnable}.
+     * Note: {@code item-registry.mode} changes also only take effect after a server restart
+     * because command arguments capture the item registry integration during {@code onEnable}.
      */
     public static CompletableFuture<Void> reloadVeiConfigAsync() {
         return CompletableFuture.supplyAsync(() -> {
@@ -386,6 +397,37 @@ public class VanillaEnoughItems extends JavaPlugin implements VanillaEnoughItems
                 })
                 .thenAccept(VanillaEnoughItems.config::set);
     }
+
+    private static ItemRegistryIntegration evaluateItemRegistryIntegration(ItemRegistryMode configuredMode) {
+        boolean available = GlobalItemRegistry.isAvailable();
+        boolean enabled = configuredMode != ItemRegistryMode.DISABLED && available;
+        @Nullable ItemRegistry itemRegistry = enabled ? GlobalItemRegistry.registry() : null;
+        return new ItemRegistryIntegration(configuredMode, available, enabled, itemRegistry);
+    }
+
+    private static void logItemRegistryIntegration(ItemRegistryIntegration integration, String prefix) {
+        String modeValue = integration.mode().configValue();
+        LOGGER.info("{} mode='{}' available={} enabled={} ({})",
+            prefix,
+            modeValue,
+            integration.available(),
+            integration.enabled(),
+            "dev.qheilmann.itemregistry.GlobalItemRegistry");
+
+        if (!integration.available() && integration.mode() == ItemRegistryMode.AUTO) {
+            LOGGER.info("Shared item registry not detected; using vanilla + unknown item fallback.");
+        }
+        if (!integration.available() && integration.mode() == ItemRegistryMode.REQUIRED) {
+            LOGGER.warn("Shared item registry not detected but required; some plugin features will be limited. Install/Enable the item-registry plugin or change item-registry.mode to auto/disabled.");
+        }
+    }
+
+    private record ItemRegistryIntegration(
+        ItemRegistryMode mode,
+        boolean available,
+        boolean enabled,
+        @Nullable ItemRegistry itemRegistry
+    ) {}
 
     private void onLoadCommandAPI() {
         CommandAPIPaperConfig commandApiConfig = new CommandAPIPaperConfig(this);
