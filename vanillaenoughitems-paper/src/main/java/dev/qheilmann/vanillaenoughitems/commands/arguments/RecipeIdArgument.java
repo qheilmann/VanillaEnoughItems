@@ -33,6 +33,7 @@ import net.kyori.adventure.text.Component;
  * @see Recipe
  * @see CustomArgument
  */
+@SuppressWarnings("java:S110") // Inheritance depth from CommandAPI's CustomArgument
 @NullMarked
 public class RecipeIdArgument extends CustomArgument<NamespacedKey, NamespacedKey> {
     public RecipeIdArgument(String nodeName, RecipeIndex recipeIndex) {

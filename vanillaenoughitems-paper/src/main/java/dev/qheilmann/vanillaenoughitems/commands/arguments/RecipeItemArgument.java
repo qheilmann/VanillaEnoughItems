@@ -16,13 +16,16 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ItemType;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import dev.jorel.commandapi.arguments.ArgumentSuggestions;
 import dev.jorel.commandapi.arguments.CustomArgument;
 import dev.jorel.commandapi.arguments.NamespacedKeyArgument;
+import dev.qheilmann.itemregistry.ItemRegistry;
 import dev.qheilmann.vanillaenoughitems.recipe.index.RecipeIndex;
 import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.registry.RegistryKey;
+import java.util.Arrays;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 
@@ -35,21 +38,31 @@ import net.kyori.adventure.text.Component;
  * @see ItemStack
  * @see CustomArgument
  */
+@SuppressWarnings("java:S110") // Inheritance depth from CommandAPI's CustomArgument
 @NullMarked
 public class RecipeItemArgument extends CustomArgument<ItemStack, NamespacedKey> {
 
-    // Cache for suggestions per recipe index
-    // Uses reference equality (identity) since RecipeIndex instances are typically singletons
-    private static final Map<RecipeIndex, Collection<String>> suggestionsCache = new ConcurrentHashMap<>();
+    // Cache suggestions by index+registry identity + 2sec TTL to avoid recomputing on each key press. 
+    // TTL is needed because the index and registry can change on live.
+    private static final Map<SuggestionCacheKey, CachedSuggestions> suggestionsCache = new ConcurrentHashMap<>();
+    private static final long SUGGESTIONS_CACHE_TTL_MS = 2000;
 
     // Cache for unknown items, to allow the recipe item argument to parse the key to itemstack
     private static final Map<Key, ItemStack> unknownItemCache = new ConcurrentHashMap<>();
 
-    public RecipeItemArgument(String nodeName, RecipeIndex recipeIndex) {
+    public RecipeItemArgument(String nodeName, RecipeIndex recipeIndex, @Nullable ItemRegistry itemRegistry) {
         super(new NamespacedKeyArgument(nodeName), info -> {
             NamespacedKey key = info.currentInput();
 
-            // First check if it's a vanilla item
+            // First check the optional item registry for a matching item
+            ItemStack registryItem = getItemByRegistry(key, itemRegistry);
+            if (registryItem != null) {
+                return registryItem;
+            }
+
+            // Fallback
+             
+            // Fallback for vanilla items
             if (key.namespace().equals(Key.MINECRAFT_NAMESPACE)) {
                 try {
                     return Bukkit.getItemFactory().createItemStack(key.asString());
@@ -57,21 +70,18 @@ public class RecipeItemArgument extends CustomArgument<ItemStack, NamespacedKey>
                     // Ignore and continue to custom items
                 }
             }
-
-            // Then check custom items
-            // [CUSTOM ITEM REGISTRY] impl custom item registry lookup here
-            // ItemStack customItem = CustomItemRegistry.getItemByKey(key);
-
+            
+            // Fallback for custom items
             ItemStack unknownItemStack = unknownItemCache.get(key);
             if (unknownItemStack != null) {
                 return unknownItemStack;
             }
             
-            throw CustomArgumentHelper.minecraftLikeException((arg) -> Component.text("No item found for key: " + arg), info);
+            throw CustomArgumentHelper.minecraftLikeException(arg -> Component.text("No item found for key: " + arg), info);
         });
 
         // Default suggestions: all registered item keys
-        replaceSuggestions(argumentSuggestions(recipeIndex));
+        replaceSuggestions(argumentSuggestions(recipeIndex, itemRegistry));
     }
 
     /**
@@ -80,10 +90,21 @@ public class RecipeItemArgument extends CustomArgument<ItemStack, NamespacedKey>
      * @param recipeIndex the recipe index
      * @return ArgumentSuggestions providing available item key strings
      */
-    public static ArgumentSuggestions<CommandSender> argumentSuggestions(RecipeIndex recipeIndex) {
+    public static ArgumentSuggestions<CommandSender> argumentSuggestions(RecipeIndex recipeIndex, @Nullable ItemRegistry itemRegistry) {
         return (info, builder) -> {
-            // Get cached suggestions or compute them if not cached
-            Collection<String> suggestions = suggestionsCache.computeIfAbsent(recipeIndex, ctx -> suggestions(ctx));
+            SuggestionCacheKey cacheKey = new SuggestionCacheKey(recipeIndex, itemRegistry);
+            long currentTime = System.currentTimeMillis();
+            
+            // Get or compute suggestions, checking TTL expiration
+            Collection<String> suggestions = suggestionsCache
+                .compute(cacheKey, (key, cached) -> {
+                    // If no cached entry or TTL expired, recompute
+                    if (cached == null || (currentTime - cached.cachedAtMs) >= SUGGESTIONS_CACHE_TTL_MS) {
+                        return new CachedSuggestions(RecipeItemArgument.suggestions(recipeIndex, itemRegistry), currentTime);
+                    }
+                    return cached;
+                })
+                .suggestions();
 
             String currentInputLowerCase = builder.getRemainingLowerCase();
             for (String suggestion : suggestions) {
@@ -102,10 +123,14 @@ public class RecipeItemArgument extends CustomArgument<ItemStack, NamespacedKey>
      * @return A CompletableFuture containing the collection of suggestions.
      */
     @SuppressWarnings("null")
-    public static Collection<String> suggestions(RecipeIndex recipeIndex) {
-        return getAllItemKeys(recipeIndex).stream()
+    public static Collection<String> suggestions(RecipeIndex recipeIndex, @Nullable ItemRegistry itemRegistry) {
+        return getAllItemKeys(recipeIndex, itemRegistry).stream()
             .map(Key::asString)
             .collect(Collectors.toSet());
+    }
+
+    public static void invalidateSuggestionCache() {
+        suggestionsCache.clear();
     }
 
     /**
@@ -115,7 +140,7 @@ public class RecipeItemArgument extends CustomArgument<ItemStack, NamespacedKey>
      * @return A collection of all item keys.
      */
     @SuppressWarnings("null")
-    private static Collection<Key> getAllItemKeys(RecipeIndex recipeIndex) {
+    private static Collection<Key> getAllItemKeys(RecipeIndex recipeIndex, @Nullable ItemRegistry itemRegistry) {
         Set<ItemStack> allItems = new HashSet<>();
 
         allItems.addAll(recipeIndex.getAllResultItems());
@@ -123,21 +148,28 @@ public class RecipeItemArgument extends CustomArgument<ItemStack, NamespacedKey>
         allItems.addAll(recipeIndex.getAllOtherItems());
 
         return allItems.stream()
-            .map(itemStack -> convertItemToKey(itemStack))
+            .map(itemStack -> convertItemToKey(itemStack, itemRegistry))
             .collect(Collectors.toSet());
     }
 
-    private static Key convertItemToKey(ItemStack item) {
+    private static Key convertItemToKey(ItemStack item, @Nullable ItemRegistry itemRegistry) {
+        // First try to resolve the item back to a key using the optional item registry 
+        Key registryKey = getKeyByRegistry(item, itemRegistry);
+        if (registryKey != null) {
+            return registryKey;
+        }
         
-        // Vanilla items 
+        // Fallback
+
+        // Fallback for vanilla items
         // We re-create ItemStack to check if this ItemStack is a non modified form of a vanilla item
         ItemStack vanillaItem = new ItemStack(item.getType());
         if (item.isSimilar(vanillaItem)) {
             // Now it's really a vanilla item
 
-            Registry<ItemType> itemRegistry = RegistryAccess.registryAccess().getRegistry(RegistryKey.ITEM);
+            Registry<ItemType> bukkitItemRegistry = RegistryAccess.registryAccess().getRegistry(RegistryKey.ITEM);
             ItemType itemType = item.getType().asItemType();
-            Key key = itemRegistry.getKey(itemType);
+            Key key = bukkitItemRegistry.getKey(itemType);
             
             if (key == null) {
                 throw new NotImplementedException("Could not find key for this vanilla item: " + item.getType().name());
@@ -146,11 +178,9 @@ public class RecipeItemArgument extends CustomArgument<ItemStack, NamespacedKey>
             return key;
         }
 
-        // Custom items
-        // [CUSTOM ITEM REGISTRY] impl custom item registry lookup here
-
+        // Fallback for custom items
         ItemType itemType = item.getType().asItemType();
-        int hashCode = item.hashCode();
+        int hashCode = Arrays.hashCode(item.serializeAsBytes()); // use serialisation to generate a more deterministic hashcode
         String itemIdentifier = itemType.getKey().value() + "_0x" + Integer.toHexString(hashCode);
         Key unidentifiedKey = Key.key("unknown", itemIdentifier);
         unknownItemCache.put(unidentifiedKey, item);
@@ -168,4 +198,49 @@ public class RecipeItemArgument extends CustomArgument<ItemStack, NamespacedKey>
         // No need to call toLowerCase() on suggestion since NamespacedKeys are always lowercase
         return suggestion.contains(currentInputLowerCase);
     }
+
+    private static @Nullable ItemStack getItemByRegistry(NamespacedKey key, @Nullable ItemRegistry itemRegistry) {
+        if (itemRegistry == null) {
+            return null;
+        }
+
+        return itemRegistry.createItem(key);
+    }
+
+    private static @Nullable Key getKeyByRegistry(ItemStack item, @Nullable ItemRegistry itemRegistry) {
+        if (itemRegistry == null) {
+            return null;
+        }
+
+        return itemRegistry.resolveKey(item);
+    }
+
+    private record CachedSuggestions(
+        Collection<String> suggestions,
+        long cachedAtMs
+    ) {}
+
+    private record SuggestionCacheKey(
+        RecipeIndex recipeIndex,
+        @Nullable ItemRegistry itemRegistry
+    ) {
+        @Override
+        public int hashCode() {
+            int result = System.identityHashCode(recipeIndex);
+            result = 31 * result + System.identityHashCode(itemRegistry);
+            return result;
+        }
+
+        @Override
+        public boolean equals(@Nullable Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (!(obj instanceof SuggestionCacheKey(RecipeIndex otherIndex, @Nullable ItemRegistry otherItemRegistry))) {
+                return false;
+            }
+            return recipeIndex == otherIndex && itemRegistry == otherItemRegistry;
+        }
+    }
+
 }

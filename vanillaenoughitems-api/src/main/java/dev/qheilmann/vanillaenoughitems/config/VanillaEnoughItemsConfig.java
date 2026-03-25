@@ -7,12 +7,14 @@ import org.jspecify.annotations.NullMarked;
  *
  * @param debug debug settings
  * @param quickRecipeLookupEnabled enable the quick recipe-lookup feature
+ * @param itemRegistryMode how VEI integrates with a shared item registry (`auto`, `required`, `disabled`)
  * @param style visual style settings
  */
 @NullMarked
 public record VanillaEnoughItemsConfig(
         DebugConfig debug,
         boolean quickRecipeLookupEnabled,
+        ItemRegistryMode itemRegistryMode,
         Style style) {
 
     // Delegate for convenience

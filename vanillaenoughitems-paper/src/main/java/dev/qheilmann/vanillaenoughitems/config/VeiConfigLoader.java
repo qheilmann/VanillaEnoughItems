@@ -84,7 +84,9 @@ public final class VeiConfigLoader {
             data.debug.unhandledRecipesWarning
         );
 
-        return new VanillaEnoughItemsConfig(debug, data.quickRecipeLookup, style);
+        ItemRegistryMode itemRegistryMode = ItemRegistryMode.fromConfigValue(data.itemRegistry.mode);
+
+        return new VanillaEnoughItemsConfig(debug, data.quickRecipeLookup, itemRegistryMode, style);
     }
 
     /**
@@ -110,7 +112,21 @@ public final class VeiConfigLoader {
 
         DebugData debug = new DebugData();
 
+        @Setting("item-registry")
+        ItemRegistryData itemRegistry = new ItemRegistryData();
+
         StyleData style = new StyleData();
+    }
+
+    @ConfigSerializable
+    static final class ItemRegistryData {
+
+        // Controls shared item-registry integration mode.
+        // - auto (default): use registry when available, fallback otherwise
+        // - required: require registry availability
+        // - disabled: never use registry
+        @Setting("mode")
+        String mode = ItemRegistryMode.AUTO.configValue();
     }
 
     @ConfigSerializable
