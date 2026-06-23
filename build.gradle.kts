@@ -6,13 +6,13 @@ subprojects {
     apply(plugin = "java-library")
 
     extensions.configure<JavaPluginExtension> {
-        toolchain.languageVersion = JavaLanguageVersion.of(21)
+        toolchain.languageVersion = JavaLanguageVersion.of(25)
     }
 
     tasks {
         withType<JavaCompile>().configureEach {
             options.encoding = Charsets.UTF_8.name()
-            options.release = 21
+            options.release = 25
             options.compilerArgs.addAll(listOf("-Xlint:-deprecation", "-Xlint:-removal"))
         }
 
