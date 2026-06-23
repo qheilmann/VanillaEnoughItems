@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       
       - name: Set up JDK 25
         uses: actions/setup-java@v5
@@ -26,6 +26,6 @@ jobs:
           ./gradlew :vanillaenoughitems-paper:shadowJar
       
       - name: Upload JAR to Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v3
         with:
           files: vanillaenoughitems-paper/build/libs/VanillaEnoughItems-*.jar
