@@ -55,7 +55,7 @@ tasks {
     processResources {
         val props = mapOf(
             "version" to project.version,
-            "apiVersion" to libs.versions.paper.api.get().substringBefore("-R"),
+            "apiVersion" to providers.gradleProperty("paperApiVersion").get()
         )
         inputs.properties(props)
         filesMatching("paper-plugin.yml") {
